@@ -2,15 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 
 import Editor from "@monaco-editor/react";
 
-const CodeEditorWindow = ({ onChange, language, code, theme }) => {
+const CodeEditorWindow = ({ onChange, language, code, theme ,format}) => {
 
   const editorRef = useRef(null);
 
   useEffect(() => {
     editorRef.current?.focus();
+    if(format){
     setTimeout(function() {
       editorRef.current?.getAction('editor.action.formatDocument').run();
-    }, 600);
+    }, 600);}
   }, [code]);
 
 

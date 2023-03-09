@@ -58,7 +58,7 @@ function Console() {
     <Grid container spacing={1}>
       <Grid item xs={6}>
         <Item>
-          <Button onClick={handleChange}>
+          <Button fullWidth onClick={handleChange}>
             Run Query
           </Button>
           <CodeEditorWindow
@@ -76,6 +76,7 @@ function Console() {
             onChange={onChangeResult}
             language={'javascript'}
             theme={"cobalt"}
+            format={true}
           />
         </Item>
       </Grid>
