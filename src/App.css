@@ -1,5 +1,12 @@
-.App {
-  text-align: center;
+.App > * > * {
+  box-shadow: 0 0 0 1px gray;
+}
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 3rem calc(100vh - 6rem) 3rem;
+  grid-template-areas: "Header Header Header Header" "Sidebar Main Main Main" "Footer Footer Footer Footer";
+  background-color: var(--black);
 }
 
 .App-logo {

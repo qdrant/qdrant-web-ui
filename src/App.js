@@ -8,15 +8,13 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <HashRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:collectionName" element={<Collection />} />
-          </Routes>
-        </HashRouter>
-      </header>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/collections" element={<Collections />} />
+          <Route path="/collections/:collectionName" element={<Collection />} />
+        </Routes>
+      </HashRouter>
     </div>
   );
 }

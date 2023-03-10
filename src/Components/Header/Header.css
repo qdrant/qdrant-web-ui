@@ -1,0 +1,15 @@
+.Header {
+  grid-area: Header;
+  justify-content: space-between;
+  padding: 0 3vw;
+}
+.Header .logo {
+  height: 2rem;
+}
+.Header .links {
+}
+.Header .links .link {
+  text-decoration: none;
+  padding: 0.2rem 1rem;
+  margin: 0 0.5rem;
+}
