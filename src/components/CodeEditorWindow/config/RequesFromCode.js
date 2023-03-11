@@ -16,7 +16,7 @@ export function detectCURL(text) {
   return false;
 }
 
-export default function  RequestFromCode(text) {
+export  function  RequestFromCode(text) {
   let state = 'NONE';
   const out = [];
   let body = [];

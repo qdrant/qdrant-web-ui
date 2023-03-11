@@ -27,7 +27,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(
   ({ theme, open }) => ({
     flexGrow: 1,
-    padding: theme.spacing(3),
     transition: theme.transitions.create('margin', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -106,12 +105,12 @@ export default function Home() {
               </IconButton>
               <div 
                 style={{ 
-                  position:"absolute", 
+                  position:"", 
                   top:"5px", 
                   right:"20px" 
                 }}
               >
-                <Navbar/>
+                {/* <Navbar/> */}
               </div>
             </Toolbar>
               
@@ -120,7 +119,6 @@ export default function Home() {
             <Main 
               open={open} 
               style={{
-                paddingTop:"40px", 
                 overflow:"auto"
               }} 
             >

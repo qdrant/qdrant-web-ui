@@ -1,17 +1,12 @@
-import {
-  Box,
-  Flex,
-  Spacer,
-} from "@chakra-ui/react";
-import { Button, Stack } from "@mui/material";
+
+import { Button, Stack,Box } from "@mui/material";
 import SearchBar from "./SearchBar";
 
 export default function Navbar() {
   return (
     <>
       <Box p={24}>
-        <Flex h={16} align="center">
-          <Spacer />
+        <Box sx={{ display: 'flex' }} align="center">
           <Box>
               <>
                 <Stack direction={"row"} alignItems="baseline" spacing={2}>
@@ -36,7 +31,7 @@ export default function Navbar() {
                 </Stack>
               </>
           </Box>
-        </Flex>
+        </Box>
       </Box>
 
     </>

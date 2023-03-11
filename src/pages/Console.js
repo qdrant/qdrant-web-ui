@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import { Button } from "@mui/material";
-import RequestFromCode from "../components/RequesFromCode";
+import { Box } from "@mui/system";
 
 
 const query = `
@@ -14,21 +14,42 @@ PUT collections/abs
         "size": 1,
         "distance": "Cosine"
     }
-}`;
+}
+
+PUT collections/abs
+{
+    "vectors": {
+        "size": 1,
+        "distance": "Cosine"
+    }}
+
+PUT collections/abs
+{"vectors": {
+        "size": 1,
+        "distance": "Cosine"
+    }
+}
+
+PUT collections/abs
+
+PUT collections/abs
+{"vectors": {
+        "size": 1,
+        "distance": "Cosine"
+    }
+}
+
+PUT collections/abs
+`;
 
 const Item = styled(Paper)(({ theme }) => ({
   textAlign: 'center',
   backgroundColor: "gray",
-  border: "solid  #32a1ce"
 }));
 
 function Console() {
   const [code, setCode] = useState(query);
   const [result, setResult] = useState("");
-  const handleChange = async() => {
-      const response=await RequestFromCode(code);
-      setResult(JSON.stringify(response))
-  }
 
   const onChangeCode = (action, data) => {
     switch (action) {
@@ -55,32 +76,39 @@ function Console() {
 
 
   return (
-    <Grid container spacing={1}>
-      <Grid item xs={6}>
-        <Item>
-          <Button fullWidth onClick={handleChange}>
-            Run Query
-          </Button>
-          <CodeEditorWindow
+    <Box   
+    sx={{
+      width: "100%",
+      height: "100%",
+      display:"flex",
+    }}
+>
+      <Box 
+          sx={{
+            width: "50%",
+            height: "100%"
+          }}>
+      <CodeEditorWindow
             code={code}
             onChange={onChangeCode}
-            language={'javascript'}
-            theme={"cobalt"}
+            setResult={setResult}
           />
-        </Item>
-      </Grid>
-      <Grid item xs={6}>
-        <Item>
-          <CodeEditorWindow
+      </Box>
+      <Box 
+          sx={{
+            width: "50%",
+            height: "100%"
+          }}>
+      <CodeEditorWindow
             code={result}
             onChange={onChangeResult}
             language={'javascript'}
             theme={"cobalt"}
             format={true}
           />
-        </Item>
-      </Grid>
-    </Grid>
+    </Box>
+    </Box>
+
   );
 }
 
