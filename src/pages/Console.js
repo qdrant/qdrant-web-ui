@@ -12,7 +12,9 @@ import { Box } from "@mui/system";
 const query = `GET collections
 
 PUT collections/demo1
-{"vectors": {
+{
+    "vectors": 
+    {
         "size": 1,
         "distance": "Cosine"
     }
@@ -29,39 +31,6 @@ const defaultResult = `
 {"result": {"collections": [{"name": "collection1"},
       {
         "name": "startups"
-      },
-      {
-        "name": "kzxzax"
-      },
-      {
-        "name": "kzxzar"
-      },
-      {
-        "name": "kar"
-      },
-      {
-        "name": "absssssss"
-      },
-      {
-        "name": "asssssbs"
-      },
-      {
-        "name": "kasr"
-      },
-      {
-        "name": "abs"
-      },
-      {
-        "name": "collection2"
-      },
-      {
-        "name": "assss"
-      },
-      {
-        "name": "ab"
-      },
-      {
-        "name": "abss"
       }
     ]
   },
