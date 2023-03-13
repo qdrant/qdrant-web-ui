@@ -7,7 +7,7 @@ import { Rules, options, HighlightText } from "./config/Rules"
 import { Theme } from "./config/Theme"
 import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker } from "./config/ErrorMarker"
-import { Button } from "@mui/material";
+import { Button, Box } from "@mui/material";
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { RequestFromCode } from './config/RequesFromCode'
 import { ContentCutOutlined } from "@mui/icons-material";
@@ -18,7 +18,6 @@ const CodeEditorWindow = ({ onChange, code, setResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const [selectedCodeRange, setselectedCodeRange] = useState([]);
-  
   const handleChange = async () => {
     setResult(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
   }
@@ -42,29 +41,39 @@ const CodeEditorWindow = ({ onChange, code, setResult }) => {
         range: new monaco.Range(range[0], 0, range[1], 3),
         options: {
           className: 'grayDecorator',
+          glyphMarginClassName: "myGlyphMarginClass",
           isWholeLine: true,
         }
       },]);
     })
   }
-
-
-
-
   return (
     <div >
+      <Box
+        display="flex"
+        justifyContent="flex-end"
+        alignItems="flex-end"
+      >
+      <Button onClick={handleChange} color="success" variant="contained" sx={{ height: 40 }}>
+        <ArrowRightIcon />
+        RUN
+      </Button>
+      </Box>
+
       <Editor
-        height="90vh"
-        width={`100%`}
-        language={"mylang"}
+        height="84vh"
+        language={"json"}
         value={code}
         theme={"mylang-theme"}
-        defaultValue="//output"
+        defaultValue="//input"
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
+        formatOnPaste= {true}
+        autoIndent= {true}
+        formatOnType= {true}
         options={options}
       />
     </div>
   );
 };
-export default CodeEditorWindow;
+export default CodeEditorWindow; 

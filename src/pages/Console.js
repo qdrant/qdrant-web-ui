@@ -3,6 +3,8 @@ import { styled } from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import CodeEditorWindow from "../components/CodeEditorWindow";
+import ResultEditorWindow from "../components/ResultEditorWindow";
+
 import { Button } from "@mui/material";
 import { Box } from "@mui/system";
 
@@ -107,12 +109,9 @@ function Console() {
             width: "50%",
             height: "100%"
           }}>
-      <CodeEditorWindow
+      <ResultEditorWindow
             code={result}
             onChange={onChangeResult}
-            language={'javascript'}
-            theme={"cobalt"}
-            format={true}
           />
     </Box>
     </Box>

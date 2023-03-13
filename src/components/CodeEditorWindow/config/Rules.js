@@ -25,6 +25,10 @@ export const options = {
     fontSize: 12,
     wordWrap: "on" ,
     minimap: { enabled: false },
+    automaticLayout: true,
+    readOnly: false,
+    mouseWheelZoom:true,
+    glyphMargin:true,
 }
 
 export function HighlightText(location, code) {

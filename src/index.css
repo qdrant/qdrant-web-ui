@@ -25,3 +25,9 @@ code {
 .grayDecorator {
   background: rgb(242, 243, 240);
 }
+.myGlyphMarginClass{
+  background: rgba(255, 252, 88, 0.87);
+}
+.myContentClass {
+	background: lightblue;
+}
