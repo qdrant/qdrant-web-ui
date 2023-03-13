@@ -119,7 +119,8 @@ export default function Home() {
             <Main 
               open={open} 
               style={{
-                overflow:"auto"
+                overflow:"hidden"
+
               }} 
             >
               <DrawerHeader />

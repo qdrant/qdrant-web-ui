@@ -23,6 +23,14 @@ PUT collections/abs
         "distance": "Cosine"
     }}
 
+
+
+
+
+
+
+
+    
 PUT collections/abs
 {"vectors": {
         "size": 1,
