@@ -9,49 +9,65 @@ import { Button } from "@mui/material";
 import { Box } from "@mui/system";
 
 
-const query = `
-PUT collections/abs
-{
-    "vectors": {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
+const query = `GET collections
 
-PUT collections/abs
-{
-    "vectors": {
-        "size": 1,
-        "distance": "Cosine"
-    }}
-
-
-
-
-
-
-
-
-    
-PUT collections/abs
+PUT collections/demo1
 {"vectors": {
         "size": 1,
         "distance": "Cosine"
     }
 }
 
-PUT collections/abs
+GET collections
 
-PUT collections/abs
-{"vectors": {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
+DELETE collections/demo1
 
-PUT collections/abs
-`;
+GET collections
 
+GET collections/startups`;
+const defaultResult = `
+{"result": {"collections": [{"name": "collection1"},
+      {
+        "name": "startups"
+      },
+      {
+        "name": "kzxzax"
+      },
+      {
+        "name": "kzxzar"
+      },
+      {
+        "name": "kar"
+      },
+      {
+        "name": "absssssss"
+      },
+      {
+        "name": "asssssbs"
+      },
+      {
+        "name": "kasr"
+      },
+      {
+        "name": "abs"
+      },
+      {
+        "name": "collection2"
+      },
+      {
+        "name": "assss"
+      },
+      {
+        "name": "ab"
+      },
+      {
+        "name": "abss"
+      }
+    ]
+  },
+  "status": "ok",
+  "time": 0.000007124
+}`
 const Item = styled(Paper)(({ theme }) => ({
   textAlign: 'center',
   backgroundColor: "gray",
@@ -59,7 +75,7 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function Console() {
   const [code, setCode] = useState(query);
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState(defaultResult);
 
   const onChangeCode = (action, data) => {
     switch (action) {
@@ -101,7 +117,7 @@ function Console() {
       <CodeEditorWindow
             code={code}
             onChange={onChangeCode}
-            setResult={setResult}
+            onChangeResult={onChangeResult}
           />
       </Box>
       <Box 
@@ -111,7 +127,6 @@ function Console() {
           }}>
       <ResultEditorWindow
             code={result}
-            onChange={onChangeResult}
           />
     </Box>
     </Box>

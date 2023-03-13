@@ -5,65 +5,35 @@ import Editor from "@monaco-editor/react";
 
 
 
-const ResultEditorWindow = ({code,onChange}) => {
-  const editorRef = useRef(null);
-  const defaultValue=`
-{  
-    "employee": {  
-        "name":       "sonoo",   
-        "salary":      56000,   
-        "married":    true  
-    }  
-}  
-
-{  
-  "employee": {  
-      "name":       "sonoo",   
-      "salary":      56000,   
-      "married":    true  
-  }  
-}  
-
-
-
-{  
-  "employee": {  
-      "name":       "sonoo",   
-      "salary":      56000,   
-      "married":    true  
-  }  
-}  
-
-
-
-{  
-  "employee": {  
-      "name":       "sonoo",   
-      "salary":      56000,   
-      "married":    true  
-  }  
-}  
-  `
-  useEffect(() => {
-    editorRef.current?.updateOptions({ readOnly: false})
-    editorRef.current?.getAction('editor.action.formatDocument').run().then(() => console.log('finished'));
-    editorRef.current?.updateOptions({ readOnly: true})
-    console.log("wdhkjdh")
-  }, [code]);
-
-  
-
+const ResultEditorWindow = ({ code }) => {
+  function formatJSON(val = {}) {
+    try {
+      const res = JSON.parse(val);
+      return JSON.stringify(res, null, 2)
+    } catch {
+      const errorJson = {
+        "error": `非法返回${val}`
+      }
+      return JSON.stringify(errorJson, null, 2)
+    }
+  }
 
   return (
     <div >
       <Editor
         height="90vh"
-        language={"json"}
-        value={code}
-        defaultValue={defaultValue}
-        onChange={onChange}
-        onMount={(editor) => (editorRef.current = editor)}
-        options={{readOnly: true,}}
+        language="json"
+        value={formatJSON(code)}
+        options={{
+          scrollBeyondLastLine: false,
+          readOnly: false,
+          fontSize: 12,
+          wordWrap: "on" ,
+          minimap: { enabled: false },
+          automaticLayout: true,
+          readOnly: false,
+          mouseWheelZoom:true,
+        }}
       />
     </div>
   );

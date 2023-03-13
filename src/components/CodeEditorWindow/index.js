@@ -10,16 +10,26 @@ import { ErrorMarker } from "./config/ErrorMarker"
 import { Button, Box } from "@mui/material";
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import { RequestFromCode } from './config/RequesFromCode'
-import { ContentCutOutlined } from "@mui/icons-material";
+import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
 
 
 
-const CodeEditorWindow = ({ onChange, code, setResult }) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const [selectedCodeRange, setselectedCodeRange] = useState([]);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+
   const handleChange = async () => {
-    setResult(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
+    const data=(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
+    if(data=="\n"){
+      setHasError(true);
+      setErrorMessage("Select the correct line")
+    } 
+    const result =await RequestFromCode(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
+      onChangeResult("code",JSON.stringify(result))
   }
 
   const handleEditorChange = (code) => {
@@ -49,6 +59,8 @@ const CodeEditorWindow = ({ onChange, code, setResult }) => {
   }
   return (
     <div >
+      {hasError && <ErrorNotifier {...{message: errorMessage, setHasError }} /> }
+      {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
       <Box
         display="flex"
         justifyContent="flex-end"
@@ -62,7 +74,7 @@ const CodeEditorWindow = ({ onChange, code, setResult }) => {
 
       <Editor
         height="84vh"
-        language={"json"}
+        language={"mylang"}
         value={code}
         theme={"mylang-theme"}
         defaultValue="//input"

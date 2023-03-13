@@ -23,7 +23,7 @@ code {
   opacity: 0.7;
 }
 .grayDecorator {
-  background: rgb(242, 243, 240);
+  background: rgba(43, 38, 38, 0.24);
 }
 .myGlyphMarginClass{
   background: rgba(255, 252, 88, 0.87);
