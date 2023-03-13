@@ -1,5 +1,5 @@
 
-import { Button, Stack,Box } from "@mui/material";
+import { Button, Stack, Box } from "@mui/material";
 import SearchBar from "./SearchBar";
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
@@ -11,14 +11,14 @@ export default function Navbar() {
       <Box >
         <Box sx={{ display: 'flex' }} align="center" fullwidth>
           <Box>
-              <>
-                <Stack direction={"row"}  spacing={2}>
-                  <SearchBar/>
-                  <Button ><MailIcon/> </Button>
-                  <Button ><AccountCircle/></Button>
-                  <Button><NotificationsIcon/></Button>
-                </Stack>
-              </>
+            <>
+              <Stack direction={"row"} spacing={2}>
+                <SearchBar />
+                <Button ><MailIcon /> </Button>
+                <Button ><AccountCircle /></Button>
+                <Button><NotificationsIcon /></Button>
+              </Stack>
+            </>
           </Box>
         </Box>
       </Box>

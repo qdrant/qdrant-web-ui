@@ -77,47 +77,55 @@ export default function Home() {
 
   return (
     <Box sx={{ display: 'flex' }}>
-          <AppBar position="fixed" open={open}>
-            <Toolbar>
-            <Stack 
-                dir="col" 
-                style={{ marginLeft:"20px", marginRight:"50px"}}
-                sx={{ 
-                  mr: 2, 
-                  ...(open && { display: 'none' }) 
-                }}
-              >
-                <Logo 
-                  width={200} 
-                  padding={5} 
-                />
-              </Stack>
-              <IconButton
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                edge="start"
-                sx={{ 
-                  mr: 2, 
-                  ...(open && { display: 'none' }) 
-                }}
-              >
-                <MenuIcon style={{fontSize:"36px"}} />
-              </IconButton>
-                <Navbar/>
-            </Toolbar>
-              
-          </AppBar>
-            <Sidebar open={open} handleDrawerClose={handleDrawerClose} />
-            <Main 
-              open={open} 
-              style={{
-                overflow:"hidden"
+      <AppBar position="fixed" open={open}>
+        <Toolbar>
+          <Stack
+            dir="col"
+            style={{ marginLeft: "20px", marginRight: "50px" }}
+            sx={{
+              mr: 2,
+              ...(open && { display: 'none' })
+            }}
+          >
+            <Logo
+              width={200}
+              padding={5}
+            />
+          </Stack>
+          <IconButton
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{
+              mr: 2,
+              ...(open && { display: 'none' })
+            }}
+          >
+            <MenuIcon style={{ fontSize: "36px" }} />
+          </IconButton>
+          <div
+            style={{
+              position: "absolute",
+              top: "5px",
+              right: "20px"
+            }}
+          >
+            <Navbar />
+          </div>
+        </Toolbar>
 
-              }} 
-            >
-              <DrawerHeader />
-              <Outlet />
-          </Main>
+      </AppBar>
+      <Sidebar open={open} handleDrawerClose={handleDrawerClose} />
+      <Main
+        open={open}
+        style={{
+          overflow: "hidden"
+
+        }}
+      >
+        <DrawerHeader />
+        <Outlet />
+      </Main>
 
     </Box>
   );
