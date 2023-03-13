@@ -1,33 +1,22 @@
 
 import { Button, Stack,Box } from "@mui/material";
 import SearchBar from "./SearchBar";
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import MailIcon from '@mui/icons-material/Mail';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export default function Navbar() {
   return (
-    <>
-      <Box p={24}>
-        <Box sx={{ display: 'flex' }} align="center">
+    < >
+      <Box >
+        <Box sx={{ display: 'flex' }} align="center" fullwidth>
           <Box>
               <>
-                <Stack direction={"row"} alignItems="baseline" spacing={2}>
+                <Stack direction={"row"}  spacing={2}>
                   <SearchBar/>
-                  <Button 
-                    variant="contained" 
-
-                  >
-                    Button 1
-                  </Button>
-                  <Button 
-                    variant="contained"
-
-                  >
-                    Button 2 
-                  </Button>
-                  <Button
-                    size="small"
-                  >
-                    Button 4
-                  </Button>
+                  <Button ><MailIcon/> </Button>
+                  <Button ><AccountCircle/></Button>
+                  <Button><NotificationsIcon/></Button>
                 </Stack>
               </>
           </Box>

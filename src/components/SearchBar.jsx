@@ -12,7 +12,7 @@ export default function SearchBar() {
 
 
       <TextField
-        placeholder="Search text text etext"
+        placeholder="Search text text text"
         variant="standard"
         sx={{
           width: "inherit"

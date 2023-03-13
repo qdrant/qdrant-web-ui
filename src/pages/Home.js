@@ -103,15 +103,7 @@ export default function Home() {
               >
                 <MenuIcon style={{fontSize:"36px"}} />
               </IconButton>
-              <div 
-                style={{ 
-                  position:"", 
-                  top:"5px", 
-                  right:"20px" 
-                }}
-              >
-                {/* <Navbar/> */}
-              </div>
+                <Navbar/>
             </Toolbar>
               
           </AppBar>
