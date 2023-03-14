@@ -9,7 +9,7 @@ export default function Navbar() {
   return (
     < >
       <Box >
-        <Box sx={{ display: 'flex' }} align="center" fullwidth>
+        <Box sx={{ display: 'flex' }} align="center" >
           <Box>
             <>
               <Stack direction={"row"} spacing={2}>

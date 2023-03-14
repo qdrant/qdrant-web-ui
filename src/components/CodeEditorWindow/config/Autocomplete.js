@@ -1,5 +1,5 @@
 
-const keywords=["POST", "GET", "PUT","DELETE" ,"HEAD" ];
+const keywords=["POST", "GET", "PUT","DELETE" ,"HEAD" ,"collections"];
 export const Autocomplete = {
     provideCompletionItems: (model, position) => {
         const suggestions
@@ -7,7 +7,7 @@ export const Autocomplete = {
             [
                 ...keywords.map(k => {
                     return {
-                        label: k,
+                        label: "Method:" +k,
                         kind: "monaco.languages.CompletionItemKind.Keyword",
                         insertText: k,
                     };

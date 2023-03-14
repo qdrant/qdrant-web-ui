@@ -1,13 +1,14 @@
-const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
+const Method = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 
 export const Rules = {
     base: 'json',
-    keywords,
+    Method,
     tokenizer: {
         root: [
             [/@?[a-zA-Z][\w$]*/, {
                 cases: {
-                    '@keywords': 'keyword',
+                    '@Method': 'keyword',
+                    
                     '@default': 'variable',
                 }
             }],

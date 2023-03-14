@@ -11,9 +11,9 @@ function Collection() {
 
     
     return (
-        <div>
+        <>
             ToDo {collectionName}
-        </div>
+        </>
     );
 }
 

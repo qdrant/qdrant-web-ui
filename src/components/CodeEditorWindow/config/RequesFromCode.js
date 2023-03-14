@@ -188,11 +188,21 @@ export  function  RequestFromCode(text) {
     }
   }
   addBodyToOut();
+
+  var reqBody={};
+
+  if(out[1]) {
+    try {
+      reqBody=out[1]=="\n"? {}:JSON.parse(out[1]);
+    } catch(e) {
+        return {"error": "Fix the Position brackets to run"} // error in the above string (in this case, yes)!
+    }
+}
   if(matches){
     return   axios({
       method: matches[1],
       url: "/"+matches[2],
-      data: out[1]=="\n"? {}:JSON.parse(out[1]) 
+      data: reqBody 
     })
     .then((response) => response.data)
     .catch((err)=>err.response?.data?.status? err.response?.data?.status: err)

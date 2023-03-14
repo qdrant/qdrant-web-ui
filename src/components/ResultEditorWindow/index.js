@@ -19,7 +19,6 @@ const ResultEditorWindow = ({ code }) => {
   }
 
   return (
-    <div >
       <Editor
         height="90vh"
         language="json"
@@ -35,7 +34,7 @@ const ResultEditorWindow = ({ code }) => {
           mouseWheelZoom:true,
         }}
       />
-    </div>
+
   );
 };
 export default ResultEditorWindow;

@@ -23,7 +23,7 @@ export default function SuccessNotifier({ message, setIsSuccess }) {
   };
 
   return (
-    <div>
+    <>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }} TransitionComponent={SlideTransition}
       >
@@ -31,6 +31,6 @@ export default function SuccessNotifier({ message, setIsSuccess }) {
           {message}
         </Alert>
       </Snackbar>
-    </div>
+    </>
   );
 }

@@ -98,8 +98,8 @@ export default function Sidebar({ open, handleDrawerClose }) {
           anchor="left"
           open={open}
         >
-          <Typography
-
+          <Typography  
+            component={'span'}
             style={{
               paddingTop: "10px",
               display: "flex",
