@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
-import { Rules, options, HighlightText } from "./config/Rules"
+import { Rules, options, HighlightText, btnconfig, RunBtnControl } from "./config/Rules"
 import { Theme } from "./config/Theme"
 import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
@@ -16,54 +16,55 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const [errorMessage, setErrorMessage] = useState("");
   var range = [];
 
-
-  const handleRun = async () => {
-    const data = (editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(range[0], 0, range[1] + 1, 0)))
-    if (data == "") {
-      setHasError(true);
-      setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
-      return;
-    }
-    if (data == "\n") {
-      setHasError(true);
-      setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
-      return;
-    }
-    const result = await RequestFromCode(data)
-    onChangeResult("code", JSON.stringify(result))
-  }
-
   const handleEditorChange = (code) => {
     onChange("code", code);
     errChecker(code);
     monacoRef.current?.editor.setModelMarkers(editorRef.current?.getModel(), "owner", ErrorMarker);
   };
 
-
-
-
   function handleEditorDidMount(editor, monaco) {
-    var sts = null;
+    var runBtn = null;
     editorRef.current = editor;
     monacoRef.current = monaco;
+
+  
     var decorations = [];
-    var commandId = editor.addCommand(
-      0,
-      function () {
-        // services available in `ctx`
-        handleRun();
-      },
-      ""
-    );
-    // Register 
-    monaco.languages.register({ id: 'mylang' })
+    // Register Custom Language
+    monaco.languages.register({ id: 'custom-language' })
     // Definining Rules 
-    monaco.languages.setMonarchTokensProvider('mylang', Rules);
-    monaco.editor.defineTheme('mylang-theme', Theme);
-    monaco.languages.registerCompletionItemProvider('mylang', Autocomplete);
+    monaco.languages.setMonarchTokensProvider('custom-language', Rules);
+    // Definining Theme
+    monaco.editor.defineTheme('custom-language-theme', Theme);
+    // Defining Autocomplete
+    monaco.languages.registerCompletionItemProvider('custom-language', Autocomplete);
+
+    const RunBtnControl = editor.addCommand(
+      0,
+      async () => {
+        const data = (editor.getModel().getValueInRange(new monaco.Selection(range[0], 0, range[1] + 1, 0)))
+        if (data == "") {
+          setHasError(true);
+          setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
+          return;
+        }
+        if (data == "\n") {
+          setHasError(true);
+          setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
+          return;
+        }
+        const result = await RequestFromCode(data)
+        onChangeResult("code", JSON.stringify(result))
+      }
+      ,
+      ""
+    )
+
+    //Listen for Mouse Postion Change
     editor.onDidChangeCursorPosition(e => {
+
+      //for Highlighting range Format of result   Array :- [startindexofcode, endindexofcode ]
       range = HighlightText(editor.getPosition(), editor.getValue());
-      // setselectedCodeRange(range);
+      // Make the decortion on the selected range 
       decorations = editor.deltaDecorations([decorations[0]], [{
         range: new monaco.Range(range[0], 0, range[1], 3),
         options: {
@@ -72,32 +73,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           isWholeLine: true,
         }
       },]);
-      sts?.dispose();
-      sts = monaco.languages.registerCodeLensProvider("mylang", {
-        provideCodeLenses: function (model, token) {
-          return {
-            lenses: [
-              {
-                range: {
-                  startLineNumber: range[0],
-                  startColumn: 1,
-                  endLineNumber: range[0],
-                  endColumn: 1,
-                },
-                id: "RUN",
-                command: {
-                  id: commandId,
-                  title: "RUN",
-                },
-              },
-            ],
-            dispose: () => { },
-          };
-        },
-        resolveCodeLens: function (model, codeLens, token) {
-          return codeLens;
-        },
-      });
+
+      //Dipose the old button if any
+      runBtn?.dispose();
+      //Make a new btn for the selected range  
+      runBtn = monaco.languages.registerCodeLensProvider("custom-language", btnconfig(range, RunBtnControl));
     })
   }
 
@@ -107,9 +87,9 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
       <Editor
         height="90vh"
-        language={"mylang"}
+        language={"custom-language"}
         value={code}
-        theme={"mylang-theme"}
+        theme={"custom-language-theme"}
         defaultValue="//input"
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}

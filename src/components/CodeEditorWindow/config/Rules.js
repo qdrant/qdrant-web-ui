@@ -1,3 +1,5 @@
+import { debounce } from "@mui/material";
+
 const Method = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 
 export const Rules = {
@@ -8,7 +10,7 @@ export const Rules = {
             [/@?[a-zA-Z][\w$]*/, {
                 cases: {
                     '@Method': 'keyword',
-                    
+
                     '@default': 'variable',
                 }
             }],
@@ -24,12 +26,40 @@ export const options = {
     scrollBeyondLastLine: false,
     readOnly: false,
     fontSize: 12,
-    wordWrap: "on" ,
+    wordWrap: "on",
     minimap: { enabled: false },
     automaticLayout: true,
     readOnly: false,
-    mouseWheelZoom:true,
-    glyphMargin:true,
+    mouseWheelZoom: true,
+    glyphMargin: true,
+}
+
+export function btnconfig(range, commandId) {
+    return ({
+        provideCodeLenses: function (model, token) {
+            return {
+                lenses: [
+                    {
+                        range: {
+                            startLineNumber: range[0],
+                            startColumn: 1,
+                            endLineNumber: range[0],
+                            endColumn: 1,
+                        },
+                        id: "RUN",
+                        command: {
+                            id: commandId,
+                            title: "RUN",
+                        },
+                    },
+                ],
+                dispose: () => { },
+            };
+        },
+        resolveCodeLens: function (model, codeLens, token) {
+            return codeLens;
+        },
+    })
 }
 
 export function HighlightText(location, code) {
