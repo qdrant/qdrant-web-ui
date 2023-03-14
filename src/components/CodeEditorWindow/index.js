@@ -26,12 +26,12 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     const data=(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
     if(data==""){
       setHasError(true);
-      setErrorMessage("Select a Query")
+      setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
       return;
     } 
     if(data=="\n"){
       setHasError(true);
-      setErrorMessage("Select the Non-empty line")
+      setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
       return;
     } 
     const result =await RequestFromCode(editorRef.current?.getModel().getValueInRange(new monacoRef.current.Selection(selectedCodeRange[0], 0, selectedCodeRange[1] + 1, 0)))
