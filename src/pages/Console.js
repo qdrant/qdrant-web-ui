@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { styled } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
-import Grid from '@mui/material/Grid';
+import React, { useState } from "react";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
-
-import { Button } from "@mui/material";
 import { Box } from "@mui/system";
 
 
-const query = `GET collections
+const query =
+  `GET collections
 
 PUT collections/demo1
 {
@@ -27,8 +23,8 @@ DELETE collections/demo1
 GET collections
 
 GET collections/startups`;
-const defaultResult = `
-{"result": {"collections": [{"name": "collection1"},
+const defaultResult =
+  `{"result": {"collections": [{"name": "collection1"},
       {
         "name": "startups"
       }
@@ -37,10 +33,6 @@ const defaultResult = `
   "status": "ok",
   "time": 0.000007124
 }`
-const Item = styled(Paper)(({ theme }) => ({
-  textAlign: 'center',
-  backgroundColor: "gray",
-}));
 
 function Console() {
   const [code, setCode] = useState(query);
@@ -71,33 +63,33 @@ function Console() {
 
 
   return (
-    <Box   
-    sx={{
-      width: "100%",
-      height: "100%",
-      display:"flex",
-    }}
->
-      <Box 
-          sx={{
-            width: "50%",
-            height: "100%"
-          }}>
-      <CodeEditorWindow
-            code={code}
-            onChange={onChangeCode}
-            onChangeResult={onChangeResult}
-          />
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+      }}
+    >
+      <Box
+        sx={{
+          width: "50%",
+          height: "100%"
+        }}>
+        <CodeEditorWindow
+          code={code}
+          onChange={onChangeCode}
+          onChangeResult={onChangeResult}
+        />
       </Box>
-      <Box 
-          sx={{
-            width: "50%",
-            height: "100%"
-          }}>
-      <ResultEditorWindow
-            code={result}
-          />
-    </Box>
+      <Box
+        sx={{
+          width: "50%",
+          height: "100%"
+        }}>
+        <ResultEditorWindow
+          code={result}
+        />
+      </Box>
     </Box>
 
   );

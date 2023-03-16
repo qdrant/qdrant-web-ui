@@ -38,7 +38,6 @@ const ColorButton = styled(Button)(({ theme }) => ({
 }));
 
 export default function Sidebar({ open, handleDrawerClose }) {
-  // const [drives, setDrives] = useState({});
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const theme = useTheme();

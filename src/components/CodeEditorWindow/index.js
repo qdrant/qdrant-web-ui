@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
-import { Rules, options, HighlightText, btnconfig, RunBtnControl } from "./config/Rules"
+import { Rules, options, HighlightText, btnconfig } from "./config/Rules"
 import { Theme } from "./config/Theme"
 import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
@@ -42,12 +42,12 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       0,
       async () => {
         const data = (editor.getModel().getValueInRange(new monaco.Selection(range[0], 0, range[1] + 1, 0)))
-        if (data == "") {
+        if (data === "") {
           setHasError(true);
           setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
           return;
         }
-        if (data == "\n") {
+        if (data ==="\n") {
           setHasError(true);
           setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
           return;
