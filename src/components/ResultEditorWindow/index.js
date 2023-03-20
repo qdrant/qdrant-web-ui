@@ -25,7 +25,6 @@ const ResultEditorWindow = ({ code }) => {
         value={formatJSON(code)}
         options={{
           scrollBeyondLastLine: false,
-          readOnly: false,
           fontSize: 12,
           wordWrap: "on" ,
           minimap: { enabled: false },
