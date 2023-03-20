@@ -1,22 +1,23 @@
 import './App.css';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
 import Home from './pages/Home';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
 
 function App() {
-
   return (
     <div className="App">
+      <Header/>
       <header className="App-header">
-        <HashRouter>
+        <Router>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/collections" element={<Collections />} />
-            <Route path="/collections/:collectionName" element={<Collection />} />
+            <Route exact path="/"  element={<Home />} />
+            <Route exact path="/collections"  element={<Collections />} />
+            <Route exact path="/collections/:collectionName"  element={<Collection />} />
           </Routes>
-        </HashRouter>
-      </header>
+        </Router>
+      </header> 
     </div>
   );
 }
