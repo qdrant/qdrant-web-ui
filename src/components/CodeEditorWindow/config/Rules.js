@@ -23,41 +23,12 @@ export const Rules = {
 export const options = {
     scrollBeyondLastLine: false,
     readOnly: false,
-    fontSize: 12,
     wordWrap: "on",
     minimap: { enabled: false },
     automaticLayout: true,
-    mouseWheelZoom: true,
     glyphMargin: true,
 }
 
-export function btnconfig(range, commandId) {
-    return ({
-        provideCodeLenses: function (model, token) {
-            return {
-                lenses: [
-                    {
-                        range: {
-                            startLineNumber: range[0],
-                            startColumn: 1,
-                            endLineNumber: range[0],
-                            endColumn: 1,
-                        },
-                        id: "RUN",
-                        command: {
-                            id: commandId,
-                            title: "RUN",
-                        },
-                    },
-                ],
-                dispose: () => { },
-            };
-        },
-        resolveCodeLens: function (model, codeLens, token) {
-            return codeLens;
-        },
-    })
-}
 
 /**
 *This function takes the current position of cursor as location and the entire code as code from the code editor 
