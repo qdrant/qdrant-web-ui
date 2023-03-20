@@ -20,13 +20,13 @@ export function RequestFromCode(text) {
   if (body) {
     try {
       var bodyWithoutMultiLineComments = body.replace(/(\/\*[^*]*\*\/)/g, '');
-      reqBody = body == "\n" ? {} : JSON.parse(bodyWithoutMultiLineComments);
+      reqBody = body === "\n" ? {} : JSON.parse(bodyWithoutMultiLineComments);
     } catch (e) {
       return { "error": "Fix the Position brackets to run & check the json" } // error in the above string (in this case, yes)!
     }
   }
 
-  if(method != ""){
+  if(method !== ""){
   //Sending request 
   return axios({
     method: method,
