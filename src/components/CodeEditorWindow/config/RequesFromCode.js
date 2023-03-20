@@ -1,21 +1,5 @@
 import axios from 'axios';
 
-function detectCURLinLine(line) {
-  // returns true if text matches a curl request
-  return line.match(/^\s*?curl\s+(-X[A-Z]+)?\s*['"]?.*?['"]?(\s*$|\s+?-d\s*?['"])/);
-}
-
-export function detectCURL(text) {
-  // returns true if text matches a curl request
-  if (!text) return false;
-  for (const line of text.split('\n')) {
-    if (detectCURLinLine(line)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export  function  RequestFromCode(text) {
   let state = 'NONE';
   const out = [];

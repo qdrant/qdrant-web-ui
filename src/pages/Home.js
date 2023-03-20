@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { Outlet } from 'react-router-dom';
-import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import Toolbar from '@mui/material/Toolbar';
-import { IconButton,Stack ,Box} from "@mui/material";
+import { Stack ,Box} from "@mui/material";
 import { styled } from '@mui/material/styles';
 import MuiAppBar from '@mui/material/AppBar';
-import MenuIcon from '@mui/icons-material/Menu';
-import { Logo } from "../components/Logo";
 
 
 const drawerWidth = 240;
@@ -75,48 +72,13 @@ export default function Home() {
     <Box sx={{ display: 'flex' }}>
       <AppBar position="fixed" open={open}>
         <Toolbar>
-          <Stack
-            dir="col"
-            style={{ marginLeft: "20px", marginRight: "50px" }}
-            sx={{
-              mr: 2,
-              ...(open && { display: 'none' })
-            }}
-          >
-            <Logo
-              width={200}
-              padding={5}
-            />
-          </Stack>
-          <IconButton
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{
-              mr: 2,
-              ...(open && { display: 'none' })
-            }}
-          >
-            <MenuIcon style={{ fontSize: "36px" }} />
-          </IconButton>
-          <div
-            style={{
-              position: "absolute",
-              top: "5px",
-              right: "20px"
-            }}
-          >
-            <Navbar />
-          </div>
         </Toolbar>
-
       </AppBar>
       <Sidebar open={open} handleDrawerClose={handleDrawerClose} />
       <Main
         open={open}
         style={{
           overflow: "hidden"
-
         }}
       >
         <DrawerHeader />
