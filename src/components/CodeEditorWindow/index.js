@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
-import { Rules, options, HighlightText } from "./config/Rules"
+import { Rules, options, HighlightText, btnconfig } from "./config/Rules"
 import { Theme } from "./config/Theme"
 import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
@@ -23,9 +23,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   };
 
   function handleEditorDidMount(editor, monaco) {
+    var runBtn = null;
     editorRef.current = editor;
     monacoRef.current = monaco;
 
+  
     var decorations = [];
     // Register Custom Language
     monaco.languages.register({ id: 'custom-language' })
@@ -36,6 +38,26 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     // Defining Autocomplete
     monaco.languages.registerCompletionItemProvider('custom-language', Autocomplete);
 
+    const RunBtnControl = editor.addCommand(
+      0,
+      async () => {
+        const data = (editor.getModel().getValueInRange(new monaco.Selection(range[0], 0, range[1] + 1, 0)))
+        if (data === "") {
+          setHasError(true);
+          setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
+          return;
+        }
+        if (data === "\n") {
+          setHasError(true);
+          setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
+          return;
+        }
+        const result = await RequestFromCode(data)
+        onChangeResult("code", JSON.stringify(result))
+      }
+      ,
+      ""
+    )
 
     //Listen for Mouse Postion Change
     editor.onDidChangeCursorPosition(e => {
@@ -52,45 +74,10 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         }
       },]);
 
-      // Add an overlay widget
-      var overlayWidget = {
-        domNode: (function () {
-          var domNode = document.createElement("div");
-          domNode.innerHTML = "Run";
-          domNode.style.background = "grey";
-          domNode.style.right = "16px";
-          domNode.style.top = "0px";
-          domNode.addEventListener("click", async () => {
-            const data = (editor.getModel().getValueInRange(new monaco.Selection(range[0], 0, range[1] + 1, 0)))
-            if (data === "") {
-              setHasError(true);
-              setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
-              return;
-            }
-            if (data === "\n") {
-              setHasError(true);
-              setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
-              return;
-            }
-            const result = await RequestFromCode(data)
-            onChangeResult("code", JSON.stringify(result))
-          });
-          editor.onDidChangeCursorSelection(e => {
-            domNode.style.top = ((range[0] - 1) * 19) + "px";
-          });
-          return domNode;
-        })(),
-        getId: function () {
-          return "my.overlay.widget";
-        },
-        getDomNode: function () {
-          return this.domNode;
-        },
-        getPosition: function () {
-          return null;
-        },
-      };
-      editor.addOverlayWidget(overlayWidget);
+      //Dipose the old button if any
+      runBtn?.dispose();
+      //Make a new btn for the selected range  
+      runBtn = monaco.languages.registerCodeLensProvider("custom-language", btnconfig(range, RunBtnControl));
     })
   }
 
