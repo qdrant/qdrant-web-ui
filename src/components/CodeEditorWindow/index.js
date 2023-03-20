@@ -6,7 +6,7 @@ import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
 import { RequestFromCode } from './config/RequesFromCode'
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
-
+import "./editor.css"
 
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {

@@ -1,0 +1,9 @@
+.grayDecorator {
+    background: rgba(163, 161, 161, 0.24);
+  }
+  .myGlyphMarginClass{
+    background: rgba(255, 252, 88, 0.87);
+  }
+  .myContentClass {
+      background: lightblue;
+  }
