@@ -1,0 +1,17 @@
+[33mcommit 8f8c3a80f2641774f230aa3ed37cf3660010f337[m[33m ([m[1;36mHEAD -> [m[1;32mheader-sidebar-footer[m[33m, [m[1;31morigin/header-sidebar-footer[m[33m)[m
+Author: chetankk <chetankhulage350@gmail.com>
+Date:   Fri Mar 10 13:46:10 2023 +0530
+
+    layout header sidebar and footer added with grid
+
+[33mcommit 21ee1705ae0bbf3ca3219a2444174efa26f88e6a[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Andrey Vasnetsov <andrey@vasnetsov.com>
+Date:   Mon Feb 27 15:57:43 2023 +0100
+
+    init
+
+[33mcommit 5f6439340ee5683838ee7b3af7b20ecde839d9cf[m
+Author: Andrey Vasnetsov <andrey@vasnetsov.com>
+Date:   Mon Feb 27 13:22:21 2023 +0100
+
+    Initialize project using Create React App
