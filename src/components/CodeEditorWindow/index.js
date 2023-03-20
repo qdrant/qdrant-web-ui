@@ -47,7 +47,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
           return;
         }
-        if (data ==="\n") {
+        if (data === "\n") {
           setHasError(true);
           setErrorMessage("Empty line selected. Select a request by placing the cursor inside it.")
           return;

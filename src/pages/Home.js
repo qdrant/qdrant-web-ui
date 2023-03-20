@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from 'react-router-dom';
 import Sidebar from "../components/Sidebar";
 import Toolbar from '@mui/material/Toolbar';
-import { Stack ,Box} from "@mui/material";
+import {  Box} from "@mui/material";
 import { styled } from '@mui/material/styles';
 import MuiAppBar from '@mui/material/AppBar';
 
@@ -60,9 +60,6 @@ export default function Home() {
 
   const [open, setOpen] = useState(true);
 
-  const handleDrawerOpen = () => {
-    setOpen(true);
-  };
 
   const handleDrawerClose = () => {
     setOpen(false);
