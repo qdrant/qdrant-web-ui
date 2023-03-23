@@ -14,7 +14,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const monacoRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  var range = [];
+  var range = null;
 
   const handleEditorChange = (code) => {
     onChange("code", code);
@@ -27,7 +27,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-  
+
     var decorations = [];
     // Register Custom Language
     monaco.languages.register({ id: 'custom-language' })
@@ -41,7 +41,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     const RunBtnControl = editor.addCommand(
       0,
       async () => {
-        const data = (editor.getModel().getValueInRange(new monaco.Selection(range[0], 0, range[1] + 1, 0)))
+        const data = range[2];
         if (data === "") {
           setHasError(true);
           setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
@@ -63,21 +63,23 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     editor.onDidChangeCursorPosition(e => {
 
       //for Highlighting range Format of result   Array :- [startindexofcode, endindexofcode ]
-      range = HighlightText(editor.getPosition(), editor.getValue());
-      // Make the decortion on the selected range 
-      decorations = editor.deltaDecorations([decorations[0]], [{
-        range: new monaco.Range(range[0], 0, range[1], 3),
-        options: {
-          className: 'grayDecorator',
-          glyphMarginClassName: "myGlyphMarginClass",
-          isWholeLine: true,
-        }
-      },]);
+      range = HighlightText(editor.getPosition(), editor.getValue())[0] ? HighlightText(editor.getPosition(), editor.getValue()) : range;
+      if (range) {
+        // Make the decortion on the selected range 
+        decorations = editor.deltaDecorations([decorations[0]], [{
+          range: new monaco.Range(range[0], 0, range[1], 3),
+          options: {
+            className: 'grayDecorator',
+            glyphMarginClassName: "myGlyphMarginClass",
+            isWholeLine: true,
+          }
+        },]);
 
-      //Dipose the old button if any
-      runBtn?.dispose();
-      //Make a new btn for the selected range  
-      runBtn = monaco.languages.registerCodeLensProvider("custom-language", btnconfig(range, RunBtnControl));
+        //Dipose the old button if any
+        runBtn?.dispose();
+        //Make a new btn for the selected range  
+        runBtn = monaco.languages.registerCodeLensProvider("custom-language", btnconfig(range, RunBtnControl));
+      }
     })
   }
 
