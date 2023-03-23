@@ -14,7 +14,7 @@ function Collections() {
     }, []);
 
     return (
-        <div>
+        <>
             <h1>Collections</h1>
             <ul>
                 {collections.map((collection) => (
@@ -23,7 +23,7 @@ function Collections() {
                     </li>
                 ))}
             </ul>
-        </div>
+        </>
     );
 }
 

@@ -4,6 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import setupAxios from './common/axios';
+import { HashRouter } from 'react-router-dom';
 
 
 setupAxios();
@@ -11,7 +12,9 @@ setupAxios();
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    <HashRouter>
     <App />
+    </HashRouter>
   </React.StrictMode>
 );
 
