@@ -31,11 +31,11 @@ export function codeParse(codeText){
     try {
       reqBody = body === "\n" ? {} : JSON.parse(body);
     } catch (e) {
-      return { method:method,endpoint:endpoint,reqBody:body,error : "Fix the Position brackets to run & check the json" } // error in the above string (in this case, yes)!
+      return { method:null,endpoint:null,reqBody:null,error : "Fix the Position brackets to run & check the json" }
     }
   }
   if(method===""){
-    return { method:null,endpoint:null,reqBody:null,error : "Fix the Position brackets to run & check the json" } // error in the above string (in this case, yes)!
+    return { method:null,endpoint:null,reqBody:null,error : "Add headline or remove the line gap between json and headline (if any)" } 
   }
   return {method:method,endpoint:endpoint,reqBody:reqBody,error:null}
 }
