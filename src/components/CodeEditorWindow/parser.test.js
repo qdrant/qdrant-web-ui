@@ -68,14 +68,17 @@ describe('parser', () => {
         expect(requests[3].blockStartLine).toEqual(14);
     });
     it('given an array of blocks and cursor line number: return selected block or nothing [0,0,""] , if cursor is outside', () => {
+
         let requests = HighlightText({ lineNumber: 2 }, testCode);
         expect(requests.length).toEqual(3);
         expect(requests[1]).toEqual(0);
         expect(requests[0]).toEqual(0);
+
         requests = HighlightText({ lineNumber: 3 }, testCode);
         expect(requests.length).toEqual(3);
         expect(requests[1]).toEqual(10);
         expect(requests[0]).toEqual(3);
+
         requests = HighlightText({ lineNumber: 12 }, testCode);
         expect(requests.length).toEqual(3);
         expect(requests[1]).toEqual(12);
@@ -114,7 +117,7 @@ describe('parser', () => {
         expect(requests.error).toEqual(null);
         expect(requests.reqBody).toEqual({})
 
-         
+
         // PUT collections / demo1
         // {
         //     /*Multi line comment 
@@ -164,7 +167,7 @@ describe('parser', () => {
         expect(requests.reqBody).toEqual(null)
         //47
         // PUT collections/demo1
-        
+
         // {
         //     "vectors":
         //     {

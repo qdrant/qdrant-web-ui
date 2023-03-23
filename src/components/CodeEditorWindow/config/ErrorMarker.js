@@ -1,4 +1,4 @@
-const keywords=["POST", "GET", "PUT","DELETE" ,"HEAD" ,"collections"];
+const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD", "collections"];
 
 export var ErrorMarker = [];
 
@@ -19,11 +19,11 @@ if (err) {
 }
 export function errChecker(code) {
     const codeArray = code.split("\n");
-    ErrorMarker=[]
-    const codeStartIndex= getfirstline(codeArray);
+    ErrorMarker = []
+    const codeStartIndex = getfirstline(codeArray);
     for (var i = 0; i < codeStartIndex.length; ++i) {
-        const codeWordArray=codeArray[codeStartIndex[i]-1].split(" ");
-        if(keywords.indexOf(codeWordArray[0])<0){
+        const codeWordArray = codeArray[codeStartIndex[i] - 1].split(" ");
+        if (keywords.indexOf(codeWordArray[0]) < 0) {
             ErrorMarker.push({
                 startLineNumber: codeStartIndex[i], endLineNumber: codeStartIndex[i], startColumn: 0, endColumn: codeWordArray[0].length, message: "Expected one of GET/POST/PUT/DELETE/HEAD",
                 severity: "monaco.MarkerSeverity.Error",
@@ -43,10 +43,10 @@ function getfirstline(codeArray) {
         if (codeArray[i].includes("}")) {
             backetcount = backetcount - codeArray[i].match(/}/gi).length;
         }
-        if (codeArray[i].replace(/\s/g, '').length  &&backetcount===0&& !codeArray[i].includes("}") ) {
+        if (codeArray[i].replace(/\s/g, '').length && backetcount === 0 && !codeArray[i].includes("}")) {
             //checking does that only contains spaece or tabes
-            codeStartIndex.push(i+1);
+            codeStartIndex.push(i + 1);
         }
     }
-    return(codeStartIndex);
+    return (codeStartIndex);
 }

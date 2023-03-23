@@ -62,15 +62,15 @@ export function btnconfig(range, commandId) {
 export function HighlightText(location, code) {
     const blocksArray = GetCodeBlocks(code);
     for (var i = 0; i < blocksArray.length; ++i) {
-        if (blocksArray[i].blockStartLine <= location.lineNumber &&location.lineNumber<=blocksArray[i].blockEndLine) {
-            return [blocksArray[i].blockStartLine, blocksArray[i].blockEndLine, blocksArray[i].blockText] 
+        if (blocksArray[i].blockStartLine <= location.lineNumber && location.lineNumber <= blocksArray[i].blockEndLine) {
+            return [blocksArray[i].blockStartLine, blocksArray[i].blockEndLine, blocksArray[i].blockText]
         }
     }
-    return[0,0,""]
+    return [0, 0, ""]
 }
 
 export function GetCodeBlocks(codeText) {
-    const codeArray = codeText.replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,'').trim().split("\n");
+    const codeArray = codeText.replace(/\/\*[\s\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g, '').trim().split("\n");
     var blocksArray = [];
     var block = { blockText: "", blockStartLine: null, blockEndLine: null }
     var backetcount = 0;

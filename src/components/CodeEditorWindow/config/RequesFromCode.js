@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 export function RequestFromCode(text) {
-  const data= codeParse(text);
-  if (data.error) 
-  {
-  return data
+  const data = codeParse(text);
+  if (data.error) {
+    return data
   }
   else {
     //Sending request 
@@ -18,7 +17,7 @@ export function RequestFromCode(text) {
   }
 }
 
-export function codeParse(codeText){
+export function codeParse(codeText) {
   const codeArray = codeText.split("\n");
   const headerLine = codeArray[0];
   const body = codeArray[1];
@@ -31,11 +30,11 @@ export function codeParse(codeText){
     try {
       reqBody = body === "\n" ? {} : JSON.parse(body);
     } catch (e) {
-      return { method:null,endpoint:null,reqBody:null,error : "Fix the Position brackets to run & check the json" }
+      return { method: null, endpoint: null, reqBody: null, error: "Fix the Position brackets to run & check the json" }
     }
   }
-  if(method===""){
-    return { method:null,endpoint:null,reqBody:null,error : "Add headline or remove the line gap between json and headline (if any)" } 
+  if (method === "") {
+    return { method: null, endpoint: null, reqBody: null, error: "Add headline or remove the line gap between json and headline (if any)" }
   }
-  return {method:method,endpoint:endpoint,reqBody:reqBody,error:null}
+  return { method: method, endpoint: endpoint, reqBody: reqBody, error: null }
 }
