@@ -1,3 +1,5 @@
+import { GetCodeBlocks, HighlightText } from "./config/Rules";
+import { codeParse } from "./config/RequesFromCode";
 let testCode = `GET collections
 
 PUT collections/demo1
@@ -55,8 +57,6 @@ PUT collections/demo1
 
 `;
 
-import { GetCodeBlocks, HighlightText } from "./config/Rules";
-import { codeParse } from "./config/RequesFromCode";
 
 describe('parser', () => {
     it('Should extract query blocks from code', () => {
