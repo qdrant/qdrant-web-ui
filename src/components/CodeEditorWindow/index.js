@@ -7,6 +7,7 @@ import { ErrorMarker, errChecker } from "./config/ErrorMarker"
 import { RequestFromCode } from './config/RequesFromCode'
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
 import "./editor.css"
+import { Button, Box, Typography, TextField } from "@mui/material";
 
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
@@ -14,12 +15,16 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const monacoRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [saveNameText, setSaveNameText] = useState("");
+  const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
   var range = null;
 
+  code = localStorage.getItem("code") ? localStorage.getItem("code") : code;
   const handleEditorChange = (code) => {
     onChange("code", code);
     errChecker(code);
     monacoRef.current?.editor.setModelMarkers(editorRef.current?.getModel(), "owner", ErrorMarker);
+    localStorage.setItem("code", code);
   };
 
   function handleEditorDidMount(editor, monaco) {
@@ -83,10 +88,50 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     })
   }
 
+  function saveCode() {
+    if (saveNameText !== "") {
+      currentSavedCodes.push({ name: saveNameText, code: code, index: currentSavedCodes.length })
+      localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
+      setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+      setSaveNameText("");
+      return;
+    }
+
+    setHasError(true);
+    setErrorMessage("Name is required")
+    return;
+  }
   return (
     < >
       {hasError && <ErrorNotifier {...{ message: errorMessage, setHasError }} />}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
+      <TextField
+        placeholder="Name for save code"
+        variant="standard"
+        value={saveNameText}
+        onChange={(e) => {
+          setSaveNameText(e.target.value);
+        }}
+      />
+      <Button onClick={saveCode}>Save Code</Button>
+      <Box >
+        {currentSavedCodes.length === 0 &&
+          <Typography
+            variant="body1"
+            component="p"
+            textAlign="center"
+          >
+            No saved code
+          </Typography>
+        }
+        {currentSavedCodes.length > 0 &&
+          currentSavedCodes.map((currentSavedCode) => {
+            return (
+              <Button key={currentSavedCode.index} onClick={() => handleEditorChange(currentSavedCode.code)}> {currentSavedCode.name}</Button>
+            );
+          })
+        }
+      </Box>
       <Editor
         height="90vh"
         language={"custom-language"}
