@@ -1,4 +1,4 @@
-import { GetCodeBlocks, HighlightText } from "./config/Rules";
+import { GetCodeBlocks, selectBlock } from "./config/Rules";
 import { codeParse } from "./config/RequesFromCode";
 let testCode = `GET collections
 
@@ -67,24 +67,29 @@ describe('parser', () => {
         expect(requests[2].blockStartLine).toEqual(requests[2].blockEndLine);
         expect(requests[3].blockStartLine).toEqual(14);
     });
-    it('given an array of blocks and cursor line number: return selected block or nothing [0,0,""] , if cursor is outside', () => {
 
-        let requests = HighlightText({ lineNumber: 2 }, testCode);
-        expect(requests.length).toEqual(3);
-        expect(requests[1]).toEqual(0);
-        expect(requests[0]).toEqual(0);
+    it('given an array of blocks and cursor line number: return selected block or null , if cursor is outside', () => {
+        
+        let blocks = GetCodeBlocks(testCode);
 
-        requests = HighlightText({ lineNumber: 3 }, testCode);
-        expect(requests.length).toEqual(3);
-        expect(requests[1]).toEqual(10);
-        expect(requests[0]).toEqual(3);
+        let block = selectBlock(blocks, 2);
+        
+        expect(block).toBeNull();
 
-        requests = HighlightText({ lineNumber: 12 }, testCode);
-        expect(requests.length).toEqual(3);
-        expect(requests[1]).toEqual(12);
-        expect(requests[0]).toEqual(12);
+        block = selectBlock(blocks, 3);
+        expect(block).not.toEqual(null);
+        expect(block.blockEndLine).toEqual(10);
+        expect(block.blockStartLine).toEqual(3);
+
+        block = selectBlock(blocks, 12);
+        expect(block).not.toEqual(null);
+        expect(block.blockEndLine).toEqual(12);
+        expect(block.blockStartLine).toEqual(12);
     })
+
     it("given block text: convert it into request - url, body, get params", () => {
+        
+        let blocks = GetCodeBlocks(testCode);
 
         // PUT collections / demo1
         // {
@@ -94,24 +99,24 @@ describe('parser', () => {
         //             "distance": "Cosine"
         //     }
         // }
-        let range = HighlightText({ lineNumber: 3 }, testCode);
-        let requests = codeParse(range[2]);
+        let block = selectBlock(blocks, 3);
+        let requests = codeParse(block.blockText);
         expect(requests.method).toEqual("PUT");
         expect(requests.endpoint).toEqual("collections/demo1");
         expect(requests.error).toEqual(null);
         expect(requests.reqBody).toEqual({ "vectors": { "size": 1, "distance": "Cosine" } })
 
         // DELETE collections/demo1
-        range = HighlightText({ lineNumber: 14 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 14);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual("DELETE");
         expect(requests.endpoint).toEqual("collections/demo1");
         expect(requests.error).toEqual(null);
         expect(requests.reqBody).toEqual({})
 
         //GET collections//single line comment this will be removed
-        range = HighlightText({ lineNumber: 16 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 16);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual("GET");
         expect(requests.endpoint).toEqual("collections");
         expect(requests.error).toEqual(null);
@@ -128,8 +133,8 @@ describe('parser', () => {
         //             "distance": "Cosine"
         //     }
         // }
-        range = HighlightText({ lineNumber: 18 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 18);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual("PUT");
         expect(requests.endpoint).toEqual("collections/demo1");
         expect(requests.error).toEqual(null);
@@ -144,8 +149,8 @@ describe('parser', () => {
         //             "distance": "Cosine"
         //     }
         // }
-        range = HighlightText({ lineNumber: 29 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 29);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
         expect(requests.error).toEqual("Fix the Position brackets to run & check the json");
@@ -159,8 +164,8 @@ describe('parser', () => {
         //         "distance": "Cosine"
         //     }
         // }
-        range = HighlightText({ lineNumber: 38 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 38);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
         expect(requests.error).toEqual("Add headline or remove the line gap between json and headline (if any)");
@@ -175,8 +180,8 @@ describe('parser', () => {
         //         "distance": "Cosine"
         //     }
         // }
-        range = HighlightText({ lineNumber: 47 }, testCode);
-        requests = codeParse(range[2]);
+        block = selectBlock(blocks, 47);
+        requests = codeParse(block.blockText);
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
         expect(requests.error).toEqual("Add headline or remove the line gap between json and headline (if any)");

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
-import { Rules, options, HighlightText, btnconfig } from "./config/Rules"
+import { Rules, options, btnconfig, GetCodeBlocks, selectBlock } from "./config/Rules"
 import { Theme } from "./config/Theme"
 import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
@@ -14,7 +14,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const monacoRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  var range = null;
+  let runBtnCommandId = null;
 
   const handleEditorChange = (code) => {
     onChange("code", code);
@@ -23,7 +23,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   };
 
   function handleEditorDidMount(editor, monaco) {
-    var runBtn = null;
     editorRef.current = editor;
     monacoRef.current = monaco;
 
@@ -38,10 +37,10 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     // Defining Autocomplete
     monaco.languages.registerCompletionItemProvider('custom-language', Autocomplete);
 
-    const RunBtnControl = editor.addCommand(
+    runBtnCommandId = editor.addCommand(
       0,
-      async () => {
-        const data = range[2];
+      async (_ctx, ...args) => {
+        let data = args[0];
         if (data === "") {
           setHasError(true);
           setErrorMessage("No request selected. Select a request by placing the cursor inside it.")
@@ -59,26 +58,30 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       ""
     )
 
+    // Register Code Lens Provider (Run Button)
+    monaco.languages.registerCodeLensProvider("custom-language", btnconfig(runBtnCommandId));
+
     //Listen for Mouse Postion Change
     editor.onDidChangeCursorPosition(e => {
+      let currentCode = editor.getValue();
+      let currentBlocks = GetCodeBlocks(currentCode);
 
-      //for Highlighting range Format of result   Array :- [startindexofcode, endindexofcode ]
-      range = HighlightText(editor.getPosition(), editor.getValue())[0] ? HighlightText(editor.getPosition(), editor.getValue()) : range;
-      if (range) {
+      let selectedCodeBlock = selectBlock(currentBlocks, editor.getPosition().lineNumber);
+
+      if (selectedCodeBlock) {
+        let fromRange = selectedCodeBlock.blockStartLine;
+        let toRange = selectedCodeBlock.blockEndLine;
         // Make the decortion on the selected range 
-        decorations = editor.deltaDecorations([decorations[0]], [{
-          range: new monaco.Range(range[0], 0, range[1], 3),
-          options: {
-            className: 'grayDecorator',
-            glyphMarginClassName: "myGlyphMarginClass",
-            isWholeLine: true,
+        decorations = editor.deltaDecorations([decorations[0]], [
+          {
+            range: new monaco.Range(fromRange, 0, toRange, 3),
+            options: {
+              className: 'grayDecorator',
+              glyphMarginClassName: "myGlyphMarginClass",
+              isWholeLine: true,
+            }
           }
-        },]);
-
-        //Dipose the old button if any
-        runBtn?.dispose();
-        //Make a new btn for the selected range  
-        runBtn = monaco.languages.registerCodeLensProvider("custom-language", btnconfig(range, RunBtnControl));
+        ]);
       }
     })
   }
