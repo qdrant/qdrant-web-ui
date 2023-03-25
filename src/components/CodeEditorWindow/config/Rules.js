@@ -31,25 +31,31 @@ export const options = {
     glyphMargin: true,
 }
 
-export function btnconfig(range, commandId) {
+export function btnconfig(commandId) {
     return ({
         provideCodeLenses: function (model, token) {
-            return {
-                lenses: [
-                    {
-                        range: {
-                            startLineNumber: range[0],
-                            startColumn: 1,
-                            endLineNumber: range[0],
-                            endColumn: 1,
-                        },
-                        id: "RUN",
-                        command: {
-                            id: commandId,
-                            title: "RUN",
-                        },
+            let codeBlocks = GetCodeBlocks(model.getValue());
+            let lenses = [];
+
+            for (var i = 0; i < codeBlocks.length; ++i) {
+                lenses.push({
+                    range: {
+                        startLineNumber: codeBlocks[i].blockStartLine,
+                        startColumn: 1,
+                        endLineNumber: codeBlocks[i].blockStartLine,
+                        endColumn: 1,
                     },
-                ],
+                    id: "RUN",
+                    command: {
+                        id: commandId,
+                        title: "RUN",
+                        arguments: [codeBlocks[i].blockText],
+                    },
+                })
+            }
+
+            return {
+                lenses: lenses,
                 dispose: () => { },
             };
         },
@@ -59,14 +65,13 @@ export function btnconfig(range, commandId) {
     })
 }
 
-export function HighlightText(location, code) {
-    const blocksArray = GetCodeBlocks(code);
-    for (var i = 0; i < blocksArray.length; ++i) {
-        if (blocksArray[i].blockStartLine <= location.lineNumber && location.lineNumber <= blocksArray[i].blockEndLine) {
-            return [blocksArray[i].blockStartLine, blocksArray[i].blockEndLine, blocksArray[i].blockText]
+export function selectBlock(blocks, location) {
+    for (var i = 0; i < blocks.length; ++i) {
+        if (blocks[i].blockStartLine <= location && location <= blocks[i].blockEndLine) {
+            return blocks[i]
         }
     }
-    return [0, 0, ""]
+    return null
 }
 
 export function GetCodeBlocks(codeText) {
