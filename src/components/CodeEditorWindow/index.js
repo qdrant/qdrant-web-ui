@@ -8,6 +8,7 @@ import { RequestFromCode } from './config/RequesFromCode'
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
 import "./editor.css"
 
+
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
@@ -19,7 +20,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     onChange("code", code);
     errChecker(code);
     monacoRef.current?.editor.setModelMarkers(editorRef.current?.getModel(), "owner", ErrorMarker);
-    localStorage.setItem("code", code);
   };
 
   function handleEditorDidMount(editor, monaco) {
@@ -64,7 +64,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     //Listen for Mouse Postion Change
     editor.onDidChangeCursorPosition(e => {
       let currentCode = editor.getValue();
-
       let currentBlocks = GetCodeBlocks(currentCode);
 
       let selectedCodeBlock = selectBlock(currentBlocks, editor.getPosition().lineNumber);
