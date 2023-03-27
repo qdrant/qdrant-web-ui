@@ -20,7 +20,7 @@ const ResultEditorWindow = ({ code }) => {
 
   return (
       <Editor
-        height="90vh"
+        height="84vh"
         language="json"
         value={formatJSON(code)}
         options={{

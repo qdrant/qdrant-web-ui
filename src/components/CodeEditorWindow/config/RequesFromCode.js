@@ -12,8 +12,23 @@ export function RequestFromCode(text) {
       url: "/" + data.endpoint,
       data: data.reqBody
     })
-      .then((response) => response.data)
-      .catch((err) => err.response?.data?.status ? err.response?.data?.status : err)
+      .then((response) => {
+        var currentdate = new Date();
+        var datetime = currentdate.getDate() + "/"
+          + (currentdate.getMonth() + 1) + "/"
+          + currentdate.getFullYear() + " @ "
+          + currentdate.getHours() + ":"
+          + currentdate.getMinutes() + ":"
+          + currentdate.getSeconds();
+        const currentSavedCodes = localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []
+        currentSavedCodes.push({ name: `${data.method} ${data.endpoint}`, code: data, time: datetime })
+        localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
+        return response.data;
+      })
+      .catch((err) => {
+        return err.response?.data?.status ? err.response?.data?.status : err
+      })
+
   }
 }
 

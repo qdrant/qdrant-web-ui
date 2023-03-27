@@ -18,7 +18,7 @@ if (err) {
     });
 }
 export function errChecker(code) {
-    const codeArray = code.split("\n");
+   const codeArray = code.replace(/\/\*[\S]*?\*\/|(?<=[^:])\/\/.*|^\/\/.*/g,'').split("\n");
     ErrorMarker = []
     const codeStartIndex = getfirstline(codeArray);
     for (var i = 0; i < codeStartIndex.length; ++i) {

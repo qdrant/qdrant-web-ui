@@ -6,7 +6,6 @@ import { Autocomplete } from "./config/Autocomplete"
 import { ErrorMarker, errChecker } from "./config/ErrorMarker"
 import { RequestFromCode } from './config/RequesFromCode'
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
-import Menu from "./menu"
 import "./editor.css"
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
@@ -16,7 +15,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const [errorMessage, setErrorMessage] = useState("");
   let runBtnCommandId = null;
 
-  code = localStorage.getItem("code") ? localStorage.getItem("code") : code;
   const handleEditorChange = (code) => {
     onChange("code", code);
     errChecker(code);
@@ -66,6 +64,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     //Listen for Mouse Postion Change
     editor.onDidChangeCursorPosition(e => {
       let currentCode = editor.getValue();
+
       let currentBlocks = GetCodeBlocks(currentCode);
 
       let selectedCodeBlock = selectBlock(currentBlocks, editor.getPosition().lineNumber);
@@ -92,9 +91,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     < >
       {hasError && <ErrorNotifier {...{ message: errorMessage, setHasError }} />}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
-      <Menu handleEditorChange={handleEditorChange} code={code}/>
       <Editor
-        height="90vh"
+        height="84vh"
         language={"custom-language"}
         value={code}
         theme={"custom-language-theme"}
