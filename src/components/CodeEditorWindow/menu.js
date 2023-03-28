@@ -9,7 +9,7 @@ export default function Menu({ code, handleEditorChange }) {
   const [viewCode, setViewCode] = React.useState("//Selected Code");
 
   const toggleDrawer = (open) => (event) => {
-    setCurrentSavedCodes(JSON.parse(local
+    setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
     setState(open);
   };
 
