@@ -1,52 +1,37 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SwipeableDrawer, Button, Box, Stack, Typography, ButtonGroup } from '@mui/material'
 
 import Editor from "@monaco-editor/react";
 
-export default function Menu({ code, handleEditorChange }) {
-  const [state, setState] = React.useState(false);
-  const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
-  const [viewCode, setViewCode] = React.useState("//Selected Code");
 
-  const toggleDrawer = (open) => (event) => {
-    setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
-    setState(open);
-  };
+export function History({ state, setState, code, handleEditorChange, toggleDrawer, currentSavedCodes, setCurrentSavedCodes }) {
 
-  function deleteSavedCode(index) {
-    currentSavedCodes.splice(index, 1);
-    localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
-    setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
-    return;
-  }
-
-  function formatJSON(val = {}) {
-    if (val && Object.keys(val).length !== 0) {
-      try {
-        return JSON.stringify(val, null, 2)
-      } catch {
-        const errorJson = {
-          "error": `HERE ${val}`
+    const [viewCode, setViewCode] = React.useState("//Selected Code");
+  
+    function deleteSavedCode(index) {
+      currentSavedCodes.splice(index, 1);
+      localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
+      setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+      return;
+    }
+  
+    function formatJSON(val = {}) {
+      if (val && Object.keys(val).length !== 0) {
+        try {
+          return JSON.stringify(val, null, 2)
+        } catch {
+          const errorJson = {
+            "error": `HERE ${val}`
+          }
+          return JSON.stringify(errorJson, null, 2)
         }
-        return JSON.stringify(errorJson, null, 2)
+      }
+      else {
+        return ""
       }
     }
-    else {
-      return ""
-    }
-  }
-  return (
-      <React.Fragment key={"History mode"}>
-<Stack 
-          spacing={2}
-          direction="row"
-          sx={{ 
-            pl: 5,
-            mb: 1,
-            borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-          }}>
-          <Button onClick={toggleDrawer(true)}>History</Button>
-        </Stack>
+    return (
+      <React.Fragment key={"History"}>
         <SwipeableDrawer
           anchor="top"
           open={state}
@@ -63,7 +48,7 @@ export default function Menu({ code, handleEditorChange }) {
             <Box
               sx={{
                 width: "50%",
-                height: "100vh",
+                height: "50vh",
                 overflow: "hidden",
                 overflowY: "scroll",
               }}>
@@ -117,16 +102,16 @@ export default function Menu({ code, handleEditorChange }) {
                   })
                 }
               </Stack>
-
+  
             </Box>
             <Box
               sx={{
                 width: "50%",
-                height: "100%",           
+                height: "100%",
               }}
               m={2}>
               <Editor
-                height="84vh"
+                height="34vh"
                 value={(viewCode)}
                 options={{
                   scrollBeyondLastLine: false,
@@ -138,7 +123,7 @@ export default function Menu({ code, handleEditorChange }) {
                   mouseWheelZoom: true,
                 }}
               />
-
+  
               <Stack direction="row" spacing={2}>
                 <Button
                   key={"apply"}
@@ -157,12 +142,13 @@ export default function Menu({ code, handleEditorChange }) {
                   color="error"
                   onClick={() => setState(false)}
                 >
-                  close
+                  Close
                 </Button>
               </Stack>
             </Box>
           </Box>
         </SwipeableDrawer>
+  
       </React.Fragment>
-  );
-}
+    );
+  }

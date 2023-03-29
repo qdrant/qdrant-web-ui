@@ -91,7 +91,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       {hasError && <ErrorNotifier {...{ message: errorMessage, setHasError }} />}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
       <Editor
-        height="84vh"
+        height="82vh"
         language={"custom-language"}
         value={code}
         theme={"custom-language-theme"}

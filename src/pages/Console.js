@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import { Box } from "@mui/system";
-import Menu from "../components/CodeEditorWindow/menu"
+import Menu from "../components/CodeEditorWindow/Menu"
 
 const query =
   `GET collections
