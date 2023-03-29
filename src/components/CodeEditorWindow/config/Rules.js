@@ -15,7 +15,7 @@ export const Rules = {
 
             [/".*?"/, 'string'],
 
-            [/\/\//, 'comment'],
+            [/\/\/.*/, 'comment'],
         ]
     }
 }

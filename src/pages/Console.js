@@ -7,11 +7,12 @@ import Menu from "../components/CodeEditorWindow/menu"
 const query =
   `GET collections
 
+// Create a collection
 PUT collections/demo1
 {
     "vectors": 
     {
-        "size": 1,
+        "size": 1, // Small vectors
         "distance": "Cosine"
     }
 }
