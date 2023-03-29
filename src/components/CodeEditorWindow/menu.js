@@ -37,7 +37,16 @@ export default function Menu({ code, handleEditorChange }) {
   }
   return (
       <React.Fragment key={"History mode"}>
-        <Button onClick={toggleDrawer(true)}>History mode</Button>
+<Stack 
+          spacing={2}
+          direction="row"
+          sx={{ 
+            pl: 5,
+            mb: 1,
+            borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          }}>
+          <Button onClick={toggleDrawer(true)}>History</Button>
+        </Stack>
         <SwipeableDrawer
           anchor="top"
           open={state}
