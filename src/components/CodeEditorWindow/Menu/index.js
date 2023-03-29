@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {  Button, Stack } from '@mui/material'
 import { History } from './history';
 
 export default function Menu({ code, handleEditorChange }) {
   const [state, setState] = React.useState(false);
-  const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
-
-  const toggleDrawer = (open) => (event) => {
-    setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
+  
+  const toggleDrawer = (open) => () => {
     setState(open);
   };
 
@@ -25,12 +23,9 @@ export default function Menu({ code, handleEditorChange }) {
       </Stack>
       <History
         state={state}
-        setState={setState}
         code={code}
         handleEditorChange={handleEditorChange}
         toggleDrawer={toggleDrawer}
-        currentSavedCodes={currentSavedCodes}
-        setCurrentSavedCodes={setCurrentSavedCodes}
       />
     </React.Fragment>
   );
