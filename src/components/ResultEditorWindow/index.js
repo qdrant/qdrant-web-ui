@@ -1,5 +1,4 @@
 import React from "react";
-
 import Editor from "@monaco-editor/react";
 
 
@@ -17,11 +16,11 @@ const ResultEditorWindow = ({ code }) => {
       return JSON.stringify(errorJson, null, 2)
     }
   }
-
   return (
       <Editor
         height="90vh"
         language="json"
+        theme={"custom-language-theme"}
         value={formatJSON(code)}
         options={{
           scrollBeyondLastLine: false,
@@ -29,7 +28,7 @@ const ResultEditorWindow = ({ code }) => {
           wordWrap: "on" ,
           minimap: { enabled: false },
           automaticLayout: true,
-          readOnly: false,
+          readOnly: true,
           mouseWheelZoom:true,
         }}
       />
