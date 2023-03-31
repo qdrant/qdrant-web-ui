@@ -6,6 +6,7 @@ export const Theme = {
         { token: 'string.value', foreground: '#0451A5' },
         { token: 'number', foreground: '#098658' },
         { token: 'comment', foreground: '#DC244C'},
+        { token: 'variable', foreground: '#AA6767'},
     ],
     colors: {
 		"editor.foreground": "#000000",
