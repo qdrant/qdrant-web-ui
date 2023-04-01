@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import Editor from "@monaco-editor/react";
 import PropTypes from "prop-types";
 
@@ -45,8 +44,9 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
     {
       field: "endpoint",
       headerName: 'Endpoint',
-      width: 250,
+      minWidth: 100,
       valueGetter: (params) => params.row.code.endpoint,
+      flex: 1,
     },
     {
       field: "time",
@@ -61,14 +61,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       valueGetter: (params) => params.row.date,
     },
     {
-      field: "view",
-      headerName: "View",
-      width: 100,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => veiwIcon(params.row.code)
-    },
-    {
       field: "delete",
       headerName: "Delete",
       width: 100,
@@ -79,20 +71,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
 
 
   ];
-
-  function veiwIcon(code) {
-    return (
-      <Button
-        color="success"
-        onClick={
-          () => {
-            setViewCode(`${code.method} ${code.endpoint} \n${formatJSON(code.reqBody)} \n`)
-          }}
-      >
-        <RemoveRedEyeIcon />
-      </Button>
-    );
-  }
   function deleteIcon(data) {
     return (
       <Button
@@ -130,7 +108,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           <Box
             sx={{
               width: "60%",
-              height: "80vh",
+              height: "100%",
               overflow: "hidden",
               overflowY: "scroll",
             }}>
@@ -156,7 +134,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
               m={2}
             >
               {currentSavedCodes.length > 0 &&
-                <div style={{ height: 400, width: '100%' }}>
+                <div style={{ height: "60vh" , width: '100%' }}>
                   <DataGrid
                        sx={{
                         "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
@@ -178,6 +156,9 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                     pageSizeOptions={[5, 10, 15]}
                     rowsPerPageOptions={[5, 10]}
                     getRowId={(row) => `${row.time} ${row.date}`}
+                    onRowClick={(params) => {
+                      setViewCode(`${params.row.code.method} ${params.row.code.endpoint} \n${formatJSON(params.row.code.reqBody)} \n`)
+                    }}
                   />
                 </div>
               }
@@ -191,7 +172,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
             }}
             m={2}>
             <Editor
-              height="64vh"
+              height="65vh"
               value={(viewCode)}
               options={{
                 scrollBeyondLastLine: false,
