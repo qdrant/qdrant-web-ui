@@ -1,5 +1,5 @@
 
-const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD", "collections"];
+const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 export const Autocomplete = {
     provideCompletionItems: (model, position) => {
         const suggestions
