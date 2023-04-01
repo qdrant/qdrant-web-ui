@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
+import PropTypes from "prop-types";
 
 const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
+Alert.displayName = 'Alert';
+
 function SlideTransition(props) {
   return <Slide {...props} direction="down" />;
 }
   
-export default function ErrorNotifier({ message, setHasError }) {
+function ErrorNotifier({ message, setHasError }) {
   const [open, setOpen] = useState(true);
 
   const handleClose = (event, reason) => {
@@ -34,3 +37,12 @@ export default function ErrorNotifier({ message, setHasError }) {
     </>
   );
 }
+
+ErrorNotifier.propTypes = {
+  
+    message: PropTypes.string,
+    setHasError: PropTypes.func
+};
+
+
+export default ErrorNotifier;
