@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Logo } from "../components/Logo";
 import { Stack } from '@mui/material';
-import Dataset from "@mui/icons-material/Dataset";
+import {Dataset, Apps} from "@mui/icons-material";
 
 
 const drawerWidth = 240;
@@ -43,6 +43,12 @@ export default function Sidebar({ open }) {
                 <Dataset />
               </ListItemIcon>
               <ListItemText primary={"Console"} />
+            </ListItemButton>
+            <ListItemButton key={"Collections"} component={Link} to='/collections'>
+              <ListItemIcon>
+                <Apps />
+              </ListItemIcon>
+              <ListItemText primary={"Collections"} />
             </ListItemButton>
           </List>
         </Drawer>

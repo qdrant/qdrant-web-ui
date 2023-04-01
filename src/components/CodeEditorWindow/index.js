@@ -95,7 +95,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         height="90vh"
         language={"custom-language"}
         value={code}
-        theme={"custom-language-theme"}
+        // theme={"custom-language-theme"}
         defaultValue="//input"
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
