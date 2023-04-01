@@ -1,6 +1,8 @@
-import React, { useEffect ,useState } from 'react';
-import { SwipeableDrawer, Button, Box, Stack, Typography, ButtonGroup } from '@mui/material'
-
+import React, { useEffect, useState } from 'react';
+import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material'
+import { DataGrid } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import Editor from "@monaco-editor/react";
 
 
@@ -9,13 +11,6 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState("//Selected Code");
   const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
 
-
-  function deleteSavedCode(index) {
-    currentSavedCodes.splice(index, 1);
-    localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
-    setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
-    return;
-  }
 
   useEffect(() => {
     setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
@@ -37,6 +32,84 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
     }
   }
 
+  const columns = [
+
+    {
+      field: "method",
+      headerName: 'Method',
+      width: 100,
+      valueGetter: (params) => params.row.code.method,
+    },
+    {
+      field: "endpoint",
+      headerName: 'Endpoint',
+      width: 250,
+      valueGetter: (params) => params.row.code.endpoint,
+    },
+    {
+      field: "time",
+      headerName: 'Time',
+      width: 90,
+      valueGetter: (params) => params.row.time,
+    },
+    {
+      field: "date",
+      headerName: 'Date',
+      width: 100,
+      valueGetter: (params) => params.row.date,
+    },
+    {
+      field: "view",
+      headerName: "View",
+      width: 100,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => veiwIcon(params.row.code)
+    },
+    {
+      field: "delete",
+      headerName: "Delete",
+      width: 100,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => deleteIcon(params.row)
+    },
+
+
+  ];
+
+  function veiwIcon(code) {
+    return (
+      <Button
+        color="success"
+        onClick={
+          () => {
+            setViewCode(`${code.method} ${code.endpoint} \n${formatJSON(code.reqBody)} \n`)
+          }}
+      >
+        <RemoveRedEyeIcon />
+      </Button>
+    );
+  }
+  function deleteIcon(data) {
+    return (
+      <Button
+        color="error"
+        onClick={
+          () => {
+            const index=currentSavedCodes.indexOf(data)
+            const updateCode =[...currentSavedCodes]
+            updateCode.splice(index, 1);
+            console.log(updateCode)
+            localStorage.setItem("currentSavedCodes", JSON.stringify(updateCode));
+            setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+            return;
+          }}
+      >
+        <DeleteIcon />
+      </Button>
+    );
+  }
   return (
     <React.Fragment key={"History"}>
       <SwipeableDrawer
@@ -54,8 +127,8 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
         >
           <Box
             sx={{
-              width: "50%",
-              height: "50vh",
+              width: "60%",
+              height: "80vh",
               overflow: "hidden",
               overflowY: "scroll",
             }}>
@@ -77,48 +150,38 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
               direction="column"
               justifyContent="center"
               alignItems="stretch"
-              spacing={3}
+              spacing={2}
               m={2}
             >
               {currentSavedCodes.length > 0 &&
-                currentSavedCodes.map((currentSavedCode, i) => {
-                  return (
-                    <ButtonGroup key={i} variant="outlined" aria-label="outlined button group">
-                      <Button
-                        variant="outlined"
-                        color="success"
-                        onClick={
-                          () => {
-                            setViewCode(`${currentSavedCode.code.method} ${currentSavedCode.code.endpoint} \n${formatJSON(currentSavedCode.code.reqBody)} \n`)
-                          }}
-                      >
-                        {currentSavedCode.name}  {currentSavedCode.time}
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={
-                          () => {
-                            deleteSavedCode(i)
-                          }}
-                      >
-                        DELETE
-                      </Button>
-                    </ButtonGroup>
-                  );
-                })
+                <div style={{ height: 400, width: '100%' }}>
+                  <DataGrid
+                    rows={currentSavedCodes}
+                    columns={columns}
+                    initialState={{
+                      pagination: {
+                        paginationModel: {
+                          pageSize: 5,
+                        },
+                      },
+                    }}
+                    pageSizeOptions={[5,10,15]}
+                    rowsPerPageOptions={[5, 10]}
+                    getRowId={(row) => `${row.time} ${row.date}`}
+                  />
+                </div>
               }
             </Stack>
 
           </Box>
           <Box
             sx={{
-              width: "50%",
+              width: "40%",
               height: "100%",
             }}
             m={2}>
             <Editor
-              height="34vh"
+              height="64vh"
               value={(viewCode)}
               options={{
                 scrollBeyondLastLine: false,
