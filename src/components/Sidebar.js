@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { Link } from 'react-router-dom';
 import { Divider, Drawer, Grid, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
