@@ -1,7 +1,6 @@
 const Method = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 
 export const Rules = {
-    base: 'json',
     Method,
     tokenizer: {
         root: [

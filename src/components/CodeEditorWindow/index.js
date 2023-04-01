@@ -25,18 +25,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
-    monacoRef.current = monaco;
-
-
     var decorations = [];
-    // Register Custom Language
-    monaco.languages.register({ id: 'custom-language' })
-    // Definining Rules 
-    monaco.languages.setMonarchTokensProvider('custom-language', Rules);
-    // Definining Theme
-    monaco.editor.defineTheme('custom-language-theme', Theme);
-    // Defining Autocomplete
-    monaco.languages.registerCompletionItemProvider('custom-language', Autocomplete);
 
     runBtnCommandId = editor.addCommand(
       0,
@@ -86,6 +75,17 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       }
     })
   }
+  function  handleEditorWillMount( monaco) {
+    monacoRef.current = monaco;
+    // Register Custom Language
+    monaco.languages.register({ id: 'custom-language' })
+    // Definining Rules 
+    monaco.languages.setMonarchTokensProvider('custom-language', Rules);
+    // Definining Theme
+    monaco.editor.defineTheme('custom-language-theme', Theme);
+    // Defining Autocomplete
+    monaco.languages.registerCompletionItemProvider('custom-language', Autocomplete); 
+  }
 
   return (
     < >
@@ -99,6 +99,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         defaultValue="//input"
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
+        beforeMount={handleEditorWillMount}
         formatOnPaste={true}
         autoIndent={true}
         formatOnType={true}
