@@ -134,7 +134,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
               m={2}
             >
               {currentSavedCodes.length > 0 &&
-                <div style={{ height: "60vh" , width: '100%' }}>
+                <div style={{ height: "375px" , width: '100%' }}>
                   <DataGrid
                        sx={{
                         "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
@@ -172,7 +172,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
             }}
             m={2}>
             <Editor
-              height="65vh"
+              height="400px"
               value={(viewCode)}
               options={{
                 scrollBeyondLastLine: false,
