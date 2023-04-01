@@ -4,9 +4,11 @@ import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import Editor from "@monaco-editor/react";
+import PropTypes from "prop-types";
 
 
-export function History({ state, code, handleEditorChange, toggleDrawer }) {
+
+function History({ state, code, handleEditorChange, toggleDrawer }) {
 
   const [viewCode, setViewCode] = React.useState("//Selected Code");
   const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
@@ -97,8 +99,8 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
         color="error"
         onClick={
           () => {
-            const index=currentSavedCodes.indexOf(data)
-            const updateCode =[...currentSavedCodes]
+            const index = currentSavedCodes.indexOf(data)
+            const updateCode = [...currentSavedCodes]
             updateCode.splice(index, 1);
             console.log(updateCode)
             localStorage.setItem("currentSavedCodes", JSON.stringify(updateCode));
@@ -156,6 +158,14 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
               {currentSavedCodes.length > 0 &&
                 <div style={{ height: 400, width: '100%' }}>
                   <DataGrid
+                       sx={{
+                        "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                           outline: "none !important",
+                        },
+                        "&.MuiDataGrid-root .Mui-selected": {
+                          backgroundColor: "rgba(76, 175, 80, 0.5) !important"
+                       },
+                     }}
                     rows={currentSavedCodes}
                     columns={columns}
                     initialState={{
@@ -165,7 +175,7 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
                         },
                       },
                     }}
-                    pageSizeOptions={[5,10,15]}
+                    pageSizeOptions={[5, 10, 15]}
                     rowsPerPageOptions={[5, 10]}
                     getRowId={(row) => `${row.time} ${row.date}`}
                   />
@@ -222,3 +232,11 @@ export function History({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
+History.propTypes = {
+  state: PropTypes.bool,
+  toggleDrawer: PropTypes.func,
+  handleEditorChange: PropTypes.func,
+  code: PropTypes.string,
+}
+
+export default History;

@@ -1,8 +1,10 @@
 import React from 'react';
 import {  Button, Stack } from '@mui/material'
-import { History } from './history';
+import  History  from './history';
+import PropTypes from "prop-types";
 
-export default function Menu({ code, handleEditorChange }) {
+
+function Menu({ code, handleEditorChange }) {
   const [state, setState] = React.useState(false);
   
   const toggleDrawer = (open) => () => {
@@ -30,3 +32,10 @@ export default function Menu({ code, handleEditorChange }) {
     </React.Fragment>
   );
 }
+Menu.propTypes = {
+  code: PropTypes.string,
+  handleEditorChange: PropTypes.func
+};
+
+
+export default Menu;
