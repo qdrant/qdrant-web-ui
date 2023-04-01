@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { Rules, options, btnconfig, GetCodeBlocks, selectBlock } from "./config/Rules"
