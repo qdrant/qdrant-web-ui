@@ -175,7 +175,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                         }}
                         m={2}>
                         <Editor
-                            height="400px"
+                            height="475px"
                             value={(viewCode)}
                             options={{
                                 scrollBeyondLastLine: false,
