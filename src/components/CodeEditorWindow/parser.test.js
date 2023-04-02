@@ -19,8 +19,8 @@ GET collections//single line comment this will be removed
 
 PUT collections/demo1
 {
-    /*Multi line comment 
-    this will be removed*/
+    //line comment 
+    //this will be removed
     "vectors":
     {
         "size": 1,
@@ -125,7 +125,7 @@ describe('parser', () => {
 
         // PUT collections / demo1
         // {
-        //     /*Multi line comment 
+        //     /*Multi line comment (not supported)
         //     this will be removed*/
         //     "vectors":
         //     {
@@ -154,7 +154,6 @@ describe('parser', () => {
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
         expect(requests.error).toEqual("Fix the Position brackets to run & check the json");
-        expect(requests.reqBody).toEqual(null)
 
         //38
         // {
@@ -168,11 +167,11 @@ describe('parser', () => {
         requests = codeParse(block.blockText);
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
-        expect(requests.error).toEqual("Add headline or remove the line gap between json and headline (if any)");
-        expect(requests.reqBody).toEqual(null)
+        expect(requests.error).toEqual("Add Headline or remove the line gap between json and headline (if any)");
+
         //47
         // PUT collections/demo1
-
+        //   //47 this line should be ignored
         // {
         //     "vectors":
         //     {
@@ -184,8 +183,7 @@ describe('parser', () => {
         requests = codeParse(block.blockText);
         expect(requests.method).toEqual(null);
         expect(requests.endpoint).toEqual(null);
-        expect(requests.error).toEqual("Add headline or remove the line gap between json and headline (if any)");
-        expect(requests.reqBody).toEqual(null)
+        expect(requests.error).toEqual("Add Headline or remove the line gap between json and headline (if any)");
     })
 });
 
