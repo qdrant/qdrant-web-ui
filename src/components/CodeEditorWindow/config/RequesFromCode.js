@@ -1,15 +1,5 @@
 import axios from 'axios';
 
-// For todays date;
-Date.prototype.today = function () { 
-  return ((this.getDate() < 10)?"0":"") + this.getDate() +"/"+(((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) +"/"+ this.getFullYear();
-}
-
-// For the time now
-Date.prototype.timeNow = function () {
-   return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
-}
-
 export function RequestFromCode(text) {
   const data = codeParse(text);
   if (data.error) {
@@ -24,7 +14,7 @@ export function RequestFromCode(text) {
     })
       .then((response) => {
         const currentSavedCodes = localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []
-        currentSavedCodes.push({code: data, time: new Date().timeNow(), date:  new Date().today()})
+        currentSavedCodes.push({ code: data, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() })
         localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
         return response.data;
       })
@@ -60,7 +50,7 @@ export function codeParse(codeText) {
   else if (endpoint === "") {
     return { method: method, endpoint: null, reqBody: reqBody, error: "Add endpoint" }
   }
-  else{
-  return { method: method, endpoint: endpoint, reqBody: reqBody, error: null }
+  else {
+    return { method: method, endpoint: endpoint, reqBody: reqBody, error: null }
   }
 }

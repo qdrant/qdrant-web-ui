@@ -51,7 +51,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
     {
       field: "time",
       headerName: 'Time',
-      width: 90,
+      width: 100,
       valueGetter: (params) => params.row.time,
     },
     {
