@@ -1,14 +1,18 @@
 import React from 'react';
-import {  Button, Stack } from '@mui/material'
-import  History  from './history';
+import { Button, Stack } from '@mui/material'
+import History from './history';
 import PropTypes from "prop-types";
+import SavedCode from './savedCode';
 
 
 function Menu({ code, handleEditorChange }) {
-  const [state, setState] = React.useState(false);
-  
-  const toggleDrawer = (open) => () => {
-    setState(open);
+  const [state, setState] = React.useState({
+    history: false,
+    savedCode: false,
+  });
+
+  const toggleDrawer = (name, open) => () => {
+    setState({ ...state, [name]: open });
   };
 
   return (
@@ -21,10 +25,17 @@ function Menu({ code, handleEditorChange }) {
           mb: 1,
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}>
-        <Button onClick={toggleDrawer(true)}>History</Button>
+        <Button onClick={toggleDrawer("history", true)}>History</Button>
+        <Button onClick={toggleDrawer("savedCode", true)}>Saved Code</Button>
       </Stack>
       <History
-        state={state}
+        state={state.history}
+        code={code}
+        handleEditorChange={handleEditorChange}
+        toggleDrawer={toggleDrawer}
+      />
+      <SavedCode
+        state={state.savedCode}
         code={code}
         handleEditorChange={handleEditorChange}
         toggleDrawer={toggleDrawer}

@@ -10,11 +10,11 @@ import PropTypes from "prop-types";
 function History({ state, code, handleEditorChange, toggleDrawer }) {
 
   const [viewCode, setViewCode] = React.useState("//Selected Code");
-  const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
+  const [history, setHistory] = useState(localStorage.getItem("history") ? JSON.parse(localStorage.getItem("history")) : []);
 
 
   useEffect(() => {
-    setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
+    setHistory(localStorage.getItem("history") ? JSON.parse(localStorage.getItem("history")) : []);
   }, [state])
 
   function formatJSON(val = {}) {
@@ -77,11 +77,11 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
         color="error"
         onClick={
           () => {
-            const index = currentSavedCodes.indexOf(data)
-            const updateCode = [...currentSavedCodes]
+            const index = history.indexOf(data)
+            const updateCode = [...history]
             updateCode.splice(index, 1);
-            localStorage.setItem("currentSavedCodes", JSON.stringify(updateCode));
-            setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+            localStorage.setItem("history", JSON.stringify(updateCode));
+            setHistory(JSON.parse(localStorage.getItem("history")))
             return;
           }}
       >
@@ -94,8 +94,8 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       <SwipeableDrawer
         anchor="top"
         open={state}
-        onClose={toggleDrawer(false)}
-        onOpen={toggleDrawer(true)}
+        onClose={toggleDrawer("history", false)}
+        onOpen={toggleDrawer("history", true)}
       >
         <Box
           sx={{
@@ -116,7 +116,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 History Mode
               </Typography>
             </Stack>
-            {currentSavedCodes.length === 0 &&
+            {history.length === 0 &&
               (
                 <Stack direction="row" spacing={2} >
                   <Typography variant="h6" m={2} gutterBottom>
@@ -132,19 +132,19 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
               spacing={2}
               m={2}
             >
-              {currentSavedCodes.length > 0 &&
-                <div style={{ height: "375px" , width: '100%' }}>
+              {history.length > 0 &&
+                <div style={{ height: "375px", width: '100%' }}>
                   <DataGrid
-                       sx={{
-                        "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                           outline: "none !important",
-                        },
-                        "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
-                        {
-                          outline: "none !important",
-                        },
-                     }}
-                    rows={currentSavedCodes}
+                    sx={{
+                      "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
+                        outline: "none !important",
+                      },
+                      "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
+                      {
+                        outline: "none !important",
+                      },
+                    }}
+                    rows={history}
                     columns={columns}
                     initialState={{
                       pagination: {
@@ -193,7 +193,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 onClick={
                   () => {
                     handleEditorChange("code", `${viewCode} \n${code}`)
-                    toggleDrawer(false)();
+                    toggleDrawer("history", false)();
                   }}>
                 Apply Code
               </Button>
@@ -201,7 +201,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={toggleDrawer(false)}
+                onClick={toggleDrawer("history", false)}
               >
                 Close
               </Button>
