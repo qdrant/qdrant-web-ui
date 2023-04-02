@@ -80,7 +80,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
             const index = currentSavedCodes.indexOf(data)
             const updateCode = [...currentSavedCodes]
             updateCode.splice(index, 1);
-            console.log(updateCode)
             localStorage.setItem("currentSavedCodes", JSON.stringify(updateCode));
             setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
             return;
@@ -140,9 +139,10 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                         "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
                            outline: "none !important",
                         },
-                        "&.MuiDataGrid-root .Mui-selected": {
-                          backgroundColor: "rgba(76, 175, 80, 0.5) !important"
-                       },
+                        "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
+                        {
+                          outline: "none !important",
+                        },
                      }}
                     rows={currentSavedCodes}
                     columns={columns}
