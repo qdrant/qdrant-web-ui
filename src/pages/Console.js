@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import { Box } from "@mui/system";
-
+import Menu from "../components/CodeEditorWindow/Menu"
 
 const query =
   `GET collections
@@ -64,6 +64,8 @@ function Console() {
 
 
   return (
+    <>
+    <Menu  code={code} handleEditorChange={onChangeCode}/>
     <Box
       sx={{
         width: "100%",
@@ -92,7 +94,7 @@ function Console() {
         />
       </Box>
     </Box>
-
+    </>
   );
 }
 
