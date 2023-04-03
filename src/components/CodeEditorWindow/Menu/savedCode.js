@@ -11,19 +11,19 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
 
     const [viewCode, setViewCode] = React.useState(`//Current Editor Code: \n${code}`);
     const [saveNameText, setSaveNameText] = useState("");
-    const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
+    const [savedCodes, setSavedCodes] = useState(localStorage.getItem("savedCodes") ? JSON.parse(localStorage.getItem("savedCodes")) : []);
 
 
     useEffect(() => {
-        setCurrentSavedCodes(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
+        setSavedCodes(localStorage.getItem("savedCodes") ? JSON.parse(localStorage.getItem("savedCodes")) : []);
         setViewCode(`//Current Editor Code: \n${code}`);
     }, [state])
 
     function saveCode() {
         if (saveNameText !== "") {
-            const data = [...currentSavedCodes, { name: saveNameText, code: code, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() }]
-            localStorage.setItem("currentSavedCodes", JSON.stringify(data));
-            setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+            const data = [...savedCodes, { name: saveNameText, code: code, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() }]
+            localStorage.setItem("savedCodes", JSON.stringify(data));
+            setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")))
             setSaveNameText("");
             return;
         }
@@ -66,11 +66,11 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 color="error"
                 onClick={
                     () => {
-                        const index = currentSavedCodes.indexOf(data)
-                        const updateCode = [...currentSavedCodes]
+                        const index = savedCodes.indexOf(data)
+                        const updateCode = [...savedCodes]
                         updateCode.splice(index, 1);
-                        localStorage.setItem("currentSavedCodes", JSON.stringify(updateCode));
-                        setCurrentSavedCodes(JSON.parse(localStorage.getItem("currentSavedCodes")))
+                        localStorage.setItem("savedCodes", JSON.stringify(updateCode));
+                        setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")))
                         return;
                     }}
             >
@@ -117,7 +117,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                                 <Button onClick={saveCode}>Save</Button>
                             </Typography>
                         </Stack>
-                        {currentSavedCodes.length === 0 &&
+                        {savedCodes.length === 0 &&
                             (
                                 <Stack direction="row" spacing={2} >
                                     <Typography variant="h6" m={2} gutterBottom>
@@ -133,7 +133,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                             spacing={2}
                             m={2}
                         >
-                            {currentSavedCodes.length > 0 &&
+                            {savedCodes.length > 0 &&
                                 <div style={{ height: "375px", width: '100%' }}>
                                     <DataGrid
                                         sx={{
@@ -145,7 +145,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                                                 outline: "none !important",
                                             },
                                         }}
-                                        rows={currentSavedCodes}
+                                        rows={savedCodes}
                                         columns={columns}
                                         initialState={{
                                             pagination: {
