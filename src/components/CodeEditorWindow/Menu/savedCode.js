@@ -10,7 +10,6 @@ import PropTypes from "prop-types";
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
 
     const [viewCode, setViewCode] = React.useState(`//Current Editor Code: \n${code}`);
-    console.log(code);
     const [saveNameText, setSaveNameText] = useState("");
     const [currentSavedCodes, setCurrentSavedCodes] = useState(localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []);
 
@@ -106,10 +105,9 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                         </Typography>
                         <Stack direction="row" spacing={2}>
 
-                            <Typography variant="h6" m={2} gutterBottom>
-                                Name Code :
+                            <Typography m={2} gutterBottom>
                                 <TextField
-                                    placeholder=" Required"
+                                    placeholder=" Name (Required)*"
                                     variant="standard"
                                     value={saveNameText}
                                     onChange={(e) => {
