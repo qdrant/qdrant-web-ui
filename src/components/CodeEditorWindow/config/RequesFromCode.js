@@ -12,8 +12,16 @@ export function RequestFromCode(text) {
       url: "/" + data.endpoint,
       data: data.reqBody
     })
-      .then((response) => response.data)
-      .catch((err) => err.response?.data?.status ? err.response?.data?.status : err)
+      .then((response) => {
+        const currentSavedCodes = localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []
+        currentSavedCodes.push({ code: data, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() })
+        localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
+        return response.data;
+      })
+      .catch((err) => {
+        return err.response?.data?.status ? err.response?.data?.status : err
+      })
+
   }
 }
 
@@ -30,11 +38,19 @@ export function codeParse(codeText) {
     try {
       reqBody = body === "\n" ? {} : JSON.parse(body);
     } catch (e) {
-      return { method: null, endpoint: null, reqBody: null, error: "Fix the Position brackets to run & check the json" }
+      return { method: null, endpoint: null, reqBody: body, error: "Fix the Position brackets to run & check the json" }
     }
   }
-  if (method === "") {
-    return { method: null, endpoint: null, reqBody: null, error: "Add headline or remove the line gap between json and headline (if any)" }
+  if (method === "" && endpoint === "") {
+    return { method: null, endpoint: null, reqBody: reqBody, error: "Add Headline or remove the line gap between json and headline (if any)" }
   }
-  return { method: method, endpoint: endpoint, reqBody: reqBody, error: null }
+  else if (method === "") {
+    return { method: null, endpoint: endpoint, reqBody: reqBody, error: "Add method" }
+  }
+  else if (endpoint === "") {
+    return { method: method, endpoint: null, reqBody: reqBody, error: "Add endpoint" }
+  }
+  else {
+    return { method: method, endpoint: endpoint, reqBody: reqBody, error: null }
+  }
 }
