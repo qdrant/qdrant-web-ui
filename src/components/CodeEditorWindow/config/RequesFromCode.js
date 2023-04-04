@@ -13,9 +13,9 @@ export function RequestFromCode(text) {
       data: data.reqBody
     })
       .then((response) => {
-        const currentSavedCodes = localStorage.getItem("currentSavedCodes") ? JSON.parse(localStorage.getItem("currentSavedCodes")) : []
-        currentSavedCodes.push({ code: data, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() })
-        localStorage.setItem("currentSavedCodes", JSON.stringify(currentSavedCodes));
+        const history = localStorage.getItem("history") ? JSON.parse(localStorage.getItem("history")) : []
+        history.push({ code: data, time: new Date().toLocaleTimeString(), date: new Date().toLocaleDateString() })
+        localStorage.setItem("history", JSON.stringify(history));
         return response.data;
       })
       .catch((err) => {
