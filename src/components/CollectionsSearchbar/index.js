@@ -8,6 +8,7 @@ const StyledRoot = styled(Toolbar)(({ theme }) => ({
   height: 96,
   display: 'flex',
   justifyContent: 'space-between',
+  marginLeft: theme.spacing(1),
 }));
 
 const StyledSearch = styled(OutlinedInput)(({ theme }) => ({
