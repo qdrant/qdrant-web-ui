@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
-
 import { Link } from 'react-router-dom';
 import { getCollections } from '../common/client';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
+import SearchBar from '../components/SearchBar'
+import { Button, Box, Stack, Typography, Grid, Paper, styled } from '@mui/material'
 
-import { styled } from '@mui/material/styles';
-import { Button, Box, Stack, TextField, Typography } from '@mui/material'
-
-  
 const Item = styled(Paper)(() => ({
     textAlign: 'center',
     borderRadius: 20,
 }));
 
-const CustomBtn=styled(Button)(()=>({
+const CustomBtn = styled(Button)(() => ({
     borderRadius: 20,
 }))
-
 
 function Collections() {
     const [rawCollections, setRawCollections] = useState([]);
@@ -37,23 +31,22 @@ function Collections() {
 
     return (
         <>
+            <Grid
+                container
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+            >
+                <Grid item xs="auto" m={2}>
+                    <Typography variant="h4" gutterBottom >
+                        Collections
+                    </Typography>
+                </Grid>
 
-            <Grid container m={2} sx={{ flexDirection: { xs: "column", md: "row" } }} justifyContent="space-between">
-                <Typography variant="h4" gutterBottom >
-                    Collections
-                </Typography>
+                <Grid item xs="auto" m={2}>
+                    <SearchBar value={searchQuery} setValue={setSearchQuery} />
+                </Grid>
 
-                <Typography mr={10} gutterBottom>
-                    <TextField 
-                        placeholder="Type Keywords..."
-                        label="Search Collections..."
-                        variant="filled"
-                        value={searchQuery}
-                        onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                        }}
-                    />
-                </Typography>
             </Grid>
             <Box
                 sx={{
@@ -66,14 +59,14 @@ function Collections() {
                 }}
             >
                 {collections.map((collection) => (
-                    <Item   sx={{
+                    <Item sx={{
                         ':hover': {
-                          boxShadow: 20, // theme.shadows[20]
+                            boxShadow: 20,
                         },
-                      }} 
-                      elevation={3} 
-                      key={collection.name}
-                      >
+                    }}
+                        elevation={3}
+                        key={collection.name}
+                    >
                         <Typography variant="h6" gutterBottom m={2}>
                             {collection.name}
                         </Typography>
