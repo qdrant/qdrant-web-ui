@@ -38,7 +38,7 @@ const CollectionCard = (props) => {
         <CardContent>
           <Typography
             align="center"
-            gutterBottom
+            
             variant="h5"
           >
             {collection.name}
