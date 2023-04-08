@@ -2,10 +2,12 @@ import React, { Fragment, useState } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
 import Slide from '@mui/material/Slide';
+import PropTypes from "prop-types";
 
 const Alert = React.forwardRef((props, ref) => {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+Alert.displayName = 'Alert'; 
 
 function SlideTransition(props) {
   return <Slide {...props} direction="down" />;
@@ -34,3 +36,8 @@ export default function SuccessNotifier({ message, setIsSuccess }) {
     </>
   );
 }
+SuccessNotifier.propTypes = {
+  
+  message: PropTypes.string,
+  setIsSuccess: PropTypes.func
+};

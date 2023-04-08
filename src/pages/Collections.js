@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { getCollections } from '../common/client';
-import SearchBar from '../components/SearchBar'
-import { Button, Box, Stack, Typography, Grid, Paper, styled } from '@mui/material'
+import SearchBar from '../components/Collections/SearchBar'
+import CollectionCard from '../components/Collections/CollectionCard'
+import { Container, Box, Stack, Typography, Grid } from '@mui/material'
+import { Tune } from '@mui/icons-material';
 
-const Item = styled(Paper)(() => ({
-    textAlign: 'center',
-    borderRadius: 20,
-}));
-
-const CustomBtn = styled(Button)(() => ({
-    borderRadius: 20,
-}))
 
 function Collections() {
     const [rawCollections, setRawCollections] = useState([]);
     const [collections, setCollections] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
 
+    async function getCollectionsCall() {
+        getCollections()
+            .then((response) => {
+                setRawCollections(response.collections);
+            })
+            .catch((err) => {
+                return err
+            })
+    }
+
     useEffect(() => {
-        getCollections().then((response) => {
-            setRawCollections(response.collections);
-        });
+        getCollectionsCall();
     }, []);
 
 
@@ -31,52 +32,37 @@ function Collections() {
 
     return (
         <>
-            <Grid
-                container
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-            >
-                <Grid item xs="auto" m={2}>
-                    <Typography variant="h4" gutterBottom >
-                        Collections
-                    </Typography>
-                </Grid>
-
-                <Grid item xs="auto" m={2}>
-                    <SearchBar value={searchQuery} setValue={setSearchQuery} />
-                </Grid>
-
-            </Grid>
             <Box
+                component="main"
                 sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    '& > :not(style)': {
-                        m: 1,
-
-                    },
+                    flexGrow: 1,
                 }}
             >
-                {collections.map((collection) => (
-                    <Item sx={{
-                        ':hover': {
-                            boxShadow: 20,
-                        },
-                    }}
-                        elevation={3}
-                        key={collection.name}
-                    >
-                        <Typography variant="h6" gutterBottom m={2}>
-                            {collection.name}
+                <Container maxWidth="xl">
+                    <Stack spacing={3}  >
+                        <Typography variant="h4">
+                            Collections
                         </Typography>
-                        <Stack spacing={2} m={2} direction="row">
-
-                            <CustomBtn variant="outlined" size="small">View Data</CustomBtn>
-                            <CustomBtn variant="outlined" size="small">Visualize</CustomBtn>
-                        </Stack>
-                    </Item>
-                ))}
+                        <SearchBar value={searchQuery} setValue={setSearchQuery} />
+                    </Stack >
+                    <Grid
+                        container
+                        my={3}
+                        spacing={3}
+                    >
+                        {collections.map((collection) => (
+                            <Grid
+                                xs={12}
+                                md={6}
+                                lg={4}
+                                item
+                                key={collection.name}
+                            >
+                                <CollectionCard collection={collection} getCollectionsCall={getCollectionsCall} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
             </Box>
         </>
     );
