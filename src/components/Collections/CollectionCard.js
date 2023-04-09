@@ -1,31 +1,18 @@
-import React ,{useState}from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, Divider, Stack, CardActionArea, Typography, styled, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PolylineIcon from '@mui/icons-material/Polyline';
-import { deleteCollections } from '../../common/client';
-import ErrorNotifier from "../ToastNotifications/ErrorNotifier"
+import DeleteDialog from './DeleteDialog';
 
 const CollectionCard = (props) => {
+  const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const { collection, getCollectionsCall} = props;
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  async function  callDelete() {
-    const response= await deleteCollections(collection.name);
-    if (response===true){
-       getCollectionsCall();
-    }
-    else{
-      setErrorMessage(`Deletion Unsuccessful, Check Server!!`)
-      setHasError(true)
-    }
-  }
 
   return (
     <>
-      {hasError && <ErrorNotifier {...{ message: errorMessage, setHasError }} />}
     <Card
       elevation={3}
       sx={{
@@ -57,11 +44,12 @@ const CollectionCard = (props) => {
         <Button variant="body" component={Link} to={`/collections/${collection.name}/vector`} size={"small"} startIcon={<PolylineIcon />}>
           visualize
         </Button>
-        <Button variant="body" size={"small"}  onClick={callDelete} startIcon={<DeleteIcon />}>
+        <Button variant="body" size={"small"}  onClick={()=>setOpenDeleteDialog(true)} startIcon={<DeleteIcon />}>
           Delete
         </Button>
       </Stack>
     </Card>
+    <DeleteDialog open={openDeleteDialog} setOpen={setOpenDeleteDialog} collectionName={collection.name} getCollectionsCall={getCollectionsCall} />
     </>
   );
 };
