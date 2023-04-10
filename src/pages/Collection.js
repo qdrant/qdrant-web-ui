@@ -1,18 +1,10 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-
-
-
+import React from "react";
+import { useParams } from "react-router-dom";
 
 function Collection() {
-    const { collectionName } = useParams();
+  const { collectionName } = useParams();
 
-    
-    return (
-        <>
-            ToDo {collectionName}
-        </>
-    );
+  return <>ToDo {collectionName}</>;
 }
 
 export default Collection;

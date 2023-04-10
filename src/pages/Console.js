@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import { Box } from "@mui/system";
-import Menu from "../components/CodeEditorWindow/Menu"
+import Menu from "../components/CodeEditorWindow/Menu";
 
-const query =
-  `GET collections
+const query = `GET collections
 
 // Create a collection
 PUT collections/demo1
@@ -24,8 +23,7 @@ DELETE collections/demo1
 GET collections
 
 GET collections/startups`;
-const defaultResult =
-  `{"result": {"collections": [{"name": "collection1"},
+const defaultResult = `{"result": {"collections": [{"name": "collection1"},
       {
         "name": "startups"
       }
@@ -33,7 +31,7 @@ const defaultResult =
   },
   "status": "ok",
   "time": 0.000007124
-}`
+}`;
 
 function Console() {
   const [code, setCode] = useState(query);
@@ -62,38 +60,37 @@ function Console() {
     }
   };
 
-
   return (
     <>
-    <Menu  code={code} handleEditorChange={onChangeCode}/>
-    <Box
-      sx={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-      }}
-    >
+      <Menu code={code} handleEditorChange={onChangeCode} />
       <Box
         sx={{
-          width: "50%",
-          height: "100%"
-        }}>
-        <CodeEditorWindow
-          code={code}
-          onChange={onChangeCode}
-          onChangeResult={onChangeResult}
-        />
+          width: "100%",
+          height: "100%",
+          display: "flex",
+        }}
+      >
+        <Box
+          sx={{
+            width: "50%",
+            height: "100%",
+          }}
+        >
+          <CodeEditorWindow
+            code={code}
+            onChange={onChangeCode}
+            onChangeResult={onChangeResult}
+          />
+        </Box>
+        <Box
+          sx={{
+            width: "50%",
+            height: "100%",
+          }}
+        >
+          <ResultEditorWindow code={result} />
+        </Box>
       </Box>
-      <Box
-        sx={{
-          width: "50%",
-          height: "100%"
-        }}>
-        <ResultEditorWindow
-          code={result}
-        />
-      </Box>
-    </Box>
     </>
   );
 }

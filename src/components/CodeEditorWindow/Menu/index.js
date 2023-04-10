@@ -1,9 +1,8 @@
-import React from 'react';
-import { Button, Stack } from '@mui/material'
-import History from './history';
+import React from "react";
+import { Button, Stack } from "@mui/material";
+import History from "./history";
 import PropTypes from "prop-types";
-import SavedCode from './savedCode';
-
+import SavedCode from "./savedCode";
 
 function Menu({ code, handleEditorChange }) {
   const [state, setState] = React.useState({
@@ -24,7 +23,8 @@ function Menu({ code, handleEditorChange }) {
           pl: 5,
           mb: 1,
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-        }}>
+        }}
+      >
         <Button onClick={toggleDrawer("history", true)}>History</Button>
         <Button onClick={toggleDrawer("savedCode", true)}>Saved Code</Button>
       </Stack>
@@ -45,8 +45,7 @@ function Menu({ code, handleEditorChange }) {
 }
 Menu.propTypes = {
   code: PropTypes.string,
-  handleEditorChange: PropTypes.func
+  handleEditorChange: PropTypes.func,
 };
-
 
 export default Menu;
