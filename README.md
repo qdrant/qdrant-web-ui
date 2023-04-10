@@ -6,10 +6,9 @@ This is a self-hosted web UI for [Qdrant](https://github.com/qdrant/qdrant) Vect
 
 This UI is supposed to be served by Qdrant itself, but you can use it as a standalone application.
 
-Main goal of this UI is to provide a simple way to view and manage your collections. 
+Main goal of this UI is to provide a simple way to view and manage your collections.
 
 Similar to [Kibana](https://www.elastic.co/kibana) for Elasticsearch, but does not require any additional services.
-
 
 ## Available Scripts
 
