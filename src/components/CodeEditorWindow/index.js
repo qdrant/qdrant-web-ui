@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import {
   Rules,
@@ -18,6 +18,7 @@ import "./editor.css";
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
+  const lensesRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   let runBtnCommandId = null;
@@ -31,6 +32,10 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       ErrorMarker
     );
   };
+
+  useEffect( () => () => {
+    lensesRef.current?.dispose();
+  }, [] );
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
@@ -61,7 +66,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     );
 
     // Register Code Lens Provider (Run Button)
-    monaco.languages.registerCodeLensProvider(
+    lensesRef.current = monaco.languages.registerCodeLensProvider(
       "custom-language",
       btnconfig(runBtnCommandId)
     );
