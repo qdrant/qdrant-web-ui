@@ -9,3 +9,13 @@ export function deleteCollections(collectionName) {
     .delete(`/collections/${collectionName}`)
     .then((response) => response.data.result);
 }
+export function getCollectionsByName(collectionName) {
+  return axios
+    .post(`/collections/${collectionName}/points/scroll`,
+      {
+        "limit": 10,
+        "with_payload": true,
+        "with_vector": false
+      })
+    .then((response) => response.data.result);
+}
