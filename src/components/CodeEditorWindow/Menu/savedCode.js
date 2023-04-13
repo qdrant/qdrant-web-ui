@@ -155,9 +155,9 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                         outline: "none !important",
                       },
                       "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
-                      {
-                        outline: "none !important",
-                      },
+                        {
+                          outline: "none !important",
+                        },
                     }}
                     rows={savedCodes}
                     columns={columns}

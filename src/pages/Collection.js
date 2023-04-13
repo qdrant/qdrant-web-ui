@@ -16,7 +16,6 @@ function Collection() {
   }, [collectionName]);
 
   return (
-
     <>
       <Box
         component="main"
@@ -29,19 +28,17 @@ function Collection() {
             <Typography variant="h4">{collectionName}</Typography>
           </Stack>
           <Grid container my={3} spacing={3}>
-            {collection && collection.points.map((collection) => (
-              <Grid  xs={12}   item key={collection.name}>
-                <CollectionCard
-                  collection={collection}
-                />
-              </Grid>
-            ))}
+            {collection &&
+              collection.points.map((collection) => (
+                <Grid xs={12} item key={collection.name}>
+                  <CollectionCard collection={collection} />
+                </Grid>
+              ))}
           </Grid>
         </Container>
       </Box>
     </>
-  )
-
+  );
 }
 
 export default Collection;

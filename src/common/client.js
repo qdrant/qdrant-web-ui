@@ -11,11 +11,10 @@ export function deleteCollections(collectionName) {
 }
 export function getCollectionsByName(collectionName) {
   return axios
-    .post(`/collections/${collectionName}/points/scroll`,
-      {
-        "limit": 10,
-        "with_payload": true,
-        "with_vector": false
-      })
+    .post(`/collections/${collectionName}/points/scroll`, {
+      limit: 10,
+      with_payload: true,
+      with_vector: false,
+    })
     .then((response) => response.data.result);
 }
