@@ -123,7 +123,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
               Saved Code
             </Typography>
             <Stack direction="row" spacing={2}>
-              <Typography m={2} gutterBottom>
+              <Box m={2}>
                 <TextField
                   placeholder=" Name (Required)*"
                   variant="standard"
@@ -133,7 +133,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                   }}
                 />
                 <Button onClick={saveCode}>Save</Button>
-              </Typography>
+              </Box>
             </Stack>
             {savedCodes.length === 0 && (
               <Stack direction="row" spacing={2}>
