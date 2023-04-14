@@ -6,42 +6,47 @@ import { JsonViewer } from "@textea/json-viewer";
 const CollectionCard = (props) => {
   const { collection } = props;
 
-  function formatJSON(res = {}) {
-    try {
-      return JSON.stringify(res, null, 2);
-    } catch {
-      const errorJson = {
-        error: `HERE ${val}`,
-      };
-      return JSON.stringify(errorJson, null, 2);
-    }
-  }
-
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
-      return (
-        <>
-          <Box p={1} sx={{ display: "flex" }}>
-            <Typography variant="subtitle1" display="inline" fontWeight={600}>
-              {key} :
-            </Typography>
-            {"\t"}{" "}
-            {typeof data.payload[key] === "object" ? (
-              <JsonViewer value={data.payload[key]} />
-            ) : (
+      if (typeof data.payload[key] === "object") {
+        return (
+          <>
+            <Box p={1} display={"flex"}>
               <Typography
-                variant="subtitle2"
-                display="inline"
-                color="text.secondary"
+                variant="subtitle1"
+                display={"inline"}
+                fontWeight={600}
               >
-                {" "}
-                {data.payload[key]}
+                {key} :
               </Typography>
-            )}
-          </Box>
-          <Divider />
-        </>
-      );
+              <JsonViewer value={data.payload[key]} />
+            </Box>
+            <Divider />
+          </>
+        );
+      } else {
+        return (
+          <>
+            <Box p={1}>
+              <Typography
+                variant="subtitle1"
+                display={"inline"}
+                fontWeight={600}
+              >
+                {key} :
+              </Typography>
+              <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                display={"inline"}
+              >
+                {"\t"} {data.payload[key]}
+              </Typography>
+            </Box>
+            <Divider />
+          </>
+        );
+      }
     });
 
     return (
