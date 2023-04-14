@@ -33,9 +33,12 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     );
   };
 
-  useEffect( () => () => {
-    lensesRef.current?.dispose();
-  }, [] );
+  useEffect(
+    () => () => {
+      lensesRef.current?.dispose();
+    },
+    []
+  );
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
