@@ -1,6 +1,13 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Box, Card, CardContent, Divider, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Divider,
+  Typography,
+  Grid,
+} from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
 
 const CollectionCard = (props) => {
@@ -8,10 +15,10 @@ const CollectionCard = (props) => {
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
-      if (typeof data.payload[key] === "object") {
-        return (
-          <>
-            <Box p={1} display={"flex"}>
+      return (
+        <>
+          <Grid container spacing={2}>
+            <Grid item xs={2} my={1}>
               <Typography
                 variant="subtitle1"
                 display={"inline"}
@@ -19,50 +26,45 @@ const CollectionCard = (props) => {
               >
                 {key} :
               </Typography>
-              <JsonViewer value={data.payload[key]} />
-            </Box>
-            <Divider />
-          </>
-        );
-      } else {
-        return (
-          <>
-            <Box p={1}>
-              <Typography
-                variant="subtitle1"
-                display={"inline"}
-                fontWeight={600}
-              >
-                {key} :
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                display={"inline"}
-              >
-                {"\t"} {data.payload[key]}
-              </Typography>
-            </Box>
-            <Divider />
-          </>
-        );
-      }
+            </Grid>
+
+            <Grid item xs={10} my={1}>
+              {typeof data.payload[key] === "object" ? (
+                <JsonViewer value={data.payload[key]} />
+              ) : (
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  display={"inline"}
+                >
+                  {"\t"} {data.payload[key]}
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
+          <Divider />
+        </>
+      );
     });
 
     return (
       <>
-        <Box p={1}>
-          <Typography variant="subtitle1" display="inline" fontWeight={600}>
-            id :
-          </Typography>
-          <Typography
-            variant="subtitle2"
-            display="inline"
-            color="text.secondary"
-          >
-            {"\t"} {data["id"] !== null ? data["id"] : "NULL"}
-          </Typography>
-        </Box>
+        <Grid container spacing={2}>
+          <Grid item xs={2} my={1}>
+            <Typography variant="subtitle1" display="inline" fontWeight={600}>
+              id :
+            </Typography>
+          </Grid>
+          <Grid item xs={10} my={1}>
+            <Typography
+              variant="subtitle2"
+              display="inline"
+              color="text.secondary"
+            >
+              {data["id"] !== null ? data["id"] : "NULL"}
+            </Typography>
+          </Grid>
+        </Grid>
         <Divider />
         {Payload}
       </>
