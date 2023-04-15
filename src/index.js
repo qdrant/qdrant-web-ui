@@ -3,16 +3,16 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import setupAxios from "./common/axios";
 import { HashRouter } from "react-router-dom";
-
-setupAxios();
+import { SettingsProvider } from "./context/settings";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <HashRouter>
-      <App />
+      <SettingsProvider>
+        <App />
+      </SettingsProvider>
     </HashRouter>
   </React.StrictMode>
 );

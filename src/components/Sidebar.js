@@ -14,6 +14,7 @@ import { Logo } from "../components/Logo";
 import { Stack } from "@mui/material";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const drawerWidth = 240;
 
@@ -57,6 +58,12 @@ export default function Sidebar({ open }) {
                 <LibraryBooksIcon />
               </ListItemIcon>
               <ListItemText primary={"Collections"} />
+            </ListItemButton>
+            <ListItemButton key={"Settings"} component={Link} to="/settings">
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary={"Settings"} />
             </ListItemButton>
           </List>
         </Drawer>

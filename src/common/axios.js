@@ -1,9 +1,8 @@
 import axios from "axios";
 
-function setupAxios() {
-  if (process.env.NODE_ENV === "development") {
-    axios.defaults.baseURL = "http://localhost:6333";
-  }
+function setupAxios({ apiURL, apiKey }) {
+  axios.defaults.baseURL = apiURL;
+  axios.defaults.headers.common["api-key"] = apiKey;
 }
 
 export default setupAxios;
