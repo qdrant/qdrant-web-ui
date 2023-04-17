@@ -1,22 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {
-  Box,
-  Card,
-  CardContent,
-  Divider,
-  Typography,
-  Grid,
-} from "@mui/material";
+import { Card, CardContent, Divider, Typography, Grid } from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
 
-const CollectionCard = (props) => {
-  const { collection } = props;
+const PointCard = (props) => {
+  const { point } = props;
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
       return (
-        <>
+        <div key={key}>
           <Grid container spacing={2}>
             <Grid item xs={2} my={1}>
               <Typography
@@ -43,7 +36,7 @@ const CollectionCard = (props) => {
             </Grid>
           </Grid>
           <Divider />
-        </>
+        </div>
       );
     });
 
@@ -72,23 +65,21 @@ const CollectionCard = (props) => {
   }
 
   return (
-    <>
-      <Card
-        elevation={3}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-        }}
-      >
-        <CardContent>{resDataView(collection)}</CardContent>
-      </Card>
-    </>
+    <Card
+      elevation={3}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
+      <CardContent>{resDataView(point)}</CardContent>
+    </Card>
   );
 };
 
-CollectionCard.propTypes = {
-  collection: PropTypes.object.isRequired,
+PointCard.propTypes = {
+  point: PropTypes.object.isRequired,
 };
 
-export default CollectionCard;
+export default PointCard;
