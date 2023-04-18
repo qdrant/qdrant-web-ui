@@ -122,18 +122,16 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
             <Typography variant="h5" m={2} gutterBottom>
               Saved Code
             </Typography>
-            <Stack direction="row" spacing={2}>
-              <Typography m={2} gutterBottom>
-                <TextField
-                  placeholder=" Name (Required)*"
-                  variant="standard"
-                  value={saveNameText}
-                  onChange={(e) => {
-                    setSaveNameText(e.target.value);
-                  }}
-                />
-                <Button onClick={saveCode}>Save</Button>
-              </Typography>
+            <Stack direction="row" spacing={2} m={2}>
+              <TextField
+                placeholder=" Name (Required)*"
+                variant="standard"
+                value={saveNameText}
+                onChange={(e) => {
+                  setSaveNameText(e.target.value);
+                }}
+              />
+              <Button onClick={saveCode}>Save</Button>
             </Stack>
             {savedCodes.length === 0 && (
               <Stack direction="row" spacing={2}>
