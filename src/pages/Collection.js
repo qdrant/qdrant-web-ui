@@ -1,31 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { getCollectionsByName } from "../common/client";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
-import PointCard from "../components/Collection/PointCard";
+import PointCard from "../components/Points/PointCard";
+import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 
 function Collection() {
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
   const [offset, setOffset] = React.useState(0);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   React.useEffect(() => {
-    getCollectionsByName(collectionName, offset).then((rPoints) => {
-      if (points) {
-        if (points.points.length !== 0) {
-          setPoints({
-            points: [...points.points, ...rPoints.points],
-            next_page_offset: rPoints.next_page_offset,
-          });
+    getCollectionsByName(collectionName, offset)
+      .then((rPoints) => {
+        if (points) {
+          if (points.points.length !== 0) {
+            setPoints({
+              points: [...points.points, ...rPoints.points],
+              next_page_offset: rPoints.next_page_offset,
+            });
+          }
+        } else {
+          setPoints(rPoints);
         }
-      } else {
-        setPoints(rPoints);
-      }
-    }).catch(
-      function (error) {
-        setPoints({error: error });
-      }
-    );
+      })
+      .catch(function (error) {
+        setHasError(true);
+        setErrorMessage(error.message);
+        setPoints({});
+      });
   }, [collectionName, offset]);
 
   return (
@@ -37,15 +42,27 @@ function Collection() {
           my: 3,
         }}
       >
+        {hasError && (
+          <ErrorNotifier {...{ message: errorMessage, setHasError }} />
+        )}
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">{collectionName}</Typography>
           </Stack>
           <Grid container my={3} spacing={3}>
-            {!points && <Typography mx={3}>Loading...</Typography>}
-            {points && points.error && <Typography mx={3}>Error: {points.error.message}</Typography>}
-            {points && points.points?.length === 0 && <Typography  mx={3}>No Points are presents, {collectionName} is empty</Typography>}
+            {errorMessage && (
+              <Typography mx={3}>Error: {errorMessage}</Typography>
+            )}
+            {!points && !errorMessage && (
+              <Typography mx={3}>Loading...</Typography>
+            )}
+            {points && !errorMessage && points.points?.length === 0 && (
+              <Typography mx={3}>
+                No Points are presents, {collectionName} is empty
+              </Typography>
+            )}
             {points &&
+              !errorMessage &&
               points.points?.map((point) => (
                 <Grid xs={12} item key={point.id}>
                   <PointCard point={point} />
