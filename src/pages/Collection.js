@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { getCollectionsByName } from "../common/client";
-import { Container, Box, Stack, Typography, Grid ,Button } from "@mui/material";
+import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Collection/PointCard";
 
 function Collection() {
@@ -13,14 +13,16 @@ function Collection() {
     getCollectionsByName(collectionName, offset).then((rPoints) => {
       if (points) {
         if (points.points.length !== 0) {
-          setPoints({ points: [...points.points, ...rPoints.points], next_page_offset: rPoints.next_page_offset });
+          setPoints({
+            points: [...points.points, ...rPoints.points],
+            next_page_offset: rPoints.next_page_offset,
+          });
         }
-      }
-      else {
+      } else {
         setPoints(rPoints);
       }
     });
-  }, [collectionName,offset]);
+  }, [collectionName, offset]);
 
   return (
     <>
@@ -43,8 +45,13 @@ function Collection() {
                 </Grid>
               ))}
           </Grid>
-          <Stack alignItems="center" >
-            <Button variant="outlined" onClick={() => { setOffset(points.next_page_offset) }}>
+          <Stack alignItems="center">
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setOffset(points.next_page_offset);
+              }}
+            >
               Load More
             </Button>
           </Stack>
