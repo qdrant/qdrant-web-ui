@@ -17,13 +17,13 @@ const PointCard = (props) => {
                 display={"inline"}
                 fontWeight={600}
               >
-                {key} :
+                {key}
               </Typography>
             </Grid>
 
             <Grid item xs={10} my={1}>
               {typeof data.payload[key] === "object" ? (
-                <JsonViewer value={data.payload[key]} />
+                <Typography variant="subtitle1"> <JsonViewer value={data.payload[key]} displayDataTypes={ false } /> </Typography>
               ) : (
                 <Typography
                   variant="subtitle1"
@@ -45,12 +45,12 @@ const PointCard = (props) => {
         <Grid container spacing={2}>
           <Grid item xs={2} my={1}>
             <Typography variant="subtitle1" display="inline" fontWeight={600}>
-              id :
+              id
             </Typography>
           </Grid>
           <Grid item xs={10} my={1}>
             <Typography
-              variant="subtitle2"
+              variant="subtitle1"
               display="inline"
               color="text.secondary"
             >
