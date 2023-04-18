@@ -1,18 +1,26 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { getCollectionsByName } from "../common/client";
-import { Container, Box, Stack, Typography, Grid } from "@mui/material";
+import { Container, Box, Stack, Typography, Grid ,Button } from "@mui/material";
 import PointCard from "../components/Collection/PointCard";
 
 function Collection() {
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
+  const [offset, setOffset] = React.useState(0);
 
   React.useEffect(() => {
-    getCollectionsByName(collectionName).then((points) => {
-      setPoints(points);
+    getCollectionsByName(collectionName, offset).then((rPoints) => {
+      if (points) {
+        if (points.points.length !== 0) {
+          setPoints({ points: [...points.points, ...rPoints.points], next_page_offset: rPoints.next_page_offset });
+        }
+      }
+      else {
+        setPoints(rPoints);
+      }
     });
-  }, [collectionName]);
+  }, [collectionName,offset]);
 
   return (
     <>
@@ -20,6 +28,7 @@ function Collection() {
         component="main"
         sx={{
           flexGrow: 1,
+          my: 3,
         }}
       >
         <Container maxWidth="xl">
@@ -34,6 +43,11 @@ function Collection() {
                 </Grid>
               ))}
           </Grid>
+          <Stack alignItems="center" >
+            <Button variant="outlined" onClick={() => { setOffset(points.next_page_offset) }}>
+              Load More
+            </Button>
+          </Stack>
         </Container>
       </Box>
     </>
