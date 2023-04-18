@@ -21,7 +21,11 @@ function Collection() {
       } else {
         setPoints(rPoints);
       }
-    });
+    }).catch(
+      function (error) {
+        setPoints({error: error });
+      }
+    );
   }, [collectionName, offset]);
 
   return (
@@ -38,8 +42,11 @@ function Collection() {
             <Typography variant="h4">{collectionName}</Typography>
           </Stack>
           <Grid container my={3} spacing={3}>
+            {!points && <Typography mx={3}>Loading...</Typography>}
+            {points && points.error && <Typography mx={3}>Error: {points.error.message}</Typography>}
+            {points && points.points?.length === 0 && <Typography  mx={3}>No Points are presents, {collectionName} is empty</Typography>}
             {points &&
-              points.points.map((point) => (
+              points.points?.map((point) => (
                 <Grid xs={12} item key={point.id}>
                   <PointCard point={point} />
                 </Grid>
