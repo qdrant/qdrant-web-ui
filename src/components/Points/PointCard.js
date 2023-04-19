@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardContent, Divider, Typography, Grid } from "@mui/material";
+import { Card, CardContent, Divider, Typography, Grid , CardActions, Button} from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
 
 const PointCard = (props) => {
@@ -74,6 +74,11 @@ const PointCard = (props) => {
       }}
     >
       <CardContent>{resDataView(point)}</CardContent>
+      <CardActions sx={{
+        justifyContent: "center",
+      }}>
+        <Button variant="outlined">Find Similiar</Button>
+      </CardActions>
     </Card>
   );
 };
