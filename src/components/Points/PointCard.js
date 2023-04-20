@@ -10,16 +10,9 @@ import {
   Button,
 } from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
-import { getSimilarPointsByID } from "../../common/client";
 
 const PointCard = (props) => {
-  const { point, setPoints, collectionName } = props;
-
-  const findSimiliar = () => {
-    getSimilarPointsByID(point.id, collectionName).then((rPoints) => {
-      setPoints({ points: rPoints, next_page_offset: 0 });
-    });
-  };
+  const { point, setRecommendationId } = props;
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
@@ -100,7 +93,7 @@ const PointCard = (props) => {
           justifyContent: "center",
         }}
       >
-        <Button variant="outlined" onClick={findSimiliar}>
+        <Button variant="outlined" onClick={()=>{setRecommendationId(point.id)}}>
           Find Similiar
         </Button>
       </CardActions>
@@ -110,8 +103,7 @@ const PointCard = (props) => {
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
-  setPoints: PropTypes.func.isRequired,
-  collectionName: PropTypes.string.isRequired,
+  setRecommendationId: PropTypes.func.isRequired,
 };
 
 export default PointCard;

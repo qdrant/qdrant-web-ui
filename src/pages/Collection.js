@@ -4,6 +4,7 @@ import { getCollectionsByName } from "../common/client";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
+import { getSimilarPointsByID } from "../common/client";
 
 function Collection() {
   const { collectionName } = useParams();
@@ -11,6 +12,7 @@ function Collection() {
   const [offset, setOffset] = React.useState(0);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [recommendationId, setRecommendationId] = useState(null);
 
   React.useEffect(() => {
     getCollectionsByName(collectionName, offset)
@@ -32,6 +34,21 @@ function Collection() {
         setPoints({});
       });
   }, [collectionName, offset]);
+
+  React.useEffect(() => {
+    console.log("recommendationId", recommendationId);
+    if (recommendationId!==null) {
+      getSimilarPointsByID(recommendationId, collectionName)
+        .then((rPoints) => {
+          setPoints({ points: rPoints, next_page_offset: points.next_page_offset});
+        })
+        .catch(function (error) {
+          setHasError(true);
+          setErrorMessage(error.message);
+          setPoints({});
+        });
+    }
+  }, [recommendationId]);
 
   return (
     <>
@@ -67,7 +84,7 @@ function Collection() {
                 <Grid xs={12} item key={point.id}>
                   <PointCard
                     point={point}
-                    setPoints={setPoints}
+                    setRecommendationId={setRecommendationId}
                     collectionName={collectionName}
                   />
                 </Grid>
