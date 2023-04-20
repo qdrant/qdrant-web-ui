@@ -1,10 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardContent, Divider, Typography, Grid , CardActions, Button} from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Divider,
+  Typography,
+  Grid,
+  CardActions,
+  Button,
+} from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
+import { getSimilarPointsByID } from "../../common/client";
 
 const PointCard = (props) => {
-  const { point } = props;
+  const { point, setPoints, collectionName } = props;
+
+  const findSimiliar = () => {
+    getSimilarPointsByID(point.id, collectionName).then((rPoints) => {
+      setPoints({ points: rPoints, next_page_offset: 0 });
+    });
+  };
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
@@ -23,7 +38,13 @@ const PointCard = (props) => {
 
             <Grid item xs={10} my={1}>
               {typeof data.payload[key] === "object" ? (
-                <Typography variant="subtitle1"> <JsonViewer value={data.payload[key]} displayDataTypes={ false } /> </Typography>
+                <Typography variant="subtitle1">
+                  {" "}
+                  <JsonViewer
+                    value={data.payload[key]}
+                    displayDataTypes={false}
+                  />{" "}
+                </Typography>
               ) : (
                 <Typography
                   variant="subtitle1"
@@ -74,10 +95,14 @@ const PointCard = (props) => {
       }}
     >
       <CardContent>{resDataView(point)}</CardContent>
-      <CardActions sx={{
-        justifyContent: "center",
-      }}>
-        <Button variant="outlined">Find Similiar</Button>
+      <CardActions
+        sx={{
+          justifyContent: "center",
+        }}
+      >
+        <Button variant="outlined" onClick={findSimiliar}>
+          Find Similiar
+        </Button>
       </CardActions>
     </Card>
   );
@@ -85,6 +110,8 @@ const PointCard = (props) => {
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
+  setPoints: PropTypes.func.isRequired,
+  collectionName: PropTypes.string.isRequired,
 };
 
 export default PointCard;

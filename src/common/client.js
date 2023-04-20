@@ -9,6 +9,7 @@ export function deleteCollections(collectionName) {
     .delete(`/collections/${collectionName}`)
     .then((response) => response.data.result);
 }
+
 export function getCollectionsByName(collectionName, offset) {
   return axios
     .post(`/collections/${collectionName}/points/scroll`, {
@@ -16,6 +17,17 @@ export function getCollectionsByName(collectionName, offset) {
       with_payload: true,
       with_vector: false,
       offset: offset,
+    })
+    .then((response) => response.data.result);
+}
+
+export function getSimilarPointsByID(id, collectionName) {
+  return axios
+    .post(`/collections/${collectionName}/points/recommend`, {
+      limit: 10,
+      with_payload: true,
+      with_vector: false,
+      positive: [id],
     })
     .then((response) => response.data.result);
 }

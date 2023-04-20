@@ -65,7 +65,11 @@ function Collection() {
               !errorMessage &&
               points.points?.map((point) => (
                 <Grid xs={12} item key={point.id}>
-                  <PointCard point={point} />
+                  <PointCard
+                    point={point}
+                    setPoints={setPoints}
+                    collectionName={collectionName}
+                  />
                 </Grid>
               ))}
           </Grid>
