@@ -1,7 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardContent, Divider, Typography, Grid } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Divider,
+  Typography,
+  Grid,
+  CardMedia,
+} from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
+import PointImage from "./PointImage";
 
 const PointCard = (props) => {
   const { point } = props;
@@ -23,7 +31,13 @@ const PointCard = (props) => {
 
             <Grid item xs={10} my={1}>
               {typeof data.payload[key] === "object" ? (
-                <Typography variant="subtitle1"> <JsonViewer value={data.payload[key]} displayDataTypes={ false } /> </Typography>
+                <Typography variant="subtitle1">
+                  {" "}
+                  <JsonViewer
+                    value={data.payload[key]}
+                    displayDataTypes={false}
+                  />{" "}
+                </Typography>
               ) : (
                 <Typography
                   variant="subtitle1"
@@ -73,7 +87,14 @@ const PointCard = (props) => {
         height: "100%",
       }}
     >
-      <CardContent>{resDataView(point)}</CardContent>
+      <Grid container spacing={2}>
+        <Grid item xs={2} m={"auto"}>
+          <PointImage data={point.payload} />
+        </Grid>
+        <Grid item xs={10} my={1}>
+          <CardContent>{resDataView(point)}</CardContent>
+        </Grid>
+      </Grid>
     </Card>
   );
 };
