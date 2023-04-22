@@ -7,7 +7,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useTheme } from "@mui/material/styles";
 import PropTypes from "prop-types";
-import { deleteCollections } from "../../common/client";
+import qdrantClient from "../../common/client";
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import Box from "@mui/material/Box";
 
@@ -23,12 +23,12 @@ export default function DeleteDialog({
   const theme = useTheme();
 
   async function callDelete() {
-    const response = await deleteCollections(collectionName);
-    if (response === true) {
+    try {
+      await qdrantClient().deleteCollection(collectionName);
       getCollectionsCall();
       setOpen(false);
-    } else {
-      setErrorMessage(`Deletion Unsuccessful, Check Server!!`);
+    } catch (error) {
+      setErrorMessage(`Deletion Unsuccessful, error: ${error.message}`);
       setHasError(true);
       setOpen(false);
     }

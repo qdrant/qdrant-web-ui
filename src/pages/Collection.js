@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { getCollectionsByName } from "../common/client";
+import qdrantClient from "../common/client";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
@@ -13,24 +13,17 @@ function Collection() {
   const [errorMessage, setErrorMessage] = useState("");
 
   React.useEffect(() => {
-    getCollectionsByName(collectionName, offset)
-      .then((rPoints) => {
-        if (points) {
-          if (points.points.length !== 0) {
-            setPoints({
-              points: [...points.points, ...rPoints.points],
-              next_page_offset: rPoints.next_page_offset,
-            });
-          }
-        } else {
-          setPoints(rPoints);
-        }
-      })
-      .catch(function (error) {
+    const getPoints = async () => {
+      try {
+        let points = await qdrantClient().scroll(collectionName, {})
+        setPoints(points);
+      } catch (error) {
         setHasError(true);
         setErrorMessage(error.message);
         setPoints({});
-      });
+      }
+    };
+    getPoints()
   }, [collectionName, offset]);
 
   return (
