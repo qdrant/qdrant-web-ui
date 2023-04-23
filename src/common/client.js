@@ -7,7 +7,7 @@ export default function qdrantClient() {
   if (process.env.NODE_ENV === "development") {
     url = "http://localhost:6333";
   } else {
-    url = ''
+    url = window.location.href;
   }
 
   return new QdrantClient({url})
