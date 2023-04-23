@@ -90,10 +90,10 @@ const PointCard = (props) => {
       <CardContent>{resDataView(point)}</CardContent>
       <CardActions
         sx={{
-          justifyContent: "center",
+          justifyContent: "right",
         }}
       >
-        <Button variant="outlined" onClick={()=>{setRecommendationId(point.id)}}>
+        <Button size="small" onClick={()=>{setRecommendationId(point.id)}}>
           Find Similiar
         </Button>
       </CardActions>
