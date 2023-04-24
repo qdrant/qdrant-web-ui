@@ -47,6 +47,7 @@ export function Collection() {
           <Stack alignItems="center">
             <Button
               variant="outlined"
+              disabled={!data || !data?.next_page_offset}
               onClick={() => {
                 data?.next_page_offset && setOffset(data?.next_page_offset);
               }}

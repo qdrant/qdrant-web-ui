@@ -31,6 +31,8 @@ export function PointDataView({ data }: PointDataViewProps) {
                 <JsonViewer
                   value={data.payload[key]}
                   displayDataTypes={false}
+                  defaultInspectDepth={0}
+                  rootName={false}
                 />{" "}
               </Typography>
             ) : (
