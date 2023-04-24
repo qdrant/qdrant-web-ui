@@ -93,7 +93,12 @@ const PointCard = (props) => {
           justifyContent: "right",
         }}
       >
-        <Button size="small" onClick={()=>{setRecommendationId(point.id)}}>
+        <Button
+          size="small"
+          onClick={() => {
+            setRecommendationId(point.id);
+          }}
+        >
           Find Similiar
         </Button>
       </CardActions>

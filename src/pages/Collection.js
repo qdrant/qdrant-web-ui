@@ -5,6 +5,8 @@ import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { getSimilarPointsByID } from "../common/client";
+import Chip from "@mui/material/Chip";
+import CopyAllIcon from "@mui/icons-material/CopyAll";
 
 function Collection() {
   const { collectionName } = useParams();
@@ -15,32 +17,29 @@ function Collection() {
   const [recommendationId, setRecommendationId] = useState(null);
 
   React.useEffect(() => {
-    getCollectionsByName(collectionName, offset)
-      .then((rPoints) => {
-        if (points) {
-          if (points.points.length !== 0) {
-            setPoints({
-              points: [...points.points, ...rPoints.points],
-              next_page_offset: rPoints.next_page_offset,
-            });
-          }
-        } else {
-          setPoints(rPoints);
-        }
-      })
-      .catch(function (error) {
-        setHasError(true);
-        setErrorMessage(error.message);
-        setPoints({});
-      });
-  }, [collectionName, offset]);
-
-  React.useEffect(() => {
-    console.log("recommendationId", recommendationId);
-    if (recommendationId!==null) {
+    if (recommendationId !== null) {
       getSimilarPointsByID(recommendationId, collectionName)
         .then((rPoints) => {
-          setPoints({ points: rPoints, next_page_offset: points.next_page_offset});
+          setPoints({ points: rPoints });
+        })
+        .catch(function (error) {
+          setHasError(true);
+          setErrorMessage(error.message);
+          setPoints({});
+        });
+    } else {
+      getCollectionsByName(collectionName, offset)
+        .then((rPoints) => {
+          if (points && points.next_page_offset) {
+            if (points.points.length !== 0) {
+              setPoints({
+                points: [...points.points, ...rPoints.points],
+                next_page_offset: rPoints.next_page_offset,
+              });
+            }
+          } else {
+            setPoints(rPoints);
+          }
         })
         .catch(function (error) {
           setHasError(true);
@@ -48,7 +47,7 @@ function Collection() {
           setPoints({});
         });
     }
-  }, [recommendationId]);
+  }, [collectionName, offset, recommendationId]);
 
   return (
     <>
@@ -69,6 +68,17 @@ function Collection() {
           <Grid container my={3} spacing={3}>
             {errorMessage && (
               <Typography mx={3}>Error: {errorMessage}</Typography>
+            )}
+            {recommendationId !== null && (
+              <Typography mx={3}>
+                <Chip
+                  icon={<CopyAllIcon />}
+                  label={recommendationId}
+                  onDelete={() => {
+                    setRecommendationId(null);
+                  }}
+                />
+              </Typography>
             )}
             {!points && !errorMessage && (
               <Typography mx={3}>Loading...</Typography>
