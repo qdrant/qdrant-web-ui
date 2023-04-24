@@ -1,19 +1,21 @@
-/* eslint-disable react/prop-types */
-import React from "react";
 import Editor from "@monaco-editor/react";
 
-const ResultEditorWindow = ({ code }) => {
-  function formatJSON(val = {}) {
-    try {
-      const res = JSON.parse(val);
-      return JSON.stringify(res, null, 2);
-    } catch {
-      const errorJson = {
-        error: `HERE ${val}`,
-      };
-      return JSON.stringify(errorJson, null, 2);
-    }
+type ResultEditorWindowProps = {
+  code: string;
+};
+
+function formatJSON(val: string) {
+  try {
+    const res = JSON.parse(val ?? "{}");
+    return JSON.stringify(res, null, 2);
+  } catch {
+    const errorJson = {
+      error: `HERE ${val}`,
+    };
+    return JSON.stringify(errorJson, null, 2);
   }
+}
+export const ResultEditorWindow = ({ code }: ResultEditorWindowProps) => {
   return (
     <Editor
       height="82vh"
@@ -32,4 +34,3 @@ const ResultEditorWindow = ({ code }) => {
     />
   );
 };
-export default ResultEditorWindow;
