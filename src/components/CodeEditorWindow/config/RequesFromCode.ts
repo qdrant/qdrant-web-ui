@@ -1,4 +1,6 @@
 import axios from "axios";
+import { routes } from "../../../routes";
+import { envs } from "../../../config";
 
 export function RequestFromCode(text) {
   const data = codeParse(text);
@@ -8,7 +10,7 @@ export function RequestFromCode(text) {
     //Sending request
     return axios({
       method: data.method,
-      url: "/" + data.endpoint,
+      url: data.endpoint,
       data: data.reqBody,
     })
       .then((response) => {
@@ -35,7 +37,7 @@ export function codeParse(codeText) {
   const body = codeArray[1];
   //Extract the header
   const method = headerLine.split(" ")[0];
-  const endpoint = headerLine.split(" ")[1];
+  const endpoint = `${envs.VITE_API_URL}/${headerLine.split(" ")[1]}`;
 
   var reqBody = {};
   if (body) {
