@@ -10,23 +10,28 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Editor from "@monaco-editor/react";
-import PropTypes from "prop-types";
+import { CodeProps } from "../../ToastNotifications/types";
 
-function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
+function SavedCode({
+  state,
+  code,
+  handleEditorChange,
+  toggleDrawer,
+}: CodeProps) {
   const [viewCode, setViewCode] = React.useState(
     `//Current Editor Code: \n${code}`
   );
   const [saveNameText, setSaveNameText] = useState("");
   const [savedCodes, setSavedCodes] = useState(
     localStorage.getItem("savedCodes")
-      ? JSON.parse(localStorage.getItem("savedCodes"))
+      ? JSON.parse(localStorage.getItem("savedCodes")!)
       : []
   );
 
   useEffect(() => {
     setSavedCodes(
       localStorage.getItem("savedCodes")
-        ? JSON.parse(localStorage.getItem("savedCodes"))
+        ? JSON.parse(localStorage.getItem("savedCodes")!)
         : []
     );
     setViewCode(`//Current Editor Code: \n${code}`);
@@ -44,31 +49,42 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
         },
       ];
       localStorage.setItem("savedCodes", JSON.stringify(data));
-      setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
+      setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")!));
       setSaveNameText("");
       return;
     }
   }
+  type Row = {
+    id: number;
+    name: string;
+    code: string;
+    time: string;
+    date: string;
+  };
+
+  type ColumnsParams = {
+    row: Row;
+  };
 
   const columns = [
     {
       field: "name",
       headerName: "Name",
       minWidth: 100,
-      valueGetter: (params) => params.row.name,
+      valueGetter: (params: ColumnsParams) => params.row.name,
       flex: 1,
     },
     {
       field: "time",
       headerName: "Time",
       width: 100,
-      valueGetter: (params) => params.row.time,
+      valueGetter: (params: ColumnsParams) => params.row.time,
     },
     {
       field: "date",
       headerName: "Date",
       width: 100,
-      valueGetter: (params) => params.row.date,
+      valueGetter: (params: ColumnsParams) => params.row.date,
     },
     {
       field: "delete",
@@ -76,10 +92,10 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       width: 100,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => deleteIcon(params.row),
+      renderCell: (params: ColumnsParams) => deleteIcon(params.row),
     },
   ];
-  function deleteIcon(data) {
+  function deleteIcon(data: Row) {
     return (
       <Button
         color="error"
@@ -88,7 +104,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           const updateCode = [...savedCodes];
           updateCode.splice(index, 1);
           localStorage.setItem("savedCodes", JSON.stringify(updateCode));
-          setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
+          setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")!));
           return;
         }}
       >
@@ -227,11 +243,5 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
-SavedCode.propTypes = {
-  state: PropTypes.bool,
-  toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
-  code: PropTypes.string,
-};
 
 export default SavedCode;

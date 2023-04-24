@@ -1,5 +1,4 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -9,14 +8,18 @@ import {
   Stack,
   CardActionArea,
   Typography,
-  styled,
   Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PolylineIcon from "@mui/icons-material/Polyline";
-import DeleteDialog from "./DeleteDialog";
+import { DeleteDialog } from "./DeleteDialog";
 
-const CollectionCard = (props) => {
+type CollectionCardProps = {
+  collection: any;
+  getCollectionsCall: () => void;
+};
+
+export const CollectionCard = (props: CollectionCardProps) => {
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const { collection, getCollectionsCall } = props;
 
@@ -74,10 +77,3 @@ const CollectionCard = (props) => {
     </>
   );
 };
-
-CollectionCard.propTypes = {
-  collection: PropTypes.object.isRequired,
-  getCollectionsCall: PropTypes.func.isRequired,
-};
-
-export default CollectionCard;

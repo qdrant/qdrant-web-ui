@@ -1,9 +1,13 @@
-import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import PropTypes from "prop-types";
+
 import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
 
-function InputWithIcon({ value, setValue }) {
+type InputWithIconProps = {
+  value: string;
+  setValue: (value: string) => void;
+};
+
+export function SearchBar({ value, setValue }: InputWithIconProps) {
   return (
     <Card sx={{ p: 2 }} elevation={2}>
       <OutlinedInput
@@ -23,9 +27,3 @@ function InputWithIcon({ value, setValue }) {
     </Card>
   );
 }
-InputWithIcon.propTypes = {
-  value: PropTypes.string,
-  setValue: PropTypes.func,
-};
-
-export default InputWithIcon;

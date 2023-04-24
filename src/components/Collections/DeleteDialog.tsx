@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -6,25 +6,33 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useTheme } from "@mui/material/styles";
-import PropTypes from "prop-types";
-import { deleteCollections } from "../../common/client";
-import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
-import Box from "@mui/material/Box";
 
-export default function DeleteDialog({
+import { ErrorNotifier } from "../ToastNotifications/ErrorNotifier";
+import Box from "@mui/material/Box";
+import { useDeleteCollections } from "../../hooks";
+
+type DeleteDialogProps = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  collectionName: string;
+  getCollectionsCall: () => void;
+};
+
+export function DeleteDialog({
   open,
   setOpen,
   collectionName,
   getCollectionsCall,
-}) {
+}: DeleteDialogProps) {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const { mutateAsync } = useDeleteCollections();
 
   const theme = useTheme();
 
   async function callDelete() {
-    const response = await deleteCollections(collectionName);
-    if (response === true) {
+    const response = await mutateAsync(collectionName);
+    if (response.data) {
       getCollectionsCall();
       setOpen(false);
     } else {
@@ -87,10 +95,3 @@ export default function DeleteDialog({
     </div>
   );
 }
-
-DeleteDialog.propTypes = {
-  collectionName: PropTypes.string.isRequired,
-  setOpen: PropTypes.func.isRequired,
-  open: PropTypes.bool.isRequired,
-  getCollectionsCall: PropTypes.func.isRequired,
-};
