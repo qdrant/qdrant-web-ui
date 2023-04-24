@@ -1,16 +1,20 @@
 import React from "react";
 import { Button, Stack } from "@mui/material";
 import History from "./history";
-import PropTypes from "prop-types";
+
 import SavedCode from "./savedCode";
 
-function Menu({ code, handleEditorChange }) {
+type MenuProps = {
+  code: string;
+  handleEditorChange: (value: string, code: string) => void;
+};
+export function Menu({ code, handleEditorChange }: MenuProps) {
   const [state, setState] = React.useState({
     history: false,
     savedCode: false,
   });
 
-  const toggleDrawer = (name, open) => () => {
+  const toggleDrawer = (name: string, open: boolean) => () => {
     setState({ ...state, [name]: open });
   };
 
@@ -43,9 +47,5 @@ function Menu({ code, handleEditorChange }) {
     </React.Fragment>
   );
 }
-Menu.propTypes = {
-  code: PropTypes.string,
-  handleEditorChange: PropTypes.func,
-};
 
 export default Menu;

@@ -3,20 +3,21 @@ import { SwipeableDrawer, Button, Box, Stack, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Editor from "@monaco-editor/react";
-import PropTypes from "prop-types";
+import { ColumnParams, Row } from "./types";
+import { CodeProps } from "../../ToastNotifications/types";
 
-function History({ state, code, handleEditorChange, toggleDrawer }) {
+function History({ state, code, handleEditorChange, toggleDrawer }: CodeProps) {
   const [viewCode, setViewCode] = React.useState("//Selected Code");
   const [history, setHistory] = useState(
     localStorage.getItem("history")
-      ? JSON.parse(localStorage.getItem("history"))
+      ? JSON.parse(localStorage.getItem("history")!)
       : []
   );
 
   useEffect(() => {
     setHistory(
       localStorage.getItem("history")
-        ? JSON.parse(localStorage.getItem("history"))
+        ? JSON.parse(localStorage.getItem("history")!)
         : []
     );
   }, [state]);
@@ -41,26 +42,26 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       field: "method",
       headerName: "Method",
       width: 100,
-      valueGetter: (params) => params.row.code.method,
+      valueGetter: (params: ColumnParams) => params.row.code.method,
     },
     {
       field: "endpoint",
       headerName: "Endpoint",
       minWidth: 100,
-      valueGetter: (params) => params.row.code.endpoint,
+      valueGetter: (params: ColumnParams) => params.row.code.endpoint,
       flex: 1,
     },
     {
       field: "time",
       headerName: "Time",
       width: 100,
-      valueGetter: (params) => params.row.time,
+      valueGetter: (params: ColumnParams) => params.row.time,
     },
     {
       field: "date",
       headerName: "Date",
       width: 100,
-      valueGetter: (params) => params.row.date,
+      valueGetter: (params: ColumnParams) => params.row.date,
     },
     {
       field: "delete",
@@ -68,10 +69,11 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       width: 100,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => deleteIcon(params.row),
+      renderCell: (params: ColumnParams) => deleteIcon(params.row),
     },
   ];
-  function deleteIcon(data) {
+
+  function deleteIcon(data: Row) {
     return (
       <Button
         color="error"
@@ -80,7 +82,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           const updateCode = [...history];
           updateCode.splice(index, 1);
           localStorage.setItem("history", JSON.stringify(updateCode));
-          setHistory(JSON.parse(localStorage.getItem("history")));
+          setHistory(JSON.parse(localStorage.getItem("history")!));
           return;
         }}
       >
@@ -143,7 +145,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                         },
                     }}
                     rows={history}
-                    columns={columns}
+                    columns={columns as any}
                     initialState={{
                       pagination: {
                         paginationModel: {
@@ -214,11 +216,5 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
-History.propTypes = {
-  state: PropTypes.bool,
-  toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
-  code: PropTypes.string,
-};
 
 export default History;
