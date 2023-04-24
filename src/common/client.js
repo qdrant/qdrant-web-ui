@@ -21,13 +21,13 @@ export function getCollectionsByName(collectionName, offset) {
     .then((response) => response.data.result);
 }
 
-export function getSimilarPointsByID(id, collectionName) {
+export function getSimilarPointsByID(ids, collectionName) {
   return axios
     .post(`/collections/${collectionName}/points/recommend`, {
       limit: 10,
       with_payload: true,
       with_vector: false,
-      positive: [id],
+      positive: ids,
     })
     .then((response) => response.data.result);
 }

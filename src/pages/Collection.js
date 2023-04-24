@@ -5,8 +5,7 @@ import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { getSimilarPointsByID } from "../common/client";
-import Chip from "@mui/material/Chip";
-import CopyAllIcon from "@mui/icons-material/CopyAll";
+import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 
 function Collection() {
   const { collectionName } = useParams();
@@ -14,11 +13,11 @@ function Collection() {
   const [offset, setOffset] = React.useState(0);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [recommendationId, setRecommendationId] = useState(null);
+  const [recommendationIds, setRecommendationIds] = useState([]);
 
   React.useEffect(() => {
-    if (recommendationId !== null) {
-      getSimilarPointsByID(recommendationId, collectionName)
+    if (recommendationIds.length !== 0) {
+      getSimilarPointsByID(recommendationIds, collectionName)
         .then((rPoints) => {
           setPoints({ points: rPoints });
         })
@@ -47,7 +46,7 @@ function Collection() {
           setPoints({});
         });
     }
-  }, [collectionName, offset, recommendationId]);
+  }, [collectionName, offset, recommendationIds]);
 
   return (
     <>
@@ -64,21 +63,14 @@ function Collection() {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Typography variant="h4">{collectionName}</Typography>
+            <SimilarSerachfield
+              value={recommendationIds}
+              setValue={setRecommendationIds}
+            />
           </Stack>
           <Grid container my={3} spacing={3}>
             {errorMessage && (
               <Typography mx={3}>Error: {errorMessage}</Typography>
-            )}
-            {recommendationId !== null && (
-              <Typography mx={3}>
-                <Chip
-                  icon={<CopyAllIcon />}
-                  label={recommendationId}
-                  onDelete={() => {
-                    setRecommendationId(null);
-                  }}
-                />
-              </Typography>
             )}
             {!points && !errorMessage && (
               <Typography mx={3}>Loading...</Typography>
@@ -94,7 +86,7 @@ function Collection() {
                 <Grid xs={12} item key={point.id}>
                   <PointCard
                     point={point}
-                    setRecommendationId={setRecommendationId}
+                    setRecommendationIds={setRecommendationIds}
                     collectionName={collectionName}
                   />
                 </Grid>

@@ -12,8 +12,7 @@ import {
 import { JsonViewer } from "@textea/json-viewer";
 
 const PointCard = (props) => {
-  const { point, setRecommendationId } = props;
-
+  const { point, setRecommendationIds } = props;
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
       return (
@@ -96,7 +95,7 @@ const PointCard = (props) => {
         <Button
           size="small"
           onClick={() => {
-            setRecommendationId(point.id);
+            setRecommendationIds([point.id]);
           }}
         >
           Find Similiar
@@ -108,7 +107,7 @@ const PointCard = (props) => {
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
-  setRecommendationId: PropTypes.func.isRequired,
+  setRecommendationIds: PropTypes.func.isRequired,
 };
 
 export default PointCard;
