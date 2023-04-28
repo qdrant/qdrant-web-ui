@@ -1,11 +1,18 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Card, CardContent, Divider, Typography, Grid } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Divider,
+  Typography,
+  Grid,
+  CardActions,
+  Button,
+} from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
 
 const PointCard = (props) => {
-  const { point } = props;
-
+  const { point, setRecommendationIds } = props;
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
       return (
@@ -74,12 +81,27 @@ const PointCard = (props) => {
       }}
     >
       <CardContent>{resDataView(point)}</CardContent>
+      <CardActions
+        sx={{
+          justifyContent: "right",
+        }}
+      >
+        <Button
+          size="small"
+          onClick={() => {
+            setRecommendationIds([point.id]);
+          }}
+        >
+          Find Similiar
+        </Button>
+      </CardActions>
     </Card>
   );
 };
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
+  setRecommendationIds: PropTypes.func.isRequired,
 };
 
 export default PointCard;
