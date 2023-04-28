@@ -72,6 +72,7 @@ function Collection() {
           <Stack alignItems="center">
             <Button
               variant="outlined"
+              disabled={!points || !points.next_page_offset}
               onClick={() => {
                 setOffset(points.next_page_offset);
               }}
