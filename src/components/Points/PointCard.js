@@ -30,13 +30,7 @@ const PointCard = (props) => {
 
             <Grid item xs={10} my={1}>
               {typeof data.payload[key] === "object" ? (
-                <Typography variant="subtitle1">
-                  {" "}
-                  <JsonViewer
-                    value={data.payload[key]}
-                    displayDataTypes={false}
-                  />{" "}
-                </Typography>
+                <Typography variant="subtitle1"> <JsonViewer value={data.payload[key]} displayDataTypes={ false } defaultInspectDepth={ 0 } rootName={ false } /> </Typography>
               ) : (
                 <Typography
                   variant="subtitle1"
