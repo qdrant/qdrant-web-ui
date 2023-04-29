@@ -1,32 +1,46 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# ESLint is a tool for identifying and reporting on patterns
-# found in ECMAScript/JavaScript code.
-# More details at https://github.com/eslint/eslint
-# and https://eslint.org
-
-name: ESLint
-
 on:
-  push:
-    branches: ["master"]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: ["master"]
-  schedule:
-    - cron: "40 23 * * 1"
+  - push
+  - pull_request
 
 jobs:
-  test:
-    name: Check the source code
+  install:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Install packages
-        run: pnpm install --frozen-lockfile
-      - name: Lint
-        run: pnpm run lint
-      - name: Test
-        run: pnpm run test
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 6.0.2
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: ACTIONS_ALLOW_UNSECURE_COMMANDS
+        run: echo 'ACTIONS_ALLOW_UNSECURE_COMMANDS=true' >> $GITHUB_ENV
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.18.1
+
+      - name: Portal Install Node.js dependencies
+        working-directory: ./portals
+        run: |
+          pnpm install
+
+      - name: Portals Lint & tests
+        working-directory: ./portals
+        run: |
+          cat .env.example > .env
+          pnpm run build:tailwind
+          pnpm run lint
+          pnpm test
+
+      - name: Services Install Node.js dependencies
+        working-directory: ./services
+        run: |
+          pnpm install
+
+      - name: Services Lint & tests
+        working-directory: ./services
+        run: |
+          pnpm run lint
+          pnpm test
