@@ -1,33 +1,14 @@
-import axios from "axios";
+import {QdrantClient} from '@qdrant/js-client-rest';
 
-export function getCollections() {
-  return axios.get("/collections").then((response) => response.data.result);
-}
 
-export function deleteCollections(collectionName) {
-  return axios
-    .delete(`/collections/${collectionName}`)
-    .then((response) => response.data.result);
-}
 
-export function getCollectionsByName(collectionName, offset) {
-  return axios
-    .post(`/collections/${collectionName}/points/scroll`, {
-      limit: 10,
-      with_payload: true,
-      with_vector: false,
-      offset: offset,
-    })
-    .then((response) => response.data.result);
-}
+export default function qdrantClient() {
+  let url;
+  if (process.env.NODE_ENV === "development") {
+    url = "http://localhost:6333";
+  } else {
+    url = window.location.href;
+  }
 
-export function getSimilarPointsByID(ids, collectionName) {
-  return axios
-    .post(`/collections/${collectionName}/points/recommend`, {
-      limit: 10,
-      with_payload: true,
-      with_vector: false,
-      positive: ids,
-    })
-    .then((response) => response.data.result);
+  return new QdrantClient({url})
 }

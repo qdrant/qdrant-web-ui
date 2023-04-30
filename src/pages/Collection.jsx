@@ -1,51 +1,55 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { getCollectionsByName } from "../common/client";
+import qdrantClient from "../common/client";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
-import { getSimilarPointsByID } from "../common/client";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 
 function Collection() {
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
-  const [offset, setOffset] = React.useState(0);
+  const [offset, setOffset] = React.useState(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [recommendationIds, setRecommendationIds] = useState([]);
 
   React.useEffect(() => {
-    if (recommendationIds.length !== 0) {
-      getSimilarPointsByID(recommendationIds, collectionName)
-        .then((rPoints) => {
-          setPoints({ points: rPoints });
-        })
-        .catch(function (error) {
+    const getPoints = async () => {
+      if (recommendationIds.length !== 0) {
+        try {
+          let newPoints = await qdrantClient().recommend(collectionName, {
+            positive: recommendationIds,
+            limit: 10 + (offset || 0),
+            with_payload: true,
+            with_vector: false,
+            offset: offset,
+          })
+          setOffset(newPoints.length);
+          setPoints({ points: newPoints });
+        } catch (error) {
           setHasError(true);
           setErrorMessage(error.message);
           setPoints({});
-        });
-    } else {
-      getCollectionsByName(collectionName, offset)
-        .then((rPoints) => {
-          if (points && points.next_page_offset) {
-            if (points.points.length !== 0) {
-              setPoints({
-                points: [...points.points, ...rPoints.points],
-                next_page_offset: rPoints.next_page_offset,
-              });
-            }
-          } else {
-            setPoints(rPoints);
-          }
-        })
-        .catch(function (error) {
+        }
+      } else {
+
+        try {
+          let newPoints = await qdrantClient().scroll(collectionName, { offset })
+          setPoints({
+            points: [
+              ...points?.points || [],
+              ...newPoints?.points || []
+            ]
+          });
+        } catch (error) {
           setHasError(true);
           setErrorMessage(error.message);
           setPoints({});
-        });
+        }
+      };
     }
+    getPoints()
   }, [collectionName, offset, recommendationIds]);
 
   return (

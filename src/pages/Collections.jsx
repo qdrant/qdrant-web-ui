@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getCollections } from "../common/client";
+import qdrantClient from "../common/client";
 import SearchBar from "../components/Collections/SearchBar";
 import CollectionCard from "../components/Collections/CollectionCard";
 import { Container, Box, Stack, Typography, Grid } from "@mui/material";
@@ -13,14 +13,13 @@ function Collections() {
   const [errorMessage, setErrorMessage] = useState("");
 
   async function getCollectionsCall() {
-    getCollections()
-      .then((response) => {
-        setRawCollections(response.collections);
-      })
-      .catch(function (error) {
-        setHasError(true);
-        setErrorMessage(error.message);
-      });
+    try {
+      let collections = await qdrantClient().getCollections();
+      setRawCollections(collections.collections);
+    } catch (error) {
+      setHasError(true);
+      setErrorMessage(error.message);
+    }
   }
 
   useEffect(() => {
