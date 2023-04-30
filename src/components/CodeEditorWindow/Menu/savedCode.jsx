@@ -37,6 +37,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       const data = [
         ...savedCodes,
         {
+          idx: saveNameText + Date.now(), // unique id to prevent duplicate
           name: saveNameText,
           code: code,
           time: new Date().toLocaleTimeString(),
