@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Editor from "@monaco-editor/react";
 import {
   Rules,
@@ -14,6 +14,7 @@ import { ErrorMarker, errChecker } from "./config/ErrorMarker";
 import { RequestFromCode } from "./config/RequesFromCode";
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import "./editor.css";
+import { useHotkeys } from "@mantine/hooks";
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
@@ -21,7 +22,15 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const lensesRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentCodeBlock, setCurrentCodeBlock] = useState("");
   let runBtnCommandId = null;
+
+  const handleOnclick = useCallback(async () => {
+    const result = await RequestFromCode(currentCodeBlock);
+    onChangeResult("code", JSON.stringify(result));
+  }, [currentCodeBlock]);
+
+  useHotkeys([["alt+Enter", () => handleOnclick()]], ["button"], true);
 
   const handleEditorChange = (code) => {
     onChange("code", code);
@@ -101,6 +110,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
             },
           ]
         );
+        setCurrentCodeBlock(selectedCodeBlock.blockText);
       }
     });
   }

@@ -4,7 +4,9 @@ import ResultEditorWindow from "../components/ResultEditorWindow";
 import { Box } from "@mui/system";
 import Menu from "../components/CodeEditorWindow/Menu";
 
-const query = `GET collections
+const query = `// Alt+Enter to run the query
+
+GET collections
 
 // Create a collection
 PUT collections/demo1
