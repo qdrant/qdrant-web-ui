@@ -76,10 +76,14 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       <Button
         color="error"
         onClick={() => {
-          const index = history.indexOf(data);
-          const updateCode = [...history];
-          updateCode.splice(index, 1);
-          localStorage.setItem("history", JSON.stringify(updateCode));
+          console.log(data);
+          console.log(history);
+
+          const updatedHistory = history.filter(
+            (item) => item.idx != data.idx
+          );
+
+          localStorage.setItem("history", JSON.stringify(updatedHistory));
           setHistory(JSON.parse(localStorage.getItem("history")));
           return;
         }}
@@ -153,7 +157,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                     }}
                     pageSizeOptions={[5, 10, 15]}
                     rowsPerPageOptions={[5, 10]}
-                    getRowId={(row) => `${row.time} ${row.date}`}
+                    getRowId={(row) => `${row.idx}`}
                     onRowClick={(params) => {
                       setViewCode(
                         `${params.row.code.method} ${

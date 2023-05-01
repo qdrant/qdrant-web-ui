@@ -16,6 +16,7 @@ export function RequestFromCode(text) {
           ? JSON.parse(localStorage.getItem("history"))
           : [];
         history.push({
+          idx: data.method + data.endpoint + Date.now(),
           code: data,
           time: new Date().toLocaleTimeString(),
           date: new Date().toLocaleDateString(),
