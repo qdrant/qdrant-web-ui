@@ -79,9 +79,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           console.log(data);
           console.log(history);
 
-          const updatedHistory = history.filter(
-            (item) => item.idx != data.idx
-          );
+          const updatedHistory = history.filter((item) => item.idx != data.idx);
 
           localStorage.setItem("history", JSON.stringify(updatedHistory));
           setHistory(JSON.parse(localStorage.getItem("history")));

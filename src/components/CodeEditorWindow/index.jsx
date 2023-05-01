@@ -101,6 +101,14 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
             },
           ]
         );
+        editor.addCommand(
+          monaco.KeyMod.Alt + monaco.KeyCode.Enter,
+          async () => {
+            let data = selectedCodeBlock.blockText;
+            const result = await RequestFromCode(data);
+            onChangeResult("code", JSON.stringify(result));
+          }
+        );
       }
     });
   }
