@@ -29,6 +29,7 @@ function PointImage({ data }) {
               sx={{
                 width: 150,
                 margin: "auto",
+                padding: 1,
                 wordWrap: "break-word",
               }}
               key={key}

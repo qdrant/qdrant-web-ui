@@ -89,11 +89,11 @@ const PointCard = (props) => {
         height: "100%",
       }}
     >
-      <Grid container spacing={2}>
-        <Grid item xs={2} m={"auto"}>
+      <Grid display={"flex"} spacing={2}>
+        <Grid item xs display={"contents"}>
           <PointImage data={point.payload} />
         </Grid>
-        <Grid item xs={10} my={1}>
+        <Grid item xs my={1}>
           <CardContent>{resDataView(point)}</CardContent>
           <CardActions
             sx={{
