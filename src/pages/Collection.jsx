@@ -7,6 +7,8 @@ import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 
 function Collection() {
+  const pageSize = 10;
+
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
   const [offset, setOffset] = React.useState(null);
@@ -14,18 +16,27 @@ function Collection() {
   const [errorMessage, setErrorMessage] = useState("");
   const [recommendationIds, setRecommendationIds] = useState([]);
 
+  const [nextPageOffset, setNextPageOffset] = React.useState(null);
+
+  const onIdsSelected = (ids) => {
+    setOffset(null);
+    setRecommendationIds(ids);
+    if (ids.length === 0) {
+      setPoints({ points: [] });
+    }
+  };
+
   React.useEffect(() => {
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {
           let newPoints = await qdrantClient().recommend(collectionName, {
             positive: recommendationIds,
-            limit: 10 + (offset || 0),
+            limit: pageSize + (offset || 0),
             with_payload: true,
             with_vector: false,
-            offset: offset,
           })
-          setOffset(newPoints.length);
+          setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
         } catch (error) {
           setHasError(true);
@@ -35,13 +46,14 @@ function Collection() {
       } else {
 
         try {
-          let newPoints = await qdrantClient().scroll(collectionName, { offset })
+          let newPoints = await qdrantClient().scroll(collectionName, { offset, limit: pageSize })
           setPoints({
             points: [
               ...points?.points || [],
               ...newPoints?.points || []
-            ]
+            ],
           });
+          setNextPageOffset(newPoints?.next_page_offset);
         } catch (error) {
           setHasError(true);
           setErrorMessage(error.message);
@@ -69,7 +81,7 @@ function Collection() {
             <Typography variant="h4">{collectionName}</Typography>
             <SimilarSerachfield
               value={recommendationIds}
-              setValue={setRecommendationIds}
+              setValue={onIdsSelected}
             />
           </Stack>
           <Grid container my={3} spacing={3}>
@@ -90,7 +102,7 @@ function Collection() {
                 <Grid xs={12} item key={point.id}>
                   <PointCard
                     point={point}
-                    setRecommendationIds={setRecommendationIds}
+                    setRecommendationIds={onIdsSelected}
                     collectionName={collectionName}
                   />
                 </Grid>
@@ -99,9 +111,9 @@ function Collection() {
           <Stack alignItems="center">
             <Button
               variant="outlined"
-              disabled={!points || !points.next_page_offset}
+              disabled={!points || !nextPageOffset}
               onClick={() => {
-                setOffset(points.next_page_offset);
+                setOffset(nextPageOffset);
               }}
             >
               Load More
