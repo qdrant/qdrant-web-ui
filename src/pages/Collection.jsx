@@ -1,51 +1,67 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { getCollectionsByName } from "../common/client";
+import qdrantClient from "../common/client";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
-import { getSimilarPointsByID } from "../common/client";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 
 function Collection() {
+  const pageSize = 10;
+
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
-  const [offset, setOffset] = React.useState(0);
+  const [offset, setOffset] = React.useState(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [recommendationIds, setRecommendationIds] = useState([]);
 
-  React.useEffect(() => {
-    if (recommendationIds.length !== 0) {
-      getSimilarPointsByID(recommendationIds, collectionName)
-        .then((rPoints) => {
-          setPoints({ points: rPoints });
-        })
-        .catch(function (error) {
-          setHasError(true);
-          setErrorMessage(error.message);
-          setPoints({});
-        });
-    } else {
-      getCollectionsByName(collectionName, offset)
-        .then((rPoints) => {
-          if (points && points.next_page_offset) {
-            if (points.points.length !== 0) {
-              setPoints({
-                points: [...points.points, ...rPoints.points],
-                next_page_offset: rPoints.next_page_offset,
-              });
-            }
-          } else {
-            setPoints(rPoints);
-          }
-        })
-        .catch(function (error) {
-          setHasError(true);
-          setErrorMessage(error.message);
-          setPoints({});
-        });
+  const [nextPageOffset, setNextPageOffset] = React.useState(null);
+
+  const onIdsSelected = (ids) => {
+    setOffset(null);
+    setRecommendationIds(ids);
+    if (ids.length === 0) {
+      setPoints({ points: [] });
     }
+  };
+
+  React.useEffect(() => {
+    const getPoints = async () => {
+      if (recommendationIds.length !== 0) {
+        try {
+          let newPoints = await qdrantClient().recommend(collectionName, {
+            positive: recommendationIds,
+            limit: pageSize + (offset || 0),
+            with_payload: true,
+            with_vector: false,
+          })
+          setNextPageOffset(newPoints.length);
+          setPoints({ points: newPoints });
+        } catch (error) {
+          setHasError(true);
+          setErrorMessage(error.message);
+          setPoints({});
+        }
+      } else {
+
+        try {
+          let newPoints = await qdrantClient().scroll(collectionName, { offset, limit: pageSize })
+          setPoints({
+            points: [
+              ...points?.points || [],
+              ...newPoints?.points || []
+            ],
+          });
+          setNextPageOffset(newPoints?.next_page_offset);
+        } catch (error) {
+          setHasError(true);
+          setErrorMessage(error.message);
+          setPoints({});
+        }
+      };
+    }
+    getPoints()
   }, [collectionName, offset, recommendationIds]);
 
   return (
@@ -65,7 +81,7 @@ function Collection() {
             <Typography variant="h4">{collectionName}</Typography>
             <SimilarSerachfield
               value={recommendationIds}
-              setValue={setRecommendationIds}
+              setValue={onIdsSelected}
             />
           </Stack>
           <Grid container my={3} spacing={3}>
@@ -86,7 +102,7 @@ function Collection() {
                 <Grid xs={12} item key={point.id}>
                   <PointCard
                     point={point}
-                    setRecommendationIds={setRecommendationIds}
+                    setRecommendationIds={onIdsSelected}
                     collectionName={collectionName}
                   />
                 </Grid>
@@ -95,9 +111,9 @@ function Collection() {
           <Stack alignItems="center">
             <Button
               variant="outlined"
-              disabled={!points || !points.next_page_offset}
+              disabled={!points || !nextPageOffset}
               onClick={() => {
-                setOffset(points.next_page_offset);
+                setOffset(nextPageOffset);
               }}
             >
               Load More
