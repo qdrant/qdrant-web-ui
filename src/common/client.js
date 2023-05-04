@@ -1,6 +1,4 @@
-import {QdrantClient} from '@qdrant/js-client-rest';
-
-
+import { QdrantClient } from "@qdrant/js-client-rest";
 
 export default function qdrantClient() {
   let url;
@@ -10,5 +8,5 @@ export default function qdrantClient() {
     url = window.location.href;
   }
 
-  return new QdrantClient({url})
+  return new QdrantClient({ url });
 }

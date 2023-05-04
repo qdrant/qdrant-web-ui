@@ -35,7 +35,7 @@ function Collection() {
             limit: pageSize + (offset || 0),
             with_payload: true,
             with_vector: false,
-          })
+          });
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
         } catch (error) {
@@ -44,14 +44,13 @@ function Collection() {
           setPoints({});
         }
       } else {
-
         try {
-          let newPoints = await qdrantClient().scroll(collectionName, { offset, limit: pageSize })
+          let newPoints = await qdrantClient().scroll(collectionName, {
+            offset,
+            limit: pageSize,
+          });
           setPoints({
-            points: [
-              ...points?.points || [],
-              ...newPoints?.points || []
-            ],
+            points: [...(points?.points || []), ...(newPoints?.points || [])],
           });
           setNextPageOffset(newPoints?.next_page_offset);
         } catch (error) {
@@ -59,9 +58,9 @@ function Collection() {
           setErrorMessage(error.message);
           setPoints({});
         }
-      };
-    }
-    getPoints()
+      }
+    };
+    getPoints();
   }, [collectionName, offset, recommendationIds]);
 
   return (

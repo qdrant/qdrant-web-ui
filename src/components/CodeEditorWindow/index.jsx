@@ -123,7 +123,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     // Defining Autocomplete
     monaco.languages.registerCompletionItemProvider(
       "custom-language",
-      Autocomplete
+      Autocomplete(monaco)
     );
   }
 
