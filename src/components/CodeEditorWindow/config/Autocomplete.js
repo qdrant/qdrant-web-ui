@@ -20,24 +20,27 @@ export const Autocomplete = (monaco) => ({
         }),
       ];
       return { suggestions: suggestions };
-    } else if (textUntilPosition.split(" ").length === 2) {
+    } 
+    else if (textUntilPosition.split(" ").length === 2 && keywords.includes(textUntilPosition.split(" ")[0]) ) {
       const suggestions = [];
       for (var key in data.paths) {
         if (
           key.includes(textUntilPosition.split(" ")[1].split("/")[0]) &&
           key.split("/")[textUntilPosition.split(" ")[1].split("/").length]
         ) {
-          console.log(textUntilPosition.split(" ")[1].split("/").length);
-
           const path =
             key.split("/")[textUntilPosition.split(" ")[1].split("/").length];
-          suggestions.push({
-            label: path,
-            kind: monaco.languages.CompletionItemKind.Keyword,
-            insertText: path,
-          });
+            const found = suggestions.some(el => el.insertText === path);
+            if (!found) {
+              suggestions.push({
+                label: path,
+                kind: monaco.languages.CompletionItemKind.Keyword,
+                insertText: path,
+              });
+           }
         }
       }
+      
       return { suggestions: suggestions };
     }
 
