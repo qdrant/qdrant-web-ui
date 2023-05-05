@@ -10,6 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
+import PointImage from "./PointImage";
 
 const PointCard = (props) => {
   const { point, setRecommendationIds } = props;
@@ -88,28 +89,34 @@ const PointCard = (props) => {
         height: "100%",
       }}
     >
-      <CardContent>{resDataView(point)}</CardContent>
-      <CardActions
-        sx={{
-          justifyContent: "right",
-        }}
-      >
-        <Button
-          size="small"
-          onClick={() => {
-            setRecommendationIds([point.id]);
-          }}
-        >
-          Find Similiar
-        </Button>
-      </CardActions>
+      <Grid display={"flex"} spacing={2}>
+        <Grid item xs display={"contents"}>
+          <PointImage data={point.payload} />
+        </Grid>
+        <Grid item xs my={1}>
+          <CardContent>{resDataView(point)}</CardContent>
+          <CardActions
+            sx={{
+              justifyContent: "right",
+            }}
+          >
+            <Button
+              size="small"
+              onClick={() => {
+                setRecommendationIds([point.id]);
+              }}
+            >
+              Find Similiar
+            </Button>
+          </CardActions>
+        </Grid>
+      </Grid>
     </Card>
   );
 };
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
-  setRecommendationIds: PropTypes.func.isRequired,
 };
 
 export default PointCard;
