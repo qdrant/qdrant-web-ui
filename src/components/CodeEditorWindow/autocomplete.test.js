@@ -1,63 +1,5 @@
 import {getAutocompleteArray} from "./config/Autocomplete";
 import { describe, it, expect } from "vitest";
-import { getLastCodeBlock } from "./config/Autocomplete";
-
-let testCode = `GET collections
-
-PUT collections/demo1
-{
-    "vectors":
-    {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
-
-GET collections
-
-DELETE collections/demo1
-
-GET collections//single line comment this will be removed
-
-PUT collections/demo1
-{
-    //line comment 
-    //this will be removed
-    "vectors":
-    {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
-
-GET collections/startups
-{
-    "vectors":
-    {
-        "size": 1,, //this should give you error due to double comma improper json and this comment should be ignored/removed
-        "distance": "Cosine"
-    }
-}
-
-{
-    "vectors":
-    {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
-
-PUT collections/demo1
-
-{
-    "vectors":
-    {
-        "size": 1,
-        "distance": "Cosine"
-    }
-}
-
-`;
 
 describe("Autocomplete", () => {
     it("1st", () => {
@@ -153,6 +95,162 @@ describe("Autocomplete", () => {
         ]
         );
     });
+    it("5th", () => {
+        const array = getAutocompleteArray("GET collections \nGET met");
+        expect(array).toEqual([
+           {
+                 insertText: 'telemetry',
+                 kind: 17,
+                 label: 'telemetry',
+               },
+               {
+                 insertText: 'metrics',
+                 kind: 17,
+                 label: 'metrics',
+               },
+        ]
+        );
+    });
+    it("6th", () => {
+        const array = getAutocompleteArray("GET collections \nGET metrics \nGET ");
+        expect(array).toEqual(    [
+             {
+               insertText: 'telemetry',
+               kind: 17,
+               label: 'telemetry',
+             },
+             {
+               insertText: 'metrics',
+               kind: 17,
+               label: 'metrics',
+             },
+             {
+               insertText: 'locks',
+               kind: 17,
+               label: 'locks',
+             },
+             {
+               insertText: 'cluster',
+               kind: 17,
+               label: 'cluster',
+             },
+             {
+               insertText: 'collections',
+               kind: 17,
+               label: 'collections',
+             },
+             {
+               insertText: 'aliases',
+               kind: 17,
+               label: 'aliases',
+             },
+             {
+               insertText: 'snapshots',
+               kind: 17,
+               label: 'snapshots',
+             },
+              ]);
+    });
+    it("7th", () => {
+        const array = getAutocompleteArray("GET collections \nGET metrics \nGET telemetry \nGET collections/name");
+        expect(array).toEqual(    [
+           {
+                 insertText: 'aliases',
+                 kind: 17,
+                 label: 'aliases',
+               },
+        ]);
+    });
+    it("8th", () => {
+        const array = getAutocompleteArray("GET collections/name \nGET collections/name/snapsshots/");
+        expect(array).toEqual(     [
+          {
+            insertText: 'upload',
+            kind: 17,
+            label: 'upload',
+          },
+          {
+            insertText: 'recover',
+            kind: 17,
+            label: 'recover',
+          },
+          {
+            insertText: 'delete',
+            kind: 17,
+            label: 'delete',
+          },
+          {
+            insertText: 'payload',
+            kind: 17,
+            label: 'payload',
+          },
+          {
+            insertText: 'scroll',
+            kind: 17,
+            label: 'scroll',
+          },
+          {
+            insertText: 'search',
+            kind: 17,
+            label: 'search',
+          },
+          {
+            insertText: 'recommend',
+            kind: 17,
+            label: 'recommend',
+          },
+          {
+            insertText: 'count',
+            kind: 17,
+            label: 'count',
+          },
+
+        ]);
+    });
+
+    it("9th", () => {
+        const array = getAutocompleteArray("GET collections/name/snapsshots/ \nGET collections/name/snapsshots/uplo");
+        expect(array).toEqual(     [
+          {
+            insertText: 'upload',
+            kind: 17,
+            label: 'upload',
+          },
+          {
+            insertText: 'recover',
+            kind: 17,
+            label: 'recover',
+          },
+          {
+            insertText: 'delete',
+            kind: 17,
+            label: 'delete',
+          },
+          {
+            insertText: 'payload',
+            kind: 17,
+            label: 'payload',
+          },
+          {
+            insertText: 'scroll',
+            kind: 17,
+            label: 'scroll',
+          },
+          {
+            insertText: 'search',
+            kind: 17,
+            label: 'search',
+          },
+          {
+            insertText: 'recommend',
+            kind: 17,
+            label: 'recommend',
+          },
+          {
+            insertText: 'count',
+            kind: 17,
+            label: 'count',
+          },
+        ]);
+    });
 });
-
-

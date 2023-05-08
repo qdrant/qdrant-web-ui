@@ -11,8 +11,6 @@ export const Autocomplete = (monaco) => ({
       startLineNumber: 0,
     });
     const suggestions = getAutocompleteArray(textUntilPosition);
-
-    console.log(suggestions);
     return { suggestions: suggestions }
   },
 });
@@ -79,37 +77,39 @@ export function getLastCodeBlock(codeText) {
 
 export function getAutocompleteArray(textUntilPosition) {
   const block = getLastCodeBlock(textUntilPosition);
-  if (block.blockText.split(" ").length === 1) {
-    const suggestions = [
-      ...keywords.map((k) => {
-        return {
-          label: "Method:" + k,
-          kind: 17,
-          insertText: k,
-        };
-      }),
-    ];
-    return suggestions;
-  }
-  else if (block.blockText.split(" ").length === 2 && keywords.includes(block.blockText.split(" ")[0])) {
-    const suggestions = [];
-    for (var key in data.paths) {
-      if (
-        key.includes(block.blockText.split(" ")[1].split("/")[0]) &&
-        key.split("/")[block.blockText.split(" ")[1].split("/").length]
-      ) {
-        const path =
-          key.split("/")[block.blockText.split(" ")[1].split("/").length];
-        if (!suggestions.some(el => el.insertText === path) && !path.includes("{") ) {
-          suggestions.push({
-            label: path,
+  if(block.blockText.split("\n").length === 1){
+    if (block.blockText.split(" ").length === 1) {
+      const suggestions = [
+        ...keywords.map((k) => {
+          return {
+            label: "Method:" + k,
             kind: 17,
-            insertText: path,
-          });
+            insertText: k,
+          };
+        }),
+      ];
+      return suggestions;
+    }
+    else if (block.blockText.split(" ").length === 2 && keywords.includes(block.blockText.split(" ")[0])) {
+      const suggestions = [];
+      for (var key in data.paths) {
+        if (
+          key.includes(block.blockText.split(" ")[1].split("/")[0]) &&
+          key.split("/")[block.blockText.split(" ")[1].split("/").length]
+        ) {
+          const path =
+            key.split("/")[block.blockText.split(" ")[1].split("/").length];
+          if (!suggestions.some(el => el.insertText === path) && !path.includes("{") ) {
+            suggestions.push({
+              label: path,
+              kind: 17,
+              insertText: path,
+            });
+          }
         }
       }
+      return suggestions;
     }
-    return suggestions;
   }
 
   return [];
