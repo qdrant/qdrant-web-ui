@@ -11,12 +11,11 @@ export const Autocomplete = (monaco) => ({
       startLineNumber: 0,
     });
     const suggestions = getAutocompleteArray(textUntilPosition);
-    return { suggestions: suggestions }
+    return { suggestions: suggestions };
   },
 });
 
-
-//this functin selects the code block where autoComplete need to done 
+//this functin selects the code block where autoComplete need to done
 export function getLastCodeBlock(codeText) {
   const codeArray = codeText.replace(/\/\/.*$/gm, "").split("\n");
   var block = { blockText: "", blockStartLine: null, blockEndLine: null };
@@ -73,11 +72,9 @@ export function getLastCodeBlock(codeText) {
   }
 }
 
-
-
 export function getAutocompleteArray(textUntilPosition) {
   const block = getLastCodeBlock(textUntilPosition);
-  if(block.blockText.split("\n").length === 1){
+  if (block.blockText.split("\n").length === 1) {
     if (block.blockText.split(" ").length === 1) {
       const suggestions = [
         ...keywords.map((k) => {
@@ -89,8 +86,10 @@ export function getAutocompleteArray(textUntilPosition) {
         }),
       ];
       return suggestions;
-    }
-    else if (block.blockText.split(" ").length === 2 && keywords.includes(block.blockText.split(" ")[0])) {
+    } else if (
+      block.blockText.split(" ").length === 2 &&
+      keywords.includes(block.blockText.split(" ")[0])
+    ) {
       const suggestions = [];
       for (var key in data.paths) {
         if (
@@ -99,7 +98,10 @@ export function getAutocompleteArray(textUntilPosition) {
         ) {
           const path =
             key.split("/")[block.blockText.split(" ")[1].split("/").length];
-          if (!suggestions.some(el => el.insertText === path) && !path.includes("{") ) {
+          if (
+            !suggestions.some((el) => el.insertText === path) &&
+            !path.includes("{")
+          ) {
             suggestions.push({
               label: path,
               kind: 17,
@@ -114,4 +116,3 @@ export function getAutocompleteArray(textUntilPosition) {
 
   return [];
 }
-
