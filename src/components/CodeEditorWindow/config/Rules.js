@@ -91,7 +91,7 @@ export function GetCodeBlocks(codeText) {
     if (codeArray[i].includes("{")) {
       if (backetcount === 0) {
         codeStarLine = i;
-        block.blockText = codeArray[i - 1] + " \n ";
+        block.blockText = codeArray[i - 1] + "\n ";
       }
       backetcount = backetcount + codeArray[i].match(/{/gi).length;
     }

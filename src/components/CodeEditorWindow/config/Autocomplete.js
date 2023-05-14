@@ -27,7 +27,7 @@ export function getLastCodeBlock(codeText) {
     if (codeArray[i].includes("{")) {
       if (backetcount === 0) {
         codeStartLine = i;
-        block.blockText = codeArray[i - 1] + " \n ";
+        block.blockText = codeArray[i - 1] + "\n ";
       }
       backetcount = backetcount + codeArray[i].match(/{/gi)?.length;
     }
@@ -112,6 +112,15 @@ export function getAutocompleteArray(textUntilPosition) {
       }
       return suggestions;
     }
+  }
+  else if(block.blockText.split("\n").length === 2){
+    if(block.blockText.split("\n")[0].split(" ").length === 2){
+      const Method = block.blockText.split("\n")[0].split(" ")[0];
+      const Path = block.blockText.split("\n")[0].split(" ")[1];
+      console.log(data.paths[`/${Path}`])
+    }
+    return [];
+
   }
 
   return [];
