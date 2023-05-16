@@ -51,7 +51,7 @@ export function codeParse(codeText) {
       };
     }
   }
-  if (method === "" && endpoint === "") {
+  if ((method === undefined || method === "") && (endpoint === undefined || endpoint === "")) {
     return {
       method: null,
       endpoint: null,
@@ -59,14 +59,14 @@ export function codeParse(codeText) {
       error:
         "Add Headline or remove the line gap between json and headline (if any)",
     };
-  } else if (method === "") {
+  } else if (method === undefined || method === "") {
     return {
       method: null,
       endpoint: endpoint,
       reqBody: reqBody,
       error: "Add method",
     };
-  } else if (endpoint === "") {
+  } else if (endpoint === undefined || endpoint === "") {
     return {
       method: method,
       endpoint: null,

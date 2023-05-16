@@ -15,6 +15,26 @@ export const Autocomplete = (monaco) => ({
   },
 });
 
+function getPath(Path) {
+  for(var key in data.paths){ 
+    if(key.includes("{") && key.includes("}") && key.split("/").length === Path.split("/").length){
+      const keyarrays = key.split("/");
+      const patharrays = Path.split("/");
+      for(var i=0;i<keyarrays.length;i++){
+       if(keyarrays[i] !== patharrays[i] && !(keyarrays[i].includes("{") && keyarrays[i].includes("}"))){
+          break;
+        }
+        if(i === keyarrays.length-1){
+          return key;
+        }
+      }
+    }
+    else if(key===Path){
+      return key;
+    }
+  }
+}
+
 //this functin selects the code block where autoComplete need to done
 export function getLastCodeBlock(codeText) {
   const codeArray = codeText.replace(/\/\/.*$/gm, "").split("\n");
@@ -115,13 +135,19 @@ export function getAutocompleteArray(textUntilPosition) {
   }
   else if(block.blockText.split("\n").length === 2){
     if(block.blockText.split("\n")[0].split(" ").length === 2){
-      const Method = block.blockText.split("\n")[0].split(" ")[0];
-      const Path = block.blockText.split("\n")[0].split(" ")[1];
-      console.log(data.paths[`/${Path}`])
+      var Method = block.blockText.split("\n")[0].split(" ")[0];
+      var Path =`/${ block.blockText.split("\n")[0].split(" ")[1]}`;
+      Path =getPath(Path);
+      if(data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema){
+        const schemaName = data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema.$ref.split("#")[1];
+        const schema = data.components.schemas[schemaName];
+        console.log(schemaName);
+        return [];
+       
+      }
     }
     return [];
 
   }
-
   return [];
 }
