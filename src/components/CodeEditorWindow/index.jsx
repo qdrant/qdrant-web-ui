@@ -7,6 +7,7 @@ import {
   btnconfig,
   GetCodeBlocks,
   selectBlock,
+  config
 } from "./config/Rules";
 import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
@@ -125,6 +126,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       "custom-language",
       Autocomplete(monaco)
     );
+    monaco.languages.setLanguageConfiguration('custom-language', config);
   }
 
   return (

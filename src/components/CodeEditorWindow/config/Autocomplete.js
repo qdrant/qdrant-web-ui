@@ -139,11 +139,9 @@ export function getAutocompleteArray(textUntilPosition) {
       var Path =`/${ block.blockText.split("\n")[0].split(" ")[1]}`;
       Path =getPath(Path);
       if(data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema){
-        const schemaName = data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema.$ref.split("#")[1];
-        const schema = data.components.schemas[schemaName];
+        const schemaName = data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema.$ref;
         console.log(schemaName);
         return [];
-       
       }
     }
     return [];
