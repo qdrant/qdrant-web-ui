@@ -16,7 +16,7 @@ export const Rules = {
       ],
 
       [/".*?"/, "string"],
-
+      [/'.*?'/, "string"],
       [/\/\/.*/, "comment"],
     ],
   },
@@ -35,8 +35,6 @@ export  const config = {
     { open: '{', close: '}' },
     { open: '[', close: ']' },
     { open: '(', close: ')' },
-    { open: "'", close: "'", notIn: ['string', 'comment'] },
-    { open: '"', close: '"', notIn: ['string', 'comment'] },
   ],
 };
 

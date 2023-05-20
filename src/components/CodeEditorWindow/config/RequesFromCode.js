@@ -47,7 +47,7 @@ export function codeParse(codeText) {
         method: null,
         endpoint: null,
         reqBody: body,
-        error: "Fix the Position brackets to run & check the json",
+        error: "Fix the Position brackets to run & check the json" + e,
       };
     }
   }

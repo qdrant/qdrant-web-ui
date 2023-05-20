@@ -1,6 +1,5 @@
 const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 import data from "./openapi.json";
-import { GetCodeBlocks } from "./Rules";
 
 export const Autocomplete = (monaco) => ({
   provideCompletionItems: (model, position) => {
@@ -16,23 +15,29 @@ export const Autocomplete = (monaco) => ({
 });
 
 function getPath(Path) {
-  for(var key in data.paths){ 
-    if(key.includes("{") && key.includes("}") && key.split("/").length === Path.split("/").length){
+  var sol = "";
+  for (var key in data.paths) {
+    if (key.includes("{") && key.includes("}") && key.split("/").length === Path.split("/").length) {
       const keyarrays = key.split("/");
       const patharrays = Path.split("/");
-      for(var i=0;i<keyarrays.length;i++){
-       if(keyarrays[i] !== patharrays[i] && !(keyarrays[i].includes("{") && keyarrays[i].includes("}"))){
+      for (var i = 0; i < keyarrays.length; i++) {
+        if (keyarrays[i] !== patharrays[i] && !(keyarrays[i].includes("{") && keyarrays[i].includes("}"))) {
           break;
         }
-        if(i === keyarrays.length-1){
-          return key;
+        if (i === keyarrays.length - 1) {
+          if (sol.match(/{/gi)?.length > key.match(/{/gi)?.length || sol === "") {
+            sol = key;
+          }
         }
       }
+
+
     }
-    else if(key===Path){
+    else if (key === Path) {
       return key;
     }
   }
+  return sol;
 }
 
 //this functin selects the code block where autoComplete need to done
@@ -42,6 +47,7 @@ export function getLastCodeBlock(codeText) {
   var backetcount = 0;
   var codeStartLine = 0;
   var codeEndline = 0;
+  var level = [];
   for (var i = 0; i < codeArray.length; ++i) {
     // dealing for request which have JSON Body
     if (codeArray[i].includes("{")) {
@@ -56,6 +62,7 @@ export function getLastCodeBlock(codeText) {
       if (backetcount === 0) {
         codeEndline = i + 1;
       }
+      level.pop()
     }
     if (i === codeArray.length - 1) {
       codeEndline = i + 1;
@@ -63,9 +70,13 @@ export function getLastCodeBlock(codeText) {
     if (codeStartLine) {
       block.blockStartLine = codeStartLine;
       block.blockText = block.blockText + codeArray[i];
+      if (codeArray[i].includes("{") && codeStartLine !== i) {
+        level.push(block.blockText.match(/".*?"/gi)[block.blockText.match(/".*?"/gi).length - 1].replace(/"/g, ""))
+      }
       if (codeEndline) {
         block.blockEndLine = codeEndline;
         if (i === codeArray.length - 1) {
+          block.level = level;
           return block;
         }
         codeEndline = 0;
@@ -133,18 +144,55 @@ export function getAutocompleteArray(textUntilPosition) {
       return suggestions;
     }
   }
-  else if(block.blockText.split("\n").length === 2){
-    if(block.blockText.split("\n")[0].split(" ").length === 2){
+  else if (block.blockText.split("\n").length === 2) {
+    const suggestions = [];
+    if (block.blockText.split("\n")[0].split(" ").length === 2) {
       var Method = block.blockText.split("\n")[0].split(" ")[0];
-      var Path =`/${ block.blockText.split("\n")[0].split(" ")[1]}`;
-      Path =getPath(Path);
-      if(data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema){
-        const schemaName = data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema.$ref;
-        console.log(schemaName);
-        return [];
+      var Path = `/${block.blockText.split("\n")[0].split(" ")[1]}`;
+      Path = getPath(Path);
+      if (data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema) {
+        let schemaName = data.paths[Path][Method.toLowerCase()].requestBody?.content["application/json"].schema.$ref;
+        schemaName = schemaName.split("/")[schemaName.split("/").length - 1];
+        var schema = data.components.schemas[schemaName];
+        for (var i = 0; i < block.level.length; i++) {
+          schemaName = schema.properties[block.level[i]].$ref || schema.properties[block.level[i]].anyOf[0].$ref;
+          console.log(schemaName)
+          schemaName = schemaName.split("/")[schemaName.split("/").length - 1];
+          schema = data.components.schemas[schemaName];
+        }
+        if (schema.properties) {
+          for (var key in schema.properties) {
+            suggestions.push({
+              label: key,
+              kind: 17,
+              insertText: key,
+              documentation: schema.properties[key].description,
+            });
+          }
+        }
+        while (schema.anyOf) {
+          for (var i = 0; i < schema.anyOf?.length; i++) {
+            if (schema.anyOf[i].$ref) {
+              schemaName = schema.anyOf[i].$ref;
+              schemaName = schemaName.split("/")[schemaName.split("/").length - 1];
+              schema = data.components.schemas[schemaName];
+              if (schema.properties) {
+                for (var key in schema.properties) {
+                  suggestions.push({
+                    label: key,
+                    kind: 17,
+                    insertText: key,
+                    documentation: schema.properties[key].description,
+                  });
+                }
+              }
+            }
+          }
+        }
+
       }
     }
-    return [];
+    return suggestions;
 
   }
   return [];
