@@ -7,6 +7,7 @@ import {
   btnconfig,
   GetCodeBlocks,
   selectBlock,
+  langConfig,
 } from "./config/Rules";
 import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
@@ -86,6 +87,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         editor.getPosition().lineNumber
       );
 
+      monaco.selectedCodeBlock = selectedCodeBlock;
+
       if (selectedCodeBlock) {
         let fromRange = selectedCodeBlock.blockStartLine;
         let toRange = selectedCodeBlock.blockEndLine;
@@ -122,11 +125,16 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     monaco.languages.setMonarchTokensProvider("custom-language", Rules);
     // Definining Theme
     monaco.editor.defineTheme("custom-language-theme", Theme(theme));
+
+    // Defining Language Configuration, e.g. comments, brackets
+    monaco.languages.setLanguageConfiguration('custom-language', langConfig);
     // Defining Autocomplete
-    monaco.languages.registerCompletionItemProvider(
-      "custom-language",
-      Autocomplete
-    );
+    Autocomplete(monaco).then((autocomplete) => {
+      monaco.languages.registerCompletionItemProvider(
+        "custom-language",
+        autocomplete
+      );
+    });
   }
 
   // Monitor if theme changes
