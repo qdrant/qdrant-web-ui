@@ -29,7 +29,7 @@
     "test": "vitest",
     "eject": "vite eject",
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build --base './'",
     "serve": "vite preview",
     "lint": "eslint ."
   },
