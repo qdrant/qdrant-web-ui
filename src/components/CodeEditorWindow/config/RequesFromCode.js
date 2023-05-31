@@ -32,7 +32,7 @@ export function RequestFromCode(text) {
 }
 
 export function codeParse(codeText) {
-  const codeArray = codeText.split("\n");
+  const codeArray = codeText.split(/\r?\n/);
   const headerLine = codeArray.shift();
   const body = codeArray.join("\n");
   //Extract the header

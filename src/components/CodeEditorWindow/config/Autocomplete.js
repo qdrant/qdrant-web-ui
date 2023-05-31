@@ -52,7 +52,7 @@ export const Autocomplete = async (monaco) => {
         return { suggestions: suggestions };
       } else {
         // Autocomplete for request body
-        let requestLines = selectedCodeBlock.blockText.split("\n");
+        let requestLines = selectedCodeBlock.blockText.split(/\r?\n/);
 
         let lastLine = requestLines[relativeLine].slice(0, position.column - 1);
 

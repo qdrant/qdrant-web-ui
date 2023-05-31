@@ -26,7 +26,7 @@ export function errChecker(code) {
   const blocksArray = GetCodeBlocks(code);
   ErrorMarker = [];
   for (var i = 0; i < blocksArray.length; ++i) {
-    const headLineArray = blocksArray[i].blockText.split("\n")[0].split(" ");
+    const headLineArray = blocksArray[i].blockText.split(/\r?\n/)[0].split(" ");
     if (keywords.indexOf(headLineArray[0]) < 0) {
       ErrorMarker.push({
         startLineNumber: blocksArray[i].blockStartLine,

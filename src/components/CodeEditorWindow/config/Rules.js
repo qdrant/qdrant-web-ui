@@ -44,6 +44,7 @@ export const options = {
   automaticLayout: true,
   mouseWheelZoom: true,
   glyphMargin: true,
+  wordBasedSuggestions: false,
 };
 
 export function btnconfig(commandId) {
@@ -93,7 +94,7 @@ export function selectBlock(blocks, location) {
 }
 
 export function GetCodeBlocks(codeText) {
-  const codeArray = codeText.replace(/\/\/.*$/gm, "").split("\n");
+  const codeArray = codeText.replace(/\/\/.*$/gm, "").split(/\r?\n/);
   var blocksArray = [];
   var block = { blockText: "", blockStartLine: null, blockEndLine: null };
   var backetcount = 0;
