@@ -33,8 +33,13 @@ jobs:
           node-version: 18
       - run: npm ci
       - run: npm run build
-      - name: Step 3 - Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v3
-        with: 
-          name: dist
-          path: dist
+      - name: Archive dist folder
+        uses: montudor/action-zip@v1
+        with:
+          args: -r dist.zip dist
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist.zip
+
