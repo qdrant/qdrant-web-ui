@@ -1,6 +1,6 @@
 {
   "name": "qdrant-web-ui",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.6",
@@ -30,7 +30,7 @@
     "eject": "vite eject",
     "start": "vite",
     "build": "vite build --base './'",
-    "build-qdrant": "vite build --base '/dashboard'",
+    "build-qdrant": "vite build --base '/dashboard/'",
     "serve": "vite preview",
     "lint": "eslint ."
   },
