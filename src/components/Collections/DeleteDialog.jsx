@@ -7,7 +7,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useTheme } from "@mui/material/styles";
 import PropTypes from "prop-types";
-import qdrantClient from "../../common/client";
+import { useClient } from "../../context/client-context";
+
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import Box from "@mui/material/Box";
 
@@ -20,13 +21,16 @@ export default function DeleteDialog({
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const {client: qdrantClient} = useClient(); 
+
   const theme = useTheme();
 
   async function callDelete() {
     try {
-      await qdrantClient().deleteCollection(collectionName);
+      await qdrantClient.deleteCollection(collectionName);
       getCollectionsCall();
       setOpen(false);
+      setHasError(false);
     } catch (error) {
       setErrorMessage(`Deletion Unsuccessful, error: ${error.message}`);
       setHasError(true);
@@ -41,7 +45,7 @@ export default function DeleteDialog({
   return (
     <div>
       {hasError && (
-        <ErrorNotifier {...{ message: errorMessage, setHasError }} />
+        <ErrorNotifier {...{ message: errorMessage }} />
       )}
       <Dialog
         open={open}

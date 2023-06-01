@@ -76,9 +76,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       <Button
         color="error"
         onClick={() => {
-          console.log(data);
-          console.log(history);
-
           const updatedHistory = history.filter((item) => item.idx != data.idx);
 
           localStorage.setItem("history", JSON.stringify(updatedHistory));

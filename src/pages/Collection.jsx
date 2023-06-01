@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import qdrantClient from "../common/client";
+import { useClient } from "../context/client-context";
 import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
@@ -12,9 +12,9 @@ function Collection() {
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
   const [offset, setOffset] = React.useState(null);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
+  const {client: qdrantClient} = useClient(); 
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 
@@ -30,7 +30,7 @@ function Collection() {
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {
-          let newPoints = await qdrantClient().recommend(collectionName, {
+          let newPoints = await qdrantClient.recommend(collectionName, {
             positive: recommendationIds,
             limit: pageSize + (offset || 0),
             with_payload: true,
@@ -38,15 +38,15 @@ function Collection() {
           })
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
+          setErrorMessage(null);
         } catch (error) {
-          setHasError(true);
           setErrorMessage(error.message);
           setPoints({});
         }
       } else {
 
         try {
-          let newPoints = await qdrantClient().scroll(collectionName, { offset, limit: pageSize })
+          let newPoints = await qdrantClient.scroll(collectionName, { offset, limit: pageSize })
           setPoints({
             points: [
               ...points?.points || [],
@@ -54,8 +54,8 @@ function Collection() {
             ],
           });
           setNextPageOffset(newPoints?.next_page_offset);
+          setErrorMessage(null);
         } catch (error) {
-          setHasError(true);
           setErrorMessage(error.message);
           setPoints({});
         }
@@ -73,8 +73,8 @@ function Collection() {
           my: 3,
         }}
       >
-        {hasError && (
-          <ErrorNotifier {...{ message: errorMessage, setHasError }} />
+        {errorMessage !== null && (
+          <ErrorNotifier {...{ message: errorMessage }} />
         )}
         <Container maxWidth="xl">
           <Stack spacing={3}>

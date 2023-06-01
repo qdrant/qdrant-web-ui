@@ -6,6 +6,7 @@ import {
   Drawer,
   Grid,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -14,10 +15,11 @@ import { Logo } from "../components/Logo";
 import { Stack } from "@mui/material";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
+import Typography from "@mui/material/Typography";
 
 const drawerWidth = 240;
 
-export default function Sidebar({ open }) {
+export default function Sidebar({ open, version = "???" }) {
   return (
     <>
       <Grid item xs={2}>
@@ -58,6 +60,11 @@ export default function Sidebar({ open }) {
               </ListItemIcon>
               <ListItemText primary={"Collections"} />
             </ListItemButton>
+          </List>
+          <List style={{ marginTop: `auto` }} >
+            <ListItem>
+              <Typography variant="caption" >Qdrant v{version}</Typography>
+            </ListItem>
           </List>
         </Drawer>
       </Grid>
