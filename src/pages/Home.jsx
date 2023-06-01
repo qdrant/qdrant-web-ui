@@ -46,7 +46,6 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  background: "white",
   boxShadow: "none",
   ...(open && {
     width: `calc(100% - ${drawerWidth}px)`,
@@ -55,7 +54,7 @@ const AppBar = styled(MuiAppBar, {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    background: "white",
+    background: theme.palette.background.default,
     boxShadow: "none",
   }),
 }));

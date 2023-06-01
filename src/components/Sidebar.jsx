@@ -16,10 +16,15 @@ import { Stack } from "@mui/material";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import Typography from "@mui/material/Typography";
+import { useTheme } from '@mui/material/styles';
+
 
 const drawerWidth = 240;
 
 export default function Sidebar({ open, version = "???" }) {
+  const theme = useTheme();
+
+
   return (
     <>
       <Grid item xs={2}>
@@ -30,7 +35,7 @@ export default function Sidebar({ open, version = "???" }) {
             "& .MuiDrawer-paper": {
               width: drawerWidth,
               boxSizing: "border-box",
-              background: "white",
+              background: theme.palette.background.default,
             },
           }}
           variant="persistent"
