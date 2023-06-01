@@ -6,7 +6,7 @@ const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 
 export const Autocomplete = async (monaco) => {
 
-  let response = await fetch("./openapi.json");
+  let response = await fetch(import.meta.env.BASE_URL + "./openapi.json");
   let openapi = await response.json();
 
   let collections = [];
