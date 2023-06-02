@@ -7,7 +7,9 @@ import {
   btnconfig,
   GetCodeBlocks,
   selectBlock,
+  langConfig,
 } from "./config/Rules";
+import { useClient } from "../../context/client-context";
 import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
 import { ErrorMarker, errChecker } from "./config/ErrorMarker";
@@ -22,6 +24,9 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const lensesRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const { client: qdrantClient } = useClient();
+
   let runBtnCommandId = null;
 
   const theme = useTheme();
@@ -86,6 +91,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         editor.getPosition().lineNumber
       );
 
+      monaco.selectedCodeBlock = selectedCodeBlock;
+
       if (selectedCodeBlock) {
         let fromRange = selectedCodeBlock.blockStartLine;
         let toRange = selectedCodeBlock.blockEndLine;
@@ -122,11 +129,16 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     monaco.languages.setMonarchTokensProvider("custom-language", Rules);
     // Definining Theme
     monaco.editor.defineTheme("custom-language-theme", Theme(theme));
+
+    // Defining Language Configuration, e.g. comments, brackets
+    monaco.languages.setLanguageConfiguration('custom-language', langConfig);
     // Defining Autocomplete
-    monaco.languages.registerCompletionItemProvider(
-      "custom-language",
-      Autocomplete
-    );
+    Autocomplete(monaco, qdrantClient).then((autocomplete) => {
+      monaco.languages.registerCompletionItemProvider(
+        "custom-language",
+        autocomplete
+      );
+    });
   }
 
   // Monitor if theme changes
@@ -140,7 +152,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         <ErrorNotifier {...{ message: errorMessage, setHasError }} />
       )}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
-      <div className={ theme.palette.mode }>
+      <div className={theme.palette.mode}>
         <Editor
           height="82vh"
           language={"custom-language"}

@@ -22,6 +22,19 @@ export const Rules = {
   },
 };
 
+export const langConfig = {
+  surroundingPairs: [
+    { open: '{', close: '}' },
+    { open: '[', close: ']' },
+    { open: '"', close: '"' },
+  ],
+  autoClosingPairs: [
+    { open: '{', close: '}' },
+    { open: '[', close: ']' },
+  ],
+};
+
+
 export const options = {
   scrollBeyondLastLine: false,
   readOnly: false,
@@ -31,6 +44,7 @@ export const options = {
   automaticLayout: true,
   mouseWheelZoom: true,
   glyphMargin: true,
+  wordBasedSuggestions: false,
 };
 
 export function btnconfig(commandId) {
@@ -80,7 +94,7 @@ export function selectBlock(blocks, location) {
 }
 
 export function GetCodeBlocks(codeText) {
-  const codeArray = codeText.replace(/\/\/.*$/gm, "").split("\n");
+  const codeArray = codeText.replace(/\/\/.*$/gm, "").split(/\r?\n/);
   var blocksArray = [];
   var block = { blockText: "", blockStartLine: null, blockEndLine: null };
   var backetcount = 0;
@@ -103,7 +117,7 @@ export function GetCodeBlocks(codeText) {
     }
     if (codeStarLine) {
       block.blockStartLine = codeStarLine;
-      block.blockText = block.blockText + codeArray[i];
+      block.blockText = block.blockText + codeArray[i] + "\n";
       if (codeEndline) {
         block.blockEndLine = codeEndline;
         blocksArray.push(block);

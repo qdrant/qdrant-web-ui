@@ -6,9 +6,10 @@ export function RequestFromCode(text) {
     return data;
   } else {
     //Sending request
+
     return axios({
       method: data.method,
-      url: "/" + data.endpoint,
+      url: data.endpoint,
       data: data.reqBody,
     })
       .then((response) => {
@@ -31,9 +32,9 @@ export function RequestFromCode(text) {
 }
 
 export function codeParse(codeText) {
-  const codeArray = codeText.split("\n");
-  const headerLine = codeArray[0];
-  const body = codeArray[1];
+  const codeArray = codeText.split(/\r?\n/);
+  const headerLine = codeArray.shift();
+  const body = codeArray.join("\n");
   //Extract the header
   const method = headerLine.split(" ")[0];
   const endpoint = headerLine.split(" ")[1];

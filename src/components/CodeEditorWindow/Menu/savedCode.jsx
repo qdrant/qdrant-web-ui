@@ -201,7 +201,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
               }}
             />
 
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} mt={2}>
               <Button
                 key={"apply"}
                 variant="outlined"
