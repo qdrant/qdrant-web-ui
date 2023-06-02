@@ -12,6 +12,7 @@ import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
 import { ErrorMarker, errChecker } from "./config/ErrorMarker";
 import { RequestFromCode } from "./config/RequesFromCode";
+import { useTheme } from "@mui/material/styles";
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import "./editor.css";
 
@@ -23,6 +24,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const [errorMessage, setErrorMessage] = useState("");
   let runBtnCommandId = null;
 
+  const theme = useTheme();
   const handleEditorChange = (code) => {
     onChange("code", code);
     errChecker(code);
@@ -94,8 +96,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
             {
               range: new monaco.Range(fromRange, 0, toRange, 3),
               options: {
-                className: "grayDecorator",
-                glyphMarginClassName: "myGlyphMarginClass",
+                className: theme.palette.mode === "dark" ? "blockSelector" : "blockSelector",
+                glyphMarginClassName: theme.palette.mode === "dark" ? "blockSelectorStrip" : "blockSelectorStrip",
                 isWholeLine: true,
               },
             },
@@ -119,7 +121,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     // Definining Rules
     monaco.languages.setMonarchTokensProvider("custom-language", Rules);
     // Definining Theme
-    monaco.editor.defineTheme("custom-language-theme", Theme);
+    monaco.editor.defineTheme("custom-language-theme", Theme(theme));
     // Defining Autocomplete
     monaco.languages.registerCompletionItemProvider(
       "custom-language",
@@ -127,26 +129,33 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     );
   }
 
+  // Monitor if theme changes
+  useEffect(() => {
+    monacoRef.current?.editor.defineTheme("custom-language-theme", Theme(theme));
+  }, [theme]);
+
   return (
     <>
       {hasError && (
         <ErrorNotifier {...{ message: errorMessage, setHasError }} />
       )}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
-      <Editor
-        height="82vh"
-        language={"custom-language"}
-        value={code}
-        theme={"custom-language-theme"}
-        defaultValue="//input"
-        onChange={handleEditorChange}
-        onMount={handleEditorDidMount}
-        beforeMount={handleEditorWillMount}
-        formatOnPaste={true}
-        autoIndent={true}
-        formatOnType={true}
-        options={options}
-      />
+      <div className={ theme.palette.mode }>
+        <Editor
+          height="82vh"
+          language={"custom-language"}
+          value={code}
+          theme={"custom-language-theme"}
+          defaultValue="//input"
+          onChange={handleEditorChange}
+          onMount={handleEditorDidMount}
+          beforeMount={handleEditorWillMount}
+          formatOnPaste={true}
+          autoIndent={true}
+          formatOnType={true}
+          options={options}
+        />
+      </div>
     </>
   );
 };

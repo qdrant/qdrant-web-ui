@@ -1,8 +1,8 @@
-import {QdrantClient} from '@qdrant/js-client-rest';
+import { QdrantClient } from '@qdrant/js-client-rest';
 
 
 
-export default function qdrantClient() {
+export default function qdrantClient({ apiKey }) {
   let url;
   if (process.env.NODE_ENV === "development") {
     url = "http://localhost:6333";
@@ -10,5 +10,10 @@ export default function qdrantClient() {
     url = window.location.href;
   }
 
-  return new QdrantClient({url})
+  let options = {
+    url,
+    apiKey
+  };
+
+  return new QdrantClient(options)
 }

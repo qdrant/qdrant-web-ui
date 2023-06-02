@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import qdrantClient from "../common/client";
+import { useClient } from "../context/client-context";
 import SearchBar from "../components/Collections/SearchBar";
 import CollectionCard from "../components/Collections/CollectionCard";
 import { Container, Box, Stack, Typography, Grid } from "@mui/material";
@@ -9,16 +9,17 @@ function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
   const [collections, setCollections] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const { client: qdrantClient } = useClient();
 
   async function getCollectionsCall() {
     try {
-      let collections = await qdrantClient().getCollections();
+      let collections = await qdrantClient.getCollections();
       setRawCollections(collections.collections);
+      setErrorMessage(null);
     } catch (error) {
-      setHasError(true);
       setErrorMessage(error.message);
+      setRawCollections(null);
     }
   }
 
@@ -40,8 +41,8 @@ function Collections() {
           flexGrow: 1,
         }}
       >
-        {hasError && (
-          <ErrorNotifier {...{ message: errorMessage, setHasError }} />
+        {errorMessage !== null && (
+          <ErrorNotifier {...{ message: errorMessage }} />
         )}
         <Container maxWidth="xl">
           <Stack spacing={3}>

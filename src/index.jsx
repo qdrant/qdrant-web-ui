@@ -3,16 +3,17 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import setupAxios from "./common/axios";
 import { HashRouter } from "react-router-dom";
+import { ClientProvider } from "./context/client-context";
 
-setupAxios();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <HashRouter>
-      <App />
+      <ClientProvider>
+        <App />
+      </ClientProvider>
     </HashRouter>
   </React.StrictMode>
 );

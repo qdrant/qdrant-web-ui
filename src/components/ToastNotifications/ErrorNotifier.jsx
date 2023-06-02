@@ -14,14 +14,13 @@ function SlideTransition(props) {
   return <Slide {...props} direction="down" />;
 }
 
-function ErrorNotifier({ message, setHasError }) {
+function ErrorNotifier({ message }) {
   const [open, setOpen] = useState(true);
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    setHasError(false);
     setOpen(false);
   };
 
