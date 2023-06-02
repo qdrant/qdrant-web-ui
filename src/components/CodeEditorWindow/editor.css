@@ -7,11 +7,11 @@
 }
 
 .dark .blockSelector {
-  background: #2d2d30;
+  background: #2d2d3099;
 }
 
 .dark .blockSelectorStrip {
-  background: #525100;
+  background: #525100CC;
 }
 
 .monaco-editor {

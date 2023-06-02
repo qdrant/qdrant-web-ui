@@ -1,17 +1,16 @@
-import qdrantClient from "../../../common/client";
 import { OpenapiAutocomplete } from "autocomplete-openapi/src/autocomplete";
 
 const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
 
 
-export const Autocomplete = async (monaco) => {
+export const Autocomplete = async (monaco, qdrantClient) => {
 
   let response = await fetch(import.meta.env.BASE_URL + "./openapi.json");
   let openapi = await response.json();
 
   let collections = [];
   try {
-    collections = (await qdrantClient().getCollections()).collections.map((c) => c.name);
+    collections = (await qdrantClient.getCollections()).collections.map((c) => c.name);
   } catch (e) {
     console.error(e);
   }
