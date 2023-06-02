@@ -4,22 +4,43 @@ import routes from "./routes";
 import useTitle from "./components/UseTitle";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { ColorModeContext } from "./context/color-context";
 
-const darkTheme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-});
+
 
 function NewApp() {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const [mode, setMode] = React.useState(prefersDarkMode ? 'dark' : 'light');
+  // const [mode, setMode] = React.useState(prefersDarkMode ? 'dark' : 'light');
+  const colorMode = React.useMemo(
+    () => ({
+      // The dark mode switch would invoke this method
+      toggleColorMode: () => {
+        setMode((prevMode) =>
+          prevMode === 'light' ? 'dark' : 'light',
+        );
+      },
+    }),
+    [],
+  );
+
+  const theme = React.useMemo(() => createTheme({
+    palette: {
+      mode,
+    },
+  }), [mode]);
+
   const routing = useRoutes(routes());
   useTitle("UI | Qdrant ");
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      <main style={{ height: "100vh" }}>{routing}</main>
-    </ThemeProvider>
+    <ColorModeContext.Provider value={colorMode}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <main style={{ height: "100vh" }}>{routing}</main>
+      </ThemeProvider>
+    </ColorModeContext.Provider>
   );
 
 }

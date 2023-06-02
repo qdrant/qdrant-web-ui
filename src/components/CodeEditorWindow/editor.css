@@ -1,9 +1,13 @@
-.grayDecorator {
+.light .blockSelector {
   background: rgba(163, 161, 161, 0.24);
 }
-.myGlyphMarginClass {
+.light .blockSelectorStrip {
   background: rgba(255, 252, 88, 0.87);
 }
-.myContentClass {
-  background: lightblue;
+
+.dark .blockSelector {
+  background: #2d2d30;
+}
+.dark .blockSelectorStrip {
+  background: #525100;
 }

@@ -5,10 +5,15 @@ import Toolbar from "@mui/material/Toolbar";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import MuiAppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
 import KeyIcon from '@mui/icons-material/Key';
 import { ApiKeyDialog } from "../components/authDialog/authDialog";
 import { useClient } from "../context/client-context";
+import { ColorModeContext } from "../context/color-context";
+import { useTheme } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import Tooltip from '@mui/material/Tooltip';
 
 
 const drawerWidth = 240;
@@ -62,6 +67,8 @@ const AppBar = styled(MuiAppBar, {
 export default function Home() {
   const [open, setOpen] = useState(true);
   const [version, setVersion] = useState("???");
+  const colorMode = React.useContext(ColorModeContext);
+  const theme = useTheme();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
@@ -98,7 +105,21 @@ export default function Home() {
       <AppBar open={open}>
         <Toolbar>
           <Box sx={{ flexGrow: 1 }}></Box>
-          <Button variant="outlined" startIcon={<KeyIcon />} onClick={() => setApiKeyDialogOpen(true)}>API Key</Button>
+          <Tooltip title="Color Mode">
+            <IconButton
+              size="large"
+              onClick={colorMode.toggleColorMode}
+            >
+              {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="API Key">
+            <IconButton
+              size="large"
+              onClick={() => setApiKeyDialogOpen(true)}>
+              <KeyIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <Sidebar open={open} version={version} handleDrawerClose={handleDrawerClose} />
@@ -112,6 +133,6 @@ export default function Home() {
         <Outlet />
       </Main>
       <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
-    </Box>
+    </Box >
   );
 }
