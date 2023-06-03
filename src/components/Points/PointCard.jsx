@@ -46,7 +46,7 @@ const PointCard = (props) => {
                   color="text.secondary"
                   display={"inline"}
                 >
-                  {"\t"} {data.payload[key]}
+                  {"\t"} {data.payload[key].toString() }
                 </Typography>
               )}
             </Grid>
