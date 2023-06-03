@@ -42,7 +42,7 @@ export default function Sidebar({ open, version = "???" }) {
           anchor="left"
           open={open}
         >
-          <Stack dir="col" style={{ marginLeft: "50px", marginTop: "10px" }}>
+          <Stack dir="col" sx={{ ml: 2, my: 2}}>
             <Logo width={200} />
           </Stack>
 

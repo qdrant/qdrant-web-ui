@@ -1,8 +1,6 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import Input from '@mui/material/Input';
-import FilledInput from '@mui/material/FilledInput';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -43,10 +41,9 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Set API Key</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    <DialogContentText sx={{mb: 2}}>
                         This instance of Qdrant might be protected by an API Key. If so, please enter your API Key to continue.
                     </DialogContentText>
-                    <br />
                     <TextField
                         onChange={(e) => setApiKey(e.target.value)}
                         autoFocus
@@ -62,7 +59,6 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
                                         aria-label="toggle password visibility"
                                         onClick={handleClickShowApiKey}
                                         onMouseDown={handleMouseDown}
-                                        edge="end"
                                     >
                                         {showApiKey ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
