@@ -1,33 +1,26 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useRef, useEffect } from "react";
-import Editor from "@monaco-editor/react";
 import {
-  Rules,
   options,
   btnconfig,
   GetCodeBlocks,
   selectBlock,
-  langConfig,
-} from "./config/Rules";
-import {useWindowResize} from '../../hooks/windowHooks';
+} from "../EditorCommon/config/Rules";
 import { useClient } from "../../context/client-context";
 import { useTheme } from "@mui/material/styles";
-import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
 import { ErrorMarker, errChecker } from "./config/ErrorMarker";
 import { RequestFromCode } from "./config/RequesFromCode";
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import "./editor.css";
+import EditorCommon from '../EditorCommon';
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
-  const editorWrapper = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const {height} = useWindowResize();
-  const [editorHeight, setEditorHeight] = useState(0);
 
   const { client: qdrantClient } = useClient();
 
@@ -50,10 +43,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     },
     []
   );
-
-  useEffect(() => {
-    setEditorHeight(height - editorWrapper.current?.offsetTop);
-  }, [height, editorWrapper]);
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
@@ -130,17 +119,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     });
   }
   function handleEditorWillMount(monaco) {
-    monacoRef.current = monaco;
-    // Register Custom Language
-    monaco.languages.register({ id: "custom-language" });
-    // Definining Rules
-    monaco.languages.setMonarchTokensProvider("custom-language", Rules);
-    // Definining Theme
-    monaco.editor.defineTheme("custom-language-theme", Theme(theme));
-
-    // Defining Language Configuration, e.g. comments, brackets
-    monaco.languages.setLanguageConfiguration('custom-language', langConfig);
-    // Defining Autocomplete
     Autocomplete(monaco, qdrantClient).then((autocomplete) => {
       monaco.languages.registerCompletionItemProvider(
         "custom-language",
@@ -149,20 +127,12 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     });
   }
 
-  // Monitor if theme changes
-  useEffect(() => {
-    monacoRef.current?.editor.defineTheme("custom-language-theme", Theme(theme));
-  }, [theme]);
-
   return (
     <>
       {hasError && (
         <ErrorNotifier {...{ message: errorMessage, setHasError }} />
       )}
-      {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
-      <div className={theme.palette.mode} ref={editorWrapper}>
-        <Editor
-          height={editorHeight}
+        <EditorCommon
           language={"custom-language"}
           value={code}
           theme={"custom-language-theme"}
@@ -175,7 +145,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           formatOnType={true}
           options={options}
         />
-      </div>
     </>
   );
 };
