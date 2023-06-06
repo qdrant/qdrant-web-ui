@@ -9,12 +9,13 @@ import {
   selectBlock,
   langConfig,
 } from "./config/Rules";
+import {useWindowResize} from '../../hooks/windowHooks';
 import { useClient } from "../../context/client-context";
+import { useTheme } from "@mui/material/styles";
 import { Theme } from "./config/Theme";
 import { Autocomplete } from "./config/Autocomplete";
 import { ErrorMarker, errChecker } from "./config/ErrorMarker";
 import { RequestFromCode } from "./config/RequesFromCode";
-import { useTheme } from "@mui/material/styles";
 import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import "./editor.css";
 
@@ -22,8 +23,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
+  const editorWrapper = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const {height} = useWindowResize();
+  const [editorHeight, setEditorHeight] = useState(0);
 
   const { client: qdrantClient } = useClient();
 
@@ -46,6 +50,10 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     },
     []
   );
+
+  useEffect(() => {
+    setEditorHeight(height - editorWrapper.current?.offsetTop);
+  }, [height, editorWrapper]);
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
@@ -152,9 +160,9 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         <ErrorNotifier {...{ message: errorMessage, setHasError }} />
       )}
       {/* {isSuccess && <SuccessNotifier {...{message: successMessage, setIsSuccess }}/> } */}
-      <div className={theme.palette.mode}>
+      <div className={theme.palette.mode} ref={editorWrapper}>
         <Editor
-          height="82vh"
+          height={editorHeight}
           language={"custom-language"}
           value={code}
           theme={"custom-language-theme"}
