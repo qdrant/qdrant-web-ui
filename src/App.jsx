@@ -11,8 +11,11 @@ import { ColorModeContext } from "./context/color-context";
 
 function NewApp() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(prefersDarkMode ? 'dark' : 'light');
-  // const [mode, setMode] = React.useState(prefersDarkMode ? 'dark' : 'light');
+  const [mode, setMode] = React.useState(
+      localStorage.getItem('qdrant-web-ui-theme') || (prefersDarkMode ? 'dark' : 'light')
+  );
+  localStorage.setItem("qdrant-web-ui-theme", mode);
+
   const colorMode = React.useMemo(
     () => ({
       // The dark mode switch would invoke this method

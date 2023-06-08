@@ -42,11 +42,10 @@ export default function Sidebar({ open, version = "???" }) {
           anchor="left"
           open={open}
         >
-          <Stack dir="col" style={{ marginLeft: "50px", marginTop: "10px" }}>
+          <Stack dir="col" sx={{my: 2, alignItems: 'center'}}>
             <Logo width={200} />
           </Stack>
 
-          <br />
           <Divider />
           <List>
             <ListItemButton key={"Console"} component={Link} to="/console">

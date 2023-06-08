@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import {
   SwipeableDrawer,
   Button,
@@ -9,8 +10,7 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Editor from "@monaco-editor/react";
-import PropTypes from "prop-types";
+import EditorCommon from '../../EditorCommon';
 
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState(
@@ -187,7 +187,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
             }}
             m={2}
           >
-            <Editor
+            <EditorCommon
               height="475px"
               value={viewCode}
               options={{
