@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
-import Editor from "@monaco-editor/react";
+import EditorCommon from '../EditorCommon';
 
 const ResultEditorWindow = ({ code }) => {
   function formatJSON(val = {}) {
@@ -15,8 +15,7 @@ const ResultEditorWindow = ({ code }) => {
     }
   }
   return (
-    <Editor
-      height="82vh"
+    <EditorCommon
       language="json"
       theme={"custom-language-theme"}
       value={formatJSON(code)}
