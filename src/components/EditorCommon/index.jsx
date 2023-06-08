@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import PropTypes from 'prop-types';
 import Editor from '@monaco-editor/react';
 import {Theme} from './config/Theme';
 import {langConfig, Rules} from './config/Rules';
@@ -48,5 +49,11 @@ const EditorCommon = ({beforeMount, ...props}) => {
       </div>
   );
 };
+
+EditorCommon.propTypes = {
+  height: PropTypes.string,
+  beforeMount: PropTypes.func,
+  ...Editor.propTypes,
+}
 
 export default EditorCommon;

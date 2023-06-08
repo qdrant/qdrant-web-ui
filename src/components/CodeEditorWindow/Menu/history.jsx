@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { SwipeableDrawer, Button, Box, Stack, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Editor from "@monaco-editor/react";
+import EditorCommon from '../../EditorCommon';
 import PropTypes from "prop-types";
 
 function History({ state, code, handleEditorChange, toggleDrawer }) {
@@ -172,7 +172,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
             }}
             m={2}
           >
-            <Editor
+            <EditorCommon
               height="400px"
               value={viewCode}
               options={{
