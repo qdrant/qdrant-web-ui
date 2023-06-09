@@ -19,6 +19,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
+  const autocompleteRef = useRef(null);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -40,6 +41,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   useEffect(
     () => () => {
       lensesRef.current?.dispose();
+      autocompleteRef.current?.dispose();
     },
     []
   );
@@ -120,7 +122,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   }
   function handleEditorWillMount(monaco) {
     Autocomplete(monaco, qdrantClient).then((autocomplete) => {
-      monaco.languages.registerCompletionItemProvider(
+      autocompleteRef.current = monaco.languages.registerCompletionItemProvider(
         "custom-language",
         autocomplete
       );
