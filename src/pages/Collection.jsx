@@ -11,6 +11,7 @@ function Collection() {
 
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
+  const [vector, setVector] = React.useState(null);
   const [offset, setOffset] = React.useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
@@ -18,15 +19,21 @@ function Collection() {
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 
-  const onIdsSelected = (ids) => {
+  const onIdsSelected = (ids, vectors) => {
     setOffset(null);
     setRecommendationIds(ids);
+    if (vectors) setVector(vectors);
     if (ids.length === 0) {
       setPoints({ points: [] });
     }
   };
 
   React.useEffect(() => {
+    // todo:
+    // 1. if several vectors - button for each vector
+    // 2. else - like now
+    // 3. if several vectors - show name of each vector
+    // 4. show if vector is removed
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {
@@ -34,8 +41,10 @@ function Collection() {
             positive: recommendationIds,
             limit: pageSize + (offset || 0),
             with_payload: true,
-            with_vector: false,
+            with_vector: true,
+            using: vector,
           })
+          console.log(newPoints);
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
           setErrorMessage(null);
@@ -46,7 +55,13 @@ function Collection() {
       } else {
 
         try {
-          let newPoints = await qdrantClient.scroll(collectionName, { offset, limit: pageSize })
+          let newPoints = await qdrantClient.scroll(collectionName, {
+            offset,
+            limit: pageSize,
+            with_vector: true,
+            with_payload: true
+          });
+          console.log(newPoints);
           setPoints({
             points: [
               ...points?.points || [],
