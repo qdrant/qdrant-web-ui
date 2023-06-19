@@ -6,7 +6,6 @@ function PointImage({ data, sx }) {
   const renderImages = () => {
     const images = [];
 
-    // todo: question - can be an image not in the images property?
     // Loop through the object's properties
     for (const key in data) {
       if (typeof data[key] == "string") {

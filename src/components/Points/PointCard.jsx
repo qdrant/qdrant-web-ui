@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import {
   Card,
@@ -6,9 +6,6 @@ import {
   Divider,
   Typography,
   Grid,
-  Button,
-  Box,
-  Chip,
   CardHeader,
   Snackbar,
   Alert,
@@ -20,95 +17,7 @@ import { useTheme } from "@mui/material/styles";
 import { CopyAll } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-
-/**
- * Component for displaying vectors of a point
- * @param {Object} point
- * @returns {JSX.Element|null}
- * @constructor
- */
-const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
-  if (!point.hasOwnProperty("vector")) {
-    return null;
-  }
-
-  // to unify the code, we will convert the vector to an object
-  // when there is only one vector in the point
-  let vectors = {};
-  if (Array.isArray(point.vector)) {
-    vectors[""] = point.vector;
-  } else {
-    vectors = point.vector;
-  }
-
-  return (
-    <Box pt={2}>
-      {Object.keys(vectors).map((key) => {
-        return (
-          <Grid key={key} container spacing={2}>
-            <Grid item xs={4} my={1}>
-              {key === "" ?
-                <Typography
-                  variant="subtitle1"
-                  color="text.secondary"
-                  display={"inline"}
-                  mr={1}
-                >
-                  Default vector
-                </Typography>
-                :
-                <>
-                  <Typography
-                    variant="subtitle1"
-                    color="text.secondary"
-                    display={"inline"}
-                    mr={1}
-                  >
-                    Name:
-                  </Typography>
-                  <Chip
-                    label={key}
-                    size="small"
-                    variant="outlined"
-                  />
-                </>
-              }
-            </Grid>
-
-            <Grid item xs={4} my={1}>
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                display={"inline"}
-                mr={1}
-              >
-                Length:
-              </Typography>
-              <Chip
-                label={vectors[key].length}
-                variant="outlined"
-                size="small"/>
-            </Grid>
-            <Grid item xs={4} my={1} display={"flex"}>
-              <Box sx={{ flexGrow: 1 }}/>
-
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  setRecommendationIds([point.id],
-                    key === "" ? null : key); // todo: fix this
-                }}
-              >
-                Find Similar
-              </Button>
-            </Grid>
-          </Grid>
-        );
-      })}
-    </Box>
-  );
-});
+import Vectors from "./PointVectors";
 
 const PointCard = (props) => {
   const theme = useTheme();
@@ -157,28 +66,7 @@ const PointCard = (props) => {
       );
     });
 
-    return (
-      <>
-        <Grid container spacing={2}>
-          <Grid item xs={2} my={1}>
-            <Typography variant="subtitle1" display="inline" fontWeight={600}>
-              id
-            </Typography>
-          </Grid>
-          <Grid item xs={10} my={1}>
-            <Typography
-              variant="subtitle1"
-              display="inline"
-              color="text.secondary"
-            >
-              {data["id"] !== null ? data["id"] : "NULL"}
-            </Typography>
-          </Grid>
-        </Grid>
-        <Divider/>
-        {Payload}
-      </>
-    );
+    return <>{Payload}</>;
   }
 
   return (
@@ -216,8 +104,8 @@ const PointCard = (props) => {
               {resDataView(point)}
             </Grid>
             {point.payload.images &&
-              <Grid item xs={3} display="grid" justifyContent={'center'}>
-                <PointImage data={point.payload} sx={{ml: 2}}/>
+              <Grid item xs={3} display="grid" justifyContent={"center"}>
+                <PointImage data={point.payload} sx={{ ml: 2 }}/>
               </Grid>
             }
           </Grid>
@@ -248,18 +136,9 @@ const PointCard = (props) => {
   );
 };
 
-// prop types validation
-
-Vectors.propTypes = {
-  point: PropTypes.object.isRequired,
-  setRecommendationIds: PropTypes.func.isRequired,
-};
-
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
   setRecommendationIds: PropTypes.func.isRequired,
 };
 
 export default PointCard;
-
-export { Vectors };

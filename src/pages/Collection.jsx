@@ -39,7 +39,6 @@ function Collection() {
             with_vector: true,
             using: vector,
           })
-          console.log(newPoints);
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
           setErrorMessage(null);
@@ -56,7 +55,6 @@ function Collection() {
             with_vector: true,
             with_payload: true
           });
-          console.log(newPoints);
           setPoints({
             points: [
               ...points?.points || [],
