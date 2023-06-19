@@ -29,11 +29,6 @@ function Collection() {
   };
 
   React.useEffect(() => {
-    // todo:
-    // 1. if several vectors - button for each vector
-    // 2. else - like now
-    // 3. if several vectors - show name of each vector
-    // 4. show if vector is removed
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {

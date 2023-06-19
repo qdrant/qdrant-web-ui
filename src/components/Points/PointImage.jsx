@@ -2,10 +2,11 @@ import React from "react";
 import PropTypes from "prop-types";
 import { CardMedia } from "@mui/material";
 
-function PointImage({ data }) {
+function PointImage({ data, sx }) {
   const renderImages = () => {
     const images = [];
 
+    // todo: question - can be an image not in the images property?
     // Loop through the object's properties
     for (const key in data) {
       if (typeof data[key] == "string") {
@@ -31,6 +32,10 @@ function PointImage({ data }) {
                 margin: "auto",
                 padding: 1,
                 wordWrap: "break-word",
+                p: 1,
+                border: "1px solid #ccc",
+                borderRadius: "5px",
+                ...sx,
               }}
               key={key}
               image={data[key]}
@@ -48,6 +53,7 @@ function PointImage({ data }) {
 }
 PointImage.propTypes = {
   data: PropTypes.object.isRequired,
+  sx: PropTypes.object,
 };
 
 export default PointImage;
