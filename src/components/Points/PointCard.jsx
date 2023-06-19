@@ -6,14 +6,24 @@ import {
   Divider,
   Typography,
   Grid,
-  CardActions,
-  Button,
+  CardHeader,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { JsonViewer } from "@textea/json-viewer";
 import PointImage from "./PointImage";
+import { alpha } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { CopyAll } from "@mui/icons-material";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Vectors from "./PointVectors";
 
 const PointCard = (props) => {
+  const theme = useTheme();
   const { point, setRecommendationIds } = props;
+  const [openTooltip, setOpenTooltip] = React.useState(false);
+
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
       return (
@@ -46,77 +56,89 @@ const PointCard = (props) => {
                   color="text.secondary"
                   display={"inline"}
                 >
-                  {"\t"} {data.payload[key].toString() }
+                  {"\t"} {data.payload[key].toString()}
                 </Typography>
               )}
             </Grid>
           </Grid>
-          <Divider />
+          <Divider/>
         </div>
       );
     });
 
-    return (
-      <>
-        <Grid container spacing={2}>
-          <Grid item xs={2} my={1}>
-            <Typography variant="subtitle1" display="inline" fontWeight={600}>
-              id
-            </Typography>
-          </Grid>
-          <Grid item xs={10} my={1}>
-            <Typography
-              variant="subtitle1"
-              display="inline"
-              color="text.secondary"
-            >
-              {data["id"] !== null ? data["id"] : "NULL"}
-            </Typography>
-          </Grid>
-        </Grid>
-        <Divider />
-        {Payload}
-      </>
-    );
+    return <>{Payload}</>;
   }
 
   return (
-    <Card
-      elevation={3}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-      }}
-    >
-      <Grid display={"flex"} >
-        <Grid item xs display={"contents"}>
-          <PointImage data={point.payload} />
-        </Grid>
-        <Grid item xs my={1}>
-          <CardContent>{resDataView(point)}</CardContent>
-          <CardActions
-            sx={{
-              justifyContent: "right",
-            }}
-          >
-            <Button
-              size="small"
-              onClick={() => {
-                setRecommendationIds([point.id]);
-              }}
-            >
-              Find Similiar
-            </Button>
-          </CardActions>
-        </Grid>
-      </Grid>
-    </Card>
+    <>
+      <Card
+        elevation={3}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
+        <CardHeader
+          title={"Point " + point.id}
+          action={
+            <Tooltip title="Copy JSON" placement="right">
+              <IconButton
+                aria-label="copy point"
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(point));
+                  setOpenTooltip(true);
+                }}>
+                <CopyAll/>
+              </IconButton>
+            </Tooltip>
+          }
+        />
+        <CardHeader subheader={"Payload:"} sx={{
+          flexGrow: 1,
+          background: alpha(theme.palette.primary.main, 0.05),
+        }}/>
+        <CardContent>
+          <Grid container display={"flex"}>
+            <Grid item xs my={1}>
+              {resDataView(point)}
+            </Grid>
+            {point.payload.images &&
+              <Grid item xs={3} display="grid" justifyContent={"center"}>
+                <PointImage data={point.payload} sx={{ ml: 2 }}/>
+              </Grid>
+            }
+          </Grid>
+        </CardContent>
+        <CardHeader subheader={"Vectors:"} sx={{
+          flexGrow: 1,
+          background: alpha(theme.palette.primary.main, 0.05),
+        }}/>
+        <CardContent>
+          {point?.vector &&
+            <Vectors
+              point={point}
+              setRecommendationIds={setRecommendationIds}/>
+          }
+        </CardContent>
+      </Card>
+      <Snackbar
+        open={openTooltip}
+        severity="success"
+        autoHideDuration={3000}
+        onClose={() => setOpenTooltip(false)}
+      >
+        <Alert severity="success" sx={{ width: "100%" }}>
+          Point JSON copied to clipboard.
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
+  setRecommendationIds: PropTypes.func.isRequired,
 };
 
 export default PointCard;

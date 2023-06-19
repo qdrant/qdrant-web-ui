@@ -11,6 +11,7 @@ function Collection() {
 
   const { collectionName } = useParams();
   const [points, setPoints] = React.useState(null);
+  const [vector, setVector] = React.useState(null);
   const [offset, setOffset] = React.useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
@@ -18,9 +19,10 @@ function Collection() {
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 
-  const onIdsSelected = (ids) => {
+  const onIdsSelected = (ids, vectors) => {
     setOffset(null);
     setRecommendationIds(ids);
+    if (vectors) setVector(vectors);
     if (ids.length === 0) {
       setPoints({ points: [] });
     }
@@ -34,7 +36,8 @@ function Collection() {
             positive: recommendationIds,
             limit: pageSize + (offset || 0),
             with_payload: true,
-            with_vector: false,
+            with_vector: true,
+            using: vector,
           })
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
@@ -46,7 +49,12 @@ function Collection() {
       } else {
 
         try {
-          let newPoints = await qdrantClient.scroll(collectionName, { offset, limit: pageSize })
+          let newPoints = await qdrantClient.scroll(collectionName, {
+            offset,
+            limit: pageSize,
+            with_vector: true,
+            with_payload: true
+          });
           setPoints({
             points: [
               ...points?.points || [],
