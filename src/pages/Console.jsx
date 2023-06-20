@@ -1,8 +1,11 @@
 import React, { useState } from "react";
+import { alpha } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { Box } from "@mui/system";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
-import { Box } from "@mui/system";
-import Menu from "../components/CodeEditorWindow/Menu";
 
 const query = `GET collections
 
@@ -34,6 +37,7 @@ const defaultResult = `{"result": {"collections": [{"name": "collection1"},
 }`;
 
 function Console() {
+  const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
 
@@ -62,35 +66,33 @@ function Console() {
 
   return (
     <>
-      <Menu code={code} handleEditorChange={onChangeCode} />
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-        }}
-      >
-        <Box
-          sx={{
-            width: "50%",
-            height: "100%",
-          }}
-        >
+      <Menu code={code} handleEditorChange={onChangeCode}/>
+
+      <PanelGroup direction="horizontal">
+        <Panel>
           <CodeEditorWindow
             code={code}
             onChange={onChangeCode}
             onChangeResult={onChangeResult}
           />
-        </Box>
-        <Box
-          sx={{
-            width: "50%",
+        </Panel>
+        <PanelResizeHandle style={{
+          width: "10px",
+          background: alpha(theme.palette.primary.main, 0.05),
+        }}>
+          <Box sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             height: "100%",
-          }}
-        >
-          <ResultEditorWindow code={result} />
-        </Box>
-      </Box>
+          }}>
+            &#8942;
+          </Box>
+        </PanelResizeHandle>
+        <Panel>
+          <ResultEditorWindow code={result}/>
+        </Panel>
+      </PanelGroup>
     </>
   );
 }
