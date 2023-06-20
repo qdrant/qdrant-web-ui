@@ -79,7 +79,7 @@ export default function Home() {
       let telemetry = await qdrantClient.api("service").telemetry();
       setVersion(telemetry.data.result.app.version);
     } catch (error) {
-      if (error.status === 403) {
+      if (error.status === 403 || error.status === 401) {
         setApiKeyDialogOpen(true);
       } else {
         console.log("error", error);
