@@ -7,34 +7,35 @@ import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 
-const query = `GET collections
+const query = `// List all collections
+GET collections
 
-// Create a collection
-PUT collections/demo1
+// Get collection info
+GET collections/collection_name
+
+// List points in a collection, using filter
+POST collections/collection_name/points/scroll
 {
-    "vectors": 
-    {
-        "size": 1, // Small vectors
-        "distance": "Cosine"
-    }
-}
-
-GET collections
-
-DELETE collections/demo1
-
-GET collections
-
-GET collections/startups`;
-const defaultResult = `{"result": {"collections": [{"name": "collection1"},
+  "limit": 10,
+  "filter": {
+    "must": [
       {
-        "name": "startups"
+        "key": "city",
+        "match": {
+          "any": [
+            "San Francisco",
+            "New York",
+            "Berlin"
+          ]
+        }
       }
     ]
-  },
-  "status": "ok",
-  "time": 0.000007124
-}`;
+  }
+}
+`;
+
+
+const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
