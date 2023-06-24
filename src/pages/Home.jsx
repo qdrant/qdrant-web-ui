@@ -1,74 +1,40 @@
-import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Toolbar from "@mui/material/Toolbar";
-import { Box } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import MuiAppBar from "@mui/material/AppBar";
-import KeyIcon from '@mui/icons-material/Key';
-import { ApiKeyDialog } from "../components/authDialog/authDialog";
-import { useClient } from "../context/client-context";
-import { ColorModeContext } from "../context/color-context";
-import { useTheme } from '@mui/material/styles';
+import React, { useState } from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import {Box,Toolbar,CssBaseline,Tooltip,Stack} from '@mui/material';
 import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import MuiAppBar from '@mui/material/AppBar';
+import { Outlet } from 'react-router-dom';
+import { ApiKeyDialog } from "../components/authDialog/authDialog";
+import { ColorModeContext } from "../context/color-context";
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import Tooltip from '@mui/material/Tooltip';
+import KeyIcon from '@mui/icons-material/Key';
+import { useClient } from "../context/client-context";
+import { Logo } from "../components/Logo";
+import Sidebar  from '../components/Sidebar';
 
-
-const drawerWidth = 240;
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
   padding: theme.spacing(0, 1),
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
-  justifyContent: "flex-end",
 }));
-
-const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })(
-  ({ theme, open }) => ({
-    flexGrow: 1,
-    transition: theme.transitions.create("margin", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginLeft: `-${drawerWidth}px`,
-    ...(open && {
-      transition: theme.transitions.create("margin", {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: 0,
-    }),
-  })
-);
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
+  shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
-  transition: theme.transitions.create(["margin", "width"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  boxShadow: "none",
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(["margin", "width"], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    background: theme.palette.background.default,
-    boxShadow: "none",
-  }),
+  background: theme.palette.background.default,
+  zIndex: theme.zIndex.drawer + 1
 }));
 
-export default function Home() {
-  const [open, setOpen] = useState(true);
+export default function MiniDrawer() {
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(true);
   const [version, setVersion] = useState("???");
   const colorMode = React.useContext(ColorModeContext);
-  const theme = useTheme();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
@@ -91,19 +57,33 @@ export default function Home() {
     getQdrantVersion();
   }, []);
 
-  const handleDrawerClose = () => {
-    setOpen(false);
-  };
-
   const OnApyKeyApply = () => {
     // Reload the page to apply the new API Key
     window.location.reload();
   }
+  
+  const handleDrawer = () => {
+    setOpen(!open);
+  };
 
   return (
-    <Box sx={{ display: "flex" }}>
-      <AppBar open={open}>
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+      <AppBar position="fixed" open={open}>
         <Toolbar>
+          <IconButton
+            aria-label="open drawer"
+            onClick={handleDrawer}
+            edge="start"
+            sx={{
+              marginRight: 5,
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Stack dir="col" sx={{ my: 2, alignItems: 'center' }}>
+            <Logo width={200} />
+          </Stack>
           <Box sx={{ flexGrow: 1 }}></Box>
           <Tooltip title="Color Mode">
             <IconButton
@@ -122,17 +102,12 @@ export default function Home() {
           </Tooltip>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version} handleDrawerClose={handleDrawerClose} />
-      <Main
-        open={open}
-        style={{
-          overflow: "hidden",
-        }}
-      >
+      <Sidebar open={open} version={version}/>
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         <Outlet />
-      </Main>
+      </Box>
       <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
-    </Box >
+    </Box>
   );
 }
