@@ -54,19 +54,18 @@ function Collections() {
             </Grid>
 
             {errorMessage && (
-              <Grid lg={12} item >
-                <Typography >Error: {errorMessage}</Typography>
+              <Grid lg={12} item textAlign={"center"}  >
+                <Typography >⚠ Error: {errorMessage}</Typography>
               </Grid>
             )}
             {!collections && !errorMessage && (
-              <Grid lg={12} item >
-                <Typography >Loading...</Typography>
+              <Grid lg={12} item textAlign={"center"} >
+                <Typography >🔃 Loading...</Typography>
               </Grid>
             )}
             {collections && !errorMessage && collections.length === 0 && (
-              <Grid lg={12} item >
-                <Typography >No collection is present</Typography>
-
+              <Grid lg={12} item textAlign={"center"}>
+                <Typography > 📪 No collection is present</Typography>
               </Grid>
             )}
             {collections &&
