@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import {Box,Toolbar,CssBaseline,Tooltip,Stack} from '@mui/material';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import MuiAppBar from '@mui/material/AppBar';
 import { Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from "../components/authDialog/authDialog";
 import { ColorModeContext } from "../context/color-context";
@@ -12,7 +11,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import KeyIcon from '@mui/icons-material/Key';
 import { useClient } from "../context/client-context";
 import { Logo } from "../components/Logo";
-import Sidebar  from '../components/Sidebar';
+import Sidebar from '../components/Sidebar';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -21,13 +20,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   padding: theme.spacing(0, 1),
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
-}));
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-  background: theme.palette.background.default,
-  zIndex: theme.zIndex.drawer + 1
 }));
 
 export default function MiniDrawer() {
@@ -61,7 +53,7 @@ export default function MiniDrawer() {
     // Reload the page to apply the new API Key
     window.location.reload();
   }
-  
+
   const handleDrawer = () => {
     setOpen(!open);
   };
@@ -69,21 +61,24 @@ export default function MiniDrawer() {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          background: theme.palette.background.default
+        }}>
         <Toolbar>
           <IconButton
             aria-label="open drawer"
             onClick={handleDrawer}
             edge="start"
             sx={{
-              marginRight: 5,
+              marginRight: 2,
             }}
           >
             <MenuIcon />
           </IconButton>
-          <Stack dir="col" sx={{ my: 2, alignItems: 'center' }}>
-            <Logo width={200} />
-          </Stack>
+          <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
           <Tooltip title="Color Mode">
             <IconButton
@@ -102,8 +97,8 @@ export default function MiniDrawer() {
           </Tooltip>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version}/>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Sidebar open={open} version={version} />
+      <Box component="main" sx={{ flexGrow: 1 }}>
         <DrawerHeader />
         <Outlet />
       </Box>

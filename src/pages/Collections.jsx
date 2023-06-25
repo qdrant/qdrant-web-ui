@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useClient } from "../context/client-context";
 import SearchBar from "../components/Collections/SearchBar";
 import CollectionCard from "../components/Collections/CollectionCard";
-import { Container, Box, Stack, Typography, Grid } from "@mui/material";
+import { Box, Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 
 function Collections() {
@@ -39,25 +39,35 @@ function Collections() {
         component="main"
         sx={{
           flexGrow: 1,
+          p: 3,
         }}
       >
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
-            <Typography variant="h4">Collections</Typography>
-            <SearchBar value={searchQuery} setValue={setSearchQuery} />
-          </Stack>
-          <Grid container my={3} spacing={3}>
+          <Grid container maxWidth={"xl"} spacing={3}>
+            <Grid lg={12} item >
+              <Typography variant="h4">Collections</Typography>
+            </Grid>
+            <Grid lg={12} item >
+              <SearchBar value={searchQuery} setValue={setSearchQuery} />
+            </Grid>
+
             {errorMessage && (
-              <Typography mx={3}>Error: {errorMessage}</Typography>
+              <Grid lg={12} item >
+                <Typography >Error: {errorMessage}</Typography>
+              </Grid>
             )}
             {!collections && !errorMessage && (
-              <Typography mx={3}>Loading...</Typography>
+              <Grid lg={12} item >
+                <Typography >Loading...</Typography>
+              </Grid>
             )}
             {collections && !errorMessage && collections.length === 0 && (
-              <Typography mx={3}>No collection is present</Typography>
+              <Grid lg={12} item >
+                <Typography >No collection is present</Typography>
+
+              </Grid>
             )}
             {collections &&
               !errorMessage &&
@@ -70,7 +80,6 @@ function Collections() {
                 </Grid>
               ))}
           </Grid>
-        </Container>
       </Box>
     </>
   );
