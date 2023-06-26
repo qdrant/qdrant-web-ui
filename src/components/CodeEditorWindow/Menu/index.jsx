@@ -20,6 +20,8 @@ function Menu({ code, handleEditorChange }) {
         spacing={2}
         direction="row"
         sx={{
+          pl: 5,
+          mb: 0,    
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}
       >

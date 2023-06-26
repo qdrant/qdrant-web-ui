@@ -73,13 +73,12 @@ function Console() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
         }}
       >
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Grid container maxWidth={"xl"} spacing={3}>
+        <Grid container maxWidth={"xl"} >
           {errorMessage && (
             <Grid xs={12} item textAlign={"center"}  >
               <Typography >⚠ Error: {errorMessage}</Typography>
@@ -89,7 +88,7 @@ function Console() {
             <Menu code={code} handleEditorChange={onChangeCode} />
           </Grid>
           <Grid xs={12} item >
-            <PanelGroup direction="horizontal">
+          <PanelGroup direction="horizontal">
               <Panel>
                 <CodeEditorWindow
                   code={code}
