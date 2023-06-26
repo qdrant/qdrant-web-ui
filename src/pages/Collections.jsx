@@ -46,25 +46,25 @@ function Collections() {
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
           <Grid container maxWidth={"xl"} spacing={3}>
-            <Grid lg={12} item >
+            <Grid xs={12} item >
               <Typography variant="h4">Collections</Typography>
             </Grid>
-            <Grid lg={12} item >
+            <Grid xs={12} item >
               <SearchBar value={searchQuery} setValue={setSearchQuery} />
             </Grid>
 
             {errorMessage && (
-              <Grid lg={12} item textAlign={"center"}  >
+              <Grid xs={12} item textAlign={"center"}  >
                 <Typography >⚠ Error: {errorMessage}</Typography>
               </Grid>
             )}
             {!collections && !errorMessage && (
-              <Grid lg={12} item textAlign={"center"} >
+              <Grid xs={12} item textAlign={"center"} >
                 <Typography >🔃 Loading...</Typography>
               </Grid>
             )}
             {collections && !errorMessage && collections.length === 0 && (
-              <Grid lg={12} item textAlign={"center"}>
+              <Grid xs={12} item textAlign={"center"}>
                 <Typography > 📪 No collection is present</Typography>
               </Grid>
             )}

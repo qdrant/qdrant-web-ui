@@ -85,10 +85,10 @@ function Collection() {
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
         <Grid container maxWidth={"xl"} spacing={3}>
-          <Grid lg={12} item >
+          <Grid xs={12} item >
             <Typography variant="h4">{collectionName}</Typography>
           </Grid>
-          <Grid lg={12} item >
+          <Grid xs={12} item >
             <SimilarSerachfield
               value={recommendationIds}
               setValue={onIdsSelected}
@@ -96,17 +96,17 @@ function Collection() {
           </Grid>
 
           {errorMessage && (
-            <Grid lg={12} item textAlign={"center"}>
+            <Grid xs={12} item textAlign={"center"}>
               <Typography >⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
           {!points && !errorMessage && (
-            <Grid lg={12} item  textAlign={"center"} >
+            <Grid xs={12} item  textAlign={"center"} >
               <Typography > 🔃 Loading...</Typography>
             </Grid>
           )}
           {points && !errorMessage && points.points?.length === 0 && (
-            <Grid lg={12} item textAlign={"center"}>
+            <Grid xs={12} item textAlign={"center"}>
               <Typography >
                 📪 No Points are presents, {collectionName} is empty
               </Typography>
@@ -124,7 +124,7 @@ function Collection() {
                 />
               </Grid>
             ))}
-          <Grid lg={12} item  textAlign={"center"}>
+          <Grid xs={12} item  textAlign={"center"}>
             <Button
               variant="outlined"
               disabled={!points || !nextPageOffset}
