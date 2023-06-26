@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Box } from "@mui/system";
+import { Typography, Grid } from "@mui/material";
+import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
@@ -41,7 +43,7 @@ function Console() {
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
-
+  const [errorMessage, setErrorMessage] = useState(null);
   const onChangeCode = (action, data) => {
     switch (action) {
       case "code": {
@@ -67,33 +69,57 @@ function Console() {
 
   return (
     <>
-      <Menu code={code} handleEditorChange={onChangeCode}/>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+        }}
+      >
+        {errorMessage !== null && (
+          <ErrorNotifier {...{ message: errorMessage }} />
+        )}
+        <Grid container maxWidth={"xl"} spacing={3}>
+          {errorMessage && (
+            <Grid xs={12} item textAlign={"center"}  >
+              <Typography >⚠ Error: {errorMessage}</Typography>
+            </Grid>
+          )}
+          <Grid xs={12} item >
+            <Menu code={code} handleEditorChange={onChangeCode} />
+          </Grid>
+          <Grid xs={12} item >
+            <PanelGroup direction="horizontal">
+              <Panel>
+                <CodeEditorWindow
+                  code={code}
+                  onChange={onChangeCode}
+                  onChangeResult={onChangeResult}
+                />
+              </Panel>
+              <PanelResizeHandle style={{
+                width: "10px",
+                background: alpha(theme.palette.primary.main, 0.05),
+              }}>
+                <Box sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                }}>
+                  &#8942;
+                </Box>
+              </PanelResizeHandle>
+              <Panel>
+                <ResultEditorWindow code={result} />
+              </Panel>
+            </PanelGroup>
+          </Grid>
+        </Grid>
+      </Box>
 
-      <PanelGroup direction="horizontal">
-        <Panel>
-          <CodeEditorWindow
-            code={code}
-            onChange={onChangeCode}
-            onChangeResult={onChangeResult}
-          />
-        </Panel>
-        <PanelResizeHandle style={{
-          width: "10px",
-          background: alpha(theme.palette.primary.main, 0.05),
-        }}>
-          <Box sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}>
-            &#8942;
-          </Box>
-        </PanelResizeHandle>
-        <Panel>
-          <ResultEditorWindow code={result}/>
-        </Panel>
-      </PanelGroup>
+
+
     </>
   );
 }
