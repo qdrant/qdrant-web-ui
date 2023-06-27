@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useClient } from "../context/client-context";
-import { Container, Box, Stack, Typography, Grid, Button } from "@mui/material";
+import { Box, Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
@@ -15,7 +15,7 @@ function Collection() {
   const [offset, setOffset] = React.useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
-  const {client: qdrantClient} = useClient(); 
+  const { client: qdrantClient } = useClient();
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 
@@ -78,45 +78,53 @@ function Collection() {
         component="main"
         sx={{
           flexGrow: 1,
-          my: 3,
+          p: 3,
         }}
       >
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Container maxWidth="xl">
-          <Stack spacing={3}>
+        <Grid container maxWidth={"xl"} spacing={3}>
+          <Grid xs={12} item >
             <Typography variant="h4">{collectionName}</Typography>
+          </Grid>
+          <Grid xs={12} item >
             <SimilarSerachfield
               value={recommendationIds}
               setValue={onIdsSelected}
             />
-          </Stack>
-          <Grid container my={3} spacing={3}>
-            {errorMessage && (
-              <Typography mx={3}>Error: {errorMessage}</Typography>
-            )}
-            {!points && !errorMessage && (
-              <Typography mx={3}>Loading...</Typography>
-            )}
-            {points && !errorMessage && points.points?.length === 0 && (
-              <Typography mx={3}>
-                No Points are presents, {collectionName} is empty
-              </Typography>
-            )}
-            {points &&
-              !errorMessage &&
-              points.points?.map((point) => (
-                <Grid xs={12} item key={point.id}>
-                  <PointCard
-                    point={point}
-                    setRecommendationIds={onIdsSelected}
-                    collectionName={collectionName}
-                  />
-                </Grid>
-              ))}
           </Grid>
-          <Stack alignItems="center">
+
+          {errorMessage && (
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography >⚠ Error: {errorMessage}</Typography>
+            </Grid>
+          )}
+          {!points && !errorMessage && (
+            <Grid xs={12} item  textAlign={"center"} >
+              <Typography > 🔃 Loading...</Typography>
+            </Grid>
+          )}
+          {points && !errorMessage && points.points?.length === 0 && (
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography >
+                📪 No Points are presents, {collectionName} is empty
+              </Typography>
+            </Grid>
+          )}
+
+          {points &&
+            !errorMessage &&
+            points.points?.map((point) => (
+              <Grid xs={12} item key={point.id}>
+                <PointCard
+                  point={point}
+                  setRecommendationIds={onIdsSelected}
+                  collectionName={collectionName}
+                />
+              </Grid>
+            ))}
+          <Grid xs={12} item  textAlign={"center"}>
             <Button
               variant="outlined"
               disabled={!points || !nextPageOffset}
@@ -126,8 +134,8 @@ function Collection() {
             >
               Load More
             </Button>
-          </Stack>
-        </Container>
+          </Grid>
+        </Grid>
       </Box>
     </>
   );

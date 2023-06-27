@@ -1,77 +1,118 @@
-/* eslint-disable react/prop-types */
-import React from "react";
+
+import * as React from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import MuiDrawer from '@mui/material/Drawer';
+import {List,Typography,Divider,ListItem,ListItemButton,ListItemIcon,ListItemText} from '@mui/material';
 import { Link } from "react-router-dom";
-import {
-  Divider,
-  Drawer,
-  Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-} from "@mui/material";
-import { Logo } from "../components/Logo";
-import { Stack } from "@mui/material";
-import TerminalIcon from "@mui/icons-material/Terminal";
-import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import Typography from "@mui/material/Typography";
-import { useTheme } from '@mui/material/styles';
+import {LibraryBooks,Terminal} from "@mui/icons-material";
 
 
 const drawerWidth = 240;
 
-export default function Sidebar({ open, version = "???" }) {
+const openedMixin = (theme) => ({
+  width: drawerWidth,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: 'hidden',
+});
+
+const closedMixin = (theme) => ({
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: 'hidden',
+  width: `calc(${theme.spacing(7)} + 1px)`,
+  [theme.breakpoints.up('sm')]: {
+    width: `calc(${theme.spacing(8)} + 1px)`,
+  },
+});
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
+
+
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    ...(open && {
+      ...openedMixin(theme),
+      '& .MuiDrawer-paper': openedMixin(theme),
+    }),
+    ...(!open && {
+      ...closedMixin(theme),
+      '& .MuiDrawer-paper': closedMixin(theme),
+    }),
+  }),
+);
+
+export default function Sidebar({open,version}) {
   const theme = useTheme();
-
-
   return (
-    <>
-      <Grid item xs={2}>
-        <Drawer
+    <Drawer variant="permanent" open={open}>
+    <DrawerHeader />
+    <Divider />
+    <List>
+      <ListItem key={"Console"} disablePadding sx={{ display: 'block' }}>
+        <ListItemButton
           sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              boxSizing: "border-box",
-              background: theme.palette.background.default,
-            },
+            minHeight: 48,
+            justifyContent: open ? 'initial' : 'center',
+            px: 2.5,
           }}
-          variant="persistent"
-          anchor="left"
-          open={open}
+          component={Link} to="/console"
         >
-          <Stack dir="col" sx={{my: 2, alignItems: 'center'}}>
-            <Logo width={200} />
-          </Stack>
-
-          <Divider />
-          <List>
-            <ListItemButton key={"Console"} component={Link} to="/console">
-              <ListItemIcon>
-                <TerminalIcon />
-              </ListItemIcon>
-              <ListItemText primary={"Console"} />
-            </ListItemButton>
-            <ListItemButton
-              key={"Collections"}
-              component={Link}
-              to="/collections"
-            >
-              <ListItemIcon>
-                <LibraryBooksIcon />
-              </ListItemIcon>
-              <ListItemText primary={"Collections"} />
-            </ListItemButton>
-          </List>
-          <List style={{ marginTop: `auto` }} >
-            <ListItem>
-              <Typography variant="caption" >Qdrant v{version}</Typography>
-            </ListItem>
-          </List>
-        </Drawer>
-      </Grid>
-    </>
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: open ? 3 : 'auto',
+              justifyContent: 'center',
+            }}
+          >
+            <Terminal />
+          </ListItemIcon>
+          <ListItemText primary={"Console"} sx={{ opacity: open ? 1 : 0 }} />
+        </ListItemButton>
+      </ListItem>
+      <ListItem key={"Collections"} disablePadding sx={{ display: 'block' }}>
+        <ListItemButton
+          sx={{
+            minHeight: 48,
+            justifyContent: open ? 'initial' : 'center',
+            px: 2.5,
+          }}
+          component={Link} to="/collections"
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: open ? 3 : 'auto',
+              justifyContent: 'center',
+            }}
+          >
+            <LibraryBooks />
+          </ListItemIcon>
+          <ListItemText primary={"Collections"} sx={{ opacity: open ? 1 : 0 }} />
+        </ListItemButton>
+      </ListItem>
+    </List>
+    <List style={{ marginTop: `auto` }} >
+        <ListItem>
+          <Typography variant="caption" >{open ?`Qdrant ` :  ``}v{version}</Typography>
+        </ListItem>
+      </List>
+  </Drawer>
   );
 }

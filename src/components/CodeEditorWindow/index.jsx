@@ -11,7 +11,6 @@ import { useTheme } from "@mui/material/styles";
 import { Autocomplete } from "./config/Autocomplete";
 import { ErrorMarker, errChecker } from "./config/ErrorMarker";
 import { RequestFromCode } from "./config/RequesFromCode";
-import ErrorNotifier from "../ToastNotifications/ErrorNotifier";
 import "./editor.css";
 import EditorCommon from '../EditorCommon';
 
@@ -20,8 +19,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
   const autocompleteRef = useRef(null);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const { client: qdrantClient } = useClient();
 
@@ -54,20 +51,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       0,
       async (_ctx, ...args) => {
         let data = args[0];
-        if (data === "") {
-          setHasError(true);
-          setErrorMessage(
-            "No request selected. Select a request by placing the cursor inside it."
-          );
-          return;
-        }
-        if (data === "\n") {
-          setHasError(true);
-          setErrorMessage(
-            "Empty line selected. Select a request by placing the cursor inside it."
-          );
-          return;
-        }
         const result = await RequestFromCode(data);
         onChangeResult("code", JSON.stringify(result));
       },
@@ -130,10 +113,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   }
 
   return (
-    <>
-      {hasError && (
-        <ErrorNotifier {...{ message: errorMessage, setHasError }} />
-      )}
+
         <EditorCommon
           language={"custom-language"}
           value={code}
@@ -147,7 +127,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           formatOnType={true}
           options={options}
         />
-    </>
   );
 };
 export default CodeEditorWindow;
