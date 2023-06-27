@@ -65,8 +65,11 @@ export default function MiniDrawer() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: theme.palette.background.default
-        }}>
+          background: theme.palette.background.default,
+          boxShadow: "none",
+          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Toolbar>
           <IconButton
             aria-label="open drawer"
@@ -98,7 +101,7 @@ export default function MiniDrawer() {
         </Toolbar>
       </AppBar>
       <Sidebar open={open} version={version} />
-      <Box component="main" sx={{ flexGrow: 1 , overflow:"hidden"}}>
+      <Box component="main" sx={{ flexGrow: 1, overflow: "hidden" }}>
         <DrawerHeader />
         <Outlet />
       </Box>
