@@ -1,4 +1,4 @@
-const Method = ["POST", "GET", "PUT", "DELETE", "HEAD"];
+const Method = ["POST", "GET", "PUT", "DELETE", "PATCH", "HEAD"];
 
 export const Rules = {
   Method,

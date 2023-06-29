@@ -44,6 +44,7 @@ const PointCard = (props) => {
                 <Typography variant="subtitle1">
                   {" "}
                   <JsonViewer
+                    theme={theme.palette.mode}
                     value={data.payload[key]}
                     displayDataTypes={false}
                     defaultInspectDepth={0}
