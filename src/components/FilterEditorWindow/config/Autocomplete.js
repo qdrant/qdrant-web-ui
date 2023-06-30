@@ -36,15 +36,32 @@ export const Autocomplete = async (monaco, qdrantClient) => {
 
         let lastLine = requestLines[relativeLine].slice(0, position.column);
 
-        let requestBodyLines = requestLines.slice(0, relativeLine - 1);
+        let requestBodyLines = requestLines.slice(0, relativeLine);
 
         requestBodyLines.push(lastLine);
 
         let requestBody = requestBodyLines.join("\n");
 
-        console.log(requestBody);
+        if ('"color_by"'.indexOf(lastLine.trim()) === 0) {
+          return {
+            suggestions: [{
+              label: 'color_by":',
+              kind: 17,
+              insertText: 'color_by":',
+            }]
+          };
+        }
+        if ('"vector_name"'.indexOf(lastLine.trim()) === 0) {
+          return {
+            suggestions: [{
+              label: 'vector_name":',
+              kind: 17,
+              insertText: 'vector_name":',
+            }]
+          };
+        }
 
-        let suggestions = autocomplete.completeRequestBody( "POST collections/startups/points/scroll",requestBody);
+        let suggestions = autocomplete.completeRequestBody("POST collections/collection_name/points/scroll", requestBody);
         suggestions = suggestions.map((s) => {
           return {
             label: s,

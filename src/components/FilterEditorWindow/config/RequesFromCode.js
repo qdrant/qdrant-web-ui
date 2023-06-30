@@ -14,16 +14,8 @@ export function RequestFromCode(text, collectionName) {
       data: data.reqBody,
     })
       .then((response) => {
-        const history = localStorage.getItem("history")
-          ? JSON.parse(localStorage.getItem("history"))
-          : [];
-        history.push({
-          idx: data.method + data.endpoint + Date.now(),
-          code: data,
-          time: new Date().toLocaleTimeString(),
-          date: new Date().toLocaleDateString(),
-        });
-        localStorage.setItem("history", JSON.stringify(history));
+        response.data.color_by = data.reqBody.color_by;
+        response.data.vector_name = data.reqBody.vector_name; 
         return response.data;
       })
       .catch((err) => {
@@ -44,8 +36,32 @@ export function codeParse(codeText) {
       };
     }
   }
+  if(reqBody.vector_name && reqBody.color_by) 
+  {
     return {
       reqBody: reqBody,
       error: null,
     };
+  }
+  else if(reqBody.vector_name && !reqBody.color_by)
+  {
+    return {
+      reqBody: null,
+      error: "Please provide color_by field",
+    };
+  }
+  else if(!reqBody.vector_name && reqBody.color_by)
+  {
+    return {
+      reqBody: null,
+      error: "Please provide vector_name field",
+    };
+  }
+  else if(!reqBody.vector_name && !reqBody.color_by)
+  {
+    return {
+      reqBody: null,
+      error: "Please provide vector_name field and color_by field",
+    };
+  }
 }
