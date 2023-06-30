@@ -69,16 +69,10 @@ function Console() {
 
   return (
     <>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-        }}
-      >
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Grid container maxWidth={"xl"} >
+        <Grid container maxWidth={"xl"}>
           {errorMessage && (
             <Grid xs={12} item textAlign={"center"}  >
               <Typography >⚠ Error: {errorMessage}</Typography>
@@ -115,10 +109,6 @@ function Console() {
             </PanelGroup>
           </Grid>
         </Grid>
-      </Box>
-
-
-
     </>
   );
 }

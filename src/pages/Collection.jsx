@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useClient } from "../context/client-context";
-import { Box, Typography, Grid, Button } from "@mui/material";
+import { Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
@@ -38,7 +38,7 @@ function Collection() {
             with_payload: true,
             with_vector: true,
             using: vector,
-          })
+          });
           setNextPageOffset(newPoints.length);
           setPoints({ points: newPoints });
           setErrorMessage(null);
@@ -53,12 +53,12 @@ function Collection() {
             offset,
             limit: pageSize,
             with_vector: true,
-            with_payload: true
+            with_payload: true,
           });
           setPoints({
             points: [
               ...points?.points || [],
-              ...newPoints?.points || []
+              ...newPoints?.points || [],
             ],
           });
           setNextPageOffset(newPoints?.next_page_offset);
@@ -67,76 +67,68 @@ function Collection() {
           setErrorMessage(error.message);
           setPoints({});
         }
-      };
+      }
     }
     getPoints()
   }, [collectionName, offset, recommendationIds]);
 
   return (
     <>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-        }}
-      >
-        {errorMessage !== null && (
-          <ErrorNotifier {...{ message: errorMessage }} />
-        )}
-        <Grid container maxWidth={"xl"} spacing={3}>
-          <Grid xs={12} item >
-            <Typography variant="h4">{collectionName}</Typography>
-          </Grid>
-          <Grid xs={12} item >
-            <SimilarSerachfield
-              value={recommendationIds}
-              setValue={onIdsSelected}
-            />
-          </Grid>
-
-          {errorMessage && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography >⚠ Error: {errorMessage}</Typography>
-            </Grid>
-          )}
-          {!points && !errorMessage && (
-            <Grid xs={12} item  textAlign={"center"} >
-              <Typography > 🔃 Loading...</Typography>
-            </Grid>
-          )}
-          {points && !errorMessage && points.points?.length === 0 && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography >
-                📪 No Points are presents, {collectionName} is empty
-              </Typography>
-            </Grid>
-          )}
-
-          {points &&
-            !errorMessage &&
-            points.points?.map((point) => (
-              <Grid xs={12} item key={point.id}>
-                <PointCard
-                  point={point}
-                  setRecommendationIds={onIdsSelected}
-                  collectionName={collectionName}
-                />
-              </Grid>
-            ))}
-          <Grid xs={12} item  textAlign={"center"}>
-            <Button
-              variant="outlined"
-              disabled={!points || !nextPageOffset}
-              onClick={() => {
-                setOffset(nextPageOffset);
-              }}
-            >
-              Load More
-            </Button>
-          </Grid>
+      {errorMessage !== null && (
+        <ErrorNotifier {...{ message: errorMessage }} />
+      )}
+      <Grid container maxWidth={"xl"} spacing={3}>
+        <Grid xs={12} item>
+          <Typography variant="h4">{collectionName}</Typography>
         </Grid>
-      </Box>
+        <Grid xs={12} item>
+          <SimilarSerachfield
+            value={recommendationIds}
+            setValue={onIdsSelected}
+          />
+        </Grid>
+
+        {errorMessage && (
+          <Grid xs={12} item textAlign={"center"}>
+            <Typography>⚠ Error: {errorMessage}</Typography>
+          </Grid>
+        )}
+        {!points && !errorMessage && (
+          <Grid xs={12} item textAlign={"center"}>
+            <Typography> 🔃 Loading...</Typography>
+          </Grid>
+        )}
+        {points && !errorMessage && points.points?.length === 0 && (
+          <Grid xs={12} item textAlign={"center"}>
+            <Typography>
+              📪 No Points are presents, {collectionName} is empty
+            </Typography>
+          </Grid>
+        )}
+
+        {points &&
+          !errorMessage &&
+          points.points?.map((point) => (
+            <Grid xs={12} item key={point.id}>
+              <PointCard
+                point={point}
+                setRecommendationIds={onIdsSelected}
+                collectionName={collectionName}
+              />
+            </Grid>
+          ))}
+        <Grid xs={12} item textAlign={"center"}>
+          <Button
+            variant="outlined"
+            disabled={!points || !nextPageOffset}
+            onClick={() => {
+              setOffset(nextPageOffset);
+            }}
+          >
+            Load More
+          </Button>
+        </Grid>
+      </Grid>
     </>
   );
 }

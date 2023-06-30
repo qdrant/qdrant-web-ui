@@ -32,7 +32,6 @@ export default function MiniDrawer() {
   const { client: qdrantClient } = useClient();
 
   async function getQdrantVersion() {
-    // console.log("qdrantClient.api", qdrantClient._openApiClient);
     try {
       let telemetry = await qdrantClient.api("service").telemetry();
       setVersion(telemetry.data.result.app.version);
@@ -103,7 +102,16 @@ export default function MiniDrawer() {
       <Sidebar open={open} version={version} />
       <Box component="main" sx={{ flexGrow: 1, overflow: "hidden" }}>
         <DrawerHeader />
-        <Outlet />
+        <Box
+          component="main"
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            p: 3,
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
       <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
     </Box>
