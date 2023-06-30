@@ -1,141 +1,127 @@
-import React, { useState } from "react";
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormHelperText from '@mui/material/FormHelperText';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import { Box, Button } from '@mui/material';
+/* eslint-disable react/prop-types */
+import React, { useState, useRef, useEffect } from "react";
+import {
+  options,
+  btnconfig,
+  GetCodeBlocks,
+  selectBlock,
+} from "./config/Rules";
 import { useParams } from "react-router-dom";
 import { useClient } from "../../context/client-context";
+import { useTheme } from "@mui/material/styles";
+import { Autocomplete } from "./config/Autocomplete";
+import { RequestFromCode } from "./config/RequesFromCode";
+import "./editor.css";
 import EditorCommon from '../EditorCommon';
 
-let query=`
-{
-  "filter": {
-      "should": [
-          {
-              "key": "city",
-              "match": {
-                  "value": "London"
-              }
-          }
-      ]
-  }
-}`
-
-export default function FilterEditorWindow ({setResult}) {
-  const [limit, setLimit] = React.useState(0);
-  const {client: qdrantClient} = useClient();
-  const [vectors, setVectors] = React.useState([ "Default vector"]); // [vector1, vector2, ...
-  const [vector, setVector] = React.useState(vectors[0]);
-  const [code, setCode] = useState(query);
-
-
+const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+  const lensesRef = useRef(null);
+  const autocompleteRef = useRef(null);
   const { collectionName } = useParams();
 
 
+  const { client: qdrantClient } = useClient();
 
-  React.useEffect(() => {
-    const getPoints = async () => {
-        try {
-          let newPoints = await qdrantClient.scroll(collectionName, {
-            limit: limit,
-            with_vector: true,
-            with_payload: true
-          });
-          console.log(newPoints)
-          setResult({
-            points: [
-              ...newPoints?.points || []
-            ],
-          });
-        } catch (error) {
-          console.log(error);
-          setResult({});
-        }
-    }
-    getPoints()
-  }, [collectionName,limit]);
+  let runBtnCommandId = null;
 
-  React.useEffect(() => {
-    const getVectors = async () => {
-        try {
-          let collectionInfo = await qdrantClient.getCollection(collectionName)
-          if(collectionInfo.config.params.vectors.size){
-            setVectors(["Default vector"]);
-          } 
-          else{
-            setVectors(Object.keys(collectionInfo.config.params.vectors));
-            setVector(Object.keys(collectionInfo.config.params.vectors)[0]);
+  const theme = useTheme();
+  const handleEditorChange = (code) => {
+    onChange("code", code);
+  };
+
+  useEffect(
+    () => () => {
+      lensesRef.current?.dispose();
+      autocompleteRef.current?.dispose();
+    },
+    []
+  );
+
+  function handleEditorDidMount(editor, monaco) {
+    editorRef.current = editor;
+    var decorations = [];
+
+    runBtnCommandId = editor.addCommand(
+      0,
+      async (_ctx, ...args) => {
+        let data = args[0];
+        const result = await RequestFromCode(data,collectionName);
+        onChangeResult("code", JSON.stringify(result));
+      },
+      ""
+    );
+
+    // Register Code Lens Provider (Run Button)
+    lensesRef.current = monaco.languages.registerCodeLensProvider(
+      "custom-language",
+      btnconfig(runBtnCommandId)
+    );
+
+    //Listen for Mouse Postion Change
+    editor.onDidChangeCursorPosition((e) => {
+      let currentCode = editor.getValue();
+      let currentBlocks = GetCodeBlocks(currentCode);
+
+      let selectedCodeBlock = selectBlock(
+        currentBlocks,
+        editor.getPosition().lineNumber
+      );
+
+      monaco.selectedCodeBlock = selectedCodeBlock;
+
+      if (selectedCodeBlock) {
+        let fromRange = selectedCodeBlock.blockStartLine;
+        let toRange = selectedCodeBlock.blockEndLine;
+        // Make the decortion on the selected range
+        decorations = editor.deltaDecorations(
+          [decorations[0]],
+          [
+            {
+              range: new monaco.Range(fromRange, 0, toRange, 3),
+              options: {
+                className: theme.palette.mode === "dark" ? "blockSelector" : "blockSelector",
+                glyphMarginClassName: theme.palette.mode === "dark" ? "blockSelectorStrip" : "blockSelectorStrip",
+                isWholeLine: true,
+              },
+            },
+          ]
+        );
+        editor.addCommand(
+          monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter,
+          async () => {
+            let data = selectedCodeBlock.blockText;
+            const result = await RequestFromCode(data, collectionName);
+            onChangeResult("code", JSON.stringify(result));
           }
-        } catch (error) {
-          console.log(error);
-          setVectors([]);
-        }
-    }
-    getVectors();
-  }, []);
-
-
-  const handleVectorChange = (event) => {
-    setVector(event.target.value);
-  };
-  const handleLimitChange = (event) => {
-    setLimit(event.target.value);
-  };
+        );
+      }
+    });
+  }
+  function handleEditorWillMount(monaco) {
+    Autocomplete(monaco, qdrantClient).then((autocomplete) => {
+      autocompleteRef.current = monaco.languages.registerCompletionItemProvider(
+        "custom-language",
+        autocomplete
+      );
+    });
+  }
 
   return (
-    <Box sx={{
-      textAlign: "center",
-    }}>
-      <div>
-      <FormControl sx={{ m: 1, minWidth: "40%" }}>
-        <InputLabel id="selectVectorLabel">Vector</InputLabel>
-        <Select
-          labelId="selectVectorLabel"
-          id="selectVector"
-          value={vector}
-          label="Vector"
-          onChange={handleVectorChange}
-        >
-        {vectors && vectors?.map((vector) => (
-                  <MenuItem key={vector} value={vector}>{vector}</MenuItem>
-              ))}
-
-        </Select>
-        <FormHelperText>Select Vector to Visualize</FormHelperText>
-      </FormControl>
-      <FormControl sx={{ m: 1, minWidth: "40%" }}>
-        <InputLabel id="selectLimit">Select Limit</InputLabel>
-        <Select
-          labelId="selectLimit"
-          id="selectLimitHelper"
-          value={limit}
-          label="Select Limit"
-          onChange={handleLimitChange}
-        >
-          <MenuItem value={0}>00</MenuItem>
-          <MenuItem value={2}>2</MenuItem>
-          <MenuItem value={500}>500</MenuItem>
-          <MenuItem value={1000}>1000</MenuItem>
-          <MenuItem value={2000}>2000</MenuItem>
-        </Select>
-        <FormHelperText>Select number of points</FormHelperText>
-      </FormControl>
-      </div>
-      <EditorCommon
-      language="json"
-      theme={"custom-language-theme"}
-      value={code}
-      options={{
-        scrollBeyondLastLine: false,
-        fontSize: 12,
-        wordWrap: "on",
-        minimap: { enabled: false },
-        automaticLayout: true,
-        mouseWheelZoom: true,
-      }}
-      />      
-    </Box>
+        <EditorCommon
+          language={"custom-language"}
+          value={code}
+          theme={"custom-language-theme"}
+          defaultValue="//input"
+          onChange={handleEditorChange}
+          onMount={handleEditorDidMount}
+          beforeMount={handleEditorWillMount}
+          formatOnPaste={true}
+          autoIndent={true}
+          formatOnType={true}
+          options={options}
+        />
   );
-}
+};
+export default CodeEditorWindow;
