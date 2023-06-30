@@ -38,30 +38,25 @@ export function codeParse(codeText) {
   }
   if(reqBody.vector_name && reqBody.color_by) 
   {
+    reqBody.with_vector=[reqBody.vector_name];
     return {
       reqBody: reqBody,
       error: null,
     };
   }
-  else if(reqBody.vector_name && !reqBody.color_by)
+  else if(!reqBody.color_by)
   {
     return {
       reqBody: null,
       error: "Please provide color_by field",
     };
   }
-  else if(!reqBody.vector_name && reqBody.color_by)
+  else if(!reqBody.vector_name )
   {
+    reqBody.with_vector=true;
     return {
-      reqBody: null,
-      error: "Please provide vector_name field",
-    };
-  }
-  else if(!reqBody.vector_name && !reqBody.color_by)
-  {
-    return {
-      reqBody: null,
-      error: "Please provide vector_name field and color_by field",
+      reqBody: reqBody,
+      error: null,
     };
   }
 }

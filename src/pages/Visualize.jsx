@@ -10,10 +10,9 @@ import ResultEditorWindow from "../components/ResultEditorWindow";
 
 const query = `
 {
-  "vector_name": "Default",
+  "vector_name": "image",
   "color_by": "payload_field",
   "limit": 3,
-  "with_vector":true,
   "filter": {
     "must": [
       {
@@ -31,9 +30,7 @@ const query = `
 }
 
 {
-  "vector_name": "Default",
   "color_by": "payload_field",
-  "with_vector":true,
   "limit": 10,
   "filter": {
       "should": [

@@ -46,18 +46,15 @@ const CollectionCard = (props) => {
           spacing={1}
           sx={{ p: 1 }}
         >
-          {/* temporary disabled */}
-          {false &&
             <Button
               variant="body"
               component={Link}
-              to={`/collections/${collection.name}/vector`}
+              to={`/collections/${collection.name}/visualize`}
               size={"small"}
               startIcon={<PolylineIcon />}
             >
               visualize
             </Button>
-          }
           <Button
             variant="body"
             size={"small"}
