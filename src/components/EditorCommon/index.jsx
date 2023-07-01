@@ -38,7 +38,7 @@ const EditorCommon = ({beforeMount, ...props}) => {
 
   useEffect(() => {
     setEditorHeight(height - editorWrapper.current?.offsetTop);
-  }, [height, editorWrapper.current?.offsetTop]);
+  }, [height, editorWrapper]);
 
   return (
       <div className={theme.palette.mode} ref={editorWrapper}>
