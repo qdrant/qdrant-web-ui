@@ -5,7 +5,7 @@ import {
   btnconfig,
   GetCodeBlocks,
   selectBlock,
-} from "../EditorCommon/config/Rules";
+} from "./config/Rules";
 import { useClient } from "../../context/client-context";
 import { useTheme } from "@mui/material/styles";
 import { Autocomplete } from "./config/Autocomplete";
@@ -45,6 +45,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
 
   function handleEditorDidMount(editor, monaco) {
     editorRef.current = editor;
+    monacoRef.current = monaco;
     var decorations = [];
 
     runBtnCommandId = editor.addCommand(

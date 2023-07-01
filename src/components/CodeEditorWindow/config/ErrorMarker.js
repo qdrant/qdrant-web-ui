@@ -1,5 +1,5 @@
-import { GetCodeBlocks } from "../../EditorCommon/config/Rules";
-const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
+import { GetCodeBlocks } from "./Rules";
+const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD","PATCH"];
 
 export var ErrorMarker = [];
 
