@@ -36,19 +36,12 @@ export function codeParse(codeText) {
       };
     }
   }
-  if(reqBody.vector_name && reqBody.color_by) 
+  if(reqBody.vector_name) 
   {
     reqBody.with_vector=[reqBody.vector_name];
     return {
       reqBody: reqBody,
       error: null,
-    };
-  }
-  else if(!reqBody.color_by)
-  {
-    return {
-      reqBody: null,
-      error: "Please provide color_by field",
     };
   }
   else if(!reqBody.vector_name )

@@ -46,6 +46,8 @@ const CollectionCard = (props) => {
           spacing={1}
           sx={{ p: 1 }}
         >
+          {/* temporary disabled */}
+          {false &&
             <Button
               variant="body"
               component={Link}
@@ -55,6 +57,7 @@ const CollectionCard = (props) => {
             >
               visualize
             </Button>
+          }
           <Button
             variant="body"
             size={"small"}

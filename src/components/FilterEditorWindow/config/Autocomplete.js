@@ -11,6 +11,17 @@ export const Autocomplete = async (monaco, qdrantClient) => {
   } catch (e) {
     console.error(e);
   }
+  openapi.components.schemas.ScrollRequest.properties["color_by"] = {
+    "description": "Color points by this field",
+    "type": "string",
+    "nullable": true
+  };
+  openapi.components.schemas.ScrollRequest.properties["vector_name"] = {
+    "description": "Color points by this field",
+    "type": "string",
+    "nullable": true
+  };
+
 
   let autocomplete = new OpenapiAutocomplete(openapi, collections);
 
@@ -41,25 +52,6 @@ export const Autocomplete = async (monaco, qdrantClient) => {
         requestBodyLines.push(lastLine);
 
         let requestBody = requestBodyLines.join("\n");
-
-        if ('"color_by"'.indexOf(lastLine.trim()) === 0) {
-          return {
-            suggestions: [{
-              label: 'color_by":',
-              kind: 17,
-              insertText: 'color_by":',
-            }]
-          };
-        }
-        if ('"vector_name"'.indexOf(lastLine.trim()) === 0) {
-          return {
-            suggestions: [{
-              label: 'vector_name":',
-              kind: 17,
-              insertText: 'vector_name":',
-            }]
-          };
-        }
 
         let suggestions = autocomplete.completeRequestBody("POST collections/collection_name/points/scroll", requestBody);
         suggestions = suggestions.map((s) => {
