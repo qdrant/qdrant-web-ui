@@ -17,7 +17,7 @@ export const Autocomplete = async (monaco, qdrantClient) => {
     "nullable": true
   };
   openapi.components.schemas.ScrollRequest.properties["vector_name"] = {
-    "description": "Color points by this field",
+    "description": "Vector field name",
     "type": "string",
     "nullable": true
   };
