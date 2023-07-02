@@ -11,16 +11,43 @@ export const Autocomplete = async (monaco, qdrantClient) => {
   } catch (e) {
     console.error(e);
   }
-  openapi.components.schemas.ScrollRequest.properties["color_by"] = {
-    "description": "Color points by this field",
-    "type": "string",
-    "nullable": true
+
+  let FilterRequest = {
+    "description": "Scroll request - paginate over all points which matches given condition",
+    "type": "object",
+    "properties": {
+      "limit": {
+        "description": "Page size. Default: 10",
+        "type": "integer",
+        "format": "uint",
+        "minimum": 1,
+        "nullable": true
+      },
+      "filter": {
+        "description": "Look only for points which satisfies this conditions. If not provided - all points.",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Filter"
+          },
+          {
+            "nullable": true
+          }
+        ]
+      },
+      "vector_name": {
+        "description": "Vector field name",
+        "type": "string",
+        "nullable": true
+      },
+      "color_by": {
+        "description": "Color points by this field",
+        "type": "string",
+        "nullable": true
+      }
+    }
   };
-  openapi.components.schemas.ScrollRequest.properties["vector_name"] = {
-    "description": "Vector field name",
-    "type": "string",
-    "nullable": true
-  };
+  openapi.components.schemas.FilterRequest=FilterRequest;
+  openapi.paths["/collections/{collection_name}/points/scroll"].post.requestBody.content["application/json"].schema["$ref"]="#/components/schemas/FilterRequest";
 
 
   let autocomplete = new OpenapiAutocomplete(openapi, collections);
