@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 
-export const CenteredFrame = ({children}) => {
+export const CenteredFrame = ({ children }) => {
   return (
     <Box
       component="main"
@@ -16,14 +16,18 @@ export const CenteredFrame = ({children}) => {
       {children}
     </Box>
   );
-}
+};
 
 // props validation
 CenteredFrame.propTypes = {
   children: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.node,
+      null,
+      undefined,
+    ])),
     PropTypes.node,
     null,
     undefined,
   ]),
-}
+};

@@ -78,7 +78,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       if (selectedCodeBlock) {
         let fromRange = selectedCodeBlock.blockStartLine;
         let toRange = selectedCodeBlock.blockEndLine;
-        // Make the decortion on the selected range
+        // Make the decoration on the selected range
         decorations = editor.deltaDecorations(
           [decorations[0]],
           [

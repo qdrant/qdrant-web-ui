@@ -1,25 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useState } from "react";
+import PropTypes from "prop-types";
 import { SwipeableDrawer, Button, Box, Stack, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditorCommon from '../../EditorCommon';
-import PropTypes from "prop-types";
 
-function History({ state, code, handleEditorChange, toggleDrawer }) {
-  const [viewCode, setViewCode] = React.useState("//Selected Code");
-  const [history, setHistory] = useState(
-    localStorage.getItem("history")
+function History({ code, handleEditorChange, open, onClose }) {
+  console.log("History render");
+  const getHistoryFromLocalStorage = () => {
+    // todo: isn't 'history' too generic a name for a localStorage key?
+    return localStorage.getItem("history")
       ? JSON.parse(localStorage.getItem("history"))
-      : []
-  );
+      : [];
+  };
 
-  useEffect(() => {
-    setHistory(
-      localStorage.getItem("history")
-        ? JSON.parse(localStorage.getItem("history"))
-        : []
-    );
-  }, [state]);
+  const [viewCode, setViewCode] = useState("//Selected Code");
+  const [history, setHistory] = useState(getHistoryFromLocalStorage);
 
   function formatJSON(val = {}) {
     if (val && Object.keys(val).length !== 0) {
@@ -71,6 +67,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       renderCell: (params) => deleteIcon(params.row),
     },
   ];
+
   function deleteIcon(data) {
     return (
       <Button
@@ -80,20 +77,21 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
 
           localStorage.setItem("history", JSON.stringify(updatedHistory));
           setHistory(JSON.parse(localStorage.getItem("history")));
-          return;
         }}
       >
         <DeleteIcon />
       </Button>
     );
   }
+
   return (
     <React.Fragment key={"History"}>
       <SwipeableDrawer
         anchor="top"
-        open={state}
-        onClose={toggleDrawer("history", false)}
-        onOpen={toggleDrawer("history", true)}
+        open={open}
+        onClose={onClose}
+        onOpen={() => {
+        }}
       >
         <Box
           sx={{
@@ -158,7 +156,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                       setViewCode(
                         `${params.row.code.method} ${
                           params.row.code.endpoint
-                        } \n${formatJSON(params.row.code.reqBody)} \n`
+                        } \n${formatJSON(params.row.code.reqBody)} \n`,
                       );
                     }}
                   />
@@ -194,7 +192,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 color="success"
                 onClick={() => {
                   handleEditorChange("code", `${viewCode} \n${code}`);
-                  toggleDrawer("history", false)();
+                  onClose();
                 }}
               >
                 Apply Code
@@ -203,7 +201,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={toggleDrawer("history", false)}
+                onClick={onClose}
               >
                 Close
               </Button>
@@ -215,10 +213,10 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
   );
 }
 History.propTypes = {
-  state: PropTypes.bool,
-  toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
-  code: PropTypes.string,
+  code: PropTypes.string.isRequired,
+  handleEditorChange: PropTypes.func.isRequired,
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
-export default History;
+export default memo(History);

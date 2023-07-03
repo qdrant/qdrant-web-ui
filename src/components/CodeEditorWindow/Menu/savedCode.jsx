@@ -13,6 +13,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditorCommon from '../../EditorCommon';
 
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
+  console.log('SavedCode render');
   const [viewCode, setViewCode] = React.useState(
     `//Current Editor Code: \n${code}`
   );

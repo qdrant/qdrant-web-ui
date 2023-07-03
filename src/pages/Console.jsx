@@ -8,7 +8,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
-
+import SpeedDialMenu from "../components/CodeEditorWindow/Menu/SpeedDialMenu";
 const query = `// List all collections
 GET collections
 
@@ -79,9 +79,6 @@ function Console() {
             </Grid>
           )}
           <Grid xs={12} item>
-            <Menu code={code} handleEditorChange={onChangeCode}/>
-          </Grid>
-          <Grid xs={12} item>
             <PanelGroup direction="horizontal">
               <Panel>
                 <CodeEditorWindow
@@ -108,6 +105,7 @@ function Console() {
               </Panel>
             </PanelGroup>
           </Grid>
+          <SpeedDialMenu code={code} handleEditorChange={onChangeCode} />
         </Grid>
       </Box>
     </>
