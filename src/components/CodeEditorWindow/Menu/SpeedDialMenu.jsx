@@ -2,7 +2,7 @@ import React, { memo, useState } from "react";
 import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
 import SpeedDial from "@mui/material/SpeedDial";
-import SpeedDialIcon from "@mui/material/SpeedDialIcon";
+import Bolt from "@mui/icons-material/Bolt";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import SaveIcon from "@mui/icons-material/Save";
 import HistoryRounded from "@mui/icons-material/HistoryRounded";
@@ -40,8 +40,8 @@ function SpeedDialMenu({code, handleEditorChange}) {
       {/*<Backdrop open={open}/>*/}
       <SpeedDial
         ariaLabel="SpeedDial tooltip example"
-        sx={{ position: "absolute", bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon/>}
+        sx={{ position: "absolute", bottom: -10, right: 40 }}
+        icon={<Bolt />}
         onClose={handleClose}
         onOpen={handleOpen}
         open={open}
