@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Box } from "@mui/system";
+import Box from "@mui/material/Box";
 import { Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -36,7 +36,6 @@ POST collections/collection_name/points/scroll
 }
 `;
 
-
 const defaultResult = `{}`;
 
 function Console() {
@@ -69,20 +68,21 @@ function Console() {
 
   return (
     <>
+      <Box component="main">
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Grid container maxWidth={"xl"}>
+        <Grid container>
           {errorMessage && (
-            <Grid xs={12} item textAlign={"center"}  >
-              <Typography >⚠ Error: {errorMessage}</Typography>
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
-          <Grid xs={12} item >
-            <Menu code={code} handleEditorChange={onChangeCode} />
+          <Grid xs={12} item>
+            <Menu code={code} handleEditorChange={onChangeCode}/>
           </Grid>
-          <Grid xs={12} item >
-          <PanelGroup direction="horizontal">
+          <Grid xs={12} item>
+            <PanelGroup direction="horizontal">
               <Panel>
                 <CodeEditorWindow
                   code={code}
@@ -104,11 +104,12 @@ function Console() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <ResultEditorWindow code={result} />
+                <ResultEditorWindow code={result}/>
               </Panel>
             </PanelGroup>
           </Grid>
         </Grid>
+      </Box>
     </>
   );
 }

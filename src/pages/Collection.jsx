@@ -5,6 +5,7 @@ import { Typography, Grid, Button } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
+import { CenteredFrame } from "../components/Frame/CenteredFrame";
 
 function Collection() {
   const pageSize = 10;
@@ -68,67 +69,69 @@ function Collection() {
           setPoints({});
         }
       }
-    }
-    getPoints()
+    };
+    getPoints();
   }, [collectionName, offset, recommendationIds]);
 
   return (
     <>
-      {errorMessage !== null && (
-        <ErrorNotifier {...{ message: errorMessage }} />
-      )}
-      <Grid container maxWidth={"xl"} spacing={3}>
-        <Grid xs={12} item>
-          <Typography variant="h4">{collectionName}</Typography>
-        </Grid>
-        <Grid xs={12} item>
-          <SimilarSerachfield
-            value={recommendationIds}
-            setValue={onIdsSelected}
-          />
-        </Grid>
+      <CenteredFrame>
+        {errorMessage !== null && (
+          <ErrorNotifier {...{ message: errorMessage }} />
+        )}
+        <Grid container maxWidth={"xl"} spacing={3}>
+          <Grid xs={12} item>
+            <Typography variant="h4">{collectionName}</Typography>
+          </Grid>
+          <Grid xs={12} item>
+            <SimilarSerachfield
+              value={recommendationIds}
+              setValue={onIdsSelected}
+            />
+          </Grid>
 
-        {errorMessage && (
-          <Grid xs={12} item textAlign={"center"}>
-            <Typography>⚠ Error: {errorMessage}</Typography>
-          </Grid>
-        )}
-        {!points && !errorMessage && (
-          <Grid xs={12} item textAlign={"center"}>
-            <Typography> 🔃 Loading...</Typography>
-          </Grid>
-        )}
-        {points && !errorMessage && points.points?.length === 0 && (
-          <Grid xs={12} item textAlign={"center"}>
-            <Typography>
-              📪 No Points are presents, {collectionName} is empty
-            </Typography>
-          </Grid>
-        )}
-
-        {points &&
-          !errorMessage &&
-          points.points?.map((point) => (
-            <Grid xs={12} item key={point.id}>
-              <PointCard
-                point={point}
-                setRecommendationIds={onIdsSelected}
-                collectionName={collectionName}
-              />
+          {errorMessage && (
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
-          ))}
-        <Grid xs={12} item textAlign={"center"}>
-          <Button
-            variant="outlined"
-            disabled={!points || !nextPageOffset}
-            onClick={() => {
-              setOffset(nextPageOffset);
-            }}
-          >
-            Load More
-          </Button>
+          )}
+          {!points && !errorMessage && (
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography> 🔃 Loading...</Typography>
+            </Grid>
+          )}
+          {points && !errorMessage && points.points?.length === 0 && (
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography>
+                📪 No Points are presents, {collectionName} is empty
+              </Typography>
+            </Grid>
+          )}
+
+          {points &&
+            !errorMessage &&
+            points.points?.map((point) => (
+              <Grid xs={12} item key={point.id}>
+                <PointCard
+                  point={point}
+                  setRecommendationIds={onIdsSelected}
+                  collectionName={collectionName}
+                />
+              </Grid>
+            ))}
+          <Grid xs={12} item textAlign={"center"}>
+            <Button
+              variant="outlined"
+              disabled={!points || !nextPageOffset}
+              onClick={() => {
+                setOffset(nextPageOffset);
+              }}
+            >
+              Load More
+            </Button>
+          </Grid>
         </Grid>
-      </Grid>
+      </CenteredFrame>
     </>
   );
 }
