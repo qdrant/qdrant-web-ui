@@ -32,7 +32,6 @@ export default function MiniDrawer() {
   const { client: qdrantClient } = useClient();
 
   async function getQdrantVersion() {
-    // console.log("qdrantClient.api", qdrantClient._openApiClient);
     try {
       let telemetry = await qdrantClient.api("service").telemetry();
       setVersion(telemetry.data.result.app.version);

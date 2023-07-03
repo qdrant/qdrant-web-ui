@@ -100,6 +100,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
             width: "100%",
             height: "100%",
             display: "flex",
+            mt: 8,
           }}
         >
           <Box
