@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useState } from "react";
 import PropTypes from "prop-types";
 import {
   SwipeableDrawer,
@@ -12,26 +12,18 @@ import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditorCommon from '../../EditorCommon';
 
-function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
+function SavedCode({ code, handleEditorChange, open, onClose }) {
   console.log('SavedCode render');
+  const getSavedCodesFromLocalStorage = () => {
+    return localStorage.getItem("savedCodes")
+      ? JSON.parse(localStorage.getItem("savedCodes"))
+      : [];
+  }
   const [viewCode, setViewCode] = React.useState(
     `//Current Editor Code: \n${code}`
   );
   const [saveNameText, setSaveNameText] = useState("");
-  const [savedCodes, setSavedCodes] = useState(
-    localStorage.getItem("savedCodes")
-      ? JSON.parse(localStorage.getItem("savedCodes"))
-      : []
-  );
-
-  useEffect(() => {
-    setSavedCodes(
-      localStorage.getItem("savedCodes")
-        ? JSON.parse(localStorage.getItem("savedCodes"))
-        : []
-    );
-    setViewCode(`//Current Editor Code: \n${code}`);
-  }, [state]);
+  const [savedCodes, setSavedCodes] = useState(getSavedCodesFromLocalStorage);
 
   function saveCode() {
     if (saveNameText !== "") {
@@ -48,7 +40,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       localStorage.setItem("savedCodes", JSON.stringify(data));
       setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
       setSaveNameText("");
-      return;
     }
   }
 
@@ -91,7 +82,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           updateCode.splice(index, 1);
           localStorage.setItem("savedCodes", JSON.stringify(updateCode));
           setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
-          return;
         }}
       >
         <DeleteIcon />
@@ -102,9 +92,9 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
     <React.Fragment key={"SavedCode"}>
       <SwipeableDrawer
         anchor="top"
-        open={state}
-        onClose={toggleDrawer("savedCode", false)}
-        onOpen={toggleDrawer("savedCode", true)}
+        open={open}
+        onClose={onClose}
+        onOpen={() => {}}
       >
         <Box
           sx={{
@@ -210,7 +200,8 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 color="success"
                 onClick={() => {
                   handleEditorChange("code", `${viewCode} \n${code}`);
-                  toggleDrawer("savedCode", false)();
+                  // toggleDrawer("savedCode", false)();
+                  onClose();
                 }}
               >
                 Apply Code
@@ -219,7 +210,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={toggleDrawer("savedCode", false)}
+                onClick={onClose}
               >
                 Close
               </Button>
@@ -230,11 +221,13 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
+
+// todo: fix this - what is required?
 SavedCode.propTypes = {
-  state: PropTypes.bool,
-  toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
   code: PropTypes.string,
+  handleEditorChange: PropTypes.func,
+  open: PropTypes.bool,
+  onClose: PropTypes.func,
 };
 
-export default SavedCode;
+export default memo(SavedCode);

@@ -39,6 +39,7 @@ POST collections/collection_name/points/scroll
 const defaultResult = `{}`;
 
 function Console() {
+  console.log("Console render");
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
