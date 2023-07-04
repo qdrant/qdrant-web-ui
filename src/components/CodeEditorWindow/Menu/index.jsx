@@ -4,6 +4,7 @@ import History from "./history";
 import PropTypes from "prop-types";
 import SavedCode from "./savedCode";
 
+// deprecated
 function Menu({ code, handleEditorChange }) {
   const [state, setState] = React.useState({
     history: false,

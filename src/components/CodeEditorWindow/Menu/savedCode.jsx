@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
   SwipeableDrawer,
@@ -12,18 +12,25 @@ import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditorCommon from '../../EditorCommon';
 
-function SavedCode({ code, handleEditorChange, open, onClose }) {
-  console.log('SavedCode render');
-  const getSavedCodesFromLocalStorage = () => {
-    return localStorage.getItem("savedCodes")
-      ? JSON.parse(localStorage.getItem("savedCodes"))
-      : [];
-  }
+function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState(
     `//Current Editor Code: \n${code}`
   );
   const [saveNameText, setSaveNameText] = useState("");
-  const [savedCodes, setSavedCodes] = useState(getSavedCodesFromLocalStorage);
+  const [savedCodes, setSavedCodes] = useState(
+    localStorage.getItem("savedCodes")
+      ? JSON.parse(localStorage.getItem("savedCodes"))
+      : []
+  );
+
+  useEffect(() => {
+    setSavedCodes(
+      localStorage.getItem("savedCodes")
+        ? JSON.parse(localStorage.getItem("savedCodes"))
+        : []
+    );
+    setViewCode(`//Current Editor Code: \n${code}`);
+  }, [state]);
 
   function saveCode() {
     if (saveNameText !== "") {
@@ -92,9 +99,9 @@ function SavedCode({ code, handleEditorChange, open, onClose }) {
     <React.Fragment key={"SavedCode"}>
       <SwipeableDrawer
         anchor="top"
-        open={open}
-        onClose={onClose}
-        onOpen={() => {}}
+        open={state}
+        onClose={toggleDrawer}
+        onOpen={toggleDrawer}
       >
         <Box
           sx={{
@@ -200,8 +207,7 @@ function SavedCode({ code, handleEditorChange, open, onClose }) {
                 color="success"
                 onClick={() => {
                   handleEditorChange("code", `${viewCode} \n${code}`);
-                  // toggleDrawer("savedCode", false)();
-                  onClose();
+                  toggleDrawer();
                 }}
               >
                 Apply Code
@@ -210,7 +216,7 @@ function SavedCode({ code, handleEditorChange, open, onClose }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={onClose}
+                onClick={toggleDrawer}
               >
                 Close
               </Button>
@@ -222,12 +228,11 @@ function SavedCode({ code, handleEditorChange, open, onClose }) {
   );
 }
 
-// todo: fix this - what is required?
 SavedCode.propTypes = {
-  code: PropTypes.string,
-  handleEditorChange: PropTypes.func,
-  open: PropTypes.bool,
-  onClose: PropTypes.func,
+  state: PropTypes.bool.isRequired,
+  toggleDrawer: PropTypes.func,
+  handleEditorChange: PropTypes.func.isRequired,
+  code: PropTypes.string.isRequired,
 };
 
 export default memo(SavedCode);

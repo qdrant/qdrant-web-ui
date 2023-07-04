@@ -23,11 +23,7 @@ CenteredFrame.propTypes = {
   children: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.node,
-      null,
-      undefined,
     ])),
     PropTypes.node,
-    null,
-    undefined,
   ]),
 };

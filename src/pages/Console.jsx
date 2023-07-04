@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
@@ -9,6 +9,9 @@ import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import SpeedDialMenu from "../components/CodeEditorWindow/Menu/SpeedDialMenu";
+import History from "../components/CodeEditorWindow/Menu/history";
+import SavedCode from "../components/CodeEditorWindow/Menu/savedCode";
+
 const query = `// List all collections
 GET collections
 
@@ -39,11 +42,14 @@ POST collections/collection_name/points/scroll
 const defaultResult = `{}`;
 
 function Console() {
-  console.log("Console render");
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const [openHistory, setOpenHistory] = useState(false);
+  const [openSavedCode, setOpenSavedCode] = useState(false);
+
   const onChangeCode = (action, data) => {
     switch (action) {
       case "code": {
@@ -106,7 +112,20 @@ function Console() {
               </Panel>
             </PanelGroup>
           </Grid>
-          <SpeedDialMenu code={code} handleEditorChange={onChangeCode} />
+          <SpeedDialMenu
+            openHistory={() => setOpenHistory(true)}
+            openSavedCode={() => setOpenSavedCode(true)}/>
+          <History
+            code={code}
+            handleEditorChange={onChangeCode}
+            state={openHistory}
+            toggleDrawer={() => setOpenHistory(!openHistory)}/>
+          <SavedCode
+            code={code}
+            handleEditorChange={onChangeCode}
+            state={openSavedCode}
+            toggleDrawer={() => setOpenSavedCode(!openSavedCode)}
+          />
         </Grid>
       </Box>
     </>
