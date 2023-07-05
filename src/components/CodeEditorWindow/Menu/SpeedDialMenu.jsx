@@ -13,32 +13,30 @@ function SpeedDialMenu({ openSavedCode, openHistory }) {
   const handleClose = () => setOpen(false);
 
   return (
-    <Box sx={{ height: "90vh", transform: "translateZ(0px)", flexGrow: 1 }}>
-      <SpeedDial
-        ariaLabel="SpeedDial tooltip example"
-        sx={{ position: "absolute", bottom: -10, right: 40 }}
-        icon={<Bolt/>}
-        onClose={handleClose}
-        onOpen={handleOpen}
-        open={open}
-        onClick={handleOpen}
-      >
-        <SpeedDialAction
-          key={"Save"}
-          icon={<SaveIcon/>}
-          tooltipTitle={"Save"}
-          tooltipOpen
-          onClick={openSavedCode}
-        />
-        <SpeedDialAction
-          key={"History"}
-          icon={<HistoryRounded/>}
-          tooltipTitle={"History"}
-          tooltipOpen
-          onClick={openHistory}
-        />
-      </SpeedDial>
-    </Box>
+    <SpeedDial
+      ariaLabel="SpeedDial tooltip example"
+      sx={{ position: "absolute", bottom: "40px", right: "40px" }}
+      icon={<Bolt/>}
+      onClose={handleClose}
+      onOpen={handleOpen}
+      open={open}
+      onClick={handleOpen}
+    >
+      <SpeedDialAction
+        key={"Save"}
+        icon={<SaveIcon/>}
+        tooltipTitle={"Save"}
+        tooltipOpen
+        onClick={openSavedCode}
+      />
+      <SpeedDialAction
+        key={"History"}
+        icon={<HistoryRounded/>}
+        tooltipTitle={"History"}
+        tooltipOpen
+        onClick={openHistory}
+      />
+    </SpeedDial>
   );
 }
 
