@@ -11,94 +11,6 @@ export const Autocomplete = async (monaco, qdrantClient) => {
   } catch (e) {
     console.error(e);
   }
-  let visualize = {
-    "post": {
-      "tags": [
-        "points"
-      ],
-      "summary": "Scroll points",
-      "description": "Scroll request - paginate over all points which matches given filtering condition",
-      "operationId": "scroll_points",
-      "requestBody": {
-        "description": "Pagination and filter parameters",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/FilterRequest"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "name": "collection_name",
-          "in": "path",
-          "description": "Name of the collection to retrieve from",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "consistency",
-          "in": "query",
-          "description": "Define read consistency guarantees for the operation",
-          "required": false,
-          "schema": {
-            "$ref": "#/components/schemas/ReadConsistency"
-          }
-        }
-      ],
-      "responses": {
-        "default": {
-          "description": "error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ErrorResponse"
-              }
-            }
-          }
-        },
-        "4XX": {
-          "description": "error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ErrorResponse"
-              }
-            }
-          }
-        },
-        "200": {
-          "description": "successful operation",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "time": {
-                    "type": "number",
-                    "format": "float",
-                    "description": "Time spent to process this request"
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "ok"
-                    ]
-                  },
-                  "result": {
-                    "$ref": "#/components/schemas/ScrollResult"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
   let FilterRequest = {
     "description": "Filter request",
     "type": "object",
@@ -134,7 +46,6 @@ export const Autocomplete = async (monaco, qdrantClient) => {
     }
   };
   openapi.components.schemas.FilterRequest = FilterRequest;
-  openapi.paths["/collections/{collection_name}/points/visualize"] = visualize;
 
 
   let autocomplete = new OpenapiAutocomplete(openapi, collections);
@@ -167,7 +78,7 @@ export const Autocomplete = async (monaco, qdrantClient) => {
 
         let requestBody = requestBodyLines.join("\n");
 
-        let suggestions = autocomplete.completeRequestBody("POST collections/collection_name/points/visualize", requestBody);
+        let suggestions = autocomplete.completeRequestBodyByDataRef("#/components/schemas/FilterRequest", requestBody);
         suggestions = suggestions.map((s) => {
           return {
             label: s,

@@ -78,23 +78,20 @@ function Visualize() {
     <>
       <Box
         component="main"
-        sx={{
-          flexGrow: 1,
-        }}
       >
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Grid container maxWidth={"xl"} >
+        <Grid container  >
           {errorMessage && (
             <Grid xs={12} item textAlign={"center"}  >
               <Typography >⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
           <Grid xs={12} item >
-          <PanelGroup direction="horizontal">
+            <PanelGroup direction="horizontal">
               <Panel>
-              <ResultEditorWindow code={result} />
+                <ResultEditorWindow code={result} />
               </Panel>
               <PanelResizeHandle style={{
                 width: "10px",
@@ -110,7 +107,7 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-              <FilterEditorWindow
+                <FilterEditorWindow
                   code={code}
                   onChange={onChangeCode}
                   onChangeResult={onChangeResult}
