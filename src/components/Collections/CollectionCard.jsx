@@ -51,7 +51,7 @@ const CollectionCard = (props) => {
             <Button
               variant="body"
               component={Link}
-              to={`/collections/${collection.name}/vector`}
+              to={`/collections/${collection.name}/visualize`}
               size={"small"}
               startIcon={<PolylineIcon />}
             >
