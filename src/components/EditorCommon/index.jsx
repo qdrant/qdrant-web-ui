@@ -43,6 +43,7 @@ const EditorCommon = ({beforeMount, ...props}) => {
   return (
       <div className={theme.palette.mode} ref={editorWrapper}>
         <Editor
+            theme={props.theme ?? "custom-language-theme"} // todo: move to config
             height={editorHeight}
             beforeMount={handleEditorWillMount}
             {...props} />

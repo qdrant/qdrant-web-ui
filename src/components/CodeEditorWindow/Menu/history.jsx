@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { SwipeableDrawer, Button, Box, Stack, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditorCommon from '../../EditorCommon';
-import PropTypes from "prop-types";
 
 function History({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState("//Selected Code");
@@ -80,7 +80,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
 
           localStorage.setItem("history", JSON.stringify(updatedHistory));
           setHistory(JSON.parse(localStorage.getItem("history")));
-          return;
         }}
       >
         <DeleteIcon />
@@ -92,8 +91,8 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       <SwipeableDrawer
         anchor="top"
         open={state}
-        onClose={toggleDrawer("history", false)}
-        onOpen={toggleDrawer("history", true)}
+        onClose={toggleDrawer}
+        onOpen={toggleDrawer}
       >
         <Box
           sx={{
@@ -158,7 +157,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                       setViewCode(
                         `${params.row.code.method} ${
                           params.row.code.endpoint
-                        } \n${formatJSON(params.row.code.reqBody)} \n`
+                        } \n${formatJSON(params.row.code.reqBody)} \n`,
                       );
                     }}
                   />
@@ -194,7 +193,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 color="success"
                 onClick={() => {
                   handleEditorChange("code", `${viewCode} \n${code}`);
-                  toggleDrawer("history", false)();
+                  toggleDrawer();
                 }}
               >
                 Apply Code
@@ -203,7 +202,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={toggleDrawer("history", false)}
+                onClick={toggleDrawer}
               >
                 Close
               </Button>
@@ -214,11 +213,12 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
+
 History.propTypes = {
-  state: PropTypes.bool,
+  state: PropTypes.bool.isRequired,
   toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
-  code: PropTypes.string,
+  handleEditorChange: PropTypes.func.isRequired,
+  code: PropTypes.string.isRequired,
 };
 
-export default History;
+export default memo(History);

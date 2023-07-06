@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import {
   SwipeableDrawer,
@@ -47,7 +47,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       localStorage.setItem("savedCodes", JSON.stringify(data));
       setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
       setSaveNameText("");
-      return;
     }
   }
 
@@ -90,7 +89,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           updateCode.splice(index, 1);
           localStorage.setItem("savedCodes", JSON.stringify(updateCode));
           setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
-          return;
         }}
       >
         <DeleteIcon />
@@ -102,8 +100,8 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       <SwipeableDrawer
         anchor="top"
         open={state}
-        onClose={toggleDrawer("savedCode", false)}
-        onOpen={toggleDrawer("savedCode", true)}
+        onClose={toggleDrawer}
+        onOpen={toggleDrawer}
       >
         <Box
           sx={{
@@ -209,7 +207,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 color="success"
                 onClick={() => {
                   handleEditorChange("code", `${viewCode} \n${code}`);
-                  toggleDrawer("savedCode", false)();
+                  toggleDrawer();
                 }}
               >
                 Apply Code
@@ -218,7 +216,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 key={"close"}
                 variant="outlined"
                 color="error"
-                onClick={toggleDrawer("savedCode", false)}
+                onClick={toggleDrawer}
               >
                 Close
               </Button>
@@ -229,11 +227,12 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
     </React.Fragment>
   );
 }
+
 SavedCode.propTypes = {
-  state: PropTypes.bool,
+  state: PropTypes.bool.isRequired,
   toggleDrawer: PropTypes.func,
-  handleEditorChange: PropTypes.func,
-  code: PropTypes.string,
+  handleEditorChange: PropTypes.func.isRequired,
+  code: PropTypes.string.isRequired,
 };
 
-export default SavedCode;
+export default memo(SavedCode);
