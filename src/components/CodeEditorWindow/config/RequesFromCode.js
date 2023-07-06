@@ -11,23 +11,21 @@ export function RequestFromCode(text) {
       method: data.method,
       url: data.endpoint,
       data: data.reqBody,
-    })
-      .then((response) => {
-        const history = localStorage.getItem("history")
-          ? JSON.parse(localStorage.getItem("history"))
-          : [];
-        history.push({
-          idx: data.method + data.endpoint + Date.now(),
-          code: data,
-          time: new Date().toLocaleTimeString(),
-          date: new Date().toLocaleDateString(),
-        });
-        localStorage.setItem("history", JSON.stringify(history));
-        return response.data;
-      })
-      .catch((err) => {
-        return err.response?.data?.status ? err.response?.data?.status : err;
+    }).then((response) => {
+      const history = localStorage.getItem("history")
+        ? JSON.parse(localStorage.getItem("history"))
+        : [];
+      history.push({
+        idx: data.method + data.endpoint + Date.now(),
+        code: data,
+        time: new Date().toLocaleTimeString(),
+        date: new Date().toLocaleDateString(),
       });
+      localStorage.setItem("history", JSON.stringify(history));
+      return response.data;
+    }).catch((err) => {
+      return err.response?.data?.status ? err.response?.data?.status : err;
+    });
   }
 }
 
@@ -47,7 +45,7 @@ export function codeParse(codeText) {
       return {
         method: null,
         endpoint: null,
-        reqBody: body,
+        reqBody: null,
         error: "Fix the Position brackets to run & check the json",
       };
     }

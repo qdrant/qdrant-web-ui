@@ -47,20 +47,22 @@ export const options = {
   wordBasedSuggestions: false,
 };
 
-export function btnconfig(commandId) {
+export function btnconfig(commandId, beutifyCommandId) {
   return {
     provideCodeLenses: function (model, token) {
       let codeBlocks = GetCodeBlocks(model.getValue());
       let lenses = [];
 
       for (var i = 0; i < codeBlocks.length; ++i) {
+        let range = {
+          startLineNumber: codeBlocks[i].blockStartLine,
+          startColumn: 1,
+          endLineNumber: codeBlocks[i].blockStartLine,
+          endColumn: 1,
+        }
+
         lenses.push({
-          range: {
-            startLineNumber: codeBlocks[i].blockStartLine,
-            startColumn: 1,
-            endLineNumber: codeBlocks[i].blockStartLine,
-            endColumn: 1,
-          },
+          range,
           id: "RUN",
           command: {
             id: commandId,
@@ -68,6 +70,17 @@ export function btnconfig(commandId) {
             arguments: [codeBlocks[i].blockText],
           },
         });
+
+        lenses.push({
+          range,
+          id: "BEAUTIFY",
+          command: {
+            id: beutifyCommandId,
+            title: "BEAUTIFY",
+            arguments: [codeBlocks[i]],
+          },
+        });
+
       }
 
       return {
