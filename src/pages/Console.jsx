@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 import { Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import SpeedDialMenu from "../components/CodeEditorWindow/Menu/SpeedDialMenu";
@@ -39,13 +38,11 @@ POST collections/collection_name/points/scroll
 }
 `;
 
-const restoredQuery = localStorage.getItem('qwuConsoleCode');
-
 const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState(restoredQuery ?? query);
+  const [code, setCode] = useState( localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -55,7 +52,7 @@ function Console() {
   const onChangeCode = (action, data) => {
     switch (action) {
       case "code": {
-        localStorage.setItem("qwuConsoleCode", data);
+        localStorage.setItem("qwuiConsoleCode", data);
         setCode(data);
         break;
       }
