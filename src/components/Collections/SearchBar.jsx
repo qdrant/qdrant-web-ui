@@ -2,10 +2,12 @@ import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import PropTypes from "prop-types";
 import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
+import { SnapshotsUpload } from "../CodeEditorWindow/Snapshots/SnapshotsUpload";
 
+// todo: move additional buttons to actions and pass them as props
 function InputWithIcon({ value, setValue }) {
   return (
-    <Card sx={{ p: 2 }} elevation={2}>
+    <Card sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }} elevation={2}>
       <OutlinedInput
         fullWidth
         value={value}
@@ -20,6 +22,8 @@ function InputWithIcon({ value, setValue }) {
         }
         sx={{ maxWidth: 500 }}
       />
+
+      <SnapshotsUpload />
     </Card>
   );
 }

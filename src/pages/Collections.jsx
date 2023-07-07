@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useClient } from "../context/client-context";
 import SearchBar from "../components/Collections/SearchBar";
 import CollectionCard from "../components/Collections/CollectionCard";
-import { Typography, Grid } from "@mui/material";
+import { Typography, Grid, Button } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { CenteredFrame } from "../components/Frame/CenteredFrame";
 
