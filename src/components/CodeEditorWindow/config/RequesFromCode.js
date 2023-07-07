@@ -1,4 +1,5 @@
 import axios from "axios";
+import { parse as JsoncParse } from "jsonc-parser";
 
 export function RequestFromCode(text) {
   const data = codeParse(text);
@@ -31,16 +32,24 @@ export function RequestFromCode(text) {
 
 export function codeParse(codeText) {
   const codeArray = codeText.split(/\r?\n/);
-  const headerLine = codeArray.shift();
+  let headerLine = codeArray.shift();
+  // Remove possible comments
+  headerLine = headerLine.replace(/\/\/.*$/gm, "");
   const body = codeArray.join("\n");
   //Extract the header
   const method = headerLine.split(" ")[0];
   const endpoint = headerLine.split(" ")[1];
 
+  const parserConfig = {
+    allowTrailingComma: false,
+    disallowComments: false,
+    allowEmptyContent: false
+  };
+
   var reqBody = {};
   if (body) {
     try {
-      reqBody = body === "\n" ? {} : JSON.parse(body);
+      reqBody = body === "\n" ? {} : JsoncParse(body, null, parserConfig);
     } catch (e) {
       return {
         method: null,

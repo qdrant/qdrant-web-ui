@@ -107,7 +107,7 @@ export function selectBlock(blocks, location) {
 }
 
 export function GetCodeBlocks(codeText) {
-  const codeArray = codeText.replace(/\/\/.*$/gm, "").split(/\r?\n/);
+  const codeArray = codeText.split(/\r?\n/);
   var blocksArray = [];
   var block = { blockText: "", blockStartLine: null, blockEndLine: null };
   var backetcount = 0;
