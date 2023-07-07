@@ -5,7 +5,6 @@ import Box from "@mui/material/Box";
 import { Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import Menu from "../components/CodeEditorWindow/Menu";
 import CodeEditorWindow from "../components/CodeEditorWindow";
 import ResultEditorWindow from "../components/ResultEditorWindow";
 import SpeedDialMenu from "../components/CodeEditorWindow/Menu/SpeedDialMenu";
@@ -43,7 +42,7 @@ const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState(query);
+  const [code, setCode] = useState( localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -53,6 +52,7 @@ function Console() {
   const onChangeCode = (action, data) => {
     switch (action) {
       case "code": {
+        localStorage.setItem("qwuiConsoleCode", data);
         setCode(data);
         break;
       }
@@ -114,7 +114,9 @@ function Console() {
           </Grid>
           <SpeedDialMenu
             openHistory={() => setOpenHistory(true)}
-            openSavedCode={() => setOpenSavedCode(true)}/>
+            openSavedCode={() => setOpenSavedCode(true)}
+            resetConsole={() => onChangeCode("code", query)}
+          />
           <History
             code={code}
             handleEditorChange={onChangeCode}
