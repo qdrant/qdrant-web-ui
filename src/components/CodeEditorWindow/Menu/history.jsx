@@ -97,7 +97,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
         <Box
           sx={{
             width: "100%",
-            height: "100%",
             display: "flex",
             mt: 8,
           }}
@@ -105,9 +104,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           <Box
             sx={{
               width: "60%",
-              height: "100%",
-              overflow: "hidden",
-              overflowY: "scroll",
             }}
           >
             <Stack direction="row" spacing={2}>
@@ -168,7 +164,6 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           <Box
             sx={{
               width: "40%",
-              height: "100%",
             }}
             m={2}
           >

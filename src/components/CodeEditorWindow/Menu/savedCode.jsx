@@ -106,7 +106,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
         <Box
           sx={{
             width: "100%",
-            height: "100%",
             display: "flex",
             mt: 8,
           }}
@@ -114,9 +113,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           <Box
             sx={{
               width: "60%",
-              height: "100%",
-              overflow: "hidden",
-              overflowY: "scroll",
             }}
           >
             <Typography variant="h5" m={2} gutterBottom>
@@ -182,7 +178,6 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           <Box
             sx={{
               width: "40%",
-              height: "100%",
             }}
             m={2}
           >
