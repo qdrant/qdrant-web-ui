@@ -39,11 +39,13 @@ POST collections/collection_name/points/scroll
 }
 `;
 
+const restoredQuery = localStorage.getItem('qwuConsoleCode');
+
 const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState(query);
+  const [code, setCode] = useState(restoredQuery ?? query);
   const [result, setResult] = useState(defaultResult);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -53,6 +55,7 @@ function Console() {
   const onChangeCode = (action, data) => {
     switch (action) {
       case "code": {
+        localStorage.setItem("qwuConsoleCode", data);
         setCode(data);
         break;
       }
@@ -114,7 +117,9 @@ function Console() {
           </Grid>
           <SpeedDialMenu
             openHistory={() => setOpenHistory(true)}
-            openSavedCode={() => setOpenSavedCode(true)}/>
+            openSavedCode={() => setOpenSavedCode(true)}
+            resetConsole={() => onChangeCode("code", query)}
+          />
           <History
             code={code}
             handleEditorChange={onChangeCode}
