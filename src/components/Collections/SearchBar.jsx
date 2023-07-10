@@ -2,7 +2,7 @@ import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import PropTypes from "prop-types";
 import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
-import { SnapshotsUpload } from "../CodeEditorWindow/Snapshots/SnapshotsUpload";
+import { SnapshotsUpload } from "../Snapshots/SnapshotsUpload";
 
 // todo: move additional buttons to actions and pass them as props
 function InputWithIcon({ value, setValue }) {
