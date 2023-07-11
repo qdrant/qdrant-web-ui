@@ -6,7 +6,7 @@ import { Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FilterEditorWindow from "../components/FilterEditorWindow";
-import ResultEditorWindow from "../components/ResultEditorWindow";
+import VisualizeEditorWindow from "../components/VisualizeEditorWindow";
 
 const query = `
 {
@@ -91,7 +91,7 @@ function Visualize() {
           <Grid xs={12} item >
             <PanelGroup direction="horizontal">
               <Panel>
-                <ResultEditorWindow code={result} />
+                <VisualizeEditorWindow code={result} />
               </Panel>
               <PanelResizeHandle style={{
                 width: "10px",
