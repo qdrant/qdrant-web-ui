@@ -1,4 +1,4 @@
-import React, { lazy, useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import TextField from "@mui/material/TextField";
 import {
@@ -14,22 +14,43 @@ import {
 import { useClient } from "../../context/client-context";
 import { Uppy } from "@uppy/core";
 import DragDrop from "@uppy/react/lib/DragDrop";
-import ProgressBar from "@uppy/react/lib/ProgressBar";
+import StatusBar from "@uppy/react/lib/StatusBar";
 import XHR from "@uppy/xhr-upload";
+import { withStyles } from "@mui/styles";
 
 import "@uppy/core/dist/style.min.css";
 import "@uppy/drag-drop/dist/style.min.css";
-import "@uppy/progress-bar/dist/style.min.css";
+import "@uppy/status-bar/dist/style.min.css";
 
-export const SnapshotUploadForm = ({ onSubmit, sx }) => {
+const styles = theme => ({
+  root: {
+    "& .uppy-DragDrop-container": {
+      backgroundColor: theme.palette.background.paper,
+      color: theme.palette.text.primary,
+    },
+  },
+});
+
+const StyledDragDrop = withStyles(styles)(
+  (props) => <div className={props.classes.root}><DragDrop {...props} /></div>);
+
+// todo:
+//  - [x] abort upload on closing the dialog (external method?)
+//  - [x] button?
+//  - [x] themed DragDrop
+//  - [ ] what can be collectionName length, can it contain not [A-Za-z]?
+//  - [ ] what is the max file size?
+//  - [ ] clean up the code
+export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
   const { client: qdrantClient } = useClient();
+  const [activeStep, setActiveStep] = React.useState(0);
   const [collectionName, setCollectionName] = useState("");
   const [formError, setFormError] = useState(false);
-  const [fileAdded, setFileAdded] = useState(false);
   const COLLECTION_NAME_LENGTH = 4;
 
   /**
-   * Get the endpoint URL for uploading a snapshot
+   * Get the endpoint URL for uploading a snapshot, based on the collection name.
+   * qdrantClient._restUri is the base URL for the API
    * @type {function(): string}
    */
   const getEndpointUrl = useCallback(() => {
@@ -37,6 +58,7 @@ export const SnapshotUploadForm = ({ onSubmit, sx }) => {
       qdrantClient._restUri).href;
   }, [collectionName, qdrantClient]);
 
+  /* initialize uploader, docs: https://uppy.io/ */
   const uppy = new Uppy({
     restrictions: {
       // maxFileSize: 1000000, // todo: what is the max file size?
@@ -54,17 +76,22 @@ export const SnapshotUploadForm = ({ onSubmit, sx }) => {
     fieldName: "snapshot",
   });
 
-  uppy.on("file-added", (file) => {
-    setFileAdded(true);
-  });
-
   uppy.on("complete", (result) => {
-    console.log("Upload result:", result);
     handleFinish();
     onSubmit();
   });
 
-  const [activeStep, setActiveStep] = React.useState(0);
+  useEffect(() => {
+    return () => {
+      uppy.cancelAll();
+    };
+  }, [uppy]);
+
+  const handleTextChange = (event) => {
+    const newCollectionName = event.target.value;
+    setCollectionName(newCollectionName);
+    setFormError(newCollectionName.length < COLLECTION_NAME_LENGTH);
+  }
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -72,11 +99,12 @@ export const SnapshotUploadForm = ({ onSubmit, sx }) => {
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    uppy.cancelAll();
   };
 
   const handleFinish = () => {
     setActiveStep(3);
-  }
+  };
 
   return (
     <Box>
@@ -95,13 +123,7 @@ export const SnapshotUploadForm = ({ onSubmit, sx }) => {
                 label="Collection Name"
                 value={collectionName}
                 helperText={formError ? "Collection name is required" : " "}
-                onChange={(event) => {
-                  // todo: move
-                  setCollectionName(event.target.value);
-                  event.target.value.length < COLLECTION_NAME_LENGTH ?
-                    setFormError(true) :
-                    setFormError(false);
-                }}
+                onChange={handleTextChange}
                 fullWidth={true}
               />
             </Box>
@@ -126,18 +148,15 @@ export const SnapshotUploadForm = ({ onSubmit, sx }) => {
           </StepLabel>
           <StepContent>
             <Box sx={{ mb: 2 }}>
-              <div>
               {/*Here we have a drag and drop area*/}
-              <DragDrop uppy={uppy}/>
-              <ProgressBar uppy={uppy}/>
-              </div>
+              <StyledDragDrop uppy={uppy}/>
+              <StatusBar uppy={uppy}/>
             </Box>
             <Box mb={2}>
               <Button
                 variant="contained"
                 onClick={handleBack}
                 sx={{ mt: 1, mr: 1 }}
-                disabled={fileAdded}
               >
                 Back
               </Button>
