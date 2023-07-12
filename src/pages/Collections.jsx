@@ -5,6 +5,7 @@ import CollectionCard from "../components/Collections/CollectionCard";
 import { Typography, Grid, Button } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { CenteredFrame } from "../components/Frame/CenteredFrame";
+import { SnapshotsUpload } from "../components/Snapshots/SnapshotsUpload";
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -45,7 +46,10 @@ function Collections() {
             <Typography variant="h4">Collections</Typography>
           </Grid>
           <Grid xs={12} item>
-            <SearchBar value={searchQuery} setValue={setSearchQuery}/>
+            <SearchBar value={searchQuery} setValue={setSearchQuery}
+            actions={[
+              <SnapshotsUpload onComplete={getCollectionsCall} key={'snapshots'} />
+            ]}/>
           </Grid>
 
           {errorMessage && (

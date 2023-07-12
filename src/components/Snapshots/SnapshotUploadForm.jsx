@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import TextField from "@mui/material/TextField";
+import { withStyles } from "@mui/styles";
 import {
   StepContent,
   Stepper,
@@ -10,19 +10,19 @@ import {
   Step,
   Paper,
   Button,
+  TextField,
 } from "@mui/material";
 import { useClient } from "../../context/client-context";
 import { Uppy } from "@uppy/core";
 import DragDrop from "@uppy/react/lib/DragDrop";
 import StatusBar from "@uppy/react/lib/StatusBar";
 import XHR from "@uppy/xhr-upload";
-import { withStyles } from "@mui/styles";
 
 import "@uppy/core/dist/style.min.css";
 import "@uppy/drag-drop/dist/style.min.css";
 import "@uppy/status-bar/dist/style.min.css";
 
-const styles = theme => ({
+const dragDropStyles = theme => ({
   root: {
     "& .uppy-DragDrop-container": {
       backgroundColor: theme.palette.background.paper,
@@ -31,22 +31,28 @@ const styles = theme => ({
   },
 });
 
-const StyledDragDrop = withStyles(styles)(
+const StyledDragDrop = withStyles(dragDropStyles)(
   (props) => <div className={props.classes.root}><DragDrop {...props} /></div>);
 
-// todo:
-//  - [x] abort upload on closing the dialog (external method?)
-//  - [x] button?
-//  - [x] themed DragDrop
-//  - [ ] what can be collectionName length, can it contain not [A-Za-z]?
-//  - [ ] what is the max file size?
-//  - [ ] clean up the code
-export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
+const statusBarStyles = theme => ({
+  root: {
+    "& .uppy-StatusBar": {
+      backgroundColor: theme.palette.background.paper,
+    }
+  }
+});
+
+const StyledStatusBar = withStyles(statusBarStyles)(
+  (props) => <div className={props.classes.root}><StatusBar {...props} /></div>);
+
+export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
   const [activeStep, setActiveStep] = React.useState(0);
   const [collectionName, setCollectionName] = useState("");
   const [formError, setFormError] = useState(false);
-  const COLLECTION_NAME_LENGTH = 4;
+  const textFieldRef = React.useRef(null);
+  const forbiddenSymbolsRegex = /[\^\*\.\"\/\\\:\;\s\[\]\|\,]+/g;
+  const MAX_COLLECTION_NAME_LENGTH = 255;
 
   /**
    * Get the endpoint URL for uploading a snapshot, based on the collection name.
@@ -61,13 +67,11 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
   /* initialize uploader, docs: https://uppy.io/ */
   const uppy = new Uppy({
     restrictions: {
-      // maxFileSize: 1000000, // todo: what is the max file size?
       maxNumberOfFiles: 1,
       minNumberOfFiles: 1,
       allowedFileTypes: ["application/x-tar", ".snapshot"],
     },
     autoProceed: true,
-    debug: true, // todo
   });
 
   uppy.use(XHR, {
@@ -79,19 +83,30 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
   uppy.on("complete", (result) => {
     handleFinish();
     onSubmit();
+    if (result.failed.length === 0) {
+      onComplete();
+    }
   });
 
   useEffect(() => {
+    if (activeStep === 0) {
+      textFieldRef.current.focus();
+    }
     return () => {
       uppy.cancelAll();
     };
   }, [uppy]);
 
   const handleTextChange = (event) => {
+    // if there will be more forms use schema validation instead
     const newCollectionName = event.target.value;
+    const hasForbiddenSymbols = forbiddenSymbolsRegex.test(newCollectionName);
+    const isTooShort = newCollectionName?.length < 1;
+    const isTooLong = newCollectionName?.length > MAX_COLLECTION_NAME_LENGTH;
+
     setCollectionName(newCollectionName);
-    setFormError(newCollectionName.length < COLLECTION_NAME_LENGTH);
-  }
+    setFormError(isTooShort || isTooLong || hasForbiddenSymbols);
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -107,7 +122,7 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
   };
 
   return (
-    <Box>
+    <Box sx={{...sx}}>
       <Stepper activeStep={activeStep} orientation="vertical">
         {/*Step 1 start - enter a collection name*/}
         <Step key={"Step 1 - enter a collection name"}>
@@ -122,9 +137,10 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
                 id="collection-name"
                 label="Collection Name"
                 value={collectionName}
-                helperText={formError ? "Collection name is required" : " "}
+                helperText={formError ? "This collection name is not valid" : " "}
                 onChange={handleTextChange}
                 fullWidth={true}
+                inputRef={textFieldRef}
               />
             </Box>
             <Box sx={{ mb: 2 }}>
@@ -150,7 +166,7 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
             <Box sx={{ mb: 2 }}>
               {/*Here we have a drag and drop area*/}
               <StyledDragDrop uppy={uppy}/>
-              <StatusBar uppy={uppy}/>
+              <StyledStatusBar uppy={uppy}/>
             </Box>
             <Box mb={2}>
               <Button
@@ -177,5 +193,6 @@ export const SnapshotUploadForm = ({ onSubmit, sx, ...props }) => {
 // props validation
 SnapshotUploadForm.propTypes = {
   onSubmit: PropTypes.func,
+  onComplete: PropTypes.func,
   sx: PropTypes.object,
 };
