@@ -1,6 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import PropTypes from "prop-types";
-import { withStyles } from "@mui/styles";
 import {
   StepContent,
   Stepper,
@@ -13,45 +18,28 @@ import {
   TextField,
 } from "@mui/material";
 import { useClient } from "../../context/client-context";
+import { useSnackbar } from "notistack";
 import { Uppy } from "@uppy/core";
-import DragDrop from "@uppy/react/lib/DragDrop";
-import StatusBar from "@uppy/react/lib/StatusBar";
 import XHR from "@uppy/xhr-upload";
+import { StyledDragDrop } from "../Uploader/StyledDragDrop";
+import { StyledStatusBar } from "../Uploader/StyledStatusBar";
 
 import "@uppy/core/dist/style.min.css";
 import "@uppy/drag-drop/dist/style.min.css";
 import "@uppy/status-bar/dist/style.min.css";
-
-const dragDropStyles = theme => ({
-  root: {
-    "& .uppy-DragDrop-container": {
-      backgroundColor: theme.palette.background.paper,
-      color: theme.palette.text.primary,
-    },
-  },
-});
-
-const StyledDragDrop = withStyles(dragDropStyles)(
-  (props) => <div className={props.classes.root}><DragDrop {...props} /></div>);
-
-const statusBarStyles = theme => ({
-  root: {
-    "& .uppy-StatusBar": {
-      backgroundColor: theme.palette.background.paper,
-    }
-  }
-});
-
-const StyledStatusBar = withStyles(statusBarStyles)(
-  (props) => <div className={props.classes.root}><StatusBar {...props} /></div>);
+import { useTheme } from "@mui/material/styles";
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
+  const theme = useTheme();
   const { client: qdrantClient } = useClient();
-  const [activeStep, setActiveStep] = React.useState(0);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const [activeStep, setActiveStep] = useState(0);
+
   const [collectionName, setCollectionName] = useState("");
   const [formError, setFormError] = useState(false);
-  const textFieldRef = React.useRef(null);
-  const forbiddenSymbolsRegex = /[\^\*\.\"\/\\\:\;\s\[\]\|\,]+/g;
+  const textFieldRef = useRef(null);
+  const collectionNameRegex = /^[a-zA-Z0-9()*_\-!#$%&]*$/;
   const MAX_COLLECTION_NAME_LENGTH = 255;
 
   /**
@@ -64,24 +52,52 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
       qdrantClient._restUri).href;
   }, [collectionName, qdrantClient]);
 
-  /* initialize uploader, docs: https://uppy.io/ */
-  const uppy = new Uppy({
-    restrictions: {
-      maxNumberOfFiles: 1,
-      minNumberOfFiles: 1,
-      allowedFileTypes: ["application/x-tar", ".snapshot"],
-    },
-    autoProceed: true,
-  });
+  /* initialize uploader, docs: https://uppy.io/docs/uppy/ */
+  const uppy = useMemo(() => {
+    const instance = new Uppy({
+      restrictions: {
+        maxNumberOfFiles: 1,
+        allowedFileTypes: ["application/x-tar", ".snapshot"],
+      },
+      autoProceed: true,
+    });
 
-  uppy.use(XHR, {
-    endpoint: getEndpointUrl(),
-    formData: true,
-    fieldName: "snapshot",
+    /* add XHR plugin to uploader, docs: https://uppy.io/docs/xhr-upload/ */
+    instance.use(XHR, {
+      id: "XHRUpload",
+      endpoint: getEndpointUrl(),
+      formData: true,
+      fieldName: "snapshot",
+      getResponseError: (responseText) => {
+        enqueueSnackbar(JSON.parse(responseText)?.status?.error, {
+          variant: "error",
+          autoHideDuration: null,
+          action: (key) => (
+            <Button
+              variant="text"
+              color="inherit"
+              onClick={() => {
+                closeSnackbar(key);
+              }}>
+              Dismiss
+            </Button>
+          ),
+          anchorOrigin: {
+            vertical: "bottom",
+            horizontal: "center",
+          },
+        });
+      },
+    });
+
+    return instance;
+  }, [getEndpointUrl, enqueueSnackbar, closeSnackbar]);
+
+  uppy.on("upload-success", (data) => {
+    handleFinish();
   });
 
   uppy.on("complete", (result) => {
-    handleFinish();
     onSubmit();
     if (result.failed.length === 0) {
       onComplete();
@@ -95,12 +111,12 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     return () => {
       uppy.cancelAll();
     };
-  }, [uppy]);
+  }, [uppy, activeStep]);
 
   const handleTextChange = (event) => {
     // if there will be more forms use schema validation instead
     const newCollectionName = event.target.value;
-    const hasForbiddenSymbols = forbiddenSymbolsRegex.test(newCollectionName);
+    const hasForbiddenSymbols = !collectionNameRegex.test(newCollectionName);
     const isTooShort = newCollectionName?.length < 1;
     const isTooLong = newCollectionName?.length > MAX_COLLECTION_NAME_LENGTH;
 
@@ -122,7 +138,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   };
 
   return (
-    <Box sx={{...sx}}>
+    <Box sx={{ ...sx }}>
       <Stepper activeStep={activeStep} orientation="vertical">
         {/*Step 1 start - enter a collection name*/}
         <Step key={"Step 1 - enter a collection name"}>
@@ -137,7 +153,9 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
                 id="collection-name"
                 label="Collection Name"
                 value={collectionName}
-                helperText={formError ? "This collection name is not valid" : " "}
+                helperText={formError ?
+                  "This collection name is not valid" :
+                  " "}
                 onChange={handleTextChange}
                 fullWidth={true}
                 inputRef={textFieldRef}
@@ -165,8 +183,8 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
           <StepContent>
             <Box sx={{ mb: 2 }}>
               {/*Here we have a drag and drop area*/}
-              <StyledDragDrop uppy={uppy}/>
-              <StyledStatusBar uppy={uppy}/>
+              <StyledDragDrop theme={theme} uppy={uppy}/>
+              <StyledStatusBar theme={theme} uppy={uppy}/>
             </Box>
             <Box mb={2}>
               <Button
@@ -192,7 +210,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
 // props validation
 SnapshotUploadForm.propTypes = {
-  onSubmit: PropTypes.func,
-  onComplete: PropTypes.func,
+  onSubmit: PropTypes.func.isRequired,
+  onComplete: PropTypes.func.isRequired,
   sx: PropTypes.object,
 };
