@@ -1,7 +1,11 @@
 env:
   browser: true
   es2021: true
-extends: plugin:react/recommended
+settings:
+  react:
+    version: detect
+extends:
+  - react-app
 overrides: []
 parserOptions:
   ecmaVersion: latest

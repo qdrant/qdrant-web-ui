@@ -1,8 +1,5 @@
 import { OpenapiAutocomplete } from "autocomplete-openapi/src/autocomplete";
 
-const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
-
-
 export const Autocomplete = async (monaco, qdrantClient) => {
 
   let response = await fetch(import.meta.env.BASE_URL + "./openapi.json");
