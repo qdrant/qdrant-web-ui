@@ -14,7 +14,6 @@ const VisualizeEditorWindow = ({ code }) => {
 
   worker.onmessage = (m) => {
     setEditordata(m.data);
-      console.log("msg from worker: ", typeof m.data);
   };
   
   useEffect(() => {
