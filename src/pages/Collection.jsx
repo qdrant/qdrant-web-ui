@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useClient } from "../context/client-context";
-import { Typography, Grid, Button } from "@mui/material";
+import { Typography, Grid, Button, Tabs, Tab } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 import { CenteredFrame } from "../components/Frame/CenteredFrame";
+import Box from "@mui/material/Box";
+import { Snapshots } from "../components/Snapshots/Snapshots";
 
 function Collection() {
   const pageSize = 10;
@@ -17,8 +19,15 @@ function Collection() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
   const { client: qdrantClient } = useClient();
+  const navigate = useNavigate();
+  const [currentTab, setCurrentTab] = React.useState('points');
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
+
+  const handleTabChange = (event, newValue) => {
+    setCurrentTab(newValue);
+    navigate(`#${newValue}`);
+  };
 
   const onIdsSelected = (ids, vectors) => {
     setOffset(null);
@@ -83,53 +92,71 @@ function Collection() {
           <Grid xs={12} item>
             <Typography variant="h4">{collectionName}</Typography>
           </Grid>
+
           <Grid xs={12} item>
-            <SimilarSerachfield
-              value={recommendationIds}
-              setValue={onIdsSelected}
-            />
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
+                <Tab label="Points" value={'points'} />
+                <Tab label="Snapshots" value={'snapshots'} />
+              </Tabs>
+            </Box>
           </Grid>
 
-          {errorMessage && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography>⚠ Error: {errorMessage}</Typography>
-            </Grid>
-          )}
-          {!points && !errorMessage && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography> 🔃 Loading...</Typography>
-            </Grid>
-          )}
-          {points && !errorMessage && points.points?.length === 0 && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography>
-                📪 No Points are presents, {collectionName} is empty
-              </Typography>
-            </Grid>
-          )}
-
-          {points &&
-            !errorMessage &&
-            points.points?.map((point) => (
-              <Grid xs={12} item key={point.id}>
-                <PointCard
-                  point={point}
-                  setRecommendationIds={onIdsSelected}
-                  collectionName={collectionName}
+          {currentTab === "points" && (
+            <>
+              <Grid xs={12} item>
+                <SimilarSerachfield
+                  value={recommendationIds}
+                  setValue={onIdsSelected}
                 />
               </Grid>
-            ))}
-          <Grid xs={12} item textAlign={"center"}>
-            <Button
-              variant="outlined"
-              disabled={!points || !nextPageOffset}
-              onClick={() => {
-                setOffset(nextPageOffset);
-              }}
-            >
-              Load More
-            </Button>
-          </Grid>
+
+              {errorMessage && (
+                <Grid xs={12} item textAlign={"center"}>
+                  <Typography>⚠ Error: {errorMessage}</Typography>
+                </Grid>
+              )}
+              {!points && !errorMessage && (
+                <Grid xs={12} item textAlign={"center"}>
+                  <Typography> 🔃 Loading...</Typography>
+                </Grid>
+              )}
+              {points && !errorMessage && points.points?.length === 0 && (
+                <Grid xs={12} item textAlign={"center"}>
+                  <Typography>
+                    📪 No Points are presents, {collectionName} is empty
+                  </Typography>
+                </Grid>
+              )}
+              {points &&
+                !errorMessage &&
+                points.points?.map((point) => (
+                  <Grid xs={12} item key={point.id}>
+                    <PointCard
+                      point={point}
+                      setRecommendationIds={onIdsSelected}
+                      collectionName={collectionName}
+                    />
+                  </Grid>
+                ))}
+              <Grid xs={12} item textAlign={"center"}>
+                <Button
+                  variant="outlined"
+                  disabled={!points || !nextPageOffset}
+                  onClick={() => {
+                    setOffset(nextPageOffset);
+                  }}
+                >
+                  Load More
+                </Button>
+              </Grid>
+            </>
+          )}
+          {currentTab === "snapshots" && (
+            <Grid xs={12} item>
+              <Snapshots collectionName={collectionName} />
+            </Grid>
+          )}
         </Grid>
       </CenteredFrame>
     </>
