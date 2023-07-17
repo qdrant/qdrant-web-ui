@@ -37,7 +37,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
         aria-labelledby="Snapshot upload dialog"
         aria-describedby="Snapshot upload dialog"
       >
-        <DialogTitle>Upload A Snapshot</DialogTitle>
+        <DialogTitle>Upload a Snapshot</DialogTitle>
         <DialogContent>
           <SnapshotUploadForm onSubmit={handleUpload} onComplete={onComplete}/>
         </DialogContent>
