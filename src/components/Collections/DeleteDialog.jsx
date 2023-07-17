@@ -5,7 +5,6 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useTheme } from "@mui/material/styles";
 import PropTypes from "prop-types";
 import { useClient } from "../../context/client-context";
 
@@ -22,8 +21,6 @@ export default function DeleteDialog({
   const [errorMessage, setErrorMessage] = useState("");
 
   const {client: qdrantClient} = useClient(); 
-
-  const theme = useTheme();
 
   async function callDelete() {
     try {
