@@ -5,6 +5,7 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { HashRouter } from "react-router-dom";
 import { ClientProvider } from "./context/client-context";
+import { SnackbarProvider } from "notistack";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -12,7 +13,9 @@ root.render(
   <React.StrictMode>
     <HashRouter>
       <ClientProvider>
-        <App />
+        <SnackbarProvider>
+          <App />
+        </SnackbarProvider>
       </ClientProvider>
     </HashRouter>
   </React.StrictMode>
