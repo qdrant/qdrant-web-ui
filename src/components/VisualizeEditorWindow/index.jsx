@@ -1,24 +1,25 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect } from "react";
-import EditorCommon from '../EditorCommon';
+import React, { useEffect, useMemo } from "react";
+import EditorCommon from "../EditorCommon";
 
+const VisualizeEditorWindow = ({ scrollResult }) => {
 
-
-const VisualizeEditorWindow = ({ code }) => {
-
-  const [editordata, setEditordata] = React.useState("{}");
-
-  const worker = new Worker(new URL('./worker.js', import.meta.url), {
-    type: 'module',
-  })
-
-  worker.onmessage = (m) => {
-    setEditordata(m.data);
-  };
-  
+  const [editorData, setEditorData] = React.useState("{}");
   useEffect(() => {
-    worker.postMessage(code);
-  }, [code]);
+    const worker = new Worker(new URL("./worker.js", import.meta.url), {
+      type: "module",
+    });
+
+    worker.onmessage = (m) => {
+      setEditorData(m.data);
+    };
+
+    worker.postMessage(scrollResult);
+
+    return () => {
+      worker.terminate();
+    };
+  }, [scrollResult]);
 
   function formatJSON(res = {}) {
     try { 
@@ -36,7 +37,7 @@ const VisualizeEditorWindow = ({ code }) => {
     <EditorCommon
       language="json"
       theme={"custom-language-theme"}
-      value={formatJSON(editordata)}
+      value={formatJSON(editorData)}
       options={{
         scrollBeyondLastLine: false,
         fontSize: 12,

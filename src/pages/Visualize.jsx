@@ -51,28 +51,6 @@ function Visualize() {
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
   const [errorMessage, setErrorMessage] = useState(null);
-  const onChangeCode = (action, data) => {
-    switch (action) {
-      case "code": {
-        setCode(data);
-        break;
-      }
-      default: {
-        console.warn("case not handled!", action, data);
-      }
-    }
-  };
-  const onChangeResult = (action, data) => {
-    switch (action) {
-      case "code": {
-        setResult(data);
-        break;
-      }
-      default: {
-        console.warn("case not handled!", action, data);
-      }
-    }
-  };
 
   return (
     <>
@@ -91,7 +69,7 @@ function Visualize() {
           <Grid xs={12} item >
             <PanelGroup direction="horizontal">
               <Panel>
-                <VisualizeEditorWindow code={result} />
+                <VisualizeEditorWindow scrollResult={result} />
               </Panel>
               <PanelResizeHandle style={{
                 width: "10px",
@@ -109,8 +87,8 @@ function Visualize() {
               <Panel>
                 <FilterEditorWindow
                   code={code}
-                  onChange={onChangeCode}
-                  onChangeResult={onChangeResult}
+                  onChange={setCode}
+                  onChangeResult={setResult}
                 />
               </Panel>
             </PanelGroup>
