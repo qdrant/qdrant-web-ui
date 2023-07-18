@@ -7,7 +7,7 @@ import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
 import { CenteredFrame } from "../components/Frame/CenteredFrame";
 import Box from "@mui/material/Box";
-import { Snapshots } from "../components/Snapshots/Snapshots";
+import { SnapshotsTab } from "../components/Snapshots/SnapshotsTab";
 
 function Collection() {
   const pageSize = 10;
@@ -154,7 +154,7 @@ function Collection() {
           )}
           {currentTab === "snapshots" && (
             <Grid xs={12} item>
-              <Snapshots collectionName={collectionName} />
+              <SnapshotsTab collectionName={collectionName} />
             </Grid>
           )}
         </Grid>
