@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   options,
   btnconfig,
@@ -27,9 +27,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   let runBtnCommandId = null;
 
   const theme = useTheme();
-  const handleEditorChange = (code) => {
-    onChange("code", code);
-  };
 
   useEffect(
     () => () => {
@@ -48,7 +45,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       async (_ctx, ...args) => {
         let data = args[0];
         const result = await RequestFromCode(data,collectionName);
-        onChangeResult("code", JSON.stringify(result));
+        onChangeResult(JSON.stringify(result));
       },
       ""
     );
@@ -114,7 +111,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           value={code}
           theme={"custom-language-theme"}
           defaultValue="//input"
-          onChange={handleEditorChange}
+          onChange={onChange}
           onMount={handleEditorDidMount}
           beforeMount={handleEditorWillMount}
           formatOnPaste={true}
