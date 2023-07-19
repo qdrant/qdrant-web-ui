@@ -5,7 +5,7 @@ import { Typography, Grid, Button, Tabs, Tab } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import SimilarSerachfield from "../components/Points/SimilarSerachfield";
-import { CenteredFrame } from "../components/Frame/CenteredFrame";
+import { CenteredFrame } from "../components/Common/CenteredFrame";
 import Box from "@mui/material/Box";
 import { SnapshotsTab } from "../components/Snapshots/SnapshotsTab";
 
