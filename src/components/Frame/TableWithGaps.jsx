@@ -6,8 +6,7 @@ import {
   TableHead,
 } from "@mui/material";
 
-const SPACING = '16px';
-const BORDER_RADIUS = '8px';
+const SPACING = "16px";
 
 /**
  * @description
@@ -57,12 +56,12 @@ export const TableHeadWithGaps = styled(TableHead)(
     background-color: ${alpha(theme.palette.primary.main, 0.05)};
     border-bottom: 0;
     &:first-of-type {
-      border-top-left-radius: ${BORDER_RADIUS};
-      border-bottom-left-radius: ${BORDER_RADIUS};
+      border-top-left-radius: ${theme.shape.borderRadius}px;
+      border-bottom-left-radius: ${theme.shape.borderRadius}px;
     }
     &:last-of-type {
-      border-top-right-radius: ${BORDER_RADIUS};
-      border-bottom-right-radius: ${BORDER_RADIUS};
+      border-top-right-radius: ${theme.shape.borderRadius}px;
+      border-bottom-right-radius: ${theme.shape.borderRadius}px;
     }
   }
 `,
@@ -76,24 +75,33 @@ export const TableHeadWithGaps = styled(TableHead)(
  * @type {StyledComponent<PropsOf<OverridableComponent<TableBodyTypeMap>> & MUIStyledCommonProps<Theme>, {}, {}>}
  */
 export const TableBodyWithGaps = styled(TableBody)(
-  ({ theme }) => `
+  ({ theme }) => {
+    const borderStyle = theme.palette.mode === "dark" ?
+      0 :
+      theme.palette.divider + " solid 1px";
+    return `
   border-spacing: 0 ${SPACING};
   border-collapse: separate;
-
+  & tr {
+    background-image: ${theme.palette.mode === "dark" ?
+      "linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))" :
+      "none"};
+  }
   & td {
     border-bottom: none;
-    border-top: ${theme.palette.divider} solid 1px;
-    border-bottom: ${theme.palette.divider} solid 1px;
+    border-top: ${borderStyle};
+    border-bottom: ${borderStyle};
     &:first-of-type {
-      border-top-left-radius: ${BORDER_RADIUS};
-      border-bottom-left-radius: ${BORDER_RADIUS};
-      border-left: ${theme.palette.divider} solid 1px;
+      border-top-left-radius: ${theme.shape.borderRadius}px;
+      border-bottom-left-radius: ${theme.shape.borderRadius}px;
+      border-left: ${borderStyle};
     }
     &:last-of-type {
-      border-top-right-radius: ${BORDER_RADIUS};
-      border-bottom-right-radius: ${BORDER_RADIUS};
-      border-right: ${theme.palette.divider} solid 1px;
+      border-top-right-radius: ${theme.shape.borderRadius}px;
+      border-bottom-right-radius: ${theme.shape.borderRadius}px;
+      border-right: ${borderStyle};
     }
   }
-`,
+`;
+  },
 );

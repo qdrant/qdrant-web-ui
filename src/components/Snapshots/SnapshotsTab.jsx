@@ -19,7 +19,6 @@ export const SnapshotsTab = ({ collectionName }) => {
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  console.log(theme.palette.divider);
 
   useEffect(() => {
     setIsLoading(true);

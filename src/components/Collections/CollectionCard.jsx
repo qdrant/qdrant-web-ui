@@ -22,7 +22,7 @@ const CollectionCard = (props) => {
   return (
     <>
       <Card
-        elevation={3}
+        elevation={1}
         sx={{
           display: "flex",
           flexDirection: "column",
