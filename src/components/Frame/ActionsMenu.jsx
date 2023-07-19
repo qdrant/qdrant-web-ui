@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import Menu from "@mui/material/Menu";
-import { IconButton, MenuItem } from "@mui/material";
+import { IconButton } from "@mui/material";
 import MoreVert from "@mui/icons-material/MoreVert";
 
 // for better result use as children the components acceptable inside Menu component from MUI
