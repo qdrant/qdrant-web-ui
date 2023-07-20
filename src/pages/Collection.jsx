@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useClient } from "../context/client-context";
 import { Typography, Grid, Button, Tabs, Tab } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
@@ -20,7 +20,8 @@ function Collection() {
   const [recommendationIds, setRecommendationIds] = useState([]);
   const { client: qdrantClient } = useClient();
   const navigate = useNavigate();
-  const [currentTab, setCurrentTab] = React.useState('points');
+  const location = useLocation();
+  const [currentTab, setCurrentTab] = React.useState(location.hash.slice(1) || 'points');
 
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 

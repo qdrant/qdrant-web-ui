@@ -24,8 +24,9 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
         <Tooltip title={"Download snapshot"} arrow placement={"top"}>
           <Box
             sx={{
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
+              verticalAlign: "middle",
               cursor: "pointer",
               "&:hover": {
                 textDecoration: "underline",

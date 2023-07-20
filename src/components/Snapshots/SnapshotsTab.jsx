@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { useClient } from "../../context/client-context";
+import { useSnackbar } from "notistack";
 import {
   Button, Grid, TableCell, TableContainer, TableRow,
 } from "@mui/material";
-import { PhotoCamera } from "@mui/icons-material";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import {
   TableWithGaps, TableHeadWithGaps, TableBodyWithGaps,
 } from "../Common/TableWithGaps";
@@ -14,14 +15,33 @@ export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const errorSnackbarOptions = {
+    variant: "error",
+    autoHideDuration: null,
+    action: (key) => (
+      <Button
+        variant="text"
+        color="inherit"
+        onClick={() => {
+          closeSnackbar(key);
+        }}>
+        Dismiss
+      </Button>
+    ),
+    anchorOrigin: {
+      vertical: "bottom",
+      horizontal: "center",
+    },
+  };
 
   useEffect(() => {
     setIsLoading(true);
     qdrantClient.listSnapshots(collectionName).then((res) => {
       setSnapshots([...res]);
     }).catch((err) => {
-      setError(err);
+      enqueueSnackbar(err.message, errorSnackbarOptions);
     }).finally(() => {
       setIsLoading(false);
     });
@@ -32,7 +52,8 @@ export const SnapshotsTab = ({ collectionName }) => {
     qdrantClient.createSnapshot(collectionName).then((res) => {
       setSnapshots([...snapshots, res]);
     }).catch((err) => {
-      setError(err);
+      console.log(err);
+      enqueueSnackbar(err.message, errorSnackbarOptions);
     }).finally(() => {
       setIsLoading(false);
     });
@@ -49,7 +70,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       setSnapshots(
         [...snapshots.filter((snapshot) => snapshot.name !== snapshotName)]);
     }).catch((err) => {
-      setError(err);
+      enqueueSnackbar(err.message, errorSnackbarOptions);
     }).finally(() => {
       setIsLoading(false);
     });
@@ -76,8 +97,7 @@ export const SnapshotsTab = ({ collectionName }) => {
         </Grid>
       </Grid>
       {isLoading && <div>Loading...</div>}
-      {error && <div>{error}</div>}
-      {!isLoading && !error && snapshots?.length &&
+      {!isLoading && snapshots?.length &&
         <TableContainer>
           <TableWithGaps aria-label="simple table">
             <TableHeadWithGaps>
