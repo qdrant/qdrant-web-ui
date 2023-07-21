@@ -52,7 +52,6 @@ export const SnapshotsTab = ({ collectionName }) => {
     qdrantClient.createSnapshot(collectionName).then((res) => {
       setSnapshots([...snapshots, res]);
     }).catch((err) => {
-      console.log(err);
       enqueueSnackbar(err.message, errorSnackbarOptions);
     }).finally(() => {
       setIsLoading(false);
