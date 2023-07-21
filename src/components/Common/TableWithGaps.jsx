@@ -11,7 +11,7 @@ const SPACING = "16px";
 /**
  * @description
  * This component is a styled version of MUI Table component.
- * It has a gap between rows and columns.
+ * It has a gap between rows.
  *
  * @example
  *
