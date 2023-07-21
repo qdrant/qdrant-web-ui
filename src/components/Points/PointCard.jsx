@@ -83,7 +83,7 @@ const PointCard = (props) => {
         <CardHeader
           title={"Point " + point.id}
           action={
-            <Tooltip title="Copy JSON" placement="right">
+            <Tooltip title="Copy Point" placement="right">
               <IconButton
                 aria-label="copy point"
                 onClick={() => {
@@ -95,26 +95,62 @@ const PointCard = (props) => {
             </Tooltip>
           }
         />
-        <CardHeader subheader={"Payload:"} sx={{
-          flexGrow: 1,
-          background: alpha(theme.palette.primary.main, 0.05),
-        }}/>
-        <CardContent>
-          <Grid container display={"flex"}>
-            <Grid item xs my={1}>
-              {resDataView(point)}
-            </Grid>
-            {point.payload.images &&
-              <Grid item xs={3} display="grid" justifyContent={"center"}>
-                <PointImage data={point.payload} sx={{ ml: 2 }}/>
+        {Object.keys(point.payload).length > 0 &&
+          <>
+            <CardHeader
+              subheader={"Payload:"}
+              sx={{
+                flexGrow: 1,
+                background: alpha(theme.palette.primary.main, 0.05),
+              }}
+              action={
+                <Tooltip title="Copy Payload" placement="right">
+                  <IconButton
+                    aria-label="copy point payload"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        JSON.stringify(point.payload));
+                      setOpenTooltip(true);
+                    }}>
+                    <CopyAll/>
+                  </IconButton>
+                </Tooltip>
+              }
+            />
+            <CardContent>
+              <Grid container display={"flex"}>
+                <Grid item xs my={1}>
+                  {resDataView(point)}
+                </Grid>
+                {point.payload.images &&
+                  <Grid item xs={3} display="grid" justifyContent={"center"}>
+                    <PointImage data={point.payload} sx={{ ml: 2 }}/>
+                  </Grid>
+                }
               </Grid>
-            }
-          </Grid>
-        </CardContent>
-        <CardHeader subheader={"Vectors:"} sx={{
-          flexGrow: 1,
-          background: alpha(theme.palette.primary.main, 0.05),
-        }}/>
+            </CardContent>
+          </>
+        }
+        <CardHeader
+          subheader={"Vectors:"}
+          sx={{
+            flexGrow: 1,
+            background: alpha(theme.palette.primary.main, 0.05),
+          }}
+          action={
+            <Tooltip title="Copy Vector" placement="right">
+              <IconButton
+                aria-label="copy point vector"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    JSON.stringify(point.vector));
+                  setOpenTooltip(true);
+                }}>
+                <CopyAll/>
+              </IconButton>
+            </Tooltip>
+          }
+        />
         <CardContent>
           {point?.vector &&
             <Vectors
@@ -128,9 +164,10 @@ const PointCard = (props) => {
         severity="success"
         autoHideDuration={3000}
         onClose={() => setOpenTooltip(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
-          Point JSON copied to clipboard.
+          JSON copied to clipboard.
         </Alert>
       </Snackbar>
     </>
