@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { useClient } from "../../context/client-context";
 import { useSnackbar } from "notistack";
 import {
-  Button, Grid, TableCell, TableContainer, TableRow,
+  Button, Grid, TableCell, TableContainer, TableRow, Typography,
 } from "@mui/material";
 import PhotoCamera from "@mui/icons-material/PhotoCamera";
 import {
@@ -95,28 +95,38 @@ export const SnapshotsTab = ({ collectionName }) => {
             startIcon={<PhotoCamera fontSize={"small"}/>}
           >Take snapshot</Button>
         </Grid>
+        {isLoading && <div>Loading...</div>}
+        {!isLoading && snapshots?.length > 0 &&
+          <Grid item xs={12}>
+            <TableContainer>
+              <TableWithGaps aria-label="simple table">
+                <TableHeadWithGaps>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>Snapshot
+                      Name</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }} align="center">Created
+                      at</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}
+                               align="center">Size</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}
+                               align="right">Action</TableCell>
+                  </TableRow>
+                </TableHeadWithGaps>
+                <TableBodyWithGaps>
+                  {tableRows}
+                </TableBodyWithGaps>
+              </TableWithGaps>
+            </TableContainer>
+          </Grid>
+        }
+        {!isLoading && !snapshots?.length &&
+          <Grid item xs={12} textAlign={"center"}>
+            <Typography>
+              No snapshots yet, take one! 📸
+            </Typography>
+          </Grid>
+        }
       </Grid>
-      {isLoading && <div>Loading...</div>}
-      {!isLoading && snapshots?.length &&
-        <TableContainer>
-          <TableWithGaps aria-label="simple table">
-            <TableHeadWithGaps>
-              <TableRow>
-                <TableCell sx={{ fontWeight: "bold" }}>Snapshot Name</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }} align="center">Created
-                  at</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}
-                           align="center">Size</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}
-                           align="right">Action</TableCell>
-              </TableRow>
-            </TableHeadWithGaps>
-            <TableBodyWithGaps>
-              {tableRows}
-            </TableBodyWithGaps>
-          </TableWithGaps>
-        </TableContainer>
-      }
     </div>
   );
 };
