@@ -5,7 +5,7 @@ import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
 
 function InputWithIcon({ value, setValue, actions }) {
   return (
-    <Card sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }} elevation={1}>
+    <Card sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }} variant="dual">
       <OutlinedInput
         fullWidth
         value={value}
