@@ -12,7 +12,7 @@ function SimilarSerachfield({ value, setValue }) {
   };
 
   return (
-    <Card sx={{ p: 2 }} elevation={1}>
+    <Card sx={{ p: 2 }} variant="dual">
       <MuiChipsInput
         fullWidth
         value={value}

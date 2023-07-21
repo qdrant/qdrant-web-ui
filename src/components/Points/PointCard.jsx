@@ -73,7 +73,7 @@ const PointCard = (props) => {
   return (
     <>
       <Card
-        elevation={1}
+        variant="dual"
         sx={{
           display: "flex",
           flexDirection: "column",
