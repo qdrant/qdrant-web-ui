@@ -27,10 +27,8 @@ import { StyledStatusBar } from "../Uploader/StyledStatusBar";
 import "@uppy/core/dist/style.min.css";
 import "@uppy/drag-drop/dist/style.min.css";
 import "@uppy/status-bar/dist/style.min.css";
-import { useTheme } from "@mui/material/styles";
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
-  const theme = useTheme();
   const { client: qdrantClient } = useClient();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -183,8 +181,8 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
           <StepContent>
             <Box sx={{ mb: 2 }}>
               {/*Here we have a drag and drop area*/}
-              <StyledDragDrop theme={theme} uppy={uppy}/>
-              <StyledStatusBar theme={theme} uppy={uppy}/>
+              <StyledDragDrop uppy={uppy}/>
+              <StyledStatusBar uppy={uppy}/>
             </Box>
             <Box mb={2}>
               <Button

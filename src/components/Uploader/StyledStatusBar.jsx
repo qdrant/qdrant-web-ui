@@ -1,13 +1,9 @@
 import React from "react";
-import Box from "@mui/material/Box";
 import StatusBar from "@uppy/react/lib/StatusBar";
+import { styled } from "@mui/material/styles";
 
-export const StyledStatusBar = ({ theme, ...props }) => (
-  <Box sx={{
-    "& .uppy-StatusBar": {
-      backgroundColor: theme.palette.background.paper,
-    },
-  }}>
-    <StatusBar {...props} />
-  </Box>
-);
+export const StyledStatusBar = styled(StatusBar)(({ theme }) => ({
+  "& .uppy-StatusBar": {
+    backgroundColor: theme.palette.background.paper,
+  },
+}));
