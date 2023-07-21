@@ -9,7 +9,6 @@ import {
   Stack,
   CardActionArea,
   Typography,
-  styled,
   Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,7 +22,7 @@ const CollectionCard = (props) => {
   return (
     <>
       <Card
-        elevation={3}
+        elevation={1}
         sx={{
           display: "flex",
           flexDirection: "column",
