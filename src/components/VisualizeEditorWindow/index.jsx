@@ -7,15 +7,10 @@ import Chart from 'chart.js/auto';
 const VisualizeEditorWindow = ({ scrollResult }) => {
 
   const [editorData, setEditorData] = React.useState("{}");
-// write a demo chart fuction in scatter plot
-  useEffect(() => {
-
-    return () => {
-      
-    }
-  }, []);
 
   useEffect(() => {
+    
+    let labelID =JSON.parse(scrollResult).result?.points?.map((point) => point.id);
     const worker = new Worker(new URL("./worker.js", import.meta.url), {
       type: "module",
     });
@@ -30,15 +25,37 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
       },
       options: {
         responsive: true,
-        fullsize: true,
-
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },  
+            display: false,
+          },
+          y: {
+            
+            display: false,
+          }
+        }
       }
     });
 
+
     worker.onmessage = (m) => {
-      console.log("message from worker", m.data);
       setEditorData(m.data);
       myChart.data.datasets[0].data = m.data;
+      myChart.options.plugins= {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                      console.log(context );
+                      let label = `ID: ${labelID[context.dataIndex]}` || "";
+                        return label
+                    }
+                }
+        }
+  }
       myChart.update();
     };
 
@@ -63,7 +80,7 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
   }
 
   return (
-    <canvas id="myChart" height={"100%"} width={"100%"}></canvas>
+    <canvas id="myChart"></canvas>
   );
 };
 export default VisualizeEditorWindow;
