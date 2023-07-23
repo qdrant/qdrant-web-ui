@@ -5,7 +5,7 @@ const MESSAGE_INTERVAL = 200;
 
 self.onmessage = function (e) {
     let now = new Date().getTime();
-    let data1 = JSON.parse(e.data);
+    let data1 = e.data;
     let data = [];
     if(data1?.result?.points){
         data1?.result?.points?.forEach((point) => {
@@ -29,3 +29,4 @@ self.onmessage = function (e) {
     }
     return;
 }
+

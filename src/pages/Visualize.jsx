@@ -9,6 +9,27 @@ import FilterEditorWindow from "../components/FilterEditorWindow";
 import VisualizeEditorWindow from "../components/VisualizeEditorWindow";
 
 const query = `
+
+{
+  "color_by": "city",
+  "limit": 1000,
+  "filter": {
+    "must": [
+      {
+        "key": "city",
+        "match": {
+          "any": [
+            "San Francisco",
+            "New York",
+            "Berlin"
+          ]
+        }
+      }
+    ]
+  }
+}
+
+
 {
   "vector_name": "image",
   "color_by": "payload_field",

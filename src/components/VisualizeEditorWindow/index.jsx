@@ -9,8 +9,28 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
   const [editorData, setEditorData] = React.useState("{}");
 
   useEffect(() => {
-    
-    let labelID =JSON.parse(scrollResult).result?.points?.map((point) => point.id);
+
+    let parsedData = JSON.parse(scrollResult);
+    let labelID =parsedData.result?.points?.map((point) => point.id);
+    let colorByPaesedData =[]
+    let colorByArrayUnique = [];
+    if(parsedData.color_by){
+      let colorBy = parsedData.color_by;
+      colorByArrayUnique = [...new Set(parsedData.result?.points?.map((point) => point.payload[colorBy]))];
+      let colorByArrayUniqueLength = colorByArrayUnique.length;
+      let colorByArrayUniqueColors = [];
+      for (let i = 0; i < colorByArrayUniqueLength; i++) {
+        colorByArrayUniqueColors.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+      }
+      let colorByArrayUniqueColorsObject = {};
+      for (let i = 0; i < colorByArrayUniqueLength; i++) {
+        colorByArrayUniqueColorsObject[colorByArrayUnique[i]] = colorByArrayUniqueColors[i];
+      }
+      colorByPaesedData = parsedData.result?.points?.map((point) => {
+        let backgroundColor = colorByArrayUniqueColorsObject[point.payload[colorBy]];
+        return backgroundColor;
+      });
+    }
     const worker = new Worker(new URL("./worker.js", import.meta.url), {
       type: "module",
     });
@@ -20,7 +40,8 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
       data: {
         datasets: [{
           label: 'Scatter Dataset',
-          data: []
+          data: [],
+          backgroundColor: colorByPaesedData,
         }]
       },
       options: {
@@ -37,7 +58,17 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
             
             display: false,
           }
-        }
+        },
+        plugins:{
+          tooltip: {
+              callbacks: {
+                  label: function(context) {
+                    let label = `ID: ${labelID[context.dataIndex]}` || "";
+                      return label
+                  }
+              }
+      }
+}
       }
     });
 
@@ -45,21 +76,10 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
     worker.onmessage = (m) => {
       setEditorData(m.data);
       myChart.data.datasets[0].data = m.data;
-      myChart.options.plugins= {
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                      console.log(context );
-                      let label = `ID: ${labelID[context.dataIndex]}` || "";
-                        return label
-                    }
-                }
-        }
-  }
       myChart.update();
     };
 
-    worker.postMessage(scrollResult);
+    worker.postMessage(parsedData);
 
     return () => {
       myChart.destroy();
