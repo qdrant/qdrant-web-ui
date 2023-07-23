@@ -22,11 +22,33 @@ self.onmessage = function (e) {
         for (i of next) {
             if (Date.now() - now > MESSAGE_INTERVAL) {
                 now = Date.now();
-                self.postMessage(i);
+                self.postMessage(getDataset(data1,i));
+
             }
         }
-        self.postMessage(i);
+        self.postMessage(getDataset(data1,i));
+        
     }
     return;
+}
+
+function getDataset(data,reducedPoint){
+    let dataset = [];
+    let labelby = data.color_by;
+    data.labelByArrayUnique.forEach((label) => {
+        dataset.push({
+            label: label,
+            data: []
+        });
+    });
+
+    data.result?.points?.forEach((point,index) => {
+        let label = point.payload[labelby]||point.id;
+        dataset[data.labelByArrayUnique.indexOf(label)].data.push({
+            x: reducedPoint[index][0],
+            y: reducedPoint[index][1]
+        });
+    });
+    return dataset;
 }
 

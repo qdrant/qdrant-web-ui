@@ -28,7 +28,19 @@ const query = `
     ]
   }
 }
-
+{
+  "limit": 10,
+  "filter": {
+      "should": [
+          {
+              "key": "city",
+              "match": {
+                  "value": "London"
+              }
+          }
+      ]
+  }
+}
 
 {
   "vector_name": "image",
@@ -50,20 +62,7 @@ const query = `
   }
 }
 
-{
-  "color_by": "payload_field",
-  "limit": 10,
-  "filter": {
-      "should": [
-          {
-              "key": "city",
-              "match": {
-                  "value": "London"
-              }
-          }
-      ]
-  }
-}
+
 `;
 const defaultResult = `{}`;
 
@@ -75,33 +74,35 @@ function Visualize() {
 
   return (
     <>
-      <Box
-        component="main"
-      >
+      <Box component="main">
         {errorMessage !== null && (
           <ErrorNotifier {...{ message: errorMessage }} />
         )}
-        <Grid container  >
+        <Grid container>
           {errorMessage && (
-            <Grid xs={12} item textAlign={"center"}  >
-              <Typography >⚠ Error: {errorMessage}</Typography>
+            <Grid xs={12} item textAlign={"center"}>
+              <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
-          <Grid xs={12} item >
+          <Grid xs={12} item>
             <PanelGroup direction="horizontal">
               <Panel>
                 <VisualizeEditorWindow scrollResult={result} />
               </Panel>
-              <PanelResizeHandle style={{
-                width: "10px",
-                background: alpha(theme.palette.primary.main, 0.05),
-              }}>
-                <Box sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}>
+              <PanelResizeHandle
+                style={{
+                  width: "10px",
+                  background: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                  }}
+                >
                   &#8942;
                 </Box>
               </PanelResizeHandle>
