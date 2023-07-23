@@ -1,26 +1,45 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "chart.js/auto";
+import { SnackbarProvider, useSnackbar } from 'notistack';
+import { Button } from "@mui/material";
+
 
 const VisualizeEditorWindow = ({ scrollResult }) => {
-
+  const { enqueueSnackbar ,closeSnackbar} = useSnackbar();
+  const action = snackbarId => (
+      <Button variant="contained" color="warning" onClick={() => { closeSnackbar(snackbarId) }}>
+        Dismiss
+      </Button>
+  );
   useEffect(() => {
-    let parsedData = JSON.parse(scrollResult);
-    let labelID = parsedData.result?.points?.map((point) => point.id);
+    console.log("scrollResult", scrollResult);
+    if (scrollResult.error) {
+      enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(
+        scrollResult.error
+      )}` , { variant:"error",action});
+
+      return;
+    }
+    else if (!scrollResult.data) {
+      enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, { variant:"error" ,action});
+      return;
+    }
+    let labelID = scrollResult.data.result?.points?.map((point) => point.id);
     const worker = new Worker(new URL("./worker.js", import.meta.url), {
       type: "module",
     });
 
-    let labelby = parsedData.color_by;
-    parsedData.labelByArrayUnique = [
+    let labelby = scrollResult.data.color_by;
+    scrollResult.data.labelByArrayUnique = [
       ...new Set(
-        parsedData.result?.points?.map(
+        scrollResult.data.result?.points?.map(
           (point) => point.payload[labelby] || point.id
         )
       ),
     ];
     let dataset = [];
-    parsedData.labelByArrayUnique.forEach((label) => {
+    scrollResult.data.labelByArrayUnique.forEach((label) => {
       dataset.push({
         label: label,
         data: [],
@@ -69,8 +88,8 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
       myChart.update();
     };
 
-    if (parsedData.result?.points?.length > 0) {
-      worker.postMessage(parsedData);
+    if (scrollResult.data.result?.points?.length > 0) {
+      worker.postMessage(scrollResult.data);
     }
 
     return () => {
@@ -79,7 +98,10 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
     };
   }, [scrollResult]);
 
-
-  return <canvas id="myChart"></canvas>;
+  return (
+    <SnackbarProvider maxSnack={3}>
+      <canvas id="myChart"></canvas>
+    </SnackbarProvider>
+  );
 };
 export default VisualizeEditorWindow;

@@ -64,7 +64,7 @@ const query = `
 
 
 `;
-const defaultResult = `{}`;
+const defaultResult = {};
 
 function Visualize() {
   const theme = useTheme();

@@ -16,10 +16,17 @@ export function RequestFromCode(text, collectionName) {
       .then((response) => {
         response.data.color_by = data.reqBody.color_by;
         response.data.vector_name = data.reqBody.vector_name; 
-        return response.data;
+        return {
+          data: response.data,
+          error: null,
+        };
       })
       .catch((err) => {
-        return err.response?.data?.status ? err.response?.data?.status : err;
+        
+        return {
+          data: null,
+          error: err.response?.data?.status ? err.response?.data?.status : err
+        };
       });
   }
 }
