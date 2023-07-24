@@ -56,19 +56,19 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds, onCopy }) {
                     variant="outlined"
                     sx={{ mr: 1 }}
                   />
-                  <Tooltip title="Copy Vector" placement="right">
-                    <IconButton
-                      aria-label={`copy vector ${key}`}
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          JSON.stringify(vectors[key]));
-                        if (typeof onCopy === 'function') onCopy();
-                      }}>
-                      <CopyAll/>
-                    </IconButton>
-                  </Tooltip>
                 </>
               }
+              <Tooltip title="Copy Vector" placement="right">
+                <IconButton
+                  aria-label={`copy vector ${key}`}
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      JSON.stringify(vectors[key]));
+                    if (typeof onCopy === 'function') onCopy();
+                  }}>
+                  <CopyAll/>
+                </IconButton>
+              </Tooltip>
             </Grid>
 
             <Grid item xs={4} my={1}>
