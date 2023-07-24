@@ -46,7 +46,8 @@ function getDataset(data,reducedPoint){
         let label = point.payload[labelby]||point.id;
         dataset[data.labelByArrayUnique.indexOf(label)].data.push({
             x: reducedPoint[index][0],
-            y: reducedPoint[index][1]
+            y: reducedPoint[index][1],
+            id: point.id,
         });
     });
     return dataset;

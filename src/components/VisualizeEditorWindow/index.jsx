@@ -13,7 +13,11 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
       </Button>
   );
   useEffect(() => {
-    console.log("scrollResult", scrollResult);
+    
+    if( !scrollResult.data && !scrollResult.error )
+    {return;} 
+    
+    
     if (scrollResult.error) {
       enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(
         scrollResult.error
@@ -21,7 +25,7 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
 
       return;
     }
-    else if (!scrollResult.data) {
+    else if (!scrollResult.data?.result?.points.length) {
       enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, { variant:"error" ,action});
       return;
     }
@@ -69,7 +73,7 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
           tooltip: {
             callbacks: {
               label: function (context) {
-                let label = `ID: ${labelID[context.dataIndex]}` || "";
+                let label = `ID: ${context.dataset.data[context.dataIndex].id}` || "";
                 return label;
               },
             },
