@@ -22,7 +22,7 @@ import Vectors from "./PointVectors";
 const PointCard = (props) => {
   const theme = useTheme();
   const { point, setRecommendationIds } = props;
-  const [openTooltip, setOpenTooltip] = React.useState(false);
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
@@ -88,7 +88,7 @@ const PointCard = (props) => {
                 aria-label="copy point"
                 onClick={() => {
                   navigator.clipboard.writeText(JSON.stringify(point));
-                  setOpenTooltip(true);
+                  setOpenSnackbar(true);
                 }}>
                 <CopyAll/>
               </IconButton>
@@ -110,7 +110,7 @@ const PointCard = (props) => {
                     onClick={() => {
                       navigator.clipboard.writeText(
                         JSON.stringify(point.payload));
-                      setOpenTooltip(true);
+                      setOpenSnackbar(true);
                     }}>
                     <CopyAll/>
                   </IconButton>
@@ -137,33 +137,22 @@ const PointCard = (props) => {
             flexGrow: 1,
             background: alpha(theme.palette.primary.main, 0.05),
           }}
-          action={
-            <Tooltip title="Copy Vector" placement="right">
-              <IconButton
-                aria-label="copy point vector"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    JSON.stringify(point.vector));
-                  setOpenTooltip(true);
-                }}>
-                <CopyAll/>
-              </IconButton>
-            </Tooltip>
-          }
         />
         <CardContent>
           {point?.vector &&
             <Vectors
               point={point}
-              setRecommendationIds={setRecommendationIds}/>
+              setRecommendationIds={setRecommendationIds}
+              onCopy={() => setOpenSnackbar(true)}
+            />
           }
         </CardContent>
       </Card>
       <Snackbar
-        open={openTooltip}
+        open={openSnackbar}
         severity="success"
         autoHideDuration={3000}
-        onClose={() => setOpenTooltip(false)}
+        onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
