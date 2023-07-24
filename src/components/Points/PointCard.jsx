@@ -22,7 +22,7 @@ import Vectors from "./PointVectors";
 const PointCard = (props) => {
   const theme = useTheme();
   const { point, setRecommendationIds } = props;
-  const [openTooltip, setOpenTooltip] = React.useState(false);
+  const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
   function resDataView(data) {
     const Payload = Object.keys(data.payload).map((key) => {
@@ -83,54 +83,80 @@ const PointCard = (props) => {
         <CardHeader
           title={"Point " + point.id}
           action={
-            <Tooltip title="Copy JSON" placement="right">
+            <Tooltip title="Copy Point" placement="right">
               <IconButton
                 aria-label="copy point"
                 onClick={() => {
                   navigator.clipboard.writeText(JSON.stringify(point));
-                  setOpenTooltip(true);
+                  setOpenSnackbar(true);
                 }}>
                 <CopyAll/>
               </IconButton>
             </Tooltip>
           }
         />
-        <CardHeader subheader={"Payload:"} sx={{
-          flexGrow: 1,
-          background: alpha(theme.palette.primary.main, 0.05),
-        }}/>
-        <CardContent>
-          <Grid container display={"flex"}>
-            <Grid item xs my={1}>
-              {resDataView(point)}
-            </Grid>
-            {point.payload.images &&
-              <Grid item xs={3} display="grid" justifyContent={"center"}>
-                <PointImage data={point.payload} sx={{ ml: 2 }}/>
+        {Object.keys(point.payload).length > 0 &&
+          <>
+            <CardHeader
+              subheader={"Payload:"}
+              sx={{
+                flexGrow: 1,
+                background: alpha(theme.palette.primary.main, 0.05),
+              }}
+              action={
+                <Tooltip title="Copy Payload" placement="right">
+                  <IconButton
+                    aria-label="copy point payload"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        JSON.stringify(point.payload));
+                      setOpenSnackbar(true);
+                    }}>
+                    <CopyAll/>
+                  </IconButton>
+                </Tooltip>
+              }
+            />
+            <CardContent>
+              <Grid container display={"flex"}>
+                <Grid item xs my={1}>
+                  {resDataView(point)}
+                </Grid>
+                {point.payload.images &&
+                  <Grid item xs={3} display="grid" justifyContent={"center"}>
+                    <PointImage data={point.payload} sx={{ ml: 2 }}/>
+                  </Grid>
+                }
               </Grid>
-            }
-          </Grid>
-        </CardContent>
-        <CardHeader subheader={"Vectors:"} sx={{
-          flexGrow: 1,
-          background: alpha(theme.palette.primary.main, 0.05),
-        }}/>
+            </CardContent>
+          </>
+        }
+        <CardHeader
+          subheader={"Vectors:"}
+          sx={{
+            flexGrow: 1,
+            background: alpha(theme.palette.primary.main, 0.05),
+          }}
+        />
         <CardContent>
           {point?.vector &&
             <Vectors
               point={point}
-              setRecommendationIds={setRecommendationIds}/>
+              setRecommendationIds={setRecommendationIds}
+              onCopy={() => setOpenSnackbar(true)}
+            />
           }
         </CardContent>
       </Card>
       <Snackbar
-        open={openTooltip}
+        open={openSnackbar}
         severity="success"
         autoHideDuration={3000}
-        onClose={() => setOpenTooltip(false)}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
-          Point JSON copied to clipboard.
+          JSON copied to clipboard.
         </Alert>
       </Snackbar>
     </>
