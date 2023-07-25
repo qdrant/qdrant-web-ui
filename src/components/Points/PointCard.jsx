@@ -14,14 +14,16 @@ import { JsonViewer } from "@textea/json-viewer";
 import PointImage from "./PointImage";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { CopyAll } from "@mui/icons-material";
+import { CopyAll, Edit } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import Vectors from "./PointVectors";
+import { PayloadEditor } from "./PayloadEditor";
 
 const PointCard = (props) => {
   const theme = useTheme();
   const { point, setRecommendationIds } = props;
+  const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
   function resDataView(data) {
@@ -83,7 +85,7 @@ const PointCard = (props) => {
         <CardHeader
           title={"Point " + point.id}
           action={
-            <Tooltip title="Copy Point" placement="right">
+            <Tooltip title="Copy Point" placement="left">
               <IconButton
                 aria-label="copy point"
                 onClick={() => {
@@ -104,17 +106,26 @@ const PointCard = (props) => {
                 background: alpha(theme.palette.primary.main, 0.05),
               }}
               action={
-                <Tooltip title="Copy Payload" placement="right">
-                  <IconButton
-                    aria-label="copy point payload"
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        JSON.stringify(point.payload));
-                      setOpenSnackbar(true);
-                    }}>
-                    <CopyAll/>
-                  </IconButton>
-                </Tooltip>
+                <>
+                  <Tooltip title="Edit Payload" placement="left">
+                    <IconButton
+                      aria-label="copy point payload"
+                      onClick={() => setOpenPayloadEditor(true)}>
+                      <Edit/>
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Copy Payload" placement="left">
+                    <IconButton
+                      aria-label="copy point payload"
+                      onClick={() => {
+                        navigator.clipboard.writeText(
+                          JSON.stringify(point.payload));
+                        setOpenSnackbar(true);
+                      }}>
+                      <CopyAll/>
+                    </IconButton>
+                  </Tooltip>
+                </>
               }
             />
             <CardContent>
@@ -148,6 +159,7 @@ const PointCard = (props) => {
           }
         </CardContent>
       </Card>
+      <PayloadEditor payloadJson={point.payload} open={openPayloadEditor} onClose={() => {setOpenPayloadEditor(false)}}/>
       <Snackbar
         open={openSnackbar}
         severity="success"
