@@ -1,54 +1,82 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
 import Chart from "chart.js/auto";
-import { SnackbarProvider, useSnackbar } from 'notistack';
-import { Button } from "@mui/material";
+import { SnackbarProvider, useSnackbar } from "notistack";
+import {
+  Button,
+} from "@mui/material";
+import ViewPointModal from "./ViewPointModal";
+
 
 
 const VisualizeEditorWindow = ({ scrollResult }) => {
   const { enqueueSnackbar ,closeSnackbar} = useSnackbar();
-  const action = snackbarId => (
-      <Button variant="contained" color="warning" onClick={() => { closeSnackbar(snackbarId) }}>
+  const [openViewPoints, setOpenViewPoints] = useState(false);
+  const [viewPoints, setViewPoint] = useState([]);
+  const action = (snackbarId) => (
+      <Button
+        variant="contained"
+        color="warning"
+        onClick={() => {
+          closeSnackbar(snackbarId);
+        }}
+      >
         Dismiss
       </Button>
-  );
+    );
+
   useEffect(() => {
-    
-    if( !scrollResult.data && !scrollResult.error )
-    {return;} 
-    
-    
+    if (!scrollResult.data && !scrollResult.error) {
+      return;
+    }
+
     if (scrollResult.error) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(
-        scrollResult.error
-      )}` , { variant:"error",action});
+      enqueueSnackbar(
+        `Visualization Unsuccessful, error: ${JSON.stringify(
+          scrollResult.error
+        )}`,
+        { variant: "error", action }
+      );
 
       return;
-    }
+    } 
     else if (!scrollResult.data?.result?.points.length) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, { variant:"error" ,action});
+      enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, {
+        variant: "error",
+        action,
+      });
       return;
     }
-    let labelID = scrollResult.data.result?.points?.map((point) => point.id);
-    const worker = new Worker(new URL("./worker.js", import.meta.url), {
-      type: "module",
-    });
 
-    let labelby = scrollResult.data.color_by;
-    scrollResult.data.labelByArrayUnique = [
-      ...new Set(
-        scrollResult.data.result?.points?.map(
-          (point) => point.payload[labelby] || point.id
-        )
-      ),
-    ];
     let dataset = [];
-    scrollResult.data.labelByArrayUnique.forEach((label) => {
+    let labelby = scrollResult.data.color_by;
+    if (labelby) {
+      if(scrollResult.data.result?.points[0]?.payload[labelby] === undefined){
+        enqueueSnackbar(
+          `Visualization Unsuccessful, error: Color by field ${labelby} does not exist`,
+          { variant: "error", action }
+        );
+        return;
+      }
+      scrollResult.data.labelByArrayUnique = [
+        ...new Set(
+          scrollResult.data.result?.points?.map(
+            (point) => point.payload[labelby]
+          )
+        ),
+      ];
+      scrollResult.data.labelByArrayUnique.forEach((label) => {
+        dataset.push({
+          label: label,
+          data: [],
+        });
+      });
+    } else {
       dataset.push({
-        label: label,
+        label: "Data",
         data: [],
       });
-    });
+    }
     const ctx = document.getElementById("myChart");
     const myChart = new Chart(ctx, {
       type: "scatter",
@@ -73,8 +101,11 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
           tooltip: {
             callbacks: {
               label: function (context) {
-                let label = `ID: ${context.dataset.data[context.dataIndex].id}` || "";
-                return label;
+                return JSON.stringify(
+                  context.dataset.data[context.dataIndex].point.payload,
+                  null,
+                  2
+                ).split("\n");
               },
             },
           },
@@ -83,13 +114,54 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
           },
         },
       },
+      plugins: [
+        {
+          id: "myEventCatcher",
+          beforeEvent(chart, args) {
+            const event = args.event;
+            if (event.type === "click") {
+              if (chart.tooltip._active.length > 0) {
+                let activePoints = chart.tooltip._active.map((point) => {
+                  return {
+                    id: point.element.$context.raw.point.id,
+                    payload: point.element.$context.raw.point.payload,
+                    vector: point.element.$context.raw.point.vector,
+                  };
+                });
+                setViewPoint(activePoints);
+                setOpenViewPoints(true);
+              }
+            }
+          },
+        },
+      ],
+    });
+
+    const worker = new Worker(new URL("./worker.js", import.meta.url), {
+      type: "module",
     });
 
     worker.onmessage = (m) => {
-      m.data.forEach((dataset, index) => {
-        myChart.data.datasets[index].data = [...dataset.data];
-      });
-      myChart.update();
+      if(m.data.error){
+        enqueueSnackbar(
+          `Visualization Unsuccessful, error: ${
+            m.data.error
+          }`,
+          { variant: "error", action }
+        );
+        return;
+      }else if(m.data.result && m.data.result.length > 0){
+        m.data.result.forEach((dataset, index) => {
+          myChart.data.datasets[index].data = dataset.data;
+        });
+        myChart.update();
+      }else{
+        enqueueSnackbar(
+          `Visualization Unsuccessful, error: Unexpected Error Occured`,
+          { variant: "error", action }
+        );
+      }
+
     };
 
     if (scrollResult.data.result?.points?.length > 0) {
@@ -103,9 +175,12 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
   }, [scrollResult]);
 
   return (
-    <SnackbarProvider maxSnack={3}>
+    <>
+    <SnackbarProvider>
       <canvas id="myChart"></canvas>
+      <ViewPointModal openViewPoints={openViewPoints} setOpenViewPoints={setOpenViewPoints} viewPoints={viewPoints} />
     </SnackbarProvider>
+    </>
   );
 };
 export default VisualizeEditorWindow;
