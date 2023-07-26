@@ -5,42 +5,73 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import EditorCommon from "../EditorCommon";
 import { useClient } from "../../context/client-context";
+import { errChecker } from "../CodeEditorWindow/config/ErrorMarker";
+import PropTypes from "prop-types";
+import { useSnackbar } from "notistack";
+import isEqual from "lodash/isEqual";
 
 export const PayloadEditor = memo(
-  ({ collectionName, point, open, onClose }) => {
-    console.log("PayloadEditor");
+  ({ collectionName, point, open, onClose, onSave, setLoading }) => {
     const { client: qdrantClient } = useClient();
+    const { enqueueSnackbar } = useSnackbar();
     const [payload, setPayload] = useState(point.payload);
-    const [loading, setLoading] = useState(false);
 
+    // todo:
+    // - [ ] add error checking for payload ?
+    // - [x] add error handling for savePayload
+    // - [x] style buttons
+    // - [x] add loading indicator
+    // - [x] add lodash
+
+    const savePayload = async (collectionName, options) => {
+      if (Object.keys(point.payload).length !== 0) {
+        return qdrantClient.overwritePayload(collectionName, options);
+      } else {
+        return qdrantClient.setPayload(collectionName, options);
+      }
+    };
     const handleChange = (value) => {
-      console.log(value);
-      setPayload(value);
+      setPayload(JSON.parse(value));
     };
 
     const handleSave = () => {
-      console.log(payload);
-      if (point.payload !== payload) {
-        console.log("update payload");
-        // errChecker(payload);
-        setLoading(true);
-
-
-        qdrantClient.overwritePayload(
-          collectionName,
-          {
-            payload: JSON.parse(payload),
-            points: [point.id],
-            wait: true,
-          },
-        ).then((res) => {
-          console.log("res", res);
-        }).catch((err) => {
-          console.log(err);
-        }).finally(() => {
-          setLoading(false);
-        });
+      // do nothing if payload is not changed
+      if (isEqual(point.payload, payload)) {
+        onClose();
+        return;
       }
+
+      setLoading(true);
+      const oldPayload = structuredClone(point.payload);
+      // errChecker(payload);
+
+      savePayload(
+        collectionName,
+        {
+          payload: payload,
+          points: [point.id],
+          wait: true,
+        },
+      ).then((res) => {
+        console.log(res);
+        if (onSave && res.status === "completed") {
+          onSave(payload);
+        }
+      }).catch((err) => {
+        onSave && onSave(oldPayload);
+        enqueueSnackbar(err.message, {
+          variant: "error",
+          autoHideDuration: 3000,
+          anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        });
+      }).finally(() => {
+        setLoading(false);
+        enqueueSnackbar("Payload saved", {
+          variant: "success",
+          autoHideDuration: 1500,
+          anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        });
+      });
       onClose();
     };
 
@@ -52,9 +83,9 @@ export const PayloadEditor = memo(
         maxWidth="md"
       >
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
-          Edit payload
+          Edit payload for point {point.id}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ pb: 1 }}>
           <EditorCommon
             height="50vh"
             language="json"
@@ -67,16 +98,23 @@ export const PayloadEditor = memo(
               minimap: { enabled: false },
               automaticLayout: true,
             }}
-            beforeMount={() => {
-              console.log("beforeMount");
-            }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
+        <DialogActions sx={{ pb: 2, px: 3 }}>
+          <Button onClick={onClose} color="error" variant="outlined"
+                  sx={{ mr: 1 }}>Cancel</Button>
+          <Button onClick={handleSave} color="success"
+                  variant="outlined">Save</Button>
         </DialogActions>
       </Dialog>
     );
-  })
-;
+  },
+);
+
+PayloadEditor.propTypes = {
+  collectionName: PropTypes.string.isRequired,
+  point: PropTypes.object.isRequired,
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func,
+};
