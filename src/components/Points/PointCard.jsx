@@ -159,7 +159,11 @@ const PointCard = (props) => {
           }
         </CardContent>
       </Card>
-      <PayloadEditor payloadJson={point.payload} open={openPayloadEditor} onClose={() => {setOpenPayloadEditor(false)}}/>
+      <PayloadEditor
+        collectionName={props.collectionName}
+        point={point}
+        open={openPayloadEditor}
+        onClose={() => {setOpenPayloadEditor(false)}}/>
       <Snackbar
         open={openSnackbar}
         severity="success"
