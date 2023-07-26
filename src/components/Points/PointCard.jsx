@@ -10,17 +10,15 @@ import {
   Snackbar,
   Alert, LinearProgress, Box,
 } from "@mui/material";
-import { JsonViewer } from "@textea/json-viewer";
-import PointImage from "./PointImage";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import {
-  AddSharp,
-  CopyAll,
-  Edit,
-} from "@mui/icons-material";
+import AddSharp from "@mui/icons-material/AddSharp";
+import CopyAll from "@mui/icons-material/CopyAll";
+import Edit from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import { JsonViewer } from "@textea/json-viewer";
+import PointImage from "./PointImage";
 import Vectors from "./PointVectors";
 import { PayloadEditor } from "./PayloadEditor";
 

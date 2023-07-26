@@ -1,27 +1,22 @@
 import React, { memo, useState } from "react";
-import DialogActions from "@mui/material/DialogActions";
-import { Button, Dialog } from "@mui/material";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import EditorCommon from "../EditorCommon";
-import { useClient } from "../../context/client-context";
-import { errChecker } from "../CodeEditorWindow/config/ErrorMarker";
 import PropTypes from "prop-types";
+import { useClient } from "../../context/client-context";
 import { useSnackbar } from "notistack";
 import isEqual from "lodash/isEqual";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+} from "@mui/material";
+import EditorCommon from "../EditorCommon";
 
 export const PayloadEditor = memo(
   ({ collectionName, point, open, onClose, onSave, setLoading }) => {
     const { client: qdrantClient } = useClient();
     const { enqueueSnackbar } = useSnackbar();
     const [payload, setPayload] = useState(point.payload);
-
-    // todo:
-    // - [ ] add error checking for payload ?
-    // - [x] add error handling for savePayload
-    // - [x] style buttons
-    // - [x] add loading indicator
-    // - [x] add lodash
 
     const savePayload = async (collectionName, options) => {
       if (Object.keys(point.payload).length !== 0) {
@@ -31,33 +26,45 @@ export const PayloadEditor = memo(
       }
     };
     const handleChange = (value) => {
-      setPayload(JSON.parse(value));
+      setPayload(value);
     };
 
     const handleSave = () => {
+      let payloadToSave;
+      try {
+        payloadToSave = JSON.parse(payload);
+      } catch (e) {
+        enqueueSnackbar(e.message, {
+          variant: "error",
+          autoHideDuration: 2500,
+          anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        });
+        return;
+      }
+
       // do nothing if payload is not changed
-      if (isEqual(point.payload, payload)) {
+      if (isEqual(point.payload, payloadToSave)) {
         onClose();
         return;
       }
 
       setLoading(true);
       const oldPayload = structuredClone(point.payload);
-      // errChecker(payload);
 
       savePayload(
         collectionName,
         {
-          payload: payload,
+          payload: payloadToSave,
           points: [point.id],
           wait: true,
         },
       ).then((res) => {
-        console.log(res);
+        // update payload in the point view
         if (onSave && res.status === "completed") {
-          onSave(payload);
+          onSave(payloadToSave);
         }
       }).catch((err) => {
+        // rollback payload and show error
         onSave && onSave(oldPayload);
         enqueueSnackbar(err.message, {
           variant: "error",
@@ -65,6 +72,7 @@ export const PayloadEditor = memo(
           anchorOrigin: { vertical: "bottom", horizontal: "center" },
         });
       }).finally(() => {
+        // stop loading state and show success message
         setLoading(false);
         enqueueSnackbar("Payload saved", {
           variant: "success",
