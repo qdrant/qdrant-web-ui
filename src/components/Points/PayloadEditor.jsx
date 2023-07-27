@@ -16,7 +16,8 @@ export const PayloadEditor = memo(
   ({ collectionName, point, open, onClose, onSave, setLoading }) => {
     const { client: qdrantClient } = useClient();
     const { enqueueSnackbar } = useSnackbar();
-    const [payload, setPayload] = useState(point.payload);
+    const [payload, setPayload] = useState(() =>
+      JSON.stringify(point.payload, null, 2));
 
     const savePayload = async (collectionName, options) => {
       if (Object.keys(point.payload).length !== 0) {
@@ -62,6 +63,12 @@ export const PayloadEditor = memo(
         // update payload in the point view
         if (onSave && res.status === "completed") {
           onSave(payloadToSave);
+
+          enqueueSnackbar("Payload saved", {
+            variant: "success",
+            autoHideDuration: 1500,
+            anchorOrigin: { vertical: "bottom", horizontal: "center" },
+          });
         }
       }).catch((err) => {
         // rollback payload and show error
@@ -74,12 +81,8 @@ export const PayloadEditor = memo(
       }).finally(() => {
         // stop loading state and show success message
         setLoading(false);
-        enqueueSnackbar("Payload saved", {
-          variant: "success",
-          autoHideDuration: 1500,
-          anchorOrigin: { vertical: "bottom", horizontal: "center" },
-        });
       });
+
       onClose();
     };
 
