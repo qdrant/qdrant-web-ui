@@ -108,6 +108,18 @@ export const PayloadEditor = memo(
               wordWrap: "on",
               minimap: { enabled: false },
               automaticLayout: true,
+              quickSuggestions: {
+                other: false,
+                comments: false,
+                strings: false
+              },
+              parameterHints: {
+                enabled: false
+              },
+              suggestOnTriggerCharacters: false,
+              acceptSuggestionOnEnter: "off",
+              tabCompletion: "off",
+              wordBasedSuggestions: false,
             }}
           />
         </DialogContent>
