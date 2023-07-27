@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import AddSharp from "@mui/icons-material/AddSharp";
 import CopyAll from "@mui/icons-material/CopyAll";
 import Edit from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
@@ -107,7 +106,7 @@ const PointCard = (props) => {
                 <IconButton
                   aria-label="add payload"
                   onClick={() => setOpenPayloadEditor(true)}>
-                  <AddSharp />
+                  <Edit />
                 </IconButton>
               </Tooltip>}
 
