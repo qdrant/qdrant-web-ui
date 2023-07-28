@@ -10,56 +10,25 @@ import VisualizeEditorWindow from "../components/VisualizeEditorWindow";
 
 const query = `
 
-{
-  "color_by": "city",
-  "limit": 1000,
-  "filter": {
-    "must": [
-      {
-        "key": "city",
-        "match": {
-          "any": [
-            "San Francisco",
-            "New York",
-            "Berlin"
-          ]
-        }
-      }
-    ]
-  }
-}
-{
-  "limit": 10,
-  "filter": {
-      "should": [
-          {
-              "key": "city",
-              "match": {
-                  "value": "London"
-              }
-          }
-      ]
-  }
-}
+// Specify request parameters to select data for visualization.
+//
+// Available parameters:
+//
+// - 'limit': maximum number of vectors to visualize.
+//            *Warning*: large values may cause browser to freeze.
+//
+// - 'filter': filter expression to select vectors for visualization.
+//             See https://qdrant.tech/documentation/concepts/filtering/
+//
+// - 'color_by': specify payload field to use for coloring points.
+//
+// - 'vector_name': specify which vector to use for visualization
+//                  if there are multiple.
+//
+// Minimal example:
 
 {
-  "vector_name": "image",
-  "color_by": "payload_field",
-  "limit": 3,
-  "filter": {
-    "must": [
-      {
-        "key": "city",
-        "match": {
-          "any": [
-            "San Francisco",
-            "New York",
-            "Berlin"
-          ]
-        }
-      }
-    ]
-  }
+  "limit": 500
 }
 
 

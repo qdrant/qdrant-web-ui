@@ -73,7 +73,7 @@ const ViewPointModal = (props) => {
 
   return (
     <>
-      <Dialog open={openViewPoints} onClose={() => setOpenViewPoints(false)} scroll={"paper"} maxWidth={"lg"}>
+      <Dialog open={openViewPoints} onClose={() => setOpenViewPoints(false)} scroll={"paper"} maxWidth={"lg"} fullWidth={true}>
       <DialogTitle id="scroll-dialog-title">Selected Points</DialogTitle>
         <div
           style={{
