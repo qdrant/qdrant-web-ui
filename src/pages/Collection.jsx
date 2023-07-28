@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useClient } from "../context/client-context";
 import { Typography, Grid, Button, Tabs, Tab } from "@mui/material";
 import PointCard from "../components/Points/PointCard";
@@ -26,6 +26,9 @@ function Collection() {
   const [nextPageOffset, setNextPageOffset] = React.useState(null);
 
   const handleTabChange = (event, newValue) => {
+    if (typeof newValue !== 'string') {
+      return;
+    }
     setCurrentTab(newValue);
     navigate(`#${newValue}`);
   };
@@ -99,6 +102,7 @@ function Collection() {
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
                 <Tab label="Snapshots" value={'snapshots'} />
+                <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`}/>
               </Tabs>
             </Box>
           </Grid>

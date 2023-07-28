@@ -1,7 +1,7 @@
-/* eslint-disable react/prop-types */
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import Chart from "chart.js/auto";
-import { SnackbarProvider, useSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 import {
   Button,
 } from "@mui/material";
@@ -15,8 +15,8 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
   const [viewPoints, setViewPoint] = useState([]);
   const action = (snackbarId) => (
       <Button
-        variant="contained"
-        color="warning"
+        variant="outlined"
+        color="inherit"
         onClick={() => {
           closeSnackbar(snackbarId);
         }}
@@ -176,11 +176,14 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
 
   return (
     <>
-    <SnackbarProvider>
       <canvas id="myChart"></canvas>
       <ViewPointModal openViewPoints={openViewPoints} setOpenViewPoints={setOpenViewPoints} viewPoints={viewPoints} />
-    </SnackbarProvider>
     </>
   );
 };
+
+VisualizeEditorWindow.propTypes = {
+  scrollResult: PropTypes.object.isRequired,
+};
+
 export default VisualizeEditorWindow;
