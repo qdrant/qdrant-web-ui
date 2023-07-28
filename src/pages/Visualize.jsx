@@ -1,8 +1,16 @@
 import React, { useState } from "react";
-import { alpha } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  alpha,
+  Paper,
+  Box,
+  Tooltip,
+  Typography,
+  Grid,
+  IconButton,
+} from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { Box } from "@mui/system";
-import { Typography, Grid } from "@mui/material";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FilterEditorWindow from "../components/FilterEditorWindow";
@@ -39,7 +47,9 @@ function Visualize() {
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null); // fixme: errorMessage is always null
+  const navigate = useNavigate();
+  const params = useParams();
 
   return (
     <>
@@ -55,8 +65,27 @@ function Visualize() {
           )}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
-              <Panel>
-                <VisualizeEditorWindow scrollResult={result} />
+              <Panel style={{display: 'flex'}}>
+                <Grid container direction={"column"} spacing={2}>
+                  <Grid xs={1} item>
+                    <Paper sx={{ display: "flex", alignItems: "center", p: 1 }}>
+                      <Tooltip title={"Back to collection"}>
+                        <IconButton
+                          sx={{ mr: 3 }}
+                          size="small"
+                          onClick={() => navigate(
+                            `/collections/${params.collectionName}`)}>
+                          <ArrowBack/>
+                        </IconButton>
+                      </Tooltip>
+                      <Typography
+                        variant="h6">Collection: {params.collectionName}</Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid xs={11} item>
+                    <VisualizeEditorWindow scrollResult={result}/>
+                  </Grid>
+                </Grid>
               </Panel>
               <PanelResizeHandle
                 style={{
