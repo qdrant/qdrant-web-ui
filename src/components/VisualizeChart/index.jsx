@@ -176,9 +176,7 @@ const VisualizeChart = ({ scrollResult }) => {
 
   return (
     <>
-      <div className="chart-container" style={{ position: "relative", height: "80vh" }}>
         <canvas id="myChart"></canvas>
-      </div>
       <ViewPointModal openViewPoints={openViewPoints} setOpenViewPoints={setOpenViewPoints} viewPoints={viewPoints} />
     </>
   );

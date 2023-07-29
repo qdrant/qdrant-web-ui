@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   alpha,
@@ -15,6 +15,7 @@ import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FilterEditorWindow from "../components/FilterEditorWindow";
 import VisualizeChart from "../components/VisualizeChart";
+import {useWindowResize} from '../hooks/windowHooks';
 
 const query = `
 
@@ -50,6 +51,14 @@ function Visualize() {
   const [errorMessage, setErrorMessage] = useState(null); // fixme: errorMessage is always null
   const navigate = useNavigate();
   const params = useParams();
+  const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
+  const VisualizeChartWrapper = useRef(null);
+  const {height} = useWindowResize();
+
+
+  useEffect(() => {
+    setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
+  }, [height, VisualizeChartWrapper]);
 
   return (
     <>
@@ -65,19 +74,10 @@ function Visualize() {
           )}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
-              <Panel style={{ display: 'flex' }}>
-                <Grid container direction={"column"} spacing={2}>
-                  <Grid xs={1} item>
-                    <Paper
-                      sx={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        p: 1,
-                        background: alpha(theme.palette.primary.main, 0.05),
-                      }}
-                      square
-                      elevation={0}
-                    >
+              <Panel style={{display: 'flex'}}>
+                <Box width={"100%"}>
+                  <Box>
+                  <Paper sx={{ display: "flex", alignItems: "center", p: 1 }}>
                       <Tooltip title={"Back to collection"}>
                         <IconButton
                           sx={{ mr: 3 }}
@@ -90,11 +90,13 @@ function Visualize() {
                       <Typography
                         variant="h6">{params.collectionName}</Typography>
                     </Paper>
-                  </Grid>
-                  <Grid xs={11} item>
-                    <VisualizeChart scrollResult={result} />
-                  </Grid>
-                </Grid>
+                  </Box>
+                  <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={"100%"}>
+                    <VisualizeChart
+                      scrollResult={result}
+                    />
+                  </Box>
+                </Box>
               </Panel>
               <PanelResizeHandle
                 style={{
