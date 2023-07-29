@@ -9,7 +9,7 @@ import ViewPointModal from "./ViewPointModal";
 
 
 
-const VisualizeEditorWindow = ({ scrollResult }) => {
+const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar ,closeSnackbar} = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
@@ -176,14 +176,16 @@ const VisualizeEditorWindow = ({ scrollResult }) => {
 
   return (
     <>
-      <canvas id="myChart"></canvas>
+      <div className="chart-container" style={{ position: "relative", height: "80vh" }}>
+        <canvas id="myChart"></canvas>
+      </div>
       <ViewPointModal openViewPoints={openViewPoints} setOpenViewPoints={setOpenViewPoints} viewPoints={viewPoints} />
     </>
   );
 };
 
-VisualizeEditorWindow.propTypes = {
+VisualizeChart.propTypes = {
   scrollResult: PropTypes.object.isRequired,
 };
 
-export default VisualizeEditorWindow;
+export default VisualizeChart;

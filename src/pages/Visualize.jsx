@@ -14,7 +14,7 @@ import { useTheme } from "@mui/material/styles";
 import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import FilterEditorWindow from "../components/FilterEditorWindow";
-import VisualizeEditorWindow from "../components/VisualizeEditorWindow";
+import VisualizeChart from "../components/VisualizeChart";
 
 const query = `
 
@@ -65,25 +65,34 @@ function Visualize() {
           )}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
-              <Panel style={{display: 'flex'}}>
+              <Panel style={{ display: 'flex' }}>
                 <Grid container direction={"column"} spacing={2}>
                   <Grid xs={1} item>
-                    <Paper sx={{ display: "flex", alignItems: "center", p: 1 }}>
+                    <Paper
+                      sx={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        p: 1,
+                        background: alpha(theme.palette.primary.main, 0.05),
+                      }}
+                      square
+                      elevation={0}
+                    >
                       <Tooltip title={"Back to collection"}>
                         <IconButton
                           sx={{ mr: 3 }}
                           size="small"
                           onClick={() => navigate(
                             `/collections/${params.collectionName}`)}>
-                          <ArrowBack/>
+                          <ArrowBack />
                         </IconButton>
                       </Tooltip>
                       <Typography
-                        variant="h6">Collection: {params.collectionName}</Typography>
+                        variant="h6">{params.collectionName}</Typography>
                     </Paper>
                   </Grid>
                   <Grid xs={11} item>
-                    <VisualizeEditorWindow scrollResult={result}/>
+                    <VisualizeChart scrollResult={result} />
                   </Grid>
                 </Grid>
               </Panel>
