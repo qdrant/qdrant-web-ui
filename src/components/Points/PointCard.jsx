@@ -3,23 +3,22 @@ import PropTypes from "prop-types";
 import {
   Card,
   CardContent,
-  Divider,
-  Typography,
   Grid,
   CardHeader,
   Snackbar,
   Alert, LinearProgress, Box,
 } from "@mui/material";
+
+import PointImage from "./PointImage";
 import { alpha } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CopyAll from "@mui/icons-material/CopyAll";
 import Edit from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { JsonViewer } from "@textea/json-viewer";
-import PointImage from "./PointImage";
 import Vectors from "./PointVectors";
 import { PayloadEditor } from "./PayloadEditor";
+import { PointPayloadList } from "./PointPayloadList";
 
 const PointCard = (props) => {
   const theme = useTheme();
@@ -28,52 +27,6 @@ const PointCard = (props) => {
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-
-  function resDataView(data) {
-    const Payload = Object.keys(data.payload).map((key) => {
-      return (
-        <div key={key}>
-          <Grid container spacing={2}>
-            <Grid item xs={2} my={1}>
-              <Typography
-                variant="subtitle1"
-                display={"inline"}
-                fontWeight={600}
-              >
-                {key}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={10} my={1}>
-              {typeof data.payload[key] === "object" ? (
-                <Typography variant="subtitle1">
-                  {" "}
-                  <JsonViewer
-                    theme={theme.palette.mode}
-                    value={data.payload[key]}
-                    displayDataTypes={false}
-                    defaultInspectDepth={0}
-                    rootName={false}
-                  />{" "}
-                </Typography>
-              ) : (
-                <Typography
-                  variant="subtitle1"
-                  color="text.secondary"
-                  display={"inline"}
-                >
-                  {"\t"} {data.payload[key].toString()}
-                </Typography>
-              )}
-            </Grid>
-          </Grid>
-          <Divider/>
-        </div>
-      );
-    });
-
-    return <>{Payload}</>;
-  }
 
   const onPayloadEdit = (payload) => {
     setPoint({ ...point, payload: structuredClone(payload) });
@@ -157,11 +110,11 @@ const PointCard = (props) => {
             <CardContent>
               <Grid container display={"flex"}>
                 <Grid item xs my={1}>
-                  {resDataView(point)}
+                  <PointPayloadList data={point} />
                 </Grid>
                 {point.payload.images &&
                   <Grid item xs={3} display="grid" justifyContent={"center"}>
-                    <PointImage data={point.payload} sx={{ ml: 2 }}/>
+                    <PointImage data={point.payload} sx={{ ml: 2 }} />
                   </Grid>
                 }
               </Grid>

@@ -22,7 +22,7 @@ export const SnapshotsTab = ({ collectionName }) => {
     autoHideDuration: null,
     action: (key) => (
       <Button
-        variant="text"
+        variant="outlined"
         color="inherit"
         onClick={() => {
           closeSnackbar(key);

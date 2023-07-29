@@ -45,7 +45,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       async (_ctx, ...args) => {
         let data = args[0];
         const result = await RequestFromCode(data,collectionName);
-        onChangeResult(JSON.stringify(result));
+        onChangeResult(result);
       },
       ""
     );
@@ -90,7 +90,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           async () => {
             let data = selectedCodeBlock.blockText;
             const result = await RequestFromCode(data, collectionName);
-            onChangeResult("code", JSON.stringify(result));
+            onChangeResult( result);
           }
         );
       }
