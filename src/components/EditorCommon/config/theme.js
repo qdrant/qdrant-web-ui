@@ -1,4 +1,4 @@
-export const Theme = (theme) => {
+export const getEditorTheme = (theme) => {
   if (theme.palette.mode === 'dark') {
     return {
       base: 'vs-dark',

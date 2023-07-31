@@ -1,11 +1,10 @@
-/* eslint-disable react/prop-types */
 import React, { useRef, useEffect } from 'react';
-import { options, btnconfig, GetCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
+import { options, btnconfig, getCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
 import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
-import { Autocomplete } from './config/Autocomplete';
+import { autocomplete } from './config/Autocomplete';
 import { ErrorMarker, errChecker } from './config/ErrorMarker';
-import { codeParse, RequestFromCode } from './config/RequesFromCode';
+import { codeParse, requestFromCode } from './config/RequesFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
@@ -43,7 +42,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       0,
       async (_ctx, ...args) => {
         const data = args[0];
-        const result = await RequestFromCode(data);
+        const result = await requestFromCode(data);
         onChangeResult('code', JSON.stringify(result));
       },
       ''
@@ -80,9 +79,9 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     );
 
     // Listen for Mouse Postion Change
-    editor.onDidChangeCursorPosition((e) => {
+    editor.onDidChangeCursorPosition(() => {
       const currentCode = editor.getValue();
-      const currentBlocks = GetCodeBlocks(currentCode);
+      const currentBlocks = getCodeBlocks(currentCode);
 
       const selectedCodeBlock = selectBlock(currentBlocks, editor.getPosition().lineNumber);
 
@@ -107,7 +106,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
         );
         editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter, async () => {
           const data = selectedCodeBlock.blockText;
-          const result = await RequestFromCode(data);
+          const result = await requestFromCode(data);
           onChangeResult('code', JSON.stringify(result));
         });
       }
@@ -115,7 +114,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
   }
 
   function handleEditorWillMount(monaco) {
-    Autocomplete(monaco, qdrantClient).then((autocomplete) => {
+    autocomplete(monaco, qdrantClient).then((autocomplete) => {
       autocompleteRef.current = monaco.languages.registerCompletionItemProvider('custom-language', autocomplete);
     });
   }
@@ -138,4 +137,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     </>
   );
 };
+
+CodeEditorWindow.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  onChangeResult: PropTypes.func.isRequired,
+  code: PropTypes.string.isRequired,
+};
+
 export default CodeEditorWindow;

@@ -75,7 +75,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     return instance;
   }, [getEndpointUrl, enqueueSnackbar, closeSnackbar]);
 
-  uppy.on('upload-success', (data) => {
+  uppy.on('upload-success', () => {
     handleFinish();
   });
 

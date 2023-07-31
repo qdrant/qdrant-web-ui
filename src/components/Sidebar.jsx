@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
@@ -56,7 +56,6 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Sidebar({ open, version }) {
-  const theme = useTheme();
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />

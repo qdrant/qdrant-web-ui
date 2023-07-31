@@ -1,4 +1,4 @@
-import { GetCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
+import { getCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
 import { codeParse } from './config/RequesFromCode';
 import { describe, it, expect } from 'vitest';
 const testCode = `GET collections
@@ -60,7 +60,7 @@ PUT collections/demo1
 
 describe('parser', () => {
   it('Should extract query blocks from code', () => {
-    const requests = GetCodeBlocks(testCode);
+    const requests = getCodeBlocks(testCode);
     expect(requests.length).toEqual(10);
     expect(requests[1].blockStartLine).toEqual(3);
     expect(requests[1].blockEndLine).toEqual(10);
@@ -69,7 +69,7 @@ describe('parser', () => {
   });
 
   it('given an array of blocks and cursor line number: return selected block or null , if cursor is outside', () => {
-    const blocks = GetCodeBlocks(testCode);
+    const blocks = getCodeBlocks(testCode);
 
     let block = selectBlock(blocks, 2);
 
@@ -87,7 +87,7 @@ describe('parser', () => {
   });
 
   it('given block text: convert it into request - url, body, get params', () => {
-    const blocks = GetCodeBlocks(testCode);
+    const blocks = getCodeBlocks(testCode);
 
     // PUT collections / demo1
     // {

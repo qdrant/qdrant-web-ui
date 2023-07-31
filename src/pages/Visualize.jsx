@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
+// import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
@@ -40,7 +40,7 @@ function Visualize() {
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
-  const [errorMessage, setErrorMessage] = useState(null); // fixme: errorMessage is always null
+  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
   const navigate = useNavigate();
   const params = useParams();
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
@@ -54,13 +54,13 @@ function Visualize() {
   return (
     <>
       <Box component="main">
-        {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
+        {/* {errorMessage !== null && <ErrorNotifier {...{message: errorMessage}} />} */}
         <Grid container>
-          {errorMessage && (
-            <Grid xs={12} item textAlign={'center'}>
-              <Typography>⚠ Error: {errorMessage}</Typography>
-            </Grid>
-          )}
+          {/*  {errorMessage && (*/}
+          {/*    <Grid xs={12} item textAlign={'center'}>*/}
+          {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
+          {/*    </Grid>*/}
+          {/*  )}*/}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
               <Panel style={{ display: 'flex' }}>

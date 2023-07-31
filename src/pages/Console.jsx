@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { Typography, Grid } from '@mui/material';
-import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
+import { Grid } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import CodeEditorWindow from '../components/CodeEditorWindow';
 import ResultEditorWindow from '../components/ResultEditorWindow';
@@ -44,7 +43,7 @@ function Console() {
   const theme = useTheme();
   const [code, setCode] = useState(localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
-  const [errorMessage, setErrorMessage] = useState(null);
+  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
@@ -76,13 +75,13 @@ function Console() {
   return (
     <>
       <Box component="main">
-        {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
+        {/* {errorMessage !== null && <ErrorNotifier {...{message: errorMessage}} />} */}
         <Grid container>
-          {errorMessage && (
-            <Grid xs={12} item textAlign={'center'}>
-              <Typography>⚠ Error: {errorMessage}</Typography>
-            </Grid>
-          )}
+          {/*  {errorMessage && (*/}
+          {/*    <Grid xs={12} item textAlign={'center'}>*/}
+          {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
+          {/*    </Grid>*/}
+          {/*  )}*/}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
               <Panel>

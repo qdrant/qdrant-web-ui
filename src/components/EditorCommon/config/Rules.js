@@ -48,8 +48,9 @@ export const options = {
 
 export function btnconfig(commandId, beutifyCommandId) {
   return {
-    provideCodeLenses: function (model, token) {
-      const codeBlocks = GetCodeBlocks(model.getValue());
+    // function takes model and token as arguments
+    provideCodeLenses: function (model) {
+      const codeBlocks = getCodeBlocks(model.getValue());
       const lenses = [];
 
       for (let i = 0; i < codeBlocks.length; ++i) {
@@ -86,7 +87,8 @@ export function btnconfig(commandId, beutifyCommandId) {
         dispose: () => {},
       };
     },
-    resolveCodeLens: function (model, codeLens, token) {
+    // function takes model, codeLens and token as arguments
+    resolveCodeLens: function (model, codeLens) {
       return codeLens;
     },
   };
@@ -101,7 +103,7 @@ export function selectBlock(blocks, location) {
   return null;
 }
 
-export function GetCodeBlocks(codeText) {
+export function getCodeBlocks(codeText) {
   const codeArray = codeText.split(/\r?\n/);
   const blocksArray = [];
   let block = { blockText: '', blockStartLine: null, blockEndLine: null };

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Editor from '@monaco-editor/react';
-import { Theme } from './config/Theme';
+import { getEditorTheme } from './config/theme';
 import { langConfig, Rules } from './config/Rules';
 import { useTheme } from '@mui/material/styles';
 import { useWindowResize } from '../../hooks/windowHooks';
@@ -20,7 +20,7 @@ const EditorCommon = ({ beforeMount, ...props }) => {
     // Defining Rules
     monaco.languages.setMonarchTokensProvider('custom-language', Rules);
     // Defining Theme
-    monaco.editor.defineTheme('custom-language-theme', Theme(theme));
+    monaco.editor.defineTheme('custom-language-theme', getEditorTheme(theme));
 
     // Defining Language Configuration, e.g. comments, brackets
     monaco.languages.setLanguageConfiguration('custom-language', langConfig);
@@ -32,7 +32,7 @@ const EditorCommon = ({ beforeMount, ...props }) => {
 
   // Monitor if theme changes
   useEffect(() => {
-    monacoRef.current?.editor.defineTheme('custom-language-theme', Theme(theme));
+    monacoRef.current?.editor.defineTheme('custom-language-theme', getEditorTheme(theme));
   }, [theme]);
 
   useEffect(() => {

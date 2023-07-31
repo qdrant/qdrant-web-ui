@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export function RequestFromCode(text, collectionName) {
+export function requestFromCode(text, collectionName) {
   const data = codeParse(text);
   if (data.error) {
     return data;

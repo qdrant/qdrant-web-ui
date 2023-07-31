@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Avatar, Box, Button, Dialog, Typography } from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import WarningIcon from '@mui/icons-material/WarningOutlined';
+import { Box, Button, Dialog, Typography } from '@mui/material';
 
 const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName, actionHandler }) => {
   const handleActionClick = () => {

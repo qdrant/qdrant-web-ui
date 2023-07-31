@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { parse as JsoncParse } from 'jsonc-parser';
+import { parse as jsoncParse } from 'jsonc-parser';
 
-export function RequestFromCode(text) {
+export function requestFromCode(text) {
   const data = codeParse(text);
   if (data.error) {
     return data;
@@ -49,7 +49,7 @@ export function codeParse(codeText) {
   let reqBody = {};
   if (body) {
     try {
-      reqBody = body === '\n' ? {} : JsoncParse(body, null, parserConfig);
+      reqBody = body === '\n' ? {} : jsoncParse(body, null, parserConfig);
     } catch (e) {
       return {
         method: null,

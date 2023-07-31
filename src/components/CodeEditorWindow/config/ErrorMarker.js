@@ -1,7 +1,7 @@
-import { GetCodeBlocks } from '../../EditorCommon/config/Rules';
+import { getCodeBlocks } from '../../EditorCommon/config/Rules';
 const keywords = ['POST', 'GET', 'PUT', 'DELETE', 'HEAD'];
 
-export var ErrorMarker = [];
+export let ErrorMarker = [];
 
 // example format to generate error
 // let err = {
@@ -23,7 +23,7 @@ if (err) {
   });
 }
 export function errChecker(code) {
-  const blocksArray = GetCodeBlocks(code);
+  const blocksArray = getCodeBlocks(code);
   ErrorMarker = [];
   for (let i = 0; i < blocksArray.length; ++i) {
     const headLineArray = blocksArray[i].blockText.split(/\r?\n/)[0].split(' ');

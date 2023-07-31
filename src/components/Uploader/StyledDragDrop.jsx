@@ -1,4 +1,3 @@
-import React from 'react';
 import DragDrop from '@uppy/react/lib/DragDrop';
 import { styled } from '@mui/material/styles';
 
