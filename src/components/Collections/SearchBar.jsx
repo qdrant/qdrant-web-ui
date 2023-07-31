@@ -1,11 +1,19 @@
-import React from "react";
-import SearchIcon from "@mui/icons-material/Search";
-import PropTypes from "prop-types";
-import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
+import React from 'react';
+import SearchIcon from '@mui/icons-material/Search';
+import PropTypes from 'prop-types';
+import { Card, InputAdornment, OutlinedInput, SvgIcon } from '@mui/material';
 
 function InputWithIcon({ value, setValue, actions }) {
   return (
-    <Card sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }} variant="dual">
+    <Card
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        p: 2,
+      }}
+      variant="dual"
+    >
       <OutlinedInput
         fullWidth
         value={value}
@@ -22,11 +30,7 @@ function InputWithIcon({ value, setValue, actions }) {
       />
 
       {/* additional actions */}
-      {actions?.length && actions.map((action, index) => (
-        <React.Fragment key={index}>
-          {action}
-        </React.Fragment>
-      ))}
+      {actions?.length && actions.map((action, index) => <React.Fragment key={index}>{action}</React.Fragment>)}
     </Card>
   );
 }

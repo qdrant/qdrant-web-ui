@@ -1,4 +1,4 @@
-const divider = "#E1E1E1";
+const divider = '#E1E1E1';
 
 // these options override the base light theme
 export const lightThemeOptions = {
@@ -10,11 +10,10 @@ export const lightThemeOptions = {
         // in the light theme (alike variant="outlined" cards)
         // and a dark background and no border in the dark theme
         // (alike variant="elevation" elevation={1} cards)
-        root: ({ ownerState }) => (
-          ownerState?.variant === "dual" && {
+        root: ({ ownerState }) =>
+          ownerState?.variant === 'dual' && {
             border: `1px solid ${divider}`,
-          }
-        ),
+          },
       },
     },
   },

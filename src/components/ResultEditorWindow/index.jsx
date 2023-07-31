@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React from "react";
+import React from 'react';
 import EditorCommon from '../EditorCommon';
 
 const ResultEditorWindow = ({ code }) => {
@@ -17,12 +17,12 @@ const ResultEditorWindow = ({ code }) => {
   return (
     <EditorCommon
       language="json"
-      theme={"custom-language-theme"}
+      theme={'custom-language-theme'}
       value={formatJSON(code)}
       options={{
         scrollBeyondLastLine: false,
         fontSize: 12,
-        wordWrap: "on",
+        wordWrap: 'on',
         minimap: { enabled: false },
         automaticLayout: true,
         readOnly: true,

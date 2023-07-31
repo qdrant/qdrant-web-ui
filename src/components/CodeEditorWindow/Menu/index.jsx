@@ -1,8 +1,8 @@
-import React from "react";
-import { Button, Stack } from "@mui/material";
-import History from "./history";
-import PropTypes from "prop-types";
-import SavedCode from "./savedCode";
+import React from 'react';
+import { Button, Stack } from '@mui/material';
+import History from './history';
+import PropTypes from 'prop-types';
+import SavedCode from './savedCode';
 
 // deprecated
 function Menu({ code, handleEditorChange }) {
@@ -16,7 +16,7 @@ function Menu({ code, handleEditorChange }) {
   };
 
   return (
-    <React.Fragment key={"Menu"}>
+    <React.Fragment key={'Menu'}>
       <Stack
         spacing={2}
         direction="row"
@@ -26,15 +26,10 @@ function Menu({ code, handleEditorChange }) {
           borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Button onClick={toggleDrawer("history", true)}>History</Button>
-        <Button onClick={toggleDrawer("savedCode", true)}>Saved Code</Button>
+        <Button onClick={toggleDrawer('history', true)}>History</Button>
+        <Button onClick={toggleDrawer('savedCode', true)}>Saved Code</Button>
       </Stack>
-      <History
-        state={state.history}
-        code={code}
-        handleEditorChange={handleEditorChange}
-        toggleDrawer={toggleDrawer}
-      />
+      <History state={state.history} code={code} handleEditorChange={handleEditorChange} toggleDrawer={toggleDrawer} />
       <SavedCode
         state={state.savedCode}
         code={code}

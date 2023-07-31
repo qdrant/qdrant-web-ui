@@ -1,7 +1,8 @@
-import React, { memo } from "react";
-import Menu from "@mui/material/Menu";
-import { IconButton } from "@mui/material";
-import MoreVert from "@mui/icons-material/MoreVert";
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
+import Menu from '@mui/material/Menu';
+import { IconButton } from '@mui/material';
+import MoreVert from '@mui/icons-material/MoreVert';
 
 // for better result use as children the components acceptable inside Menu component from MUI
 // https://mui.com/material-ui/react-menu/
@@ -20,9 +21,9 @@ function ActionsMenu({ children, ...props }) {
     <div {...props}>
       <IconButton
         id="basic-button"
-        aria-controls={open ? "actions-menu" : undefined}
+        aria-controls={open ? 'actions-menu' : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
+        aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
       >
         <MoreVert />
@@ -34,7 +35,7 @@ function ActionsMenu({ children, ...props }) {
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          "aria-labelledby": "basic-button",
+          'aria-labelledby': 'basic-button',
         }}
       >
         {children}
@@ -42,5 +43,9 @@ function ActionsMenu({ children, ...props }) {
     </div>
   );
 }
+
+ActionsMenu.propTypes = {
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.node])), PropTypes.node]),
+};
 
 export default memo(ActionsMenu);

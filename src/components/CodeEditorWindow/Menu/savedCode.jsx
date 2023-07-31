@@ -1,39 +1,24 @@
-import React, { memo, useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import {
-  SwipeableDrawer,
-  Button,
-  Box,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { memo, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { SwipeableDrawer, Button, Box, Stack, TextField, Typography } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditorCommon from '../../EditorCommon';
 
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
-  const [viewCode, setViewCode] = React.useState(
-    `//Current Editor Code: \n${code}`
-  );
-  const [saveNameText, setSaveNameText] = useState("");
+  const [viewCode, setViewCode] = React.useState(`//Current Editor Code: \n${code}`);
+  const [saveNameText, setSaveNameText] = useState('');
   const [savedCodes, setSavedCodes] = useState(
-    localStorage.getItem("savedCodes")
-      ? JSON.parse(localStorage.getItem("savedCodes"))
-      : []
+    localStorage.getItem('savedCodes') ? JSON.parse(localStorage.getItem('savedCodes')) : []
   );
 
   useEffect(() => {
-    setSavedCodes(
-      localStorage.getItem("savedCodes")
-        ? JSON.parse(localStorage.getItem("savedCodes"))
-        : []
-    );
+    setSavedCodes(localStorage.getItem('savedCodes') ? JSON.parse(localStorage.getItem('savedCodes')) : []);
     setViewCode(`//Current Editor Code: \n${code}`);
   }, [state]);
 
   function saveCode() {
-    if (saveNameText !== "") {
+    if (saveNameText !== '') {
       const data = [
         ...savedCodes,
         {
@@ -44,38 +29,38 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           date: new Date().toLocaleDateString(),
         },
       ];
-      localStorage.setItem("savedCodes", JSON.stringify(data));
-      setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
-      setSaveNameText("");
+      localStorage.setItem('savedCodes', JSON.stringify(data));
+      setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
+      setSaveNameText('');
     }
   }
 
   const columns = [
     {
-      field: "name",
-      headerName: "Name",
+      field: 'name',
+      headerName: 'Name',
       minWidth: 100,
       valueGetter: (params) => params.row.name,
       flex: 1,
     },
     {
-      field: "time",
-      headerName: "Time",
+      field: 'time',
+      headerName: 'Time',
       width: 100,
       valueGetter: (params) => params.row.time,
     },
     {
-      field: "date",
-      headerName: "Date",
+      field: 'date',
+      headerName: 'Date',
       width: 100,
       valueGetter: (params) => params.row.date,
     },
     {
-      field: "delete",
-      headerName: "Delete",
+      field: 'delete',
+      headerName: 'Delete',
       width: 100,
-      align: "center",
-      headerAlign: "center",
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => deleteIcon(params.row),
     },
   ];
@@ -87,8 +72,8 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           const index = savedCodes.indexOf(data);
           const updateCode = [...savedCodes];
           updateCode.splice(index, 1);
-          localStorage.setItem("savedCodes", JSON.stringify(updateCode));
-          setSavedCodes(JSON.parse(localStorage.getItem("savedCodes")));
+          localStorage.setItem('savedCodes', JSON.stringify(updateCode));
+          setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
         }}
       >
         <DeleteIcon />
@@ -96,23 +81,18 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
     );
   }
   return (
-    <React.Fragment key={"SavedCode"}>
-      <SwipeableDrawer
-        anchor="top"
-        open={state}
-        onClose={toggleDrawer}
-        onOpen={toggleDrawer}
-      >
+    <React.Fragment key={'SavedCode'}>
+      <SwipeableDrawer anchor="top" open={state} onClose={toggleDrawer} onOpen={toggleDrawer}>
         <Box
           sx={{
-            width: "100%",
-            display: "flex",
+            width: '100%',
+            display: 'flex',
             mt: 8,
           }}
         >
           <Box
             sx={{
-              width: "60%",
+              width: '60%',
             }}
           >
             <Typography variant="h5" m={2} gutterBottom>
@@ -136,24 +116,17 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
                 </Typography>
               </Stack>
             )}
-            <Stack
-              direction="column"
-              justifyContent="center"
-              alignItems="stretch"
-              spacing={2}
-              m={2}
-            >
+            <Stack direction="column" justifyContent="center" alignItems="stretch" spacing={2} m={2}>
               {savedCodes.length > 0 && (
-                <div style={{ height: "375px", width: "100%" }}>
+                <div style={{ height: '375px', width: '100%' }}>
                   <DataGrid
                     sx={{
-                      "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                        outline: "none !important",
+                      '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
+                        outline: 'none !important',
                       },
-                      "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
-                        {
-                          outline: "none !important",
-                        },
+                      '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus': {
+                        outline: 'none !important',
+                      },
                     }}
                     rows={savedCodes}
                     columns={columns}
@@ -177,7 +150,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           </Box>
           <Box
             sx={{
-              width: "40%",
+              width: '40%',
             }}
             m={2}
           >
@@ -187,7 +160,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
               options={{
                 scrollBeyondLastLine: false,
                 fontSize: 12,
-                wordWrap: "on",
+                wordWrap: 'on',
                 minimap: { enabled: false },
                 automaticLayout: true,
                 readOnly: true,
@@ -197,22 +170,17 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
 
             <Stack direction="row" spacing={2} mt={2}>
               <Button
-                key={"apply"}
+                key={'apply'}
                 variant="outlined"
                 color="success"
                 onClick={() => {
-                  handleEditorChange("code", `${viewCode} \n${code}`);
+                  handleEditorChange('code', `${viewCode} \n${code}`);
                   toggleDrawer();
                 }}
               >
                 Apply Code
               </Button>
-              <Button
-                key={"close"}
-                variant="outlined"
-                color="error"
-                onClick={toggleDrawer}
-              >
+              <Button key={'close'} variant="outlined" color="error" onClick={toggleDrawer}>
                 Close
               </Button>
             </Stack>
