@@ -41,9 +41,11 @@ const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState(localStorage.getItem('qwuiConsoleCode') ?? query);
+  const [code, setCode] = useState(
+    localStorage.getItem("qwuiConsoleCode") ?? query
+  );
   const [result, setResult] = useState(defaultResult);
-  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
+  const [loading, setLoading] = React.useState(false);
 
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
@@ -83,22 +85,30 @@ function Console() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid xs={12} item>
+            <Box sx={{ width: "100%" }} display={loading ? "" : "none"}>
+              <LinearProgress />
+            </Box>
             <PanelGroup direction="horizontal">
               <Panel>
-                <CodeEditorWindow code={code} onChange={onChangeCode} onChangeResult={onChangeResult} />
+                <CodeEditorWindow
+                  code={code}
+                  onChange={onChangeCode}
+                  onChangeResult={onChangeResult}
+                  setLoading={setLoading}
+                />
               </Panel>
               <PanelResizeHandle
                 style={{
-                  width: '10px',
+                  width: "10px",
                   background: alpha(theme.palette.primary.main, 0.05),
                 }}
               >
                 <Box
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
                   }}
                 >
                   &#8942;
