@@ -1,10 +1,13 @@
 env:
   browser: true
   es2021: true
+  node: true
 settings:
   react:
     version: detect
+root: true
 extends:
+  - eslint:recommended
   - google
   - prettier
   - plugin:react/recommended
@@ -30,7 +33,7 @@ rules:
     'no-unused-vars': [
       'error',
       {
-        varsIgnorePattern: '^React',
+        varsIgnorePattern: '^React$',
       },
     ],
   }
