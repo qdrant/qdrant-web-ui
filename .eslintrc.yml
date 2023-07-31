@@ -6,8 +6,8 @@ settings:
     version: detect
 extends:
   - google
-  - plugin:react/recommended
   - prettier
+  - plugin:react/recommended
 overrides: []
 parserOptions:
   ecmaVersion: latest
