@@ -6,22 +6,23 @@ function PointImage({ data, sx }) {
   const renderImages = () => {
     const images = [];
 
+    function isImgUrl(string) {
+      let url;
+      try {
+        url = new URL(string);
+      } catch (_) {
+        return false;
+      }
+      if (url) {
+        return /\.(jpg|jpeg|png)$/.test(url.pathname);
+      }
+      return false;
+    }
+
     // Loop through the object's properties
     for (const key in data) {
       if (typeof data[key] == 'string') {
         // Check if the value is an image URL
-        function isImgUrl(string) {
-          let url;
-          try {
-            url = new URL(string);
-          } catch (_) {
-            return false;
-          }
-          if (url) {
-            return /\.(jpg|jpeg|png)$/.test(url.pathname);
-          }
-          return false;
-        }
         if (isImgUrl(data[key])) {
           images.push(
             <CardMedia

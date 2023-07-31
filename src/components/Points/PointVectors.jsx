@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
  * @constructor
  */
 const Vectors = memo(function Vectors({ point, setRecommendationIds, onCopy }) {
-  if (!point.hasOwnProperty('vector')) {
+  if (!Object.getOwnPropertyDescriptor(point, 'vector')) {
     return null;
   }
 
