@@ -71,6 +71,7 @@
   },
   "devDependencies": {
     "eslint": "^8.46.0",
+    "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.9.0",
     "eslint-plugin-react": "^7.32.2",
     "jsdom": "^22.1.0",

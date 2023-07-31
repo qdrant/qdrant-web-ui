@@ -5,6 +5,7 @@ settings:
   react:
     version: detect
 extends:
+  - google
   - plugin:react/recommended
   - prettier
 overrides: []
@@ -26,4 +27,10 @@ rules:
     ],
     'no-process-env': 'off',
     'require-jsdoc': 'off',
+    'no-unused-vars': [
+      'error',
+      {
+        varsIgnorePattern: '^React',
+      },
+    ],
   }
