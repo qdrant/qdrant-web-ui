@@ -1,10 +1,17 @@
-const divider = '#E1E1E1';
+import { alpha } from "@mui/material";
 
-const getVariant = ({ ownerState }) => (
-  ownerState?.variant === "dual" && {
-    border: `1px solid ${divider}`,
+const getVariant = ({ theme, ownerState }) => {
+  if (ownerState?.variant === "dual") {
+    return {
+      border: `1px solid ${theme.palette.divider}`,
+    }
   }
-);
+  if (ownerState?.variant === "heading") {
+    return {
+      backgroundColor: alpha(theme.palette.primary.main, 0.05),
+    }
+  }
+}
 
 // these options override the base light theme
 export const lightThemeOptions = {

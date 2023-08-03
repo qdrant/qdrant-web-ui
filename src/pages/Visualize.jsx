@@ -66,7 +66,7 @@ function Visualize() {
                 <Box width={'100%'}>
                   <Box>
                     <Paper
-                    variant="dual"
+                    variant="heading"
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
