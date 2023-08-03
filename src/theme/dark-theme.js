@@ -5,6 +5,10 @@ const background = {
 };
 
 const getVariant = ({ theme, ownerState }) => {
+  // dual cards have a white background and a 1px border around them
+  // in the light theme (alike variant="outlined" cards)
+  // and a dark background and no border in the dark theme
+  // (alike variant="elevation" elevation={1} cards)
   if (ownerState?.variant === "dual") {
     return {
       backgroundColor: background.paper,
@@ -22,17 +26,15 @@ export const darkThemeOptions = {
   components: {
     MuiCard: {
       styleOverrides: {
-        // this adds variant="dual" support to the Card and the Paper component
-        // dual cards have a white background and a 1px border around them
-        // in the light theme (alike variant="outlined" cards)
-        // and a dark background and no border in the dark theme
-        // (alike variant="elevation" elevation={1} cards)
+        // this adds variant="dual" and variant="heading" support
+        // to the Card component
         root: getVariant,
       },
     },
     MuiPaper: {
       styleOverrides: {
-        // this adds variant="heading" support to the Card and the Paper component
+        // this adds variant="dual" and variant="heading" support
+        // to the Paper component
         root: getVariant,
       },
     },
