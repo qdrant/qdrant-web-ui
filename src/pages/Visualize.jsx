@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-// import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
@@ -66,7 +65,14 @@ function Visualize() {
               <Panel style={{ display: 'flex' }}>
                 <Box width={'100%'}>
                   <Box>
-                    <Paper sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
+                    <Paper
+                    variant="dual"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      p: 1,
+                      borderRadius: 0,
+                  }}>
                       <Tooltip title={'Back to collection'}>
                         <IconButton
                           sx={{ mr: 3 }}

@@ -37,8 +37,9 @@ const ViewPointModal = (props) => {
         <DialogContent>
           {viewPoints.length > 0 ? (
             <>
+            <Paper variant="dual">
               {viewPoints.map((point, index) => (
-                <Paper key={`${index}-${point.id}`}>
+                <React.Fragment key={`${index}-${point.id}`}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -67,8 +68,9 @@ const ViewPointModal = (props) => {
                   <Box px={3} pt={1} pb={5}>
                     <PointPayloadList data={point} sx={{ px: 3, py: 4 }} />
                   </Box>
-                </Paper>
+                </React.Fragment>
               ))}
+            </Paper>
             </>
           ) : (
             <Typography variant="h6" component="h2">
