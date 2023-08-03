@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 
 export const useWindowResize = () => {
   const [resized, setResized] = useState(false);
@@ -11,7 +11,7 @@ export const useWindowResize = () => {
     };
   });
 
-  return {width: window.innerWidth, height: window.innerHeight}
+  return { width: window.innerWidth, height: window.innerHeight };
 };
 
 // add more window hooks here as needed

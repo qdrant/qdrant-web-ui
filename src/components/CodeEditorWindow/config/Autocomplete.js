@@ -1,9 +1,8 @@
-import { OpenapiAutocomplete } from "autocomplete-openapi/src/autocomplete";
+import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
 
-export const Autocomplete = async (monaco, qdrantClient) => {
-
-  let response = await fetch(import.meta.env.BASE_URL + "./openapi.json");
-  let openapi = await response.json();
+export const autocomplete = async (monaco, qdrantClient) => {
+  const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
+  const openapi = await response.json();
 
   let collections = [];
   try {
@@ -12,19 +11,18 @@ export const Autocomplete = async (monaco, qdrantClient) => {
     console.error(e);
   }
 
-  let autocomplete = new OpenapiAutocomplete(openapi, collections);
+  const autocomplete = new OpenapiAutocomplete(openapi, collections);
 
   return {
     provideCompletionItems: (model, position) => {
-
       // Reuse parsed code blocks to avoid parsing the same code block multiple times
-      let selectedCodeBlock = monaco.selectedCodeBlock;
+      const selectedCodeBlock = monaco.selectedCodeBlock;
 
       if (!selectedCodeBlock) {
         return { suggestions: [] };
       }
 
-      let relativeLine = position.lineNumber - selectedCodeBlock.blockStartLine;
+      const relativeLine = position.lineNumber - selectedCodeBlock.blockStartLine;
 
       if (relativeLine < 0) {
         // Something went wrong
@@ -33,7 +31,7 @@ export const Autocomplete = async (monaco, qdrantClient) => {
 
       if (relativeLine === 0) {
         // Autocomplete for request headers
-        let header = selectedCodeBlock.blockText.slice(0, position.column - 1);
+        const header = selectedCodeBlock.blockText.slice(0, position.column - 1);
 
         let suggestions = autocomplete.completeRequestHeader(header);
 
@@ -48,17 +46,17 @@ export const Autocomplete = async (monaco, qdrantClient) => {
         return { suggestions: suggestions };
       } else {
         // Autocomplete for request body
-        let requestLines = selectedCodeBlock.blockText.split(/\r?\n/);
+        const requestLines = selectedCodeBlock.blockText.split(/\r?\n/);
 
-        let lastLine = requestLines[relativeLine].slice(0, position.column - 1);
+        const lastLine = requestLines[relativeLine].slice(0, position.column - 1);
 
-        let requestHeader = requestLines.shift();
+        const requestHeader = requestLines.shift();
 
-        let requestBodyLines = requestLines.slice(0, relativeLine - 1);
+        const requestBodyLines = requestLines.slice(0, relativeLine - 1);
 
         requestBodyLines.push(lastLine);
 
-        let requestBody = requestBodyLines.join("\n");
+        const requestBody = requestBodyLines.join('\n');
 
         let suggestions = autocomplete.completeRequestBody(requestHeader, requestBody);
 
@@ -73,5 +71,5 @@ export const Autocomplete = async (monaco, qdrantClient) => {
         return { suggestions: suggestions };
       }
     },
-  }
+  };
 };

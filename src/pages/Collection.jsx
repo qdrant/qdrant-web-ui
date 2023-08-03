@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useClient } from "../context/client-context";
-import { Typography, Grid, Button, Tabs, Tab } from "@mui/material";
-import PointCard from "../components/Points/PointCard";
-import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
-import SimilarSerachfield from "../components/Points/SimilarSerachfield";
-import { CenteredFrame } from "../components/Common/CenteredFrame";
-import Box from "@mui/material/Box";
-import { SnapshotsTab } from "../components/Snapshots/SnapshotsTab";
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useClient } from '../context/client-context';
+import { Typography, Grid, Button, Tabs, Tab } from '@mui/material';
+import PointCard from '../components/Points/PointCard';
+import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
+import SimilarSerachfield from '../components/Points/SimilarSerachfield';
+import { CenteredFrame } from '../components/Common/CenteredFrame';
+import Box from '@mui/material/Box';
+import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 
 function Collection() {
   const pageSize = 10;
@@ -46,7 +46,7 @@ function Collection() {
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {
-          let newPoints = await qdrantClient.recommend(collectionName, {
+          const newPoints = await qdrantClient.recommend(collectionName, {
             positive: recommendationIds,
             limit: pageSize + (offset || 0),
             with_payload: true,
@@ -61,19 +61,15 @@ function Collection() {
           setPoints({});
         }
       } else {
-
         try {
-          let newPoints = await qdrantClient.scroll(collectionName, {
+          const newPoints = await qdrantClient.scroll(collectionName, {
             offset,
             limit: pageSize,
             with_vector: true,
             with_payload: true,
           });
           setPoints({
-            points: [
-              ...points?.points || [],
-              ...newPoints?.points || [],
-            ],
+            points: [...(points?.points || []), ...(newPoints?.points || [])],
           });
           setNextPageOffset(newPoints?.next_page_offset);
           setErrorMessage(null);
@@ -89,10 +85,8 @@ function Collection() {
   return (
     <>
       <CenteredFrame>
-        {errorMessage !== null && (
-          <ErrorNotifier {...{ message: errorMessage }} />
-        )}
-        <Grid container maxWidth={"xl"} spacing={3}>
+        {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
+        <Grid container maxWidth={'xl'} spacing={3}>
           <Grid xs={12} item>
             <Typography variant="h4">{collectionName}</Typography>
           </Grid>
@@ -102,49 +96,40 @@ function Collection() {
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
                 <Tab label="Snapshots" value={'snapshots'} />
-                <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`}/>
+                <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
               </Tabs>
             </Box>
           </Grid>
 
-          {currentTab === "points" && (
+          {currentTab === 'points' && (
             <>
               <Grid xs={12} item>
-                <SimilarSerachfield
-                  value={recommendationIds}
-                  setValue={onIdsSelected}
-                />
+                <SimilarSerachfield value={recommendationIds} setValue={onIdsSelected} />
               </Grid>
 
               {errorMessage && (
-                <Grid xs={12} item textAlign={"center"}>
+                <Grid xs={12} item textAlign={'center'}>
                   <Typography>⚠ Error: {errorMessage}</Typography>
                 </Grid>
               )}
               {!points && !errorMessage && (
-                <Grid xs={12} item textAlign={"center"}>
+                <Grid xs={12} item textAlign={'center'}>
                   <Typography> 🔃 Loading...</Typography>
                 </Grid>
               )}
               {points && !errorMessage && points.points?.length === 0 && (
-                <Grid xs={12} item textAlign={"center"}>
-                  <Typography>
-                    📪 No Points are presents, {collectionName} is empty
-                  </Typography>
+                <Grid xs={12} item textAlign={'center'}>
+                  <Typography>📪 No Points are presents, {collectionName} is empty</Typography>
                 </Grid>
               )}
               {points &&
                 !errorMessage &&
                 points.points?.map((point) => (
                   <Grid xs={12} item key={point.id}>
-                    <PointCard
-                      point={point}
-                      setRecommendationIds={onIdsSelected}
-                      collectionName={collectionName}
-                    />
+                    <PointCard point={point} setRecommendationIds={onIdsSelected} collectionName={collectionName} />
                   </Grid>
                 ))}
-              <Grid xs={12} item textAlign={"center"}>
+              <Grid xs={12} item textAlign={'center'}>
                 <Button
                   variant="outlined"
                   disabled={!points || !nextPageOffset}
@@ -157,7 +142,7 @@ function Collection() {
               </Grid>
             </>
           )}
-          {currentTab === "snapshots" && (
+          {currentTab === 'snapshots' && (
             <Grid xs={12} item>
               <SnapshotsTab collectionName={collectionName} />
             </Grid>

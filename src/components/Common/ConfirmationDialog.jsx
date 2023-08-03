@@ -1,17 +1,8 @@
-import PropTypes from "prop-types";
-import { Avatar, Box, Button, Dialog, Typography } from "@mui/material";
-import { alpha } from "@mui/material/styles";
-import WarningIcon from "@mui/icons-material/WarningOutlined";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Box, Button, Dialog, Typography } from '@mui/material';
 
-const ConfirmationDialog = ({
-                              open,
-                              onClose,
-                              title,
-                              content,
-                              warning,
-                              actionName,
-                              actionHandler,
-                            }) => {
+const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName, actionHandler }) => {
   const handleActionClick = () => {
     actionHandler();
     onClose();
@@ -21,14 +12,13 @@ const ConfirmationDialog = ({
     <Dialog open={open} fullWidth={true}>
       <Box
         sx={{
-          display: "flex",
+          display: 'flex',
           p: 3,
         }}
       >
         <div>
           <Typography variant="h5">{title}</Typography>
-          <Typography color="textSecondary" sx={{ mt: 2 }}
-                      variant="body1">
+          <Typography color="textSecondary" sx={{ mt: 2 }} variant="body1">
             {content}
           </Typography>
         </div>
@@ -40,13 +30,15 @@ const ConfirmationDialog = ({
             mb: 2,
           }}
         >
-          <Typography color="error.main" component={'span'}>Warning: {warning}</Typography>
+          <Typography color="error.main" component={'span'}>
+            Warning: {warning}
+          </Typography>
         </Box>
       )}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "flex-end",
+          display: 'flex',
+          justifyContent: 'flex-end',
           px: 3,
           py: 1.5,
         }}
@@ -58,11 +50,11 @@ const ConfirmationDialog = ({
           sx={
             warning
               ? {
-                backgroundColor: "error.main",
-                "&:hover": {
-                  backgroundColor: "error.dark",
-                },
-              }
+                  backgroundColor: 'error.main',
+                  '&:hover': {
+                    backgroundColor: 'error.dark',
+                  },
+                }
               : {}
           }
           variant="contained"

@@ -1,24 +1,18 @@
-import React, { memo, useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import { SwipeableDrawer, Button, Box, Stack, Typography } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React, { memo, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditorCommon from '../../EditorCommon';
 
 function History({ state, code, handleEditorChange, toggleDrawer }) {
-  const [viewCode, setViewCode] = React.useState("//Selected Code");
+  const [viewCode, setViewCode] = React.useState('//Selected Code');
   const [history, setHistory] = useState(
-    localStorage.getItem("history")
-      ? JSON.parse(localStorage.getItem("history"))
-      : []
+    localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : []
   );
 
   useEffect(() => {
-    setHistory(
-      localStorage.getItem("history")
-        ? JSON.parse(localStorage.getItem("history"))
-        : []
-    );
+    setHistory(localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : []);
   }, [state]);
 
   function formatJSON(val = {}) {
@@ -32,42 +26,42 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
         return JSON.stringify(errorJson, null, 2);
       }
     } else {
-      return "";
+      return '';
     }
   }
 
   const columns = [
     {
-      field: "method",
-      headerName: "Method",
+      field: 'method',
+      headerName: 'Method',
       width: 100,
       valueGetter: (params) => params.row.code.method,
     },
     {
-      field: "endpoint",
-      headerName: "Endpoint",
+      field: 'endpoint',
+      headerName: 'Endpoint',
       minWidth: 100,
       valueGetter: (params) => params.row.code.endpoint,
       flex: 1,
     },
     {
-      field: "time",
-      headerName: "Time",
+      field: 'time',
+      headerName: 'Time',
       width: 100,
       valueGetter: (params) => params.row.time,
     },
     {
-      field: "date",
-      headerName: "Date",
+      field: 'date',
+      headerName: 'Date',
       width: 100,
       valueGetter: (params) => params.row.date,
     },
     {
-      field: "delete",
-      headerName: "Delete",
+      field: 'delete',
+      headerName: 'Delete',
       width: 100,
-      align: "center",
-      headerAlign: "center",
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => deleteIcon(params.row),
     },
   ];
@@ -78,8 +72,8 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
         onClick={() => {
           const updatedHistory = history.filter((item) => item.idx != data.idx);
 
-          localStorage.setItem("history", JSON.stringify(updatedHistory));
-          setHistory(JSON.parse(localStorage.getItem("history")));
+          localStorage.setItem('history', JSON.stringify(updatedHistory));
+          setHistory(JSON.parse(localStorage.getItem('history')));
         }}
       >
         <DeleteIcon />
@@ -87,23 +81,18 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
     );
   }
   return (
-    <React.Fragment key={"History"}>
-      <SwipeableDrawer
-        anchor="top"
-        open={state}
-        onClose={toggleDrawer}
-        onOpen={toggleDrawer}
-      >
+    <React.Fragment key={'History'}>
+      <SwipeableDrawer anchor="top" open={state} onClose={toggleDrawer} onOpen={toggleDrawer}>
         <Box
           sx={{
-            width: "100%",
-            display: "flex",
+            width: '100%',
+            display: 'flex',
             mt: 8,
           }}
         >
           <Box
             sx={{
-              width: "60%",
+              width: '60%',
             }}
           >
             <Stack direction="row" spacing={2}>
@@ -118,24 +107,17 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                 </Typography>
               </Stack>
             )}
-            <Stack
-              direction="column"
-              justifyContent="center"
-              alignItems="stretch"
-              spacing={2}
-              m={2}
-            >
+            <Stack direction="column" justifyContent="center" alignItems="stretch" spacing={2} m={2}>
               {history.length > 0 && (
-                <div style={{ height: "375px", width: "100%" }}>
+                <div style={{ height: '375px', width: '100%' }}>
                   <DataGrid
                     sx={{
-                      "&.MuiDataGrid-root .MuiDataGrid-cell:focus-within": {
-                        outline: "none !important",
+                      '&.MuiDataGrid-root .MuiDataGrid-cell:focus-within': {
+                        outline: 'none !important',
                       },
-                      "& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus":
-                        {
-                          outline: "none !important",
-                        },
+                      '& .MuiDataGrid-columnHeader:focus-within, & .MuiDataGrid-columnHeader:focus': {
+                        outline: 'none !important',
+                      },
                     }}
                     rows={history}
                     columns={columns}
@@ -151,9 +133,9 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
                     getRowId={(row) => `${row.idx}`}
                     onRowClick={(params) => {
                       setViewCode(
-                        `${params.row.code.method} ${
-                          params.row.code.endpoint
-                        } \n${formatJSON(params.row.code.reqBody)} \n`,
+                        `${params.row.code.method} ${params.row.code.endpoint} \n${formatJSON(
+                          params.row.code.reqBody
+                        )} \n`
                       );
                     }}
                   />
@@ -163,7 +145,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
           </Box>
           <Box
             sx={{
-              width: "40%",
+              width: '40%',
             }}
             m={2}
           >
@@ -173,7 +155,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
               options={{
                 scrollBeyondLastLine: false,
                 fontSize: 12,
-                wordWrap: "on",
+                wordWrap: 'on',
                 minimap: { enabled: false },
                 automaticLayout: true,
                 readOnly: true,
@@ -183,22 +165,17 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
 
             <Stack direction="row" spacing={2} mt={2}>
               <Button
-                key={"apply"}
+                key={'apply'}
                 variant="outlined"
                 color="success"
                 onClick={() => {
-                  handleEditorChange("code", `${viewCode} \n${code}`);
+                  handleEditorChange('code', `${viewCode} \n${code}`);
                   toggleDrawer();
                 }}
               >
                 Apply Code
               </Button>
-              <Button
-                key={"close"}
-                variant="outlined"
-                color="error"
-                onClick={toggleDrawer}
-              >
+              <Button key={'close'} variant="outlined" color="error" onClick={toggleDrawer}>
                 Close
               </Button>
             </Stack>

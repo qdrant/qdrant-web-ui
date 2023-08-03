@@ -1,12 +1,7 @@
-import { styled } from "@mui/material/styles";
-import {
-  alpha,
-  Table,
-  TableBody,
-  TableHead,
-} from "@mui/material";
+import { styled } from '@mui/material/styles';
+import { alpha, Table, TableBody, TableHead } from '@mui/material';
 
-const SPACING = "16px";
+const SPACING = '16px';
 
 /**
  * @description
@@ -64,7 +59,7 @@ export const TableHeadWithGaps = styled(TableHead)(
       border-bottom-right-radius: ${theme.shape.borderRadius}px;
     }
   }
-`,
+`
 );
 
 /**
@@ -74,18 +69,15 @@ export const TableHeadWithGaps = styled(TableHead)(
  * @typedef {import("@mui/material").Theme} Theme
  * @type {StyledComponent<PropsOf<OverridableComponent<TableBodyTypeMap>> & MUIStyledCommonProps<Theme>, {}, {}>}
  */
-export const TableBodyWithGaps = styled(TableBody)(
-  ({ theme }) => {
-    const borderStyle = theme.palette.mode === "dark" ?
-      0 :
-      theme.palette.divider + " solid 1px";
-    return `
+export const TableBodyWithGaps = styled(TableBody)(({ theme }) => {
+  const borderStyle = theme.palette.mode === 'dark' ? 0 : theme.palette.divider + ' solid 1px';
+  return `
   border-spacing: 0 ${SPACING};
   border-collapse: separate;
   & tr {
-    background-image: ${theme.palette.mode === "dark" ?
-      "linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))" :
-      "none"};
+    background-image: ${
+      theme.palette.mode === 'dark' ? 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05))' : 'none'
+    };
   }
   & td {
     border-bottom: none;
@@ -103,5 +95,4 @@ export const TableBodyWithGaps = styled(TableBody)(
     }
   }
 `;
-  },
-);
+});

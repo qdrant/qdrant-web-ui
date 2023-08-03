@@ -1,15 +1,14 @@
-import React, { useState } from "react";
-import { alpha } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import Box from "@mui/material/Box";
-import { Typography, Grid } from "@mui/material";
-import ErrorNotifier from "../components/ToastNotifications/ErrorNotifier";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import CodeEditorWindow from "../components/CodeEditorWindow";
-import ResultEditorWindow from "../components/ResultEditorWindow";
-import SpeedDialMenu from "../components/CodeEditorWindow/Menu/SpeedDialMenu";
-import History from "../components/CodeEditorWindow/Menu/history";
-import SavedCode from "../components/CodeEditorWindow/Menu/savedCode";
+import React, { useState } from 'react';
+import { alpha } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import { Grid } from '@mui/material';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import CodeEditorWindow from '../components/CodeEditorWindow';
+import ResultEditorWindow from '../components/ResultEditorWindow';
+import SpeedDialMenu from '../components/CodeEditorWindow/Menu/SpeedDialMenu';
+import History from '../components/CodeEditorWindow/Menu/history';
+import SavedCode from '../components/CodeEditorWindow/Menu/savedCode';
 
 const query = `// List all collections
 GET collections
@@ -42,33 +41,33 @@ const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState( localStorage.getItem('qwuiConsoleCode') ?? query);
+  const [code, setCode] = useState(localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
-  const [errorMessage, setErrorMessage] = useState(null);
+  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
 
   const onChangeCode = (action, data) => {
     switch (action) {
-      case "code": {
-        localStorage.setItem("qwuiConsoleCode", data);
+      case 'code': {
+        localStorage.setItem('qwuiConsoleCode', data);
         setCode(data);
         break;
       }
       default: {
-        console.warn("case not handled!", action, data);
+        console.warn('case not handled!', action, data);
       }
     }
   };
   const onChangeResult = (action, data) => {
     switch (action) {
-      case "code": {
+      case 'code': {
         setResult(data);
         break;
       }
       default: {
-        console.warn("case not handled!", action, data);
+        console.warn('case not handled!', action, data);
       }
     }
   };
@@ -76,52 +75,51 @@ function Console() {
   return (
     <>
       <Box component="main">
-        {errorMessage !== null && (
-          <ErrorNotifier {...{ message: errorMessage }} />
-        )}
+        {/* {errorMessage !== null && <ErrorNotifier {...{message: errorMessage}} />} */}
         <Grid container>
-          {errorMessage && (
-            <Grid xs={12} item textAlign={"center"}>
-              <Typography>⚠ Error: {errorMessage}</Typography>
-            </Grid>
-          )}
+          {/*  {errorMessage && (*/}
+          {/*    <Grid xs={12} item textAlign={'center'}>*/}
+          {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
+          {/*    </Grid>*/}
+          {/*  )}*/}
           <Grid xs={12} item>
             <PanelGroup direction="horizontal">
               <Panel>
-                <CodeEditorWindow
-                  code={code}
-                  onChange={onChangeCode}
-                  onChangeResult={onChangeResult}
-                />
+                <CodeEditorWindow code={code} onChange={onChangeCode} onChangeResult={onChangeResult} />
               </Panel>
-              <PanelResizeHandle style={{
-                width: "10px",
-                background: alpha(theme.palette.primary.main, 0.05),
-              }}>
-                <Box sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}>
+              <PanelResizeHandle
+                style={{
+                  width: '10px',
+                  background: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
                   &#8942;
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <ResultEditorWindow code={result}/>
+                <ResultEditorWindow code={result} />
               </Panel>
             </PanelGroup>
           </Grid>
           <SpeedDialMenu
             openHistory={() => setOpenHistory(true)}
             openSavedCode={() => setOpenSavedCode(true)}
-            resetConsole={() => onChangeCode("code", query)}
+            resetConsole={() => onChangeCode('code', query)}
           />
           <History
             code={code}
             handleEditorChange={onChangeCode}
             state={openHistory}
-            toggleDrawer={() => setOpenHistory(!openHistory)}/>
+            toggleDrawer={() => setOpenHistory(!openHistory)}
+          />
           <SavedCode
             code={code}
             handleEditorChange={onChangeCode}

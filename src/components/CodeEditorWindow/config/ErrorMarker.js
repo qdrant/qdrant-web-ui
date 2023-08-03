@@ -1,7 +1,7 @@
-import { GetCodeBlocks } from "../../EditorCommon/config/Rules";
-const keywords = ["POST", "GET", "PUT", "DELETE", "HEAD"];
+import { getCodeBlocks } from '../../EditorCommon/config/Rules';
+const keywords = ['POST', 'GET', 'PUT', 'DELETE', 'HEAD'];
 
-export var ErrorMarker = [];
+export let ErrorMarker = [];
 
 // example format to generate error
 // let err = {
@@ -11,7 +11,7 @@ export var ErrorMarker = [];
 //     length: 5
 //     };
 
-let err = null;
+const err = null;
 if (err) {
   ErrorMarker.push({
     startLineNumber: err.line,
@@ -19,22 +19,22 @@ if (err) {
     startColumn: err.column,
     endColumn: err.column + err.length,
     message: err.message,
-    severity: "monaco.MarkerSeverity.Error",
+    severity: 'monaco.MarkerSeverity.Error',
   });
 }
 export function errChecker(code) {
-  const blocksArray = GetCodeBlocks(code);
+  const blocksArray = getCodeBlocks(code);
   ErrorMarker = [];
-  for (var i = 0; i < blocksArray.length; ++i) {
-    const headLineArray = blocksArray[i].blockText.split(/\r?\n/)[0].split(" ");
+  for (let i = 0; i < blocksArray.length; ++i) {
+    const headLineArray = blocksArray[i].blockText.split(/\r?\n/)[0].split(' ');
     if (keywords.indexOf(headLineArray[0]) < 0) {
       ErrorMarker.push({
         startLineNumber: blocksArray[i].blockStartLine,
         endLineNumber: blocksArray[i].blockStartLine,
         startColumn: 0,
         endColumn: headLineArray[0].length,
-        message: "Expected one of GET/POST/PUT/DELETE/HEAD",
-        severity: "monaco.MarkerSeverity.Error",
+        message: 'Expected one of GET/POST/PUT/DELETE/HEAD',
+        severity: 'monaco.MarkerSeverity.Error',
       });
     }
   }

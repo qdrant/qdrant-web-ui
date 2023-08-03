@@ -1,39 +1,40 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { CardMedia } from "@mui/material";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { CardMedia } from '@mui/material';
 
 function PointImage({ data, sx }) {
   const renderImages = () => {
     const images = [];
 
+    function isImgUrl(string) {
+      let url;
+      try {
+        url = new URL(string);
+      } catch (_) {
+        return false;
+      }
+      if (url) {
+        return /\.(jpg|jpeg|png)$/.test(url.pathname);
+      }
+      return false;
+    }
+
     // Loop through the object's properties
     for (const key in data) {
-      if (typeof data[key] == "string") {
+      if (typeof data[key] == 'string') {
         // Check if the value is an image URL
-          function isImgUrl(string) {
-            let url;
-            try {
-                url = new URL(string);
-              } catch (_) {
-                return false;
-            }
-            if(url){
-                return /\.(jpg|jpeg|png)$/.test(url.pathname)
-            }
-            return false;
-          }
-        if (isImgUrl(data[key]) ) {
+        if (isImgUrl(data[key])) {
           images.push(
             <CardMedia
               component="img"
               sx={{
                 width: 150,
-                margin: "auto",
+                margin: 'auto',
                 padding: 1,
-                wordWrap: "break-word",
+                wordWrap: 'break-word',
                 p: 1,
-                border: "1px solid #ccc",
-                borderRadius: "5px",
+                border: '1px solid #ccc',
+                borderRadius: '5px',
                 ...sx,
               }}
               key={key}

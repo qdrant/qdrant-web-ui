@@ -1,19 +1,10 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
-import {
-  Box,
-  Card,
-  CardContent,
-  Divider,
-  Stack,
-  CardActionArea,
-  Typography,
-  Button,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import PolylineIcon from "@mui/icons-material/Polyline";
-import DeleteDialog from "./DeleteDialog";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { Box, Card, CardContent, Divider, Stack, CardActionArea, Typography, Button } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PolylineIcon from '@mui/icons-material/Polyline';
+import DeleteDialog from './DeleteDialog';
 
 const CollectionCard = (props) => {
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
@@ -24,9 +15,9 @@ const CollectionCard = (props) => {
       <Card
         variant="dual"
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
         }}
       >
         <CardActionArea component={Link} to={`/collections/${collection.name}`}>
@@ -38,31 +29,20 @@ const CollectionCard = (props) => {
         </CardActionArea>
         <Box sx={{ flexGrow: 1 }} />
         <Divider />
-        <Stack
-          alignItems="center"
-          direction="row"
-          justifyContent="flex-end"
-          spacing={1}
-          sx={{ p: 1 }}
-        >
+        <Stack alignItems="center" direction="row" justifyContent="flex-end" spacing={1} sx={{ p: 1 }}>
           {/* temporary disabled */}
-          {false &&
+          {false && (
             <Button
               variant="body"
               component={Link}
               to={`/collections/${collection.name}/visualize`}
-              size={"small"}
+              size={'small'}
               startIcon={<PolylineIcon />}
             >
               visualize
             </Button>
-          }
-          <Button
-            variant="body"
-            size={"small"}
-            onClick={() => setOpenDeleteDialog(true)}
-            startIcon={<DeleteIcon />}
-          >
+          )}
+          <Button variant="body" size={'small'} onClick={() => setOpenDeleteDialog(true)} startIcon={<DeleteIcon />}>
             Delete
           </Button>
         </Stack>
