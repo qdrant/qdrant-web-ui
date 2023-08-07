@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { alpha } from '@mui/material';
+import { LinearProgress, alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { Grid } from '@mui/material';
@@ -41,12 +41,11 @@ const defaultResult = `{}`;
 
 function Console() {
   const theme = useTheme();
-  const [code, setCode] = useState(
-    localStorage.getItem("qwuiConsoleCode") ?? query
-  );
+  const [code, setCode] = useState(localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
-  const [loading, setLoading] = React.useState(false);
+  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
+  const [loading, setLoading] = React.useState(false);
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
 
@@ -85,8 +84,8 @@ function Console() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid xs={12} item>
-            <Box sx={{ width: "100%", height:"5px"}} >
-              <LinearProgress sx={loading?{}:{display:"none"}} />
+            <Box sx={{ width: '100%', height: '5px' }}>
+              <LinearProgress sx={loading ? {} : { display: 'none' }} />
             </Box>
             <PanelGroup direction="horizontal">
               <Panel>
@@ -99,16 +98,16 @@ function Console() {
               </Panel>
               <PanelResizeHandle
                 style={{
-                  width: "10px",
+                  width: '10px',
                   background: alpha(theme.palette.primary.main, 0.05),
                 }}
               >
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: "100%",
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
                   }}
                 >
                   &#8942;

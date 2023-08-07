@@ -43,8 +43,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setLoading}) => {
       0,
       async (_ctx, ...args) => {
         setLoading(true);
-        let data = args[0];
-        const result = await RequestFromCode(data);
+        const data = args[0];
+        const result = await requestFromCode(data);
         onChangeResult("code", JSON.stringify(result));
         setLoading(false);
       },
@@ -145,6 +145,7 @@ CodeEditorWindow.propTypes = {
   onChange: PropTypes.func.isRequired,
   onChangeResult: PropTypes.func.isRequired,
   code: PropTypes.string.isRequired,
+  setLoading: PropTypes.func.isRequired,
 };
 
 export default CodeEditorWindow;
