@@ -1,4 +1,4 @@
-import { alpha } from "@mui/material";
+import { alpha } from '@mui/material';
 
 const background = {
   paper: '#252525',
@@ -9,15 +9,15 @@ const getVariant = ({ theme, ownerState }) => {
   // in the light theme (alike variant="outlined" cards)
   // and a dark background and no border in the dark theme
   // (alike variant="elevation" elevation={1} cards)
-  if (ownerState?.variant === "dual") {
+  if (ownerState?.variant === 'dual') {
     return {
       backgroundColor: background.paper,
-    }
+    };
   }
-  if (ownerState?.variant === "heading") {
+  if (ownerState?.variant === 'heading') {
     return {
       backgroundColor: alpha(theme.palette.primary.main, 0.05),
-    }
+    };
   }
 };
 

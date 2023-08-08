@@ -66,13 +66,14 @@ function Visualize() {
                 <Box width={'100%'}>
                   <Box>
                     <Paper
-                    variant="heading"
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      p: 1,
-                      borderRadius: 0,
-                  }}>
+                      variant="heading"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        p: 1,
+                        borderRadius: 0,
+                      }}
+                    >
                       <Tooltip title={'Back to collection'}>
                         <IconButton
                           sx={{ mr: 3 }}

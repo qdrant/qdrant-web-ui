@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 import { options, btnconfig, getCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
 import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
