@@ -37,38 +37,40 @@ const ViewPointModal = (props) => {
         <DialogContent>
           {viewPoints.length > 0 ? (
             <>
-              {viewPoints.map((point, index) => (
-                <Paper key={`${index}-${point.id}`}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      background: alpha(theme.palette.primary.main, 0.05),
-                      px: 3,
-                      py: 2,
-                    }}
-                  >
-                    <Typography variant="h6" component="h2">
-                      Point {point.id}
-                    </Typography>
+              <Paper variant="dual">
+                {viewPoints.map((point, index) => (
+                  <React.Fragment key={`${index}-${point.id}`}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        background: alpha(theme.palette.primary.main, 0.05),
+                        px: 3,
+                        py: 2,
+                      }}
+                    >
+                      <Typography variant="h6" component="h2">
+                        Point {point.id}
+                      </Typography>
 
-                    <Tooltip title="Copy JSON" placement="left">
-                      <IconButton
-                        aria-label="copy point"
-                        onClick={() => {
-                          navigator.clipboard.writeText(JSON.stringify(point));
-                          setOpenTooltip(true);
-                        }}
-                      >
-                        <CopyAll />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box px={3} pt={1} pb={5}>
-                    <PointPayloadList data={point} sx={{ px: 3, py: 4 }} />
-                  </Box>
-                </Paper>
-              ))}
+                      <Tooltip title="Copy JSON" placement="left">
+                        <IconButton
+                          aria-label="copy point"
+                          onClick={() => {
+                            navigator.clipboard.writeText(JSON.stringify(point));
+                            setOpenTooltip(true);
+                          }}
+                        >
+                          <CopyAll />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <Box px={3} pt={1} pb={5}>
+                      <PointPayloadList data={point} sx={{ px: 3, py: 4 }} />
+                    </Box>
+                  </React.Fragment>
+                ))}
+              </Paper>
             </>
           ) : (
             <Typography variant="h6" component="h2">
