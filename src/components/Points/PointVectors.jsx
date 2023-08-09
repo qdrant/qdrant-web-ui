@@ -1,9 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import { CopyAll } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
+import { CopyButton } from '../Common/CopyButton';
 
 /**
  * Component for displaying vectors of a point
@@ -11,7 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
  * @returns {JSX.Element|null}
  * @constructor
  */
-const Vectors = memo(function Vectors({ point, setRecommendationIds, onCopy }) {
+const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
   if (!Object.getOwnPropertyDescriptor(point, 'vector')) {
     return null;
   }
@@ -43,17 +41,12 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds, onCopy }) {
                   <Chip label={key} size="small" variant="outlined" sx={{ mr: 1 }} />
                 </>
               )}
-              <Tooltip title="Copy Vector" placement="right">
-                <IconButton
-                  aria-label={`copy vector ${key}`}
-                  onClick={() => {
-                    navigator.clipboard.writeText(JSON.stringify(vectors[key]));
-                    if (typeof onCopy === 'function') onCopy();
-                  }}
-                >
-                  <CopyAll />
-                </IconButton>
-              </Tooltip>
+              <CopyButton
+                text={JSON.stringify(vectors[key])}
+                tooltip={'Copy vector to clipboard'}
+                tooltipPlacement={'right'}
+                successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
+              />
             </Grid>
 
             <Grid item xs={4} my={1}>
@@ -85,7 +78,6 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds, onCopy }) {
 Vectors.propTypes = {
   point: PropTypes.object.isRequired,
   setRecommendationIds: PropTypes.func.isRequired,
-  onCopy: PropTypes.func,
 };
 
 export default Vectors;

@@ -1,27 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Alert,
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogActions,
-  DialogTitle,
-  IconButton,
-  Paper,
-  Tooltip,
-  Typography,
-  Snackbar,
-} from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogActions, DialogTitle, Paper, Typography } from '@mui/material';
 import { alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { CopyAll } from '@mui/icons-material';
 import { PointPayloadList } from '../Points/PointPayloadList';
+import { CopyButton } from '../Common/CopyButton';
 
 const ViewPointModal = (props) => {
   const theme = useTheme();
-  const [openTooltip, setOpenTooltip] = React.useState(false);
   const { openViewPoints, setOpenViewPoints, viewPoints } = props;
 
   return (
@@ -53,17 +39,7 @@ const ViewPointModal = (props) => {
                         Point {point.id}
                       </Typography>
 
-                      <Tooltip title="Copy JSON" placement="left">
-                        <IconButton
-                          aria-label="copy point"
-                          onClick={() => {
-                            navigator.clipboard.writeText(JSON.stringify(point));
-                            setOpenTooltip(true);
-                          }}
-                        >
-                          <CopyAll />
-                        </IconButton>
-                      </Tooltip>
+                      <CopyButton text={JSON.stringify(point)} />
                     </Box>
                     <Box px={3} pt={1} pb={5}>
                       <PointPayloadList data={point} sx={{ px: 3, py: 4 }} />
@@ -82,11 +58,6 @@ const ViewPointModal = (props) => {
           <Button onClick={() => setOpenViewPoints(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      <Snackbar open={openTooltip} severity="success" autoHideDuration={3000} onClose={() => setOpenTooltip(false)}>
-        <Alert severity="success" sx={{ width: '100%' }}>
-          Point JSON copied to clipboard.
-        </Alert>
-      </Snackbar>
     </>
   );
 };

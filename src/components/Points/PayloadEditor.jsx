@@ -5,10 +5,13 @@ import { useSnackbar } from 'notistack';
 import isEqual from 'lodash/isEqual';
 import { Button, Dialog, DialogActions, DialogTitle, DialogContent } from '@mui/material';
 import EditorCommon from '../EditorCommon';
+import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 
 export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading }) => {
   const { client: qdrantClient } = useClient();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
+  const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 2000);
   const [payload, setPayload] = useState(() => JSON.stringify(point.payload, null, 2));
 
   const savePayload = async (collectionName, options) => {
@@ -27,11 +30,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
     try {
       payloadToSave = JSON.parse(payload);
     } catch (e) {
-      enqueueSnackbar(e.message, {
-        variant: 'error',
-        autoHideDuration: 2500,
-        anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      });
+      enqueueSnackbar(e.message, errorSnackbarOptions);
       return;
     }
 
@@ -54,21 +53,13 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
         if (onSave && res.status === 'completed') {
           onSave(payloadToSave);
 
-          enqueueSnackbar('Payload saved', {
-            variant: 'success',
-            autoHideDuration: 1500,
-            anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-          });
+          enqueueSnackbar('Payload saved', successSnackbarOptions);
         }
       })
       .catch((err) => {
         // rollback payload and show error
         onSave && onSave(oldPayload);
-        enqueueSnackbar(err.message, {
-          variant: 'error',
-          autoHideDuration: 3000,
-          anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-        });
+        enqueueSnackbar(err.message, errorSnackbarOptions);
       })
       .finally(() => {
         // stop loading state and show success message

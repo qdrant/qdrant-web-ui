@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
+import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
@@ -12,26 +13,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-
-  const errorSnackbarOptions = {
-    variant: 'error',
-    autoHideDuration: null,
-    action: (key) => (
-      <Button
-        variant="outlined"
-        color="inherit"
-        onClick={() => {
-          closeSnackbar(key);
-        }}
-      >
-        Dismiss
-      </Button>
-    ),
-    anchorOrigin: {
-      vertical: 'bottom',
-      horizontal: 'center',
-    },
-  };
+  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
 
   useEffect(() => {
     setIsLoading(true);
@@ -73,6 +55,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       .deleteSnapshot(collectionName, snapshotName)
       .then(() => {
         setSnapshots([...snapshots.filter((snapshot) => snapshot.name !== snapshotName)]);
+        enqueueSnackbar('Snapshot successfully deleted', getSnackbarOptions('success', closeSnackbar, 2000));
       })
       .catch((err) => {
         enqueueSnackbar(err.message, errorSnackbarOptions);

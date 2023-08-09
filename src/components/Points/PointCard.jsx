@@ -1,24 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardContent, Grid, CardHeader, Snackbar, Alert, LinearProgress, Box } from '@mui/material';
+import { Card, CardContent, Grid, CardHeader, LinearProgress, Box } from '@mui/material';
 
 import PointImage from './PointImage';
 import { alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import CopyAll from '@mui/icons-material/CopyAll';
 import Edit from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Vectors from './PointVectors';
 import { PayloadEditor } from './PayloadEditor';
 import { PointPayloadList } from './PointPayloadList';
+import { CopyButton } from '../Common/CopyButton';
 
 const PointCard = (props) => {
   const theme = useTheme();
   const { setRecommendationIds } = props;
   const [point, setPoint] = React.useState(props.point);
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
-  const [openSnackbar, setOpenSnackbar] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
   const onPayloadEdit = (payload) => {
@@ -59,18 +58,11 @@ const PointCard = (props) => {
                   </IconButton>
                 </Tooltip>
               )}
-
-              <Tooltip title="Copy Point" placement="left">
-                <IconButton
-                  aria-label="copy point"
-                  onClick={() => {
-                    navigator.clipboard.writeText(JSON.stringify(point));
-                    setOpenSnackbar(true);
-                  }}
-                >
-                  <CopyAll />
-                </IconButton>
-              </Tooltip>
+              <CopyButton
+                text={JSON.stringify(point)}
+                tooltip={'Copy point to clipboard'}
+                successMessage={'Point JSON copied to clipboard.'}
+              />
             </>
           }
         />
@@ -89,17 +81,11 @@ const PointCard = (props) => {
                       <Edit />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Copy Payload" placement="left">
-                    <IconButton
-                      aria-label="copy point payload"
-                      onClick={() => {
-                        navigator.clipboard.writeText(JSON.stringify(point.payload));
-                        setOpenSnackbar(true);
-                      }}
-                    >
-                      <CopyAll />
-                    </IconButton>
-                  </Tooltip>
+                  <CopyButton
+                    text={JSON.stringify(point.payload)}
+                    tooltip={'Copy payload to clipboard'}
+                    successMessage={'Payload JSON copied to clipboard.'}
+                  />
                 </>
               }
             />
@@ -125,9 +111,7 @@ const PointCard = (props) => {
           }}
         />
         <CardContent>
-          {point?.vector && (
-            <Vectors point={point} setRecommendationIds={setRecommendationIds} onCopy={() => setOpenSnackbar(true)} />
-          )}
+          {point?.vector && <Vectors point={point} setRecommendationIds={setRecommendationIds} />}
         </CardContent>
       </Card>
       <PayloadEditor
@@ -140,17 +124,6 @@ const PointCard = (props) => {
         onSave={onPayloadEdit}
         setLoading={setLoading}
       />
-      <Snackbar
-        open={openSnackbar}
-        severity="success"
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" sx={{ width: '100%' }}>
-          JSON copied to clipboard.
-        </Alert>
-      </Snackbar>
     </>
   );
 };
