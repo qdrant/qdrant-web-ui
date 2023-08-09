@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+GIT_INDEX=$(git diff-index --name-only HEAD)
+GIT_INDEX_CACHED=$(git diff-index --cached --name-only HEAD)
+
+npm run lint:fix
+npm run format
+
+NEW_GIT_INDEX=$(git diff-index --name-only HEAD)
+NEW_GIT_INDEX_CACHED=$(git diff-index --cached --name-only HEAD)
+
+if [[ ($GIT_INDEX != $NEW_GIT_INDEX) || ($GIT_INDEX_CACHED != $NEW_GIT_INDEX_CACHED) ]]; then
+  echo "Files have been changed after formatting. Please, check if you still want to commit them."
+  exit 0
+fi
+
+npm test run
