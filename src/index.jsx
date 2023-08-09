@@ -12,7 +12,13 @@ root.render(
   <React.StrictMode>
     <HashRouter>
       <ClientProvider>
-        <SnackbarProvider>
+        <SnackbarProvider
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          style={{ flexWrap: 'nowrap' }}
+        >
           <App />
         </SnackbarProvider>
       </ClientProvider>

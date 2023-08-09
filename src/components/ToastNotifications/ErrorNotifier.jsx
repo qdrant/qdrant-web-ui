@@ -1,50 +1,25 @@
-import React, { useState } from 'react';
-import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
-import Slide from '@mui/material/Slide';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useSnackbar } from 'notistack';
+import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 
-const Alert = React.forwardRef((props, ref) => {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
+export const ErrorNotifier = ({ message }) => {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
 
-Alert.displayName = 'Alert';
+  useEffect(() => {
+    enqueueSnackbar(message, errorSnackbarOptions);
+  }, [enqueueSnackbar, errorSnackbarOptions, message]);
 
-function SlideTransition(props) {
-  return <Slide {...props} direction="down" />;
-}
+  return null;
+};
 
-function ErrorNotifier({ message }) {
-  const [open, setOpen] = useState(true);
-
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpen(false);
-  };
-
-  return (
-    <>
-      <Snackbar
-        open={open}
-        autoHideDuration={6000}
-        onClose={handleClose}
-        disableWindowBlurListener
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        TransitionComponent={SlideTransition}
-      >
-        <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-          {message}
-        </Alert>
-      </Snackbar>
-    </>
-  );
-}
+ErrorNotifier.defaultProps = {
+  message: 'We are sorry, but something went wrong. Please, try again later.',
+};
 
 ErrorNotifier.propTypes = {
   message: PropTypes.string,
-  setHasError: PropTypes.func,
 };
 
 export default ErrorNotifier;
