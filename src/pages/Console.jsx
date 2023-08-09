@@ -45,7 +45,7 @@ function Console() {
   const [result, setResult] = useState(defaultResult);
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
-  const [loading, setLoading] = React.useState(false);
+  const [requestCount, setRequestCount] = React.useState(0);
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
 
@@ -85,7 +85,7 @@ function Console() {
           {/*  )}*/}
           <Grid xs={12} item>
             <Box sx={{ width: '100%', height: '5px' }}>
-              <LinearProgress sx={loading ? {} : { display: 'none' }} />
+              <LinearProgress sx={requestCount ? {} : { display: 'none' }} />
             </Box>
             <PanelGroup direction="horizontal">
               <Panel>
@@ -93,7 +93,7 @@ function Console() {
                   code={code}
                   onChange={onChangeCode}
                   onChangeResult={onChangeResult}
-                  setLoading={setLoading}
+                  setRequestCount={setRequestCount}
                 />
               </Panel>
               <PanelResizeHandle

@@ -9,7 +9,7 @@ import { codeParse, requestFromCode } from './config/RequesFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
-const CodeEditorWindow = ({ onChange, code, onChangeResult, setLoading}) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount}) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
@@ -42,11 +42,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setLoading}) => {
     runBtnCommandId = editor.addCommand(
       0,
       async (_ctx, ...args) => {
-        setLoading(true);
+        setRequestCount((prev) => prev + 1);
         const data = args[0];
         const result = await requestFromCode(data);
         onChangeResult("code", JSON.stringify(result));
-        setLoading(false);
+        setRequestCount((prev) => prev - 1);
       },
       ''
     );
@@ -108,9 +108,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setLoading}) => {
           ]
         );
         editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter, async () => {
+          setRequestCount((prev) => prev + 1);
           const data = selectedCodeBlock.blockText;
           const result = await requestFromCode(data);
           onChangeResult('code', JSON.stringify(result));
+          setRequestCount((prev) => prev - 1);
         });
       }
     });
@@ -145,7 +147,7 @@ CodeEditorWindow.propTypes = {
   onChange: PropTypes.func.isRequired,
   onChangeResult: PropTypes.func.isRequired,
   code: PropTypes.string.isRequired,
-  setLoading: PropTypes.func.isRequired,
+  setRequestCount: PropTypes.func.isRequired,
 };
 
 export default CodeEditorWindow;
