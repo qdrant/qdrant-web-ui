@@ -108,7 +108,7 @@ const PointCard = (props) => {
                 <Grid item xs my={1}>
                   <PointPayloadList data={point} />
                 </Grid>
-                {point.payload.images && (
+                {point.payload && (
                   <Grid item xs={3} display="grid" justifyContent={'center'}>
                     <PointImage data={point.payload} sx={{ ml: 2 }} />
                   </Grid>
