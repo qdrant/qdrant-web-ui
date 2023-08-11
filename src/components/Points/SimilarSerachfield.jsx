@@ -5,7 +5,11 @@ import { MuiChipsInput } from 'mui-chips-input';
 
 function SimilarSerachfield({ value, setValue }) {
   const handleChange = (newChips) => {
+    const isnum = /^\d+$/.test(newChips);
     const result = newChips.map(function (x) {
+      if (!isnum) {
+        return x;
+      }
       return parseInt(x, 10);
     });
     setValue(result);
@@ -17,6 +21,7 @@ function SimilarSerachfield({ value, setValue }) {
     </Card>
   );
 }
+
 SimilarSerachfield.propTypes = {
   value: PropTypes.array,
   setValue: PropTypes.func,
