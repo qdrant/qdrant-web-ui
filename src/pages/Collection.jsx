@@ -8,6 +8,7 @@ import SimilarSerachfield from '../components/Points/SimilarSerachfield';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
+import { CollectionInfo } from "../components/Collections/CollectionInfo";
 
 function Collection() {
   const pageSize = 10;
@@ -95,12 +96,18 @@ function Collection() {
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
+                <Tab label="Info" value={'info'} />
                 <Tab label="Snapshots" value={'snapshots'} />
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
               </Tabs>
             </Box>
           </Grid>
 
+          {currentTab === 'info' && (
+            <Grid xs={12} item>
+              <CollectionInfo collectionName={collectionName} />
+            </Grid>
+          )}
           {currentTab === 'points' && (
             <>
               <Grid xs={12} item>
