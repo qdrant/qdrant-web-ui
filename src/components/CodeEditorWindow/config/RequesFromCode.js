@@ -15,7 +15,11 @@ export function requestFromCode(text) {
     })
       .then((response) => {
         const history = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
-        history.push({
+        // Prevent using whole quota of local storage
+        if(history.length >= 25) {
+          history.pop();
+        }
+        history.unshift({
           idx: data.method + data.endpoint + Date.now(),
           code: data,
           time: new Date().toLocaleTimeString(),
