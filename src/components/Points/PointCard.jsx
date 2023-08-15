@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Vectors from './PointVectors';
 import { PayloadEditor } from './PayloadEditor';
-import { PointPayloadList } from './PointPayloadList';
+import { DataGridList } from './DataGridList';
 import { CopyButton } from '../Common/CopyButton';
 
 const PointCard = (props) => {
@@ -92,7 +92,7 @@ const PointCard = (props) => {
             <CardContent>
               <Grid container display={'flex'}>
                 <Grid item xs my={1}>
-                  <PointPayloadList data={point} />
+                  <DataGridList data={point.payload} />
                 </Grid>
                 {point.payload && (
                   <Grid item xs={3} display="grid" justifyContent={'center'}>

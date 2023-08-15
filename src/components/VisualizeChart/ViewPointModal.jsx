@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Button, Dialog, DialogContent, DialogActions, DialogTitle, Paper, Typography } from '@mui/material';
 import { alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { PointPayloadList } from '../Points/PointPayloadList';
+import { DataGridList } from '../Points/DataGridList';
 import { CopyButton } from '../Common/CopyButton';
 
 const ViewPointModal = (props) => {
@@ -42,7 +42,7 @@ const ViewPointModal = (props) => {
                       <CopyButton text={JSON.stringify(point)} />
                     </Box>
                     <Box px={3} pt={1} pb={5}>
-                      <PointPayloadList data={point} sx={{ px: 3, py: 4 }} />
+                      <DataGridList data={point.payload} sx={{ px: 3, py: 4 }} />
                     </Box>
                   </React.Fragment>
                 ))}
