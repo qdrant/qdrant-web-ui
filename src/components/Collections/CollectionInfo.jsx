@@ -12,19 +12,17 @@ import { useClient } from "../../context/client-context";
 import { DataGridList } from "../Points/DataGridList";
 import { CopyButton } from "../Common/CopyButton";
 import { Dot } from "../Common/Dot";
+import CollectionClusterInfo from "./CollectionClusterInfo";
 
 export const CollectionInfo = ({ collectionName }) => {
   const theme = useTheme();
-  console.log("render CollectionInfo");
   const { client: qdrantClient } = useClient();
   const [collection, setCollection] = React.useState({});
-  const [clusterInfo, setClusterInfo] = React.useState({});
+  const [clusterInfo, setClusterInfo] = React.useState(null);
 
   useEffect(() => {
-    console.log("useEffect CollectionInfo");
     // loading state (global context?)
     qdrantClient.getCollection(collectionName).then((res) => {
-      console.log(res);
       setCollection(() => {
         return { ...res };
       });
@@ -32,24 +30,18 @@ export const CollectionInfo = ({ collectionName }) => {
       console.log(err);
       // snackbar error
     });
-    setCollection(() => {
-        return { "name": "test" };
-      },
-    );
 
     // todo: show in UI
     qdrantClient.api("cluster").
       collectionClusterInfo({ collection_name: collectionName }).
       then((res) => {
-        console.log(res);
         setClusterInfo(() => {
-          return { ...res };
+          return { ...res.data };
         });
-      }).
-      catch((err) => {
-        console.log(err);
-      });
-  }, []);
+      }).catch((err) => {
+      console.log(err);
+    });
+  }, [collectionName]);
 
   return (
     <Box pt={2}>
@@ -77,23 +69,7 @@ export const CollectionInfo = ({ collectionName }) => {
         </CardContent>
       </Card>
 
-      <Card variant="dual" sx={{ mt: 5 }}>
-        <CardHeader
-          title={"Collection Cluster Info"}
-          sx={{
-            flexGrow: 1,
-            background: alpha(theme.palette.primary.main, 0.05),
-          }}
-          action={
-            <CopyButton text={JSON.stringify(collection)}/>
-          }
-        />
-        <CardContent>
-          <DataGridList
-            data={clusterInfo}
-          />
-        </CardContent>
-      </Card>
+      {clusterInfo && <CollectionClusterInfo sx={{mt: 5}} collectionCluster={clusterInfo} />}
     </Box>
   );
 };
