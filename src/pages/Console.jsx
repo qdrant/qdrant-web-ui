@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { alpha } from '@mui/material';
+import { LinearProgress, alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { Grid } from '@mui/material';
@@ -45,6 +45,7 @@ function Console() {
   const [result, setResult] = useState(defaultResult);
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
+  const [requestCount, setRequestCount] = React.useState(0);
   const [openHistory, setOpenHistory] = useState(false);
   const [openSavedCode, setOpenSavedCode] = useState(false);
 
@@ -83,9 +84,17 @@ function Console() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid xs={12} item>
+            <Box sx={{ width: '100%', height: '4px' }}>
+              <LinearProgress sx={requestCount ? {} : { display: 'none' }} />
+            </Box>
             <PanelGroup direction="horizontal">
               <Panel>
-                <CodeEditorWindow code={code} onChange={onChangeCode} onChangeResult={onChangeResult} />
+                <CodeEditorWindow
+                  code={code}
+                  onChange={onChangeCode}
+                  onChangeResult={onChangeResult}
+                  setRequestCount={setRequestCount}
+                />
               </Panel>
               <PanelResizeHandle
                 style={{
