@@ -84,7 +84,7 @@ function Console() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid xs={12} item>
-            <Box sx={{ width: '100%', height: '5px' }}>
+            <Box sx={{ width: '100%', height: '4px' }}>
               <LinearProgress sx={requestCount ? {} : { display: 'none' }} />
             </Box>
             <PanelGroup direction="horizontal">
