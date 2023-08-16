@@ -13,9 +13,12 @@ import { DataGridList } from "../Points/DataGridList";
 import { CopyButton } from "../Common/CopyButton";
 import { Dot } from "../Common/Dot";
 import CollectionClusterInfo from "./CollectionClusterInfo";
+import { useSnackbar } from "notistack";
+import { getSnackbarOptions } from "../Common/utils/snackbarOptions";
 
 export const CollectionInfo = ({ collectionName }) => {
   const theme = useTheme();
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client: qdrantClient } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
@@ -27,11 +30,9 @@ export const CollectionInfo = ({ collectionName }) => {
         return { ...res };
       });
     }).catch((err) => {
-      console.log(err);
-      // snackbar error
+      enqueueSnackbar(err.message, getSnackbarOptions("error", closeSnackbar));
     });
 
-    // todo: show in UI
     qdrantClient.api("cluster").
       collectionClusterInfo({ collection_name: collectionName }).
       then((res) => {
@@ -39,7 +40,7 @@ export const CollectionInfo = ({ collectionName }) => {
           return { ...res.data };
         });
       }).catch((err) => {
-      console.log(err);
+      enqueueSnackbar(err.message, getSnackbarOptions("error", closeSnackbar));
     });
   }, [collectionName]);
 
@@ -69,7 +70,8 @@ export const CollectionInfo = ({ collectionName }) => {
         </CardContent>
       </Card>
 
-      {clusterInfo && <CollectionClusterInfo sx={{mt: 5}} collectionCluster={clusterInfo} />}
+      {clusterInfo &&
+        <CollectionClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo}/>}
     </Box>
   );
 };
