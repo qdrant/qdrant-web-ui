@@ -1,8 +1,8 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { JsonViewer } from "@textea/json-viewer";
-import { useTheme } from "@mui/material/styles";
-import { Divider, Grid, Typography } from "@mui/material";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { JsonViewer } from '@textea/json-viewer';
+import { useTheme } from '@mui/material/styles';
+import { Divider, Grid, Typography } from '@mui/material';
 
 /**
  * A list of key-value pairs, where the value is either a string or an object.
@@ -11,7 +11,7 @@ import { Divider, Grid, Typography } from "@mui/material";
  * @param {Object} specialCases - key-value pairs to render, where the value is JSX element
  * @return {unknown[]} - array of JSX elements
  */
-export const DataGridList = function({ data = {}, specialCases = {} }) {
+export const DataGridList = function ({ data = {}, specialCases = {} }) {
   const theme = useTheme();
   const specialKeys = Object.keys(specialCases) || [];
 
@@ -23,10 +23,11 @@ export const DataGridList = function({ data = {}, specialCases = {} }) {
             <Typography
               variant="subtitle1"
               sx={{
-                display: "inline",
-                wordBreak: "break-word",
+                display: 'inline',
+                wordBreak: 'break-word',
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {key}
             </Typography>
           </Grid>
@@ -36,29 +37,28 @@ export const DataGridList = function({ data = {}, specialCases = {} }) {
             {specialKeys?.includes(key) && specialCases[key]}
 
             {/* objects */}
-            {typeof data[key] === "object" && !specialKeys.includes(key) &&
+            {typeof data[key] === 'object' && !specialKeys.includes(key) && (
               <Typography variant="subtitle1">
-                {" "}
+                {' '}
                 <JsonViewer
                   theme={theme.palette.mode}
                   value={data[key]}
                   displayDataTypes={false}
                   defaultInspectDepth={0}
                   rootName={false}
-                />{" "}
+                />{' '}
               </Typography>
-            }
+            )}
 
             {/* other types of values */}
-            {typeof data[key] !== "object" && !specialKeys.includes(key) &&
-              <Typography variant="subtitle1" color="text.secondary"
-                          display={"inline"}>
-                {"\t"} {data[key].toString()}
+            {typeof data[key] !== 'object' && !specialKeys.includes(key) && (
+              <Typography variant="subtitle1" color="text.secondary" display={'inline'}>
+                {'\t'} {data[key].toString()}
               </Typography>
-            }
+            )}
           </Grid>
         </Grid>
-        <Divider/>
+        <Divider />
       </div>
     );
   });

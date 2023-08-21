@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useClient } from '../context/client-context';
 import { Typography, Grid, Button, Tabs, Tab } from '@mui/material';
@@ -8,7 +8,7 @@ import SimilarSerachfield from '../components/Points/SimilarSerachfield';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
-import CollectionInfo from "../components/Collections/CollectionInfo";
+import CollectionInfo from '../components/Collections/CollectionInfo';
 
 function Collection() {
   const pageSize = 10;
@@ -82,7 +82,6 @@ function Collection() {
     };
     getPoints();
   }, [collectionName, offset, recommendationIds]);
-
 
   return (
     <>

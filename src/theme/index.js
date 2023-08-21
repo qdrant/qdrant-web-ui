@@ -1,7 +1,7 @@
-import { createTheme as createMuiTheme } from "@mui/material/styles";
-import { darkThemeOptions } from "./dark-theme";
-import { lightThemeOptions } from "./light-theme";
-import { alpha } from "@mui/material";
+import { createTheme as createMuiTheme } from '@mui/material/styles';
+import { darkThemeOptions } from './dark-theme';
+import { lightThemeOptions } from './light-theme';
+import { alpha } from '@mui/material';
 
 const themeOptions = {
   components: {
@@ -18,6 +18,5 @@ const themeOptions = {
 };
 
 export const createTheme = (config) => {
-  return createMuiTheme(config, themeOptions,
-    config.palette.mode === "dark" ? darkThemeOptions : lightThemeOptions);
+  return createMuiTheme(config, themeOptions, config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions);
 };

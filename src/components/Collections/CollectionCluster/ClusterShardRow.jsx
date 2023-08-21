@@ -1,34 +1,22 @@
-import { TableCell, TableRow, Typography } from "@mui/material";
-import React from "react";
-import PropTypes from "prop-types";
+import { TableCell, TableRow, Typography } from '@mui/material';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const ClusterShardRow = ({ shard, clusterPeerId }) => {
   return (
-    <TableRow
-      data-testid="shard-row"
-    >
+    <TableRow data-testid="shard-row">
       <TableCell>
-        <Typography
-          variant="subtitle1"
-          component={"span"}
-          color="text.secondary">
+        <Typography variant="subtitle1" component={'span'} color="text.secondary">
           {shard.shard_id}
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography
-          variant="subtitle1"
-          component={"span"}
-          color="text.secondary">
-          {shard.peer_id ? `Remote (${shard.peer_id})` :
-            `Local (${clusterPeerId ?? "unknown"})`}
+        <Typography variant="subtitle1" component={'span'} color="text.secondary">
+          {shard.peer_id ? `Remote (${shard.peer_id})` : `Local (${clusterPeerId ?? 'unknown'})`}
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography
-          variant="subtitle1"
-          component={"span"}
-          color="text.secondary">
+        <Typography variant="subtitle1" component={'span'} color="text.secondary">
           {shard.state}
         </Typography>
       </TableCell>
@@ -46,4 +34,3 @@ ClusterShardRow.propTypes = {
 };
 
 export default ClusterShardRow;
-
