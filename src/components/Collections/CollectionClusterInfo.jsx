@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -8,7 +7,6 @@ import {
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { CopyButton } from "../Common/CopyButton";
-import { useSnackbar } from "notistack";
 
 const InfoTableHead = () => {
   return (
@@ -43,23 +41,20 @@ const InfoTableHead = () => {
   );
 };
 
-/**
- *
- * @param {Object} collectionCluster
- * @param other - props
- * @return {JSX.Element}
- */
 const CollectionClusterInfo = ({ collectionCluster, ...other }) => {
   const theme = useTheme();
 
   const shards = [
-    ...collectionCluster?.result?.local_shards,
-    ...collectionCluster?.result?.remote_shards];
+    ...(collectionCluster.result?.local_shards || []),
+    ...(collectionCluster.result?.remote_shards || []),
+  ];
 
   const shardRows = shards.map((shard) => {
     return (
       <TableRow
-        key={shard.shard_id.toString() + (shard.peer_id || "")}>
+        key={shard.shard_id.toString() + (shard.peer_id || "")}
+        data-testid="shard-row"
+      >
         <TableCell>
           <Typography
             variant="subtitle1"
@@ -121,18 +116,20 @@ CollectionClusterInfo.defaultProps = {
 CollectionClusterInfo.propTypes = {
   collectionCluster: PropTypes.shape({
     result: PropTypes.shape({
-      local_shards: PropTypes.arrayOf(PropTypes.shape({
+      peer_id: PropTypes.number,
+      local_shards: PropTypes.arrayOf(PropTypes.shape([{
         shard_id: PropTypes.number,
-        peer_id: PropTypes.string,
+        peer_id: PropTypes.number,
         state: PropTypes.string,
-      })),
-      remote_shards: PropTypes.arrayOf(PropTypes.shape({
+      }])),
+      remote_shards: PropTypes.arrayOf(PropTypes.shape([{
         shard_id: PropTypes.number,
-        peer_id: PropTypes.string,
+        peer_id: PropTypes.number,
         state: PropTypes.string,
-      })),
+      }])),
     }),
   }).isRequired,
+  other: PropTypes.object,
 };
 
 export default CollectionClusterInfo;

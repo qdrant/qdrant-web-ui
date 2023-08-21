@@ -37,3 +37,4 @@ rules:
       },
     ],
   }
+ignorePatterns: ['node_modules/', 'build/', '*.test.js', '*.test.jsx']
