@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { StepContent, Stepper, Typography, Box, StepLabel, Step, Paper, Button, TextField } from '@mui/material';
 import { useClient } from '../../context/client-context';
@@ -28,52 +28,56 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
    * Get the endpoint URL for uploading a snapshot, based on the collection name.
    * qdrantClient._restUri is the base URL for the API
    * @type {function(): string}
+   * @return {string} the endpoint URL for uploading a snapshot
    */
-  const getEndpointUrl = useCallback(() => {
+  const getEndpointUrl = () => {
     return new URL(`/collections/${collectionName}/snapshots/upload`, qdrantClient._restUri).href;
-  }, [collectionName, qdrantClient]);
+  };
+
+  const getHeaders = () => {
+    const settings = localStorage.getItem('settings');
+    const apiKey = JSON.parse(settings)?.apiKey;
+    return apiKey ? { 'api-key': apiKey } : {};
+  };
 
   /* initialize uploader, docs: https://uppy.io/docs/uppy/ */
-  const uppy = useMemo(() => {
-    const instance = new Uppy({
-      restrictions: {
-        maxNumberOfFiles: 1,
-        allowedFileTypes: ['application/x-tar', '.snapshot'],
-      },
-      autoProceed: true,
-    });
+  const uppy = new Uppy({
+    restrictions: {
+      maxNumberOfFiles: 1,
+      allowedFileTypes: ['application/x-tar', '.snapshot'],
+    },
+    autoProceed: true,
+  });
 
-    /* add XHR plugin to uploader, docs: https://uppy.io/docs/xhr-upload/ */
-    instance.use(XHR, {
-      id: 'XHRUpload',
-      endpoint: getEndpointUrl(),
-      formData: true,
-      fieldName: 'snapshot',
-      getResponseError: (responseText) => {
-        enqueueSnackbar(JSON.parse(responseText)?.status?.error, {
-          variant: 'error',
-          autoHideDuration: null,
-          action: (key) => (
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => {
-                closeSnackbar(key);
-              }}
-            >
-              Dismiss
-            </Button>
-          ),
-          anchorOrigin: {
-            vertical: 'bottom',
-            horizontal: 'center',
-          },
-        });
-      },
-    });
-
-    return instance;
-  }, [getEndpointUrl, enqueueSnackbar, closeSnackbar]);
+  /* add XHR plugin to uploader, docs: https://uppy.io/docs/xhr-upload/ */
+  uppy.use(XHR, {
+    id: 'XHRUpload',
+    endpoint: getEndpointUrl(),
+    headers: getHeaders(),
+    formData: true,
+    fieldName: 'snapshot',
+    getResponseError: (responseText) => {
+      enqueueSnackbar(JSON.parse(responseText)?.status?.error, {
+        variant: 'error',
+        autoHideDuration: null,
+        action: (key) => (
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => {
+              closeSnackbar(key);
+            }}
+          >
+            Dismiss
+          </Button>
+        ),
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'center',
+        },
+      });
+    },
+  });
 
   uppy.on('upload-success', () => {
     handleFinish();
