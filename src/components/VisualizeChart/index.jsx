@@ -4,6 +4,7 @@ import Chart from 'chart.js/auto';
 import { useSnackbar } from 'notistack';
 import { Button } from '@mui/material';
 import ViewPointModal from './ViewPointModal';
+import get from 'lodash/get';
 
 const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -44,7 +45,7 @@ const VisualizeChart = ({ scrollResult }) => {
     const dataset = [];
     const labelby = scrollResult.data.color_by;
     if (labelby) {
-      if (scrollResult.data.result?.points[0]?.payload[labelby] === undefined) {
+      if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
         enqueueSnackbar(`Visualization Unsuccessful, error: Color by field ${labelby} does not exist`, {
           variant: 'error',
           action,
@@ -52,7 +53,7 @@ const VisualizeChart = ({ scrollResult }) => {
         return;
       }
       scrollResult.data.labelByArrayUnique = [
-        ...new Set(scrollResult.data.result?.points?.map((point) => point.payload[labelby])),
+        ...new Set(scrollResult.data.result?.points?.map((point) => get(point.payload, labelby))),
       ];
       scrollResult.data.labelByArrayUnique.forEach((label) => {
         dataset.push({
@@ -95,7 +96,7 @@ const VisualizeChart = ({ scrollResult }) => {
             },
           },
           legend: {
-            display: labelby ? true : false,
+            display: !!labelby,
           },
         },
       },
@@ -132,7 +133,7 @@ const VisualizeChart = ({ scrollResult }) => {
           variant: 'error',
           action,
         });
-        return;
+
       } else if (m.data.result && m.data.result.length > 0) {
         m.data.result.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;

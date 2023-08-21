@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import * as druid from '@saehrimnir/druidjs';
+import get from 'lodash/get';
 
 const MESSAGE_INTERVAL = 200;
 
@@ -67,7 +68,6 @@ self.onmessage = function (e) {
     }
     self.postMessage({ result: getDataset(data1, i), error: null });
   }
-  return;
 };
 
 function getDataset(data, reducedPoint) {
@@ -82,7 +82,7 @@ function getDataset(data, reducedPoint) {
     });
 
     data.result?.points?.forEach((point, index) => {
-      const label = point.payload[labelby];
+      const label = get(point.payload, labelby);
       dataset[data.labelByArrayUnique.indexOf(label)].data.push({
         x: reducedPoint[index][0],
         y: reducedPoint[index][1],
