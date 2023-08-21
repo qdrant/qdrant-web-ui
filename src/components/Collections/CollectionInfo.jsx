@@ -11,7 +11,7 @@ import { useClient } from "../../context/client-context";
 import { DataGridList } from "../Points/DataGridList";
 import { CopyButton } from "../Common/CopyButton";
 import { Dot } from "../Common/Dot";
-import CollectionClusterInfo from "./CollectionClusterInfo";
+import ClusterInfo from "./CollectionCluster/ClusterInfo";
 import { useSnackbar } from "notistack";
 import { getSnackbarOptions } from "../Common/utils/snackbarOptions";
 
@@ -23,7 +23,6 @@ export const CollectionInfo = ({ collectionName }) => {
   const [clusterInfo, setClusterInfo] = React.useState(null);
 
   useEffect(() => {
-    // loading state (global context?)
     qdrantClient.getCollection(collectionName).then((res) => {
       setCollection(() => {
         return { ...res };
@@ -70,7 +69,7 @@ export const CollectionInfo = ({ collectionName }) => {
       </Card>
 
       {clusterInfo &&
-        <CollectionClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo}/>}
+        <ClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo}/>}
     </Box>
   );
 };

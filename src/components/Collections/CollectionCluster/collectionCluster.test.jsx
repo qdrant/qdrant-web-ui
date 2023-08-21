@@ -1,6 +1,7 @@
 import {render, screen} from "@testing-library/react";
 import '@testing-library/jest-dom';
-import CollectionClusterInfo from './CollectionClusterInfo';
+import ClusterInfo from './ClusterInfo';
+import ClusterShardRow from "./ClusterShardRow";
 
 const CLUSTER_INFO = {
     "result": {
@@ -46,11 +47,24 @@ const CLUSTER_INFO = {
     "time": 0.00002203
 }
 
-describe('CollectionClusterInfo', () => {
+describe('collection cluster info', () => {
+    it('should render ClusterShardRow with given data', () => {
+        const shard = CLUSTER_INFO.result.remote_shards[0];
+        render(
+          <table>
+              <tbody>
+                <ClusterShardRow shard={shard} clusterPeerId={CLUSTER_INFO.result.peer_id} />
+              </tbody>
+          </table>
+        );
+        expect(screen.getByTestId('shard-row').children[0].children[0].textContent).toBe(shard.shard_id.toString());
+        expect(screen.getByText(`Remote (${shard.peer_id})`)).toBeTruthy();
+        expect(screen.getByText(shard.state)).toBeTruthy();
+    });
+
     it('should render CollectionClusterInfo with given data', () => {
         const shardReplicasCount = CLUSTER_INFO.result.local_shards.length + CLUSTER_INFO.result.remote_shards.length;
-
-        render(<CollectionClusterInfo collectionCluster={CLUSTER_INFO} />);
+        render(<ClusterInfo collectionCluster={CLUSTER_INFO} />);
         expect(screen.getByText('Collection Cluster Info')).toBeTruthy();
         expect(screen.getAllByTestId('shard-row').length).toBe(shardReplicasCount);
     });
