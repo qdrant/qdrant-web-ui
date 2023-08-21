@@ -1,12 +1,10 @@
 import React, { memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
-  alpha,
   Box,
   Card,
   CardContent, CardHeader, Typography,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { useClient } from "../../context/client-context";
 import { DataGridList } from "../Points/DataGridList";
 import { CopyButton } from "../Common/CopyButton";
@@ -16,7 +14,6 @@ import { useSnackbar } from "notistack";
 import { getSnackbarOptions } from "../Common/utils/snackbarOptions";
 
 export const CollectionInfo = ({ collectionName }) => {
-  const theme = useTheme();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client: qdrantClient } = useClient();
   const [collection, setCollection] = React.useState({});
@@ -47,9 +44,9 @@ export const CollectionInfo = ({ collectionName }) => {
       <Card variant="dual">
         <CardHeader
           title={"Collection Info"}
+          variant="heading"
           sx={{
             flexGrow: 1,
-            background: alpha(theme.palette.primary.main, 0.05),
           }}
           action={
             <CopyButton text={JSON.stringify(collection)}/>

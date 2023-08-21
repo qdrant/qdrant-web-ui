@@ -1,19 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {
-  alpha,
   Card,
   CardHeader,
   Table,
   TableBody,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { CopyButton } from "../../Common/CopyButton";
 import ClusterInfoHead from "./ClusterInfoHead";
 import ClusterShardRow from "./ClusterShardRow";
 
 const ClusterInfo = ({ collectionCluster, ...other }) => {
-  const theme = useTheme();
 
   const shards = [
     ...(collectionCluster.result?.local_shards || []),
@@ -30,9 +27,9 @@ const ClusterInfo = ({ collectionCluster, ...other }) => {
     <Card variant="dual" {...other}>
       <CardHeader
         title={"Collection Cluster Info"}
+        variant="heading"
         sx={{
           flexGrow: 1,
-          background: alpha(theme.palette.primary.main, 0.05),
         }}
         action={
           <CopyButton text={JSON.stringify(collectionCluster)}/>
