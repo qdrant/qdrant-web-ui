@@ -12,6 +12,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
 
@@ -46,7 +47,50 @@ export const SnapshotsTab = ({ collectionName }) => {
   };
 
   const downloadSnapshot = (snapshotName) => {
-    window.open(`${qdrantClient._restUri}/collections/${collectionName}/snapshots/${snapshotName}`);
+    if (isDownloading) {
+      enqueueSnackbar(
+        'Please wait until the previous download is finished',
+        getSnackbarOptions('warning', closeSnackbar, 2000)
+      );
+      return;
+    }
+    setIsDownloading(true);
+    const apiKey = JSON.parse(localStorage.getItem('settings'))?.apiKey;
+
+    const headers = {
+      'Content-Disposition': 'attachment; filename="snapshot.tar.gz"',
+      'Content-Type': 'application/gzip',
+    };
+
+    if (apiKey) {
+      headers['api-key'] = apiKey;
+    }
+
+    const request = new Request(`${qdrantClient._restUri}/collections/${collectionName}/snapshots/${snapshotName}`, {
+      method: 'GET',
+      headers,
+    });
+
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          return response.blob();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = snapshotName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setIsDownloading(false);
+      })
+      .catch((error) => {
+        enqueueSnackbar(error.message, errorSnackbarOptions);
+      });
   };
 
   const deleteSnapshot = (snapshotName) => {
@@ -69,6 +113,7 @@ export const SnapshotsTab = ({ collectionName }) => {
     <SnapshotsTableRow
       key={snapshot.name}
       snapshot={snapshot}
+      isDownloading={isDownloading}
       downloadSnapshot={downloadSnapshot}
       deleteSnapshot={deleteSnapshot}
     />

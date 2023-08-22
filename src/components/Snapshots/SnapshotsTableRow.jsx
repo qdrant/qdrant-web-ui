@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme } from '@mui/material/styles';
-import { Box, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
+import { Box, Chip, CircularProgress, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
 import { Delete, Download, FolderZip } from '@mui/icons-material';
 import ActionsMenu from '../Common/ActionsMenu';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 
-export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }) => {
+export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, isDownloading }) => {
   const theme = useTheme();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -23,6 +23,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
               cursor: 'pointer',
               '&:hover': {
                 textDecoration: 'underline',
+                pointerEvents: isDownloading ? 'none' : 'auto',
                 '& svg': {
                   color: theme.palette.primary.dark,
                 },
@@ -30,8 +31,29 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
             }}
             onClick={() => downloadSnapshot(snapshot.name)}
           >
-            <FolderZip fontSize={'large'} sx={{ color: theme.palette.primary.main, mr: 2 }} />
+            <Box sx={{ position: 'relative' }}>
+              <FolderZip
+                fontSize={'large'}
+                sx={{
+                  color: isDownloading ? theme.palette.divider : theme.palette.primary.main,
+                  mr: 2,
+                }}
+              />
+              {isDownloading && (
+                <CircularProgress
+                  size={20}
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginTop: '-14px',
+                    marginLeft: '-18px',
+                  }}
+                />
+              )}
+            </Box>
             {snapshot.name}
+            {isDownloading && <Chip label={'Preparing download'} size="small" sx={{ ml: 3 }} />}
           </Box>
         </Tooltip>
       </TableCell>
@@ -79,4 +101,5 @@ SnapshotsTableRow.propTypes = {
   }),
   downloadSnapshot: PropTypes.func,
   deleteSnapshot: PropTypes.func,
+  isDownloading: PropTypes.bool,
 };

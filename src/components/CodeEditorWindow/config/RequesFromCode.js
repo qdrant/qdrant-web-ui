@@ -16,7 +16,7 @@ export function requestFromCode(text) {
       .then((response) => {
         const history = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
         // Prevent using whole quota of local storage
-        if(history.length >= 25) {
+        if (history.length >= 25) {
           history.pop();
         }
         history.unshift({
