@@ -12,6 +12,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
@@ -46,7 +47,8 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   };
 
-  const downloadSnapshot = (snapshotName) => {
+  // todo: refactor this!
+  const downloadSnapshot = (snapshotName, snapshotSize) => {
     if (isDownloading) {
       enqueueSnackbar(
         'Please wait until the previous download is finished',
@@ -54,11 +56,12 @@ export const SnapshotsTab = ({ collectionName }) => {
       );
       return;
     }
+    setProgress(0);
     setIsDownloading(true);
     const apiKey = JSON.parse(localStorage.getItem('settings'))?.apiKey;
 
     const headers = {
-      'Content-Disposition': 'attachment; filename="snapshot.tar.gz"',
+      'Content-Disposition': `attachment; filename="${snapshotName}"`,
       'Content-Type': 'application/gzip',
     };
 
@@ -73,10 +76,29 @@ export const SnapshotsTab = ({ collectionName }) => {
 
     fetch(request)
       .then((response) => {
-        if (response.ok) {
-          return response.blob();
+        let loaded = 0;
+        const reader = response.body.getReader();
+        const contentLength = snapshotSize;
+        const total = contentLength ? parseInt(contentLength, 10) : null;
+        const chunks = [];
+
+        function pump() {
+          return reader.read().then(({ done, value }) => {
+            if (done) {
+              return chunks;
+            }
+            loaded += value.length;
+            const newProgress = Math.round((loaded / total) * 100);
+            setProgress(newProgress);
+            chunks.push(value);
+            return pump();
+          });
         }
-        throw new Error('Network response was not ok.');
+
+        return pump();
+      })
+      .then((chunks) => {
+        return new Blob(chunks);
       })
       .then((blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -86,7 +108,9 @@ export const SnapshotsTab = ({ collectionName }) => {
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setIsDownloading(false);
+        setTimeout(() => {
+          setIsDownloading(false);
+        }, 1000);
       })
       .catch((error) => {
         enqueueSnackbar(error.message, errorSnackbarOptions);
@@ -114,6 +138,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       key={snapshot.name}
       snapshot={snapshot}
       isDownloading={isDownloading}
+      progress={progress}
       downloadSnapshot={downloadSnapshot}
       deleteSnapshot={deleteSnapshot}
     />

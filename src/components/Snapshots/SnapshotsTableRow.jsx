@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme } from '@mui/material/styles';
-import { Box, Chip, CircularProgress, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
+import { Box, Chip, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
 import { Delete, Download, FolderZip } from '@mui/icons-material';
 import ActionsMenu from '../Common/ActionsMenu';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
+import CircularProgressWithLabel from '../Common/CircularProgressWithLabel';
 
-export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, isDownloading }) => {
+export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, isDownloading, progress }) => {
   const theme = useTheme();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   return (
     <TableRow key={snapshot.name}>
-      <TableCell>
+      <TableCell width={'60%'}>
         <Tooltip title={'Download snapshot'} arrow placement={'top'}>
           <Box
             sx={{
@@ -29,7 +30,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
                 },
               },
             }}
-            onClick={() => downloadSnapshot(snapshot.name)}
+            onClick={() => downloadSnapshot(snapshot.name, snapshot.size)}
           >
             <Box sx={{ position: 'relative' }}>
               <FolderZip
@@ -40,20 +41,20 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
                 }}
               />
               {isDownloading && (
-                <CircularProgress
-                  size={20}
+                <CircularProgressWithLabel
+                  value={progress}
                   sx={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    marginTop: '-14px',
-                    marginLeft: '-18px',
+                    marginTop: '-23px',
+                    marginLeft: '-29px',
                   }}
                 />
               )}
             </Box>
             {snapshot.name}
-            {isDownloading && <Chip label={'Preparing download'} size="small" sx={{ ml: 3 }} />}
+            {isDownloading && <Chip label={`Preparing download`} size="small" sx={{ ml: 3 }} />}
           </Box>
         </Tooltip>
       </TableCell>
@@ -61,7 +62,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
       <TableCell align="center">{prettyBytes(snapshot.size)}</TableCell>
       <TableCell align="right">
         <ActionsMenu>
-          <MenuItem onClick={() => downloadSnapshot(snapshot.name)}>
+          <MenuItem onClick={() => downloadSnapshot(snapshot.name, snapshot.size)}>
             <ListItemIcon>
               <Download fontSize="small" />
             </ListItemIcon>
@@ -102,4 +103,5 @@ SnapshotsTableRow.propTypes = {
   downloadSnapshot: PropTypes.func,
   deleteSnapshot: PropTypes.func,
   isDownloading: PropTypes.bool,
+  progress: PropTypes.number,
 };
