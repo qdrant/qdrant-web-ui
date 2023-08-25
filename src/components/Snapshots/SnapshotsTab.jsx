@@ -7,6 +7,7 @@ import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
+import { pumpFile, updateProgress } from "../../common/utils";
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
@@ -47,7 +48,11 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   };
 
+
   // todo: refactor this!
+  // - [x] move to utils
+  // - [ ] get rid of isDownloading
+  // - [ ] add tests
   const downloadSnapshot = (snapshotName, snapshotSize) => {
     if (isDownloading) {
       enqueueSnackbar(
@@ -58,44 +63,13 @@ export const SnapshotsTab = ({ collectionName }) => {
     }
     setProgress(0);
     setIsDownloading(true);
-    const apiKey = JSON.parse(localStorage.getItem('settings'))?.apiKey;
-
-    const headers = {
-      'Content-Disposition': `attachment; filename="${snapshotName}"`,
-      'Content-Type': 'application/gzip',
-    };
-
-    if (apiKey) {
-      headers['api-key'] = apiKey;
-    }
-
-    const request = new Request(`${qdrantClient._restUri}/collections/${collectionName}/snapshots/${snapshotName}`, {
-      method: 'GET',
-      headers,
-    });
-
-    fetch(request)
-      .then((response) => {
-        let loaded = 0;
+    qdrantClient.downloadSnapshot(collectionName, snapshotName).
+      then((response) => {
         const reader = response.body.getReader();
-        const contentLength = snapshotSize;
-        const total = contentLength ? parseInt(contentLength, 10) : null;
-        const chunks = [];
+        const handleProgress = updateProgress(snapshotSize, setProgress);
 
-        function pump() {
-          return reader.read().then(({ done, value }) => {
-            if (done) {
-              return chunks;
-            }
-            loaded += value.length;
-            const newProgress = Math.round((loaded / total) * 100);
-            setProgress(newProgress);
-            chunks.push(value);
-            return pump();
-          });
-        }
+        return pumpFile(reader, handleProgress);
 
-        return pump();
       })
       .then((chunks) => {
         return new Blob(chunks);
