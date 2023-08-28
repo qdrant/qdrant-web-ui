@@ -7,7 +7,7 @@ import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
-import { pumpFile, updateProgress } from "../../common/utils";
+import { pumpFile, updateProgress } from '../../common/utils';
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
@@ -48,11 +48,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   };
 
-
-  // todo: refactor this!
-  // - [x] move to utils
-  // - [ ] get rid of isDownloading
-  // - [ ] add tests
+  // todo: get rid of isDownloading
   const downloadSnapshot = (snapshotName, snapshotSize) => {
     if (isDownloading) {
       enqueueSnackbar(
@@ -63,13 +59,13 @@ export const SnapshotsTab = ({ collectionName }) => {
     }
     setProgress(0);
     setIsDownloading(true);
-    qdrantClient.downloadSnapshot(collectionName, snapshotName).
-      then((response) => {
+    qdrantClient
+      .downloadSnapshot(collectionName, snapshotName)
+      .then((response) => {
         const reader = response.body.getReader();
         const handleProgress = updateProgress(snapshotSize, setProgress);
 
         return pumpFile(reader, handleProgress);
-
       })
       .then((chunks) => {
         return new Blob(chunks);
