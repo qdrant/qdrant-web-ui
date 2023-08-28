@@ -24,10 +24,6 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const collectionNameRegex = /^[a-zA-Z0-9()*_\-!#$%&]*$/;
   const MAX_COLLECTION_NAME_LENGTH = 255;
 
-  const getEndpointUrl = () => {
-    return new URL(`/collections/${collectionName}/snapshots/upload`, qdrantClient._restUri).href;
-  };
-
   const getHeaders = () => {
     const apiKey = qdrantClient.getApiKey();
     return apiKey ? { 'api-key': apiKey } : {};

@@ -8,7 +8,7 @@ import ActionsMenu from '../Common/ActionsMenu';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import CircularProgressWithLabel from '../Common/CircularProgressWithLabel';
 
-export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, isDownloading, progress }) => {
+export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, progress }) => {
   const theme = useTheme();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -24,7 +24,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               cursor: 'pointer',
               '&:hover': {
                 textDecoration: 'underline',
-                pointerEvents: isDownloading ? 'none' : 'auto',
+                pointerEvents: progress > 0 ? 'none' : 'auto',
                 '& svg': {
                   color: theme.palette.primary.dark,
                 },
@@ -36,11 +36,11 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               <FolderZip
                 fontSize={'large'}
                 sx={{
-                  color: isDownloading ? theme.palette.divider : theme.palette.primary.main,
+                  color: progress > 0 ? theme.palette.divider : theme.palette.primary.main,
                   mr: 2,
                 }}
               />
-              {isDownloading && (
+              {progress > 0 && (
                 <CircularProgressWithLabel
                   value={progress}
                   sx={{
@@ -54,7 +54,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               )}
             </Box>
             {snapshot.name}
-            {isDownloading && <Chip label={`Preparing download`} size="small" sx={{ ml: 3 }} />}
+            {progress > 0 && <Chip label={`Preparing download`} size="small" sx={{ ml: 3 }} />}
           </Box>
         </Tooltip>
       </TableCell>
@@ -102,6 +102,5 @@ SnapshotsTableRow.propTypes = {
   }),
   downloadSnapshot: PropTypes.func,
   deleteSnapshot: PropTypes.func,
-  isDownloading: PropTypes.bool,
   progress: PropTypes.number,
 };

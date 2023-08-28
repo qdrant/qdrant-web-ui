@@ -14,7 +14,6 @@ export const SnapshotsTab = ({ collectionName }) => {
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [isDownloading, setIsDownloading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
 
@@ -48,17 +47,14 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   };
 
-  // todo: get rid of isDownloading
   const downloadSnapshot = (snapshotName, snapshotSize) => {
-    if (isDownloading) {
+    if (progress > 0) {
       enqueueSnackbar(
         'Please wait until the previous download is finished',
         getSnackbarOptions('warning', closeSnackbar, 2000)
       );
       return;
     }
-    setProgress(0);
-    setIsDownloading(true);
     qdrantClient
       .downloadSnapshot(collectionName, snapshotName)
       .then((response) => {
@@ -79,7 +75,7 @@ export const SnapshotsTab = ({ collectionName }) => {
         a.click();
         a.remove();
         setTimeout(() => {
-          setIsDownloading(false);
+          setProgress(0);
         }, 1000);
       })
       .catch((error) => {
@@ -107,7 +103,6 @@ export const SnapshotsTab = ({ collectionName }) => {
     <SnapshotsTableRow
       key={snapshot.name}
       snapshot={snapshot}
-      isDownloading={isDownloading}
       progress={progress}
       downloadSnapshot={downloadSnapshot}
       deleteSnapshot={deleteSnapshot}
