@@ -21,12 +21,11 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               display: 'inline-flex',
               alignItems: 'center',
               verticalAlign: 'middle',
-              cursor: 'pointer',
+              cursor: progress === 0 ? 'pointer' : 'default',
               '&:hover': {
-                textDecoration: 'underline',
-                pointerEvents: progress > 0 ? 'none' : 'auto',
-                '& svg': {
-                  color: theme.palette.primary.dark,
+                textDecoration: progress === 0 ? 'underline' : 'none',
+                '& .MuiSvgIcon-root': {
+                  color: progress === 0 ? theme.palette.primary.dark : theme.palette.divider,
                 },
               },
             }}
@@ -36,7 +35,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               <FolderZip
                 fontSize={'large'}
                 sx={{
-                  color: progress > 0 ? theme.palette.divider : theme.palette.primary.main,
+                  color: progress === 0 ? theme.palette.primary.main : theme.palette.divider,
                   mr: 2,
                 }}
               />
@@ -54,7 +53,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               )}
             </Box>
             {snapshot.name}
-            {progress > 0 && <Chip label={`Preparing download`} size="small" sx={{ ml: 3 }} />}
+            {progress > 0 && <Chip label={`Preparing download`} size="small" sx={{ ml: 3, mb: '2px' }} />}
           </Box>
         </Tooltip>
       </TableCell>
