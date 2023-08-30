@@ -7,6 +7,7 @@ import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
+import { pumpFile, updateProgress } from '../../common/utils';
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
@@ -45,8 +46,44 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   };
 
-  const downloadSnapshot = (snapshotName) => {
-    window.open(`${qdrantClient._restUri}/collections/${collectionName}/snapshots/${snapshotName}`);
+  const downloadSnapshot = (snapshotName, snapshotSize, progress, setProgress) => {
+    if (progress > 0) {
+      enqueueSnackbar(
+        'Please wait until the previous download is finished',
+        getSnackbarOptions('warning', closeSnackbar, 2000)
+      );
+      return;
+    }
+    qdrantClient
+      .downloadSnapshot(collectionName, snapshotName)
+      .then((response) => {
+        const reader = response.body.getReader();
+        const handleProgress = updateProgress(snapshotSize, setProgress);
+
+        return pumpFile(reader, handleProgress);
+      })
+      .then((chunks) => {
+        return new Blob(chunks);
+      })
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = snapshotName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => {
+          setProgress(0);
+        }, 500);
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          enqueueSnackbar('Download canceled', getSnackbarOptions('warning', closeSnackbar, 2000));
+          return;
+        }
+        enqueueSnackbar(error.message, errorSnackbarOptions);
+      });
   };
 
   const deleteSnapshot = (snapshotName) => {
@@ -67,7 +104,7 @@ export const SnapshotsTab = ({ collectionName }) => {
 
   const tableRows = snapshots.map((snapshot) => (
     <SnapshotsTableRow
-      key={snapshot.name}
+      key={snapshot.creation_time.valueOf()}
       snapshot={snapshot}
       downloadSnapshot={downloadSnapshot}
       deleteSnapshot={deleteSnapshot}

@@ -24,19 +24,8 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const collectionNameRegex = /^[a-zA-Z0-9()*_\-!#$%&]*$/;
   const MAX_COLLECTION_NAME_LENGTH = 255;
 
-  /**
-   * Get the endpoint URL for uploading a snapshot, based on the collection name.
-   * qdrantClient._restUri is the base URL for the API
-   * @type {function(): string}
-   * @return {string} the endpoint URL for uploading a snapshot
-   */
-  const getEndpointUrl = () => {
-    return new URL(`/collections/${collectionName}/snapshots/upload`, qdrantClient._restUri).href;
-  };
-
   const getHeaders = () => {
-    const settings = localStorage.getItem('settings');
-    const apiKey = JSON.parse(settings)?.apiKey;
+    const apiKey = qdrantClient.getApiKey();
     return apiKey ? { 'api-key': apiKey } : {};
   };
 
@@ -52,7 +41,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   /* add XHR plugin to uploader, docs: https://uppy.io/docs/xhr-upload/ */
   uppy.use(XHR, {
     id: 'XHRUpload',
-    endpoint: getEndpointUrl(),
+    endpoint: qdrantClient.getSnapshotUploadUrl(collectionName).href,
     headers: getHeaders(),
     formData: true,
     fieldName: 'snapshot',

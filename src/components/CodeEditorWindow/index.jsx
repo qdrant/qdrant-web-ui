@@ -9,7 +9,7 @@ import { codeParse, requestFromCode } from './config/RequesFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
-const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount}) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
@@ -45,7 +45,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount}) =>
         setRequestCount((prev) => prev + 1);
         const data = args[0];
         const result = await requestFromCode(data);
-        onChangeResult("code", JSON.stringify(result));
+        onChangeResult('code', JSON.stringify(result));
         setRequestCount((prev) => prev - 1);
       },
       ''

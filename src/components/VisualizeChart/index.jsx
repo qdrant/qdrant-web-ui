@@ -133,7 +133,6 @@ const VisualizeChart = ({ scrollResult }) => {
           variant: 'error',
           action,
         });
-
       } else if (m.data.result && m.data.result.length > 0) {
         m.data.result.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;
