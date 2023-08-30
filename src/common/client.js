@@ -6,16 +6,20 @@ import { QdrantClient } from '@qdrant/js-client-rest';
  * @extends QdrantClient
  */
 export class QdrantClientExtended extends QdrantClient {
+  #downloadController;
   constructor({ url, apiKey, port }) {
     super({ url, apiKey, port });
 
     this.downloadSnapshot = this.downloadSnapshot.bind(this);
     this.getSnapshotUploadUrl = this.getSnapshotUploadUrl.bind(this);
     this.getApiKey = this.getApiKey.bind(this);
+    this.abortDownload = this.abortDownload.bind(this);
 
     this.url = url;
     this.apiKey = apiKey;
     this.port = port;
+
+    this.#downloadController = new AbortController();
   }
 
   /**
@@ -43,13 +47,18 @@ export class QdrantClientExtended extends QdrantClient {
       headers,
     });
 
-    const response = await fetch(request);
+    const response = await fetch(request, { signal: this.#downloadController.signal });
 
     if (blob) {
       return await response.blob();
     }
 
     return response;
+  }
+
+  abortDownload() {
+    this.#downloadController.abort();
+    this.#downloadController = new AbortController();
   }
 
   /**

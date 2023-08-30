@@ -7,7 +7,8 @@ describe('QdrantClientExtended', () => {
     it('fetch should be called with correct arguments', async () => {
       const fetch = vi.fn();
       vi.stubGlobal('fetch', fetch);
-      vi.spyOn(global, 'fetch');
+      const fetchSpy = vi.spyOn(global, 'fetch');
+      const controller = new AbortController();
 
       const apiKey = 'test-api-key';
       const url = 'http://localhost';
@@ -24,7 +25,7 @@ describe('QdrantClientExtended', () => {
       await client.downloadSnapshot(collectionName, snapshotName);
 
       // check that fetch was called with correct arguments
-      expect(fetch).toHaveBeenCalledWith(
+      expect(fetchSpy).toHaveBeenCalledWith(
         new Request(`${url}/collections/${collectionName}/snapshots/${snapshotName}`, {
           method: 'GET',
           headers: {
@@ -32,7 +33,8 @@ describe('QdrantClientExtended', () => {
             'Content-Type': 'application/gzip',
             'api-key': apiKey,
           },
-        })
+        }),
+        { signal: controller.signal }
       );
     });
   });

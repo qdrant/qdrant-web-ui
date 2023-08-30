@@ -3,14 +3,17 @@ import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme } from '@mui/material/styles';
 import { Box, Chip, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
-import { Delete, Download, FolderZip } from '@mui/icons-material';
+import { CancelOutlined, Delete, Download, FolderZip } from '@mui/icons-material';
 import ActionsMenu from '../Common/ActionsMenu';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import CircularProgressWithLabel from '../Common/CircularProgressWithLabel';
+import { useClient } from '../../context/client-context';
 
-export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, progress }) => {
+export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }) => {
   const theme = useTheme();
+  const { client: qdrantClient } = useClient();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   return (
     <TableRow key={snapshot.name}>
@@ -29,7 +32,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
                 },
               },
             }}
-            onClick={() => downloadSnapshot(snapshot.name, snapshot.size)}
+            onClick={() => downloadSnapshot(snapshot.name, snapshot.size, progress, setProgress)}
           >
             <Box sx={{ position: 'relative' }}>
               <FolderZip
@@ -53,15 +56,30 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot, 
               )}
             </Box>
             {snapshot.name}
-            {progress > 0 && <Chip label={`Preparing download`} size="small" sx={{ ml: 3, mb: '2px' }} />}
           </Box>
         </Tooltip>
+        {progress > 0 && (
+          <Chip
+            label={`Preparing download`}
+            size="small"
+            sx={{ ml: 3, mb: '2px' }}
+            deleteIcon={
+              <Tooltip title={'Cancel download'} placement={'right'}>
+                <CancelOutlined fontSize="small" />
+              </Tooltip>
+            }
+            onDelete={() => {
+              qdrantClient.abortDownload();
+              setProgress(0);
+            }}
+          />
+        )}
       </TableCell>
       <TableCell align="center">{snapshot.creation_time || 'unknown'}</TableCell>
       <TableCell align="center">{prettyBytes(snapshot.size)}</TableCell>
       <TableCell align="right">
         <ActionsMenu>
-          <MenuItem onClick={() => downloadSnapshot(snapshot.name, snapshot.size)}>
+          <MenuItem onClick={() => downloadSnapshot(snapshot.name, snapshot.size, progress, setProgress)}>
             <ListItemIcon>
               <Download fontSize="small" />
             </ListItemIcon>
@@ -101,5 +119,4 @@ SnapshotsTableRow.propTypes = {
   }),
   downloadSnapshot: PropTypes.func,
   deleteSnapshot: PropTypes.func,
-  progress: PropTypes.number,
 };
