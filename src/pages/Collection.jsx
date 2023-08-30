@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useClient } from '../context/client-context';
 import { Typography, Grid, Button, Tabs, Tab } from '@mui/material';
@@ -8,22 +8,23 @@ import SimilarSerachfield from '../components/Points/SimilarSerachfield';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
+import CollectionInfo from '../components/Collections/CollectionInfo';
 
 function Collection() {
   const pageSize = 10;
 
   const { collectionName } = useParams();
-  const [points, setPoints] = React.useState(null);
-  const [vector, setVector] = React.useState(null);
-  const [offset, setOffset] = React.useState(null);
+  const [points, setPoints] = useState(null);
+  const [vector, setVector] = useState(null);
+  const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [recommendationIds, setRecommendationIds] = useState([]);
   const { client: qdrantClient } = useClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentTab, setCurrentTab] = React.useState(location.hash.slice(1) || 'points');
+  const [currentTab, setCurrentTab] = useState(location.hash.slice(1) || 'points');
 
-  const [nextPageOffset, setNextPageOffset] = React.useState(null);
+  const [nextPageOffset, setNextPageOffset] = useState(null);
 
   const handleTabChange = (event, newValue) => {
     if (typeof newValue !== 'string') {
@@ -42,7 +43,7 @@ function Collection() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
         try {
@@ -95,12 +96,18 @@ function Collection() {
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
+                <Tab label="Info" value={'info'} />
                 <Tab label="Snapshots" value={'snapshots'} />
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
               </Tabs>
             </Box>
           </Grid>
 
+          {currentTab === 'info' && (
+            <Grid xs={12} item>
+              <CollectionInfo collectionName={collectionName} />
+            </Grid>
+          )}
           {currentTab === 'points' && (
             <>
               <Grid xs={12} item>
