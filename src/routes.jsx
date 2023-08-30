@@ -4,6 +4,7 @@ import Console from './pages/Console';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
 import Visualize from './pages/Visualize';
+import Tutorial from './pages/Tutorial';
 
 const routes = () => [
   {
@@ -18,6 +19,7 @@ const routes = () => [
         path: '/collections/:collectionName/visualize',
         element: <Visualize />,
       },
+      { path: '/tutorial', element: <Tutorial /> },
     ],
   },
 ];

@@ -6,6 +6,8 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@mdx-js/react": "^2.3.0",
+    "@mdx-js/rollup": "^2.3.0",
     "@monaco-editor/react": "^4.4.6",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.15",
