@@ -9,9 +9,13 @@ const themeOptions = {
       styleOverrides: {
         // this adds variant="heading" support
         // to the CardHeader component
-        root: ({ theme }) => ({
-          backgroundColor: alpha(theme.palette.primary.main, 0.05),
-        }),
+        root: ({ theme, ownerState }) => {
+          if (ownerState?.variant === 'heading') {
+            return {
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+            };
+          }
+        },
       },
     },
   },
