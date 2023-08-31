@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
-import Quickstart from './QuickStart.mdx';
+import Quickstart from './QuickStart.md';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
-
-export const Button = (props) => {
-  // eslint-disable-next-line react/prop-types
-  const { children } = props;
-  return <button onClick={() => alert('Clicked!')}>{children}</button>;
-};
+import { markdownComponents } from './MarkdownComponents';
 
 const InteractiveTutorial = () => {
   const theme = useTheme();
@@ -19,7 +14,7 @@ const InteractiveTutorial = () => {
   return (
     <PanelGroup direction="horizontal">
       <Panel>
-        <Quickstart />
+        <Quickstart components={markdownComponents} />
       </Panel>
       <PanelResizeHandle
         style={{

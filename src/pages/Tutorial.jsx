@@ -4,7 +4,6 @@ import InteractiveTutorial from '../components/InteractiveTutorial/InteractiveTu
 export const Tutorial = () => {
   return (
     <div>
-      <h1>TutorialView</h1>
       <InteractiveTutorial />
     </div>
   );
