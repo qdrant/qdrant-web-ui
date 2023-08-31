@@ -1,5 +1,5 @@
-/* eslint-disable react/prop-types */
 import React from 'react';
+import PropTypes from 'prop-types';
 import EditorCommon from '../EditorCommon';
 
 const ResultEditorWindow = ({ code }) => {
@@ -31,4 +31,9 @@ const ResultEditorWindow = ({ code }) => {
     />
   );
 };
+
+ResultEditorWindow.propTypes = {
+  code: PropTypes.string.isRequired,
+};
+
 export default ResultEditorWindow;

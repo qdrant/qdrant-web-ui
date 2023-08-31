@@ -1,5 +1,3 @@
-import { Button } from './InteractiveTutorial';
-
 # Quickstart
 
 Hello world
@@ -18,12 +16,8 @@ Hello world
 
 #### Children
 
-| Property | Description | Type | Default |
-| -------- | ----------- | ---- | ------- |
-| children |             | node |         |
-
 Aww, yer not drinking me without a love! Sea-dogs are the cannibals of the lively beauty.
 
 ```http
-GET /api/v1/interactive-tutorial
+GET collections
 ```

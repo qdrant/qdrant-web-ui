@@ -2,10 +2,26 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Box, Button } from '@mui/material';
+import { requestFromCode } from '../CodeEditorWindow/config/RequesFromCode';
+import { useTutorial } from '../../context/tutorial-context';
+
+// TODO:
+// - [x] Add run button
+// - [x] Context for code?
+// - [ ] Add theme switching with main theme
+// - [ ] Add editor
+// - [ ] In requestFromCode - history
+// - [ ] Add tests
+// - [ ] Add more styles
 
 export const RunButton = ({ code }) => {
+  const { setResult } = useTutorial();
   const handleClick = () => {
-    console.log(code);
+    requestFromCode(code).then((res) => {
+      if (res && res.status === 'ok') {
+        setResult(() => JSON.stringify(res.result));
+      }
+    });
   };
   return (
     <Button variant="text" onClick={handleClick}>

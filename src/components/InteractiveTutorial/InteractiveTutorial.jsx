@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Quickstart from './QuickStart.md';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
@@ -6,15 +6,18 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { markdownComponents } from './MarkdownComponents';
+import { useTutorial } from '../../context/tutorial-context';
 
 const InteractiveTutorial = () => {
   const theme = useTheme();
-  const [result] = useState({});
+  const { result } = useTutorial();
 
   return (
     <PanelGroup direction="horizontal">
       <Panel>
-        <Quickstart components={markdownComponents} />
+        <Box sx={{ px: 2, py: 4 }}>
+          <Quickstart components={markdownComponents} />
+        </Box>
       </Panel>
       <PanelResizeHandle
         style={{
@@ -34,7 +37,7 @@ const InteractiveTutorial = () => {
         </Box>
       </PanelResizeHandle>
       <Panel>
-        <ResultEditorWindow code={result} />
+        <ResultEditorWindow code={result ?? '{}'} />
       </Panel>
     </PanelGroup>
   );
