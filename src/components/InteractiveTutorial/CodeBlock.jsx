@@ -19,7 +19,9 @@ export const RunButton = ({ code }) => {
   const handleClick = () => {
     requestFromCode(code).then((res) => {
       if (res && res.status === 'ok') {
-        setResult(() => JSON.stringify(res.result));
+        setResult(() => JSON.stringify(res));
+      } else {
+        setResult(() => JSON.stringify(res));
       }
     });
   };
@@ -34,11 +36,12 @@ RunButton.propTypes = {
   code: PropTypes.string.isRequired,
 };
 
-export const CodeBlock = ({ children }) => {
+export const CodeBlock = (props) => {
+  const { children } = props;
   const className = children.props.className || '';
   const code = children.props.children.trim();
   const language = className.replace(/language-/, '');
-  const file = children.props.file;
+  const withRunButton = children.props.withRunButton && JSON.parse(children.props.withRunButton);
   const theme = themes.duotoneLight;
 
   return (
@@ -49,23 +52,26 @@ export const CodeBlock = ({ children }) => {
         my: 3,
       }}
     >
-      <Box sx={{ flexGrow: '1' }}>
-        <RunButton code={code} />
-      </Box>
+      {withRunButton && (
+        <Box sx={{ flexGrow: '1' }}>
+          <RunButton code={code} />
+        </Box>
+      )}
       <Box sx={{ px: 2 }}>
         <Highlight code={code} language={language} theme={theme}>
-          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-            <pre className={className} style={style}>
-              {<div>{file && `File: ${file}`}</div>}
-              {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line, key: i })}>
-                  {line.map((token, key) => (
-                    <span key={token} {...getTokenProps({ token, key })} />
-                  ))}
-                </div>
-              ))}
-            </pre>
-          )}
+          {({ className, style, tokens, getLineProps, getTokenProps }) => {
+            return (
+              <pre className={className} style={style}>
+                {tokens.map((line, i) => (
+                  <div key={i} {...getLineProps({ line, key: i })}>
+                    {line.map((token, key) => (
+                      <span key={token} {...getTokenProps({ token, key })} />
+                    ))}
+                  </div>
+                ))}
+              </pre>
+            );
+          }}
         </Highlight>
       </Box>
     </Box>

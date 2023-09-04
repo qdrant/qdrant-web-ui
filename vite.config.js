@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import reactRefresh from '@vitejs/plugin-react';
 import svgrPlugin from 'vite-plugin-svgr';
 import eslintPlugin from 'vite-plugin-eslint';
+import {rehypeMetaAsAttributes} from "./src/lib/rehype-meta-as-attributes";
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
@@ -30,7 +31,11 @@ export default defineConfig(async () => {
           '**/*.mdx',
           '**/*.md'],
       }),
-      mdx.default(),
+      mdx.default({
+        rehypePlugins: [
+          rehypeMetaAsAttributes,
+        ],
+      }),
     ],
     test: {
       globals: true,
