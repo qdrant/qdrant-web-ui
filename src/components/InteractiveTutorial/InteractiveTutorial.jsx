@@ -14,8 +14,18 @@ const InteractiveTutorial = () => {
 
   return (
     <PanelGroup direction="horizontal">
-      <Panel>
-        <Box sx={{ px: 2, py: 4 }}>
+      <Panel style={{position: 'relative'}}>
+        <Box sx={{
+          px: 2,
+          pt: 4,
+          pb: 20,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflowY: "scroll",
+        }}>
           <Quickstart components={markdownComponents} />
         </Box>
       </Panel>

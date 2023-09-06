@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography } from '@mui/material';
+import { Typography, Link, Alert } from "@mui/material";
 import { CodeBlock } from './CodeBlock';
 
 // if we will use mdx in other places, then this is better to be done on the App level
@@ -10,7 +10,9 @@ export const markdownComponents = {
   h2: (props) => <Typography component={'h2'} variant={'h5'} mt={4} mb={2} {...props} />,
   h3: (props) => <Typography component={'h3'} variant={'h6'} mt={2} {...props} />,
   h4: (props) => <Typography component={'h4'} variant={'subtitle1'} mt={2} {...props} />,
-  p: (props) => <Typography component={'p'} variant={'body1'} {...props} />,
+  p: (props) => <Typography component={'p'} variant={'body1'} mb={2} {...props} />,
+  a: (props) => <Link {...props} />,
   img: (props) => <img width={'100%'} {...props} alt={props.alt || 'image'} />,
   pre: (props) => <CodeBlock {...props} />,
+  em: (props) => <Alert severity="info" {...props}>{props.children}</Alert>,
 };

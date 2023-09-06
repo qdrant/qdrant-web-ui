@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal } from '@mui/icons-material';
+import { LibraryBooks, Lightbulb, Terminal } from "@mui/icons-material";
 
 const drawerWidth = 240;
 
@@ -103,6 +103,28 @@ export default function Sidebar({ open, version }) {
               <LibraryBooks />
             </ListItemIcon>
             <ListItemText primary={'Collections'} sx={{ opacity: open ? 1 : 0 }} />
+          </ListItemButton>
+        </ListItem>
+        <ListItem key={'Quick-Start'} disablePadding sx={{ display: 'block' }}>
+          <ListItemButton
+            sx={{
+              minHeight: 48,
+              justifyContent: open ? 'initial' : 'center',
+              px: 2.5,
+            }}
+            component={Link}
+            to="/tutorial"
+          >
+            <ListItemIcon
+              sx={{
+                minWidth: 0,
+                mr: open ? 3 : 'auto',
+                justifyContent: 'center',
+              }}
+            >
+              <Lightbulb />
+            </ListItemIcon>
+            <ListItemText primary={'Quick Start'} sx={{ opacity: open ? 1 : 0 }} />
           </ListItemButton>
         </ListItem>
       </List>

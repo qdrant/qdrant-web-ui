@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { options, btnconfig, getCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
 import { useClient } from '../../context/client-context';
-import { useTheme } from '@mui/material/styles';
 import { autocomplete } from './config/Autocomplete';
 import { ErrorMarker, errChecker } from './config/ErrorMarker';
 import { codeParse, requestFromCode } from './config/RequesFromCode';
@@ -20,7 +19,6 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
   let runBtnCommandId = null;
   let beautifyBtnCommandId = null;
 
-  const theme = useTheme();
   const handleEditorChange = (code) => {
     onChange('code', code);
     errChecker(code);
@@ -100,8 +98,8 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
             {
               range: new monaco.Range(fromRange, 0, toRange, 3),
               options: {
-                className: theme.palette.mode === 'dark' ? 'blockSelector' : 'blockSelector',
-                glyphMarginClassName: theme.palette.mode === 'dark' ? 'blockSelectorStrip' : 'blockSelectorStrip',
+                className: 'blockSelector',
+                glyphMarginClassName: 'blockSelectorStrip',
                 isWholeLine: true,
               },
             },
