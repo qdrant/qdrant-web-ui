@@ -123,7 +123,7 @@ const VisualizeChart = ({ scrollResult }) => {
       ],
     });
 
-    const worker = new Worker(new URL('./worker.js', import.meta.url), {
+    const worker = new Worker(new URL('./worker2.js', import.meta.url), {
       type: 'module',
     });
 

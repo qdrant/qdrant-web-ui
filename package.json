@@ -39,6 +39,7 @@
     "react-router-dom": "^6.8.1",
     "vite": "^4.3.3",
     "vite-plugin-svgr": "^2.4.0",
+    "wasm-bhtsne": "^0.3.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
