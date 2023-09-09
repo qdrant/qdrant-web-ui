@@ -1,4 +1,5 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { getBaseURL } from './utils';
 
 /**
  * Extended QdrantClient class with additional methods
@@ -85,7 +86,7 @@ export default function qdrantClient({ apiKey }) {
   if (process.env.NODE_ENV === 'development') {
     url = 'http://localhost:6333';
   } else {
-    url = window.location.href;
+    url = getBaseURL();
     if (window.location.port) {
       port = window.location.port;
     } else {
