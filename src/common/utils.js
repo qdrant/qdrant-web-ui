@@ -1,3 +1,9 @@
+export const getBaseURL = function () {
+  const url = new URL(window.location.href);
+  url.pathname = url.pathname.replace(/dashboard$/, '');
+  return url.href;
+};
+
 export const pumpFile = function (reader, callback, chunks = []) {
   return reader.read().then(({ done, value }) => {
     if (done) {

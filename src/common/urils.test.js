@@ -1,7 +1,35 @@
-import { describe, expect, it } from 'vitest';
-import { pumpFile, updateProgress } from './utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { getBaseURL, pumpFile, updateProgress } from './utils';
 
 describe('utils', () => {
+  describe('getBaseURL', () => {
+    it('should return base url', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/dashboard',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      const result = 'http://localhost:63342/';
+
+      expect(getBaseURL()).toEqual(result);
+    });
+
+    it('should return base url with pathname', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/myapp/dashboard',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      const result = 'http://localhost:63342/myapp/';
+
+      expect(getBaseURL()).toEqual(result);
+    });
+  });
+
   describe('pumpFile', () => {
     it('should return chunks', async () => {
       let readNumber = 0;
@@ -35,4 +63,8 @@ describe('utils', () => {
       expect(result).toEqual(20);
     });
   });
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
