@@ -11,6 +11,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  optimizeDeps: {
+    exclude: [
+      "wasm-bhtsne",
+    ],
+  },
   plugins: [
     reactRefresh(),
     svgrPlugin({
