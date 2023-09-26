@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Lightbulb, Terminal } from "@mui/icons-material";
+import { LibraryBooks, Lightbulb, Terminal } from '@mui/icons-material';
 
 const drawerWidth = 240;
 

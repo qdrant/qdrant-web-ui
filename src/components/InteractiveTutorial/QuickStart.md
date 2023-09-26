@@ -79,7 +79,7 @@ See [payload and vector in the result](../concepts/search#payload-and-vector-in-
 
 We can narrow down the results further by filtering by payload. Let's find the closest results that include "London".
 
-``` json withRunButton=true
+```json withRunButton=true
 POST collections/test_collection/points/search
 {
     "vector": [0.2, 0.1, 0.9, 0.7],
@@ -101,9 +101,8 @@ You have just conducted vector search. You loaded vectors into a database and qu
 
 ## Next steps
 
-Now you know how Qdrant works. Getting started with [Qdrant Cloud](../cloud/quickstart-cloud/) is just as easy. [Create an account](https://qdrant.to/cloud) and use our SaaS completely free. We will take care of infrastructure maintenance and software updates.
+Now you know how Qdrant works. Getting started with [Qdrant Cloud](https://qdrant.tech/documentation/cloud/quickstart-cloud/) is just as easy. [Create an account](https://qdrant.to/cloud) and use our SaaS completely free. We will take care of infrastructure maintenance and software updates.
 
-To move onto some more complex examples of vector search, read our [Tutorials](../tutorials/) and create your own app with the help of our [Examples](../examples/).
-
+To move onto some more complex examples of vector search, read our [Tutorials](https://qdrant.tech/documentation/tutorials/) and create your own app with the help of our [Examples](https://qdrant.tech/documentation/examples/).
 
 **Note:** There is another way of running Qdrant locally. If you are a Python developer, we recommend that you try Local Mode in [Qdrant Client](https://github.com/qdrant/qdrant-client), as it only takes a few moments to get setup.

@@ -1,19 +1,20 @@
-import React, { useEffect } from "react";
-import PropTypes from "prop-types";
-import { Highlight, Prism, themes } from "prism-react-renderer";
-import { alpha, Box, Button } from "@mui/material";
-import { requestFromCode } from "../CodeEditorWindow/config/RequesFromCode";
-import { useTutorial } from "../../context/tutorial-context";
-import { useTheme } from "@mui/material/styles";
-import { PlayArrowOutlined } from "@mui/icons-material";
-import { CopyButton } from "../Common/CopyButton";
+import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { Highlight, Prism, themes } from 'prism-react-renderer';
+import { alpha, Box, Button } from '@mui/material';
+import { requestFromCode } from '../CodeEditorWindow/config/RequesFromCode';
+import { useTutorial } from '../../context/tutorial-context';
+import { useTheme } from '@mui/material/styles';
+import { PlayArrowOutlined } from '@mui/icons-material';
+import { CopyButton } from '../Common/CopyButton';
+import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MarkdownComponents';
 
 // TODO:
 // - [x] Add run button
 // - [x] Context for code?
 // - [x] Add theme switching with main theme
 // - [ ] In requestFromCode - history
-// - [ ] Add more styles
+// - [x] Add more styles
 // - [ ] Add tests
 // - [ ] Add editor
 // - [ ] usePrismTheme hook
@@ -22,7 +23,7 @@ export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
     requestFromCode(code).then((res) => {
-      if (res && res.status === "ok") {
+      if (res && res.status === 'ok') {
         setResult(() => JSON.stringify(res));
       } else {
         setResult(() => JSON.stringify(res));
@@ -30,7 +31,7 @@ export const RunButton = ({ code }) => {
     });
   };
   return (
-    <Button variant="outlined" endIcon={<PlayArrowOutlined/>} onClick={handleClick}>
+    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick}>
       Run
     </Button>
   );
@@ -42,54 +43,55 @@ RunButton.propTypes = {
 
 export const CodeBlock = (props) => {
   const { children } = props;
-  const className = children.props.className || "";
+  const className = children.props.className || '';
   const code = children.props.children.trim();
-  const language = className.replace(/language-/, "");
-  const withRunButton = children.props.withRunButton &&
-    JSON.parse(children.props.withRunButton);
+  const language = className.replace(/language-/, '');
+  const withRunButton = children.props.withRunButton && JSON.parse(children.props.withRunButton);
   const theme = useTheme();
-  const prismTheme = theme.palette.mode === "light" ?
-    themes.nightOwlLight :
-    themes.vsDark;
-  const backgroundColor = theme.palette.mode === "light" ?
-    "#fbfbfb" :
-    "#1e1e1e";
+  const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
+  const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
 
   useEffect(() => {
     window.Prism = Prism; // (or check for window is undefined for ssr and use global)
-    (async () => await import("prismjs/components/prism-json"))();
+    (async () => await import('prismjs/components/prism-json'))();
   }, []);
 
   return (
     <Box
       sx={{
         background: backgroundColor,
-        borderRadius: "0.5rem",
+        borderRadius: '0.5rem',
         my: 3,
       }}
     >
       <Box
-        display={"flex"}
-           alignItems={"center"}
-        px={2} py={1}
+        display={'flex'}
+        alignItems={'center'}
+        px={2}
+        py={1}
         sx={{
           background: alpha(theme.palette.primary.main, 0.05),
         }}
       >
         {withRunButton && (
-          <Box sx={{ flexGrow: "1" }}>
-            <RunButton code={code}/>
+          <Box sx={{ flexGrow: '1' }}>
+            <RunButton code={code} />
           </Box>
         )}
-        <Box sx={{ flexGrow: "1" }}/>
-        <CopyButton text={code}/>
+        <Box sx={{ flexGrow: '1' }} />
+        <CopyButton text={code} />
       </Box>
       <Box sx={{ px: 2, pb: 1 }}>
-        <Highlight code={code} language={language} theme={prismTheme}
-                   prism={Prism}>
+        <Highlight code={code} language={language} theme={prismTheme} prism={Prism}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => {
             return (
-              <pre className={className} style={style}>
+              <pre
+                className={className}
+                style={{
+                  overflowX: 'scroll',
+                  ...style,
+                }}
+              >
                 {tokens.map((line, i) => (
                   <div key={i} {...getLineProps({ line, key: i })}>
                     {line.map((token, key) => (
