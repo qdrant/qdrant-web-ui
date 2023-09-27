@@ -16,9 +16,11 @@ import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MarkdownComponents';
 // - [x] In requestFromCode - history
 // - [x] Add more styles
 // - [x] Add tests
-// - [ ] Add editor
-// - [ ] usePrismTheme hook
-// - [ ] custom alert without div
+// - [x] custom alert without div
+// - [ ] Refactor
+// later:
+// - [ ] usePrismTheme hook - doesn't look like it's needed
+// - [ ] Add editor - next step
 
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();

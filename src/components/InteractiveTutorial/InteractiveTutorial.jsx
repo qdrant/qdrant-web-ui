@@ -1,5 +1,5 @@
 import React from 'react';
-import Quickstart from './QuickStart.md';
+import Quickstart from './QuickStart.mdx';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';

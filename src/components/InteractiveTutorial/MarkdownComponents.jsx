@@ -37,10 +37,7 @@ export const markdownComponents = {
   a: (props) => <Link target="_blank" {...props} />,
   img: (props) => <img width={'100%'} {...props} alt={props.alt || 'image'} />,
   pre: (props) => <CodeBlock {...props} />,
-  em: (props) => (
-    <Alert severity="info" {...props}>
-      {props.children}
-    </Alert>
-  ),
+  em: (props) => <Typography component={'em'} variant={'body1'} {...props} />,
   code: (props) => <InlineCode {...props} />,
+  Alert: (props) => <Alert {...props} />,
 };
