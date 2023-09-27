@@ -13,16 +13,17 @@ import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MarkdownComponents';
 // - [x] Add run button
 // - [x] Context for code?
 // - [x] Add theme switching with main theme
-// - [ ] In requestFromCode - history
+// - [x] In requestFromCode - history
 // - [x] Add more styles
 // - [ ] Add tests
 // - [ ] Add editor
 // - [ ] usePrismTheme hook
+// - [ ] custom alert without div
 
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
-    requestFromCode(code).then((res) => {
+    requestFromCode(code, false).then((res) => {
       if (res && res.status === 'ok') {
         setResult(() => JSON.stringify(res));
       } else {
@@ -31,7 +32,7 @@ export const RunButton = ({ code }) => {
     });
   };
   return (
-    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick}>
+    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick} data-testid="code-block-run">
       Run
     </Button>
   );
@@ -63,6 +64,7 @@ export const CodeBlock = (props) => {
         borderRadius: '0.5rem',
         my: 3,
       }}
+      data-testid={'code-block'}
     >
       <Box
         display={'flex'}
@@ -91,6 +93,7 @@ export const CodeBlock = (props) => {
                   overflowX: 'scroll',
                   ...style,
                 }}
+                data-testid={'code-block-pre'}
               >
                 {tokens.map((line, i) => (
                   <div key={i} {...getLineProps({ line, key: i })}>
