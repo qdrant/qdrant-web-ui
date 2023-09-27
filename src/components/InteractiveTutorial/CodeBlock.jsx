@@ -15,7 +15,7 @@ import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MarkdownComponents';
 // - [x] Add theme switching with main theme
 // - [x] In requestFromCode - history
 // - [x] Add more styles
-// - [ ] Add tests
+// - [x] Add tests
 // - [ ] Add editor
 // - [ ] usePrismTheme hook
 // - [ ] custom alert without div
