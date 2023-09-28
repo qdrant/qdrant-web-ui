@@ -5,7 +5,7 @@ import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
-import { mdxComponents } from './MdxComponents';
+import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 
 const InteractiveTutorial = () => {

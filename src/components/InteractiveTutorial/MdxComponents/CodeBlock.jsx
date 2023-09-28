@@ -2,11 +2,11 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import { alpha, Box, Button } from '@mui/material';
-import { requestFromCode } from '../CodeEditorWindow/config/RequesFromCode';
-import { useTutorial } from '../../context/tutorial-context';
+import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
+import { useTutorial } from '../../../context/tutorial-context';
 import { useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
-import { CopyButton } from '../Common/CopyButton';
+import { CopyButton } from '../../Common/CopyButton';
 import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 
 // TODO:
@@ -17,9 +17,11 @@ import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 // - [x] Add more styles
 // - [x] Add tests
 // - [x] custom alert without div
-// - [ ] Refactor
+// - [ ] fix scrollbars
+// - [ ] Refactor - subfolder for mdx stuff
 // later:
 // - [ ] usePrismTheme hook - doesn't look like it's needed
+// - [ ] Add pages - next step
 // - [ ] Add editor - next step
 
 export const RunButton = ({ code }) => {

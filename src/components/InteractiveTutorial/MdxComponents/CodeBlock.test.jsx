@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CodeBlock, RunButton } from './CodeBlock';
-import * as requestFromCodeMod from '../CodeEditorWindow/config/RequesFromCode';
+import * as requestFromCodeMod from '../../CodeEditorWindow/config/RequesFromCode';
 
 const props = {
   children: {
