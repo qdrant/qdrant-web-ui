@@ -9,21 +9,12 @@ import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from '../../Common/CopyButton';
 import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 
-// TODO:
-// - [x] Add run button
-// - [x] Context for code?
-// - [x] Add theme switching with main theme
-// - [x] In requestFromCode - history
-// - [x] Add more styles
-// - [x] Add tests
-// - [x] custom alert without div
-// - [ ] fix scrollbars
-// - [ ] Refactor - subfolder for mdx stuff
-// later:
-// - [ ] usePrismTheme hook - doesn't look like it's needed
-// - [ ] Add pages - next step
-// - [ ] Add editor - next step
-
+/**
+ * Run button for code block
+ * @param {string} code
+ * @return {JSX.Element}
+ * @constructor
+ */
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
@@ -46,8 +37,13 @@ RunButton.propTypes = {
   code: PropTypes.string.isRequired,
 };
 
-export const CodeBlock = (props) => {
-  const { children } = props;
+/**
+ * Code block with syntax highlighting
+ * @param {object} children - code block content from mdx
+ * @return {JSX.Element}
+ * @constructor
+ */
+export const CodeBlock = ({ children }) => {
   const className = children.props.className || '';
   const code = children.props.children.trim();
   const language = className.replace(/language-/, '');
@@ -57,6 +53,8 @@ export const CodeBlock = (props) => {
   const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
 
   useEffect(() => {
+    // we need this to use prismjs support for json highlighting
+    // which is not included in the prism-react-renderer package by default
     window.Prism = Prism; // (or check for window is undefined for ssr and use global)
     (async () => await import('prismjs/components/prism-json'))();
   }, []);
@@ -94,7 +92,7 @@ export const CodeBlock = (props) => {
               <pre
                 className={className}
                 style={{
-                  overflowX: 'scroll',
+                  overflowX: 'auto',
                   ...style,
                 }}
                 data-testid={'code-block-pre'}
@@ -116,5 +114,11 @@ export const CodeBlock = (props) => {
 };
 
 CodeBlock.propTypes = {
-  children: PropTypes.object,
+  children: PropTypes.shape({
+    props: PropTypes.shape({
+      className: PropTypes.string,
+      children: PropTypes.string.isRequired,
+      withRunButton: PropTypes.string,
+    }),
+  }),
 };

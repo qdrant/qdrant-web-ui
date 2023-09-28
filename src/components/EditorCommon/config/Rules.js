@@ -44,6 +44,10 @@ export const options = {
   mouseWheelZoom: true,
   glyphMargin: true,
   wordBasedSuggestions: false,
+  scrollbar: {
+    verticalScrollbarSize: 7,
+    horizontalScrollbarSize: 7,
+  },
 };
 
 export function btnconfig(commandId, beutifyCommandId) {
