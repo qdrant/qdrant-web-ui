@@ -5,7 +5,7 @@ import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
-import { markdownComponents } from './MarkdownComponents';
+import { mdxComponents } from './MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 
 const InteractiveTutorial = () => {
@@ -28,7 +28,7 @@ const InteractiveTutorial = () => {
             overflowY: 'scroll',
           }}
         >
-          <Quickstart components={markdownComponents} />
+          <Quickstart components={mdxComponents} />
         </Box>
       </Panel>
       <PanelResizeHandle

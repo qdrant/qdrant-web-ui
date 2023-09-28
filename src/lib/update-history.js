@@ -4,9 +4,7 @@
  * @return {array} history
  */
 export function updateHistory(data) {
-  const history = localStorage.getItem("history") ?
-    JSON.parse(localStorage.getItem("history")) :
-    [];
+  const history = localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : [];
 
   // Prevent using whole quota of local storage
   if (history.length >= 25) {
@@ -18,6 +16,6 @@ export function updateHistory(data) {
     time: new Date().toLocaleTimeString(),
     date: new Date().toLocaleDateString(),
   });
-  localStorage.setItem("history", JSON.stringify(history));
+  localStorage.setItem('history', JSON.stringify(history));
   return history;
 }

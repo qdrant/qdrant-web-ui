@@ -7,7 +7,7 @@ import { useTutorial } from '../../context/tutorial-context';
 import { useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from '../Common/CopyButton';
-import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MarkdownComponents';
+import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 
 // TODO:
 // - [x] Add run button

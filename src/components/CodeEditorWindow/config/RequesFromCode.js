@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { parse as jsoncParse } from 'jsonc-parser';
-import { updateHistory } from "../../../lib/update-history";
+import { updateHistory } from '../../../lib/update-history';
 
 export function requestFromCode(text, withHistory = true) {
   const data = codeParse(text);
