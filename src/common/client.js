@@ -43,7 +43,7 @@ export class QdrantClientExtended extends QdrantClient {
       headers['api-key'] = this.apiKey;
     }
 
-    const snapshotUrl = new URL(`/collections/${collectionName}/snapshots/${snapshotName}`, this.url).href
+    const snapshotUrl = new URL(`/collections/${collectionName}/snapshots/${snapshotName}`, this.url).href;
 
     const request = new Request(snapshotUrl, {
       method: 'GET',

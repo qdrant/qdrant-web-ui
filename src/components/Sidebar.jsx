@@ -5,6 +5,7 @@ import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { LibraryBooks, Terminal } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 
 const drawerWidth = 240;
 
@@ -62,49 +63,78 @@ export default function Sidebar({ open, version }) {
       <Divider />
       <List>
         <ListItem key={'Console'} disablePadding sx={{ display: 'block' }}>
-          <ListItemButton
-            sx={{
-              minHeight: 48,
-              justifyContent: open ? 'initial' : 'center',
-              px: 2.5,
-            }}
-            component={Link}
-            to="/console"
-          >
-            <ListItemIcon
+          <Tooltip title={'Console'} placement={'right'}>
+            <ListItemButton
               sx={{
-                minWidth: 0,
-                mr: open ? 3 : 'auto',
-                justifyContent: 'center',
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
               }}
+              component={Link}
+              to="/console"
             >
-              <Terminal />
-            </ListItemIcon>
-            <ListItemText primary={'Console'} sx={{ opacity: open ? 1 : 0 }} />
-          </ListItemButton>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+                <Terminal />
+              </ListItemIcon>
+              <ListItemText primary={'Console'} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </Tooltip>
         </ListItem>
         <ListItem key={'Collections'} disablePadding sx={{ display: 'block' }}>
-          <ListItemButton
-            sx={{
-              minHeight: 48,
-              justifyContent: open ? 'initial' : 'center',
-              px: 2.5,
-            }}
-            component={Link}
-            to="/collections"
-          >
-            <ListItemIcon
+          <Tooltip title={'Collections'} placement={'right'}>
+            <ListItemButton
               sx={{
-                minWidth: 0,
-                mr: open ? 3 : 'auto',
-                justifyContent: 'center',
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
               }}
+              component={Link}
+              to="/collections"
             >
-              <LibraryBooks />
-            </ListItemIcon>
-            <ListItemText primary={'Collections'} sx={{ opacity: open ? 1 : 0 }} />
-          </ListItemButton>
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+                <LibraryBooks />
+              </ListItemIcon>
+              <ListItemText primary={'Collections'} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </Tooltip>
         </ListItem>
+        {/* todo: uncomment when tutorial is ready*/}
+        {/* <ListItem key={'Quick-Start'} disablePadding sx={{ display: 'block' }}>*/}
+        {/*  <Tooltip title={'Quick Start'} placement={'right'}>*/}
+        {/*    <ListItemButton*/}
+        {/*      sx={{*/}
+        {/*        minHeight: 48,*/}
+        {/*        justifyContent: open ? 'initial' : 'center',*/}
+        {/*        px: 2.5,*/}
+        {/*      }}*/}
+        {/*      component={Link}*/}
+        {/*      to="/tutorial"*/}
+        {/*    >*/}
+        {/*      <ListItemIcon*/}
+        {/*        sx={{*/}
+        {/*          minWidth: 0,*/}
+        {/*          mr: open ? 3 : 'auto',*/}
+        {/*          justifyContent: 'center',*/}
+        {/*        }}*/}
+        {/*      >*/}
+        {/*        <Lightbulb />*/}
+        {/*      </ListItemIcon>*/}
+        {/*      <ListItemText primary={'Quick Start'} sx={{ opacity: open ? 1 : 0 }} />*/}
+        {/*    </ListItemButton>*/}
+        {/*  </Tooltip>*/}
+        {/* </ListItem>*/}
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>

@@ -7,6 +7,7 @@ import { createTheme } from './theme';
 import { CssBaseline } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { ColorModeContext } from './context/color-context';
+import StyledMain from './components/Common/StyledMain';
 
 function NewApp() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -42,7 +43,7 @@ function NewApp() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <main style={{ height: '100vh' }}>{routing}</main>
+        <StyledMain>{routing}</StyledMain>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
