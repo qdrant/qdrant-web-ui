@@ -7,10 +7,17 @@ import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
+import PropTypes from "prop-types";
 
-const InteractiveTutorial = () => {
+const pages = {
+  quickstart: Quickstart,
+}
+
+const InteractiveTutorial = ({pageName}) => {
   const theme = useTheme();
   const { result } = useTutorial();
+
+  const TagName = pages[pageName] || Quickstart;
 
   return (
     <PanelGroup direction="horizontal">
@@ -28,7 +35,7 @@ const InteractiveTutorial = () => {
             overflowY: 'scroll',
           }}
         >
-          <Quickstart components={mdxComponents} />
+          <TagName components={mdxComponents} />
         </Box>
       </Panel>
       <PanelResizeHandle
@@ -54,5 +61,9 @@ const InteractiveTutorial = () => {
     </PanelGroup>
   );
 };
+
+InteractiveTutorial.propTypes = {
+  pageName: PropTypes.string,
+}
 
 export default InteractiveTutorial;
