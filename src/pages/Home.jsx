@@ -12,6 +12,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar';
+import AutoModeIcon from '@mui/icons-material/BrightnessAuto';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -27,7 +28,6 @@ export default function MiniDrawer() {
   const [open, setOpen] = React.useState(false);
   const [version, setVersion] = useState('???');
   const colorMode = React.useContext(ColorModeContext);
-
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
 
@@ -84,7 +84,17 @@ export default function MiniDrawer() {
           <Box sx={{ flexGrow: 1 }}></Box>
           <Tooltip title="Color Mode">
             <IconButton size="large" onClick={colorMode.toggleColorMode}>
-              {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+              <ColorModeContext.Consumer>
+                {(colorMode) => {
+                  if (colorMode.mode === 'light') {
+                    return <DarkModeIcon />;
+                  } else if (colorMode.mode === 'dark') {
+                    return <LightModeIcon />;
+                  } else {
+                    return <AutoModeIcon />;
+                  }
+                }}
+              </ColorModeContext.Consumer>
             </IconButton>
           </Tooltip>
           <Tooltip title="API Key">
