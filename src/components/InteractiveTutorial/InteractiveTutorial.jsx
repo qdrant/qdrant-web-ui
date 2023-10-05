@@ -1,5 +1,6 @@
 import React from 'react';
 import Quickstart from './QuickStart.mdx';
+import Another from './Another.mdx';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -7,13 +8,14 @@ import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
-import PropTypes from "prop-types";
+import PropTypes from 'prop-types';
 
 const pages = {
   quickstart: Quickstart,
-}
+  'another-page': Another,
+};
 
-const InteractiveTutorial = ({pageName}) => {
+const InteractiveTutorial = ({ pageName }) => {
   const theme = useTheme();
   const { result } = useTutorial();
 
@@ -64,6 +66,6 @@ const InteractiveTutorial = ({pageName}) => {
 
 InteractiveTutorial.propTypes = {
   pageName: PropTypes.string,
-}
+};
 
 export default InteractiveTutorial;
