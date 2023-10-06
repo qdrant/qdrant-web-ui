@@ -11,7 +11,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import KeyIcon from '@mui/icons-material/Key';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar/Sidebar';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',

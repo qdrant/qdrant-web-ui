@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { ExpandMore, LibraryBooks, Lightbulb, Terminal } from '@mui/icons-material';
+import { LibraryBooks, Terminal } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import { Accordion, AccordionDetails, AccordionSummary } from './Common/Accordion';
+import { SidebarTutorialSection } from './SidebarTutorialSection';
 
 const drawerWidth = 240;
 
@@ -58,12 +58,6 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Sidebar({ open, version }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-  };
-
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />
@@ -117,70 +111,9 @@ export default function Sidebar({ open, version }) {
             </ListItemButton>
           </Tooltip>
         </ListItem>
-        {/* todo: uncomment when tutorial is ready*/}
+        {/* todo: comment for now and uncomment when tutorial is ready*/}
         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
-          <Accordion expanded={expanded === 'panel1'} onChange={handleChange('panel1')}>
-            <Tooltip title={'Tutorial'} placement={'right'} arrow={true}>
-              <AccordionSummary expandIcon={<ExpandMore />} aria-controls="panel1bh-content" id="panel1bh-header">
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
-                  }}
-                  component={Link}
-                  to="/tutorial"
-                >
-                  <ListItemIcon
-                    sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : 'auto',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Lightbulb />
-                  </ListItemIcon>
-                  <ListItemText primary={'Tutorial'} sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-              </AccordionSummary>
-            </Tooltip>
-            <AccordionDetails>
-              <List sx={{ py: 0 }}>
-                <ListItem key={'Quick Start'} disablePadding sx={{ display: 'block' }}>
-                  <Tooltip title={'Quick Start'} placement={'right'} arrow={true}>
-                    <ListItemButton
-                      sx={{
-                        minHeight: 48,
-                        justifyContent: open ? 'initial' : 'center',
-                        pr: 2.5,
-                        pl: 5,
-                      }}
-                      component={Link}
-                      to="/tutorial/quickstart"
-                    >
-                      <ListItemText primary={'Quick Start'} sx={{ opacity: open ? 1 : 0 }} />
-                    </ListItemButton>
-                  </Tooltip>
-                </ListItem>
-                <ListItem key={'Another page'} disablePadding sx={{ display: 'block' }}>
-                  <Tooltip title={'Another page'} placement={'right'} arrow={true}>
-                    <ListItemButton
-                      sx={{
-                        minHeight: 48,
-                        justifyContent: open ? 'initial' : 'center',
-                        pr: 2.5,
-                        pl: 5,
-                      }}
-                      component={Link}
-                      to="/tutorial/another-page"
-                    >
-                      <ListItemText primary={'Another page'} sx={{ opacity: open ? 1 : 0 }} />
-                    </ListItemButton>
-                  </Tooltip>
-                </ListItem>
-              </List>
-            </AccordionDetails>
-          </Accordion>
+          <SidebarTutorialSection isSidebarOpen={open} />
         </ListItem>
       </List>
       <List style={{ marginTop: `auto` }}>
