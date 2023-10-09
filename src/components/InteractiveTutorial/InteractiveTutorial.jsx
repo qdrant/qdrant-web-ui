@@ -1,6 +1,6 @@
 import React from 'react';
-import Quickstart from './QuickStart.mdx';
-import Another from './Another.mdx';
+import PropTypes from 'prop-types';
+import Quickstart from './MdxPages/Index.mdx';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -8,18 +8,14 @@ import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
-import PropTypes from 'prop-types';
+import { TutorialFooter } from "./TutorialFooter";
+import pages from './TutorialSubpages';
 
-const pages = {
-  quickstart: Quickstart,
-  'another-page': Another,
-};
-
-const InteractiveTutorial = ({ pageName }) => {
+const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
 
-  const TagName = pages[pageName] || Quickstart;
+  const TagName = pages[pageSlug] || Quickstart;
 
   return (
     <PanelGroup direction="horizontal">
@@ -38,6 +34,7 @@ const InteractiveTutorial = ({ pageName }) => {
           }}
         >
           <TagName components={mdxComponents} />
+          <TutorialFooter pageSlug={pageSlug} />
         </Box>
       </Panel>
       <PanelResizeHandle
@@ -65,7 +62,7 @@ const InteractiveTutorial = ({ pageName }) => {
 };
 
 InteractiveTutorial.propTypes = {
-  pageName: PropTypes.string,
+  pageSlug: PropTypes.string,
 };
 
 export default InteractiveTutorial;
