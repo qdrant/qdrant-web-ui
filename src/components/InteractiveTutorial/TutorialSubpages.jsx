@@ -1,11 +1,11 @@
-import Another from "./MdxPages/Another.mdx";
-import Other from "./MdxPages/Other.mdx";
-import Index from "./MdxPages/Index.mdx";
+import Another from './MdxPages/Another.mdx';
+import Other from './MdxPages/Other.mdx';
+import Index from './MdxPages/Index.mdx';
 
 const pages = {
-  'index': Index,
+  index: Index,
   'another-page': Another,
-  'other': Other,
+  other: Other,
 };
 
 export { pages };

@@ -8,7 +8,7 @@ import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
-import { TutorialFooter } from "./TutorialFooter";
+import { TutorialFooter } from './TutorialFooter';
 import pages from './TutorialSubpages';
 
 const InteractiveTutorial = ({ pageSlug }) => {
