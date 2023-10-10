@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Divider, Grid } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import pages from './TutorialSubpages';
-import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
 export const TutorialFooter = () => {
   const { pageSlug } = useParams();
@@ -29,12 +29,12 @@ export const TutorialFooter = () => {
   };
 
   return (
-    <Box mt={5}>
+    <Box mt={10}>
       <Divider />
       <Grid container mt={4}>
         <Grid item xs={4} sx={{ textAlign: 'left' }}>
           {currentPageIndex >= 0 && (
-            <Button onClick={handlePrev} startIcon={<ArrowBackIos fontSize="small" />}>
+            <Button sx={{ alignItems: 'flex-start' }} onClick={handlePrev} startIcon={<ArrowBack />}>
               Previous
             </Button>
           )}
@@ -46,7 +46,7 @@ export const TutorialFooter = () => {
 
         <Grid item xs={4} sx={{ textAlign: 'right' }}>
           {currentPageIndex < pageKeys.length - 1 && (
-            <Button onClick={handleNext} endIcon={<ArrowForwardIos fontSize="small" />}>
+            <Button sx={{ alignItems: 'flex-start' }} onClick={handleNext} endIcon={<ArrowForward />}>
               Next
             </Button>
           )}
