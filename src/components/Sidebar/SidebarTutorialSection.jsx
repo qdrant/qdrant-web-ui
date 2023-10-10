@@ -4,11 +4,32 @@ import { Link, useLocation } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ExpandLess, ExpandMore, Lightbulb } from '@mui/icons-material';
 import { Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { getSectionFromLocationHash } from '../../lib/helpers';
+import tutorialSubPages from '../InteractiveTutorial/TutorialSubpages';
+
+const TutorialsList = tutorialSubPages.map((page) => {
+  const [slug, pageObject] = page;
+  return (
+    <ListItem key={slug} disablePadding sx={{ display: 'block' }}>
+      <Tooltip title={slug} placement={'right'} arrow={true}>
+        <ListItemButton
+          sx={{
+            minHeight: 48,
+            justifyContent: 'initial',
+            pr: 2.5,
+            pl: 5,
+          }}
+          component={Link}
+          to={`/tutorial/${slug}`}
+        >
+          <ListItemText primary={pageObject.title} />
+        </ListItemButton>
+      </Tooltip>
+    </ListItem>
+  );
+});
 
 export const SidebarTutorialSection = ({ isSidebarOpen }) => {
-  const isOnTutorialPage = getSectionFromLocationHash === 'tutorial';
-  const [collapsed, setCollapsed] = useState(isOnTutorialPage);
+  const [collapsed, setCollapsed] = useState(window.location.hash.includes('tutorial'));
   const location = useLocation();
 
   const handleChange = (e) => {
@@ -17,7 +38,7 @@ export const SidebarTutorialSection = ({ isSidebarOpen }) => {
   };
 
   useEffect(() => {
-    setCollapsed(getSectionFromLocationHash() !== 'tutorial');
+    setCollapsed(!window.location.hash.includes('tutorial'));
   }, [location]);
 
   return (
@@ -53,40 +74,7 @@ export const SidebarTutorialSection = ({ isSidebarOpen }) => {
       </Tooltip>
       {isSidebarOpen && (
         <Collapse in={!collapsed} timeout="auto" unmountOnExit>
-          <List sx={{ py: 0 }}>
-            <ListItem key={'Quick Start'} disablePadding sx={{ display: 'block' }}>
-              <Tooltip title={'Quick Start'} placement={'right'} arrow={true}>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: isSidebarOpen ? 'initial' : 'center',
-                    pr: 2.5,
-                    pl: isSidebarOpen ? 5 : 2.5,
-                  }}
-                  component={Link}
-                  to="/tutorial/quickstart"
-                >
-                  <ListItemText primary={'Quick Start'} sx={{ opacity: isSidebarOpen ? 1 : 0 }} />
-                </ListItemButton>
-              </Tooltip>
-            </ListItem>
-            <ListItem key={'Another page'} disablePadding sx={{ display: 'block' }}>
-              <Tooltip title={'Another page'} placement={'right'} arrow={true}>
-                <ListItemButton
-                  sx={{
-                    minHeight: 48,
-                    justifyContent: isSidebarOpen ? 'initial' : 'center',
-                    pr: 2.5,
-                    pl: isSidebarOpen ? 5 : 2.5,
-                  }}
-                  component={Link}
-                  to="/tutorial/another-page"
-                >
-                  <ListItemText primary={'Another page'} sx={{ opacity: isSidebarOpen ? 1 : 0 }} />
-                </ListItemButton>
-              </Tooltip>
-            </ListItem>
-          </List>
+          <List sx={{ py: 0 }}>{TutorialsList}</List>
         </Collapse>
       )}
     </>

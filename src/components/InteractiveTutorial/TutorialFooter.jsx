@@ -1,13 +1,12 @@
 import React from 'react';
 import { Box, Button, Divider, Grid } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import pages from './TutorialSubpages';
+import tutorialSubPages from './TutorialSubpages';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
 export const TutorialFooter = () => {
   const { pageSlug } = useParams();
-  const pageKeys = [...Object.keys(pages)];
-  pageKeys.splice(pageKeys.indexOf('index'), 1);
+  const pageKeys = [...tutorialSubPages.map((p) => p[0])];
   let currentPageIndex = pageKeys.indexOf(pageSlug);
   const navigate = useNavigate();
 

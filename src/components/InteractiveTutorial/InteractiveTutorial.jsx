@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Quickstart from './MdxPages/Index.mdx';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -9,13 +8,18 @@ import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 import { TutorialFooter } from './TutorialFooter';
-import pages from './TutorialSubpages';
+import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
 
 const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
 
-  const TagName = pages[pageSlug] || Quickstart;
+  let TagName;
+  try {
+    TagName = tutorialSubPages.find((p) => p[0] === pageSlug)[1].default;
+  } catch (e) {
+    TagName = tutorialIndexPage.default;
+  }
 
   return (
     <PanelGroup direction="horizontal">
