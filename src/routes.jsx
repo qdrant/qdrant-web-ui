@@ -20,6 +20,7 @@ const routes = () => [
         element: <Visualize />,
       },
       { path: '/tutorial', element: <Tutorial /> },
+      { path: '/tutorial/:pageSlug', element: <Tutorial /> },
     ],
   },
 ];

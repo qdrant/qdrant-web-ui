@@ -1,5 +1,5 @@
 import React from 'react';
-import Quickstart from './QuickStart.mdx';
+import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -7,10 +7,19 @@ import ResultEditorWindow from '../ResultEditorWindow';
 import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
+import { TutorialFooter } from './TutorialFooter';
+import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
 
-const InteractiveTutorial = () => {
+const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
+
+  let TagName;
+  try {
+    TagName = tutorialSubPages.find((p) => p[0] === pageSlug)[1].default;
+  } catch (e) {
+    TagName = tutorialIndexPage.default;
+  }
 
   return (
     <PanelGroup direction="horizontal">
@@ -28,7 +37,8 @@ const InteractiveTutorial = () => {
             overflowY: 'scroll',
           }}
         >
-          <Quickstart components={mdxComponents} />
+          <TagName components={mdxComponents} />
+          <TutorialFooter pageSlug={pageSlug} />
         </Box>
       </Panel>
       <PanelResizeHandle
@@ -53,6 +63,10 @@ const InteractiveTutorial = () => {
       </Panel>
     </PanelGroup>
   );
+};
+
+InteractiveTutorial.propTypes = {
+  pageSlug: PropTypes.string,
 };
 
 export default InteractiveTutorial;
