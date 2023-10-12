@@ -35,7 +35,11 @@ export const RunButton = ({ code }) => {
         setResult(() => JSON.stringify(res));
       })
       .catch((err) => {
+        try {
         setResult(() => JSON.stringify(err));
+        } catch (e) {
+          console.log(e);
+        }
       });
   };
   return (
