@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CodeBlock, RunButton } from './CodeBlock';
@@ -68,9 +68,5 @@ describe('CodeBlock', () => {
     expect(screen.queryByTestId('code-block-editor')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toHaveValue('{\n  "name": "test"\n}');
-  });
-
-  afterAll(() => {
-    vi.restoreAllMocks();
   });
 });
