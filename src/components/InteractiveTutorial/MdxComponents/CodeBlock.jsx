@@ -30,13 +30,13 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
-    requestFromCode(code, false).then((res) => {
-      if (res && res.status === 'ok') {
+    requestFromCode(code, false)
+      .then((res) => {
         setResult(() => JSON.stringify(res));
-      } else {
-        setResult(() => JSON.stringify(res));
-      }
-    });
+      })
+      .catch((err) => {
+        setResult(() => JSON.stringify(err));
+      });
   };
   return (
     <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick} data-testid="code-block-run">
