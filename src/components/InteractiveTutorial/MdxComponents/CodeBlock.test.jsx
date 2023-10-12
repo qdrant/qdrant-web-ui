@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterAll, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { CodeBlock, RunButton } from './CodeBlock';
@@ -44,18 +44,33 @@ describe('CodeBlock', () => {
     expect(screen.getByTestId('code-block')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-run')).toBeInTheDocument();
-    expect(screen.getByText(/{/)).toBeInTheDocument();
-    expect(screen.getByText(/"name": "test"/)).toBeInTheDocument();
-    expect(screen.getByText(/}/)).toBeInTheDocument();
+    expect(screen.getAllByText(/{/).length).toBe(2);
+    expect(screen.getAllByText(/"name": "test"/).length).toBe(2);
+    expect(screen.getAllByText(/}/).length).toBe(2);
     expect(screen.getByText(/Run/)).toBeInTheDocument();
   });
 
   it('should render CodeBlock without run button', () => {
-    props.children.props.withRunButton = 'false';
-    render(<CodeBlock {...props} />);
+    const propsWithoutButton = structuredClone(props);
+    propsWithoutButton.children.props.withRunButton = 'false';
+
+    render(<CodeBlock {...propsWithoutButton} />);
 
     expect(screen.getByTestId('code-block')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
     expect(screen.queryByTestId('code-block-run')).not.toBeInTheDocument();
+  });
+
+  it('should render an editor with given code if RunButton is present', () => {
+    render(<CodeBlock {...props} />);
+
+    expect(screen.queryByTestId('code-block-run')).toBeInTheDocument();
+    expect(screen.queryByTestId('code-block-editor')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    expect(screen.getByRole('textbox')).toHaveValue('{\n  "name": "test"\n}');
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
   });
 });

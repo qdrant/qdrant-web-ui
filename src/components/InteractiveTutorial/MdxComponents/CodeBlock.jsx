@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
 import { alpha, Box, Button } from '@mui/material';
 import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
 import { useTutorial } from '../../../context/tutorial-context';
-import { styled, useTheme } from "@mui/material/styles";
+import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from '../../Common/CopyButton';
 import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 
-
-const StyledEditor = styled(Editor)({
+const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
   fontFamily: '"Menlo", monospace',
   fontSize: '16px',
   lineHeight: '24px',
@@ -19,10 +18,7 @@ const StyledEditor = styled(Editor)({
   '& .code-block-textarea': {
     margin: '1rem 0 !important',
     outline: 'none',
-    wordBreak: 'keep-all',
-    whiteSpace: 'pre-wrap',
-    overflowWrap: 'nowrap',
-  }
+  },
 });
 
 /**
@@ -77,76 +73,73 @@ export const CodeBlock = ({ children }) => {
 
   const handleChange = (code) => {
     setCode(() => code);
-  }
+  };
 
   const highlight = (code) => (
-    <Highlight code={code} language={language} theme={prismTheme}
-               prism={Prism}>
+    <Highlight code={code} language={language} theme={prismTheme} prism={Prism}>
       {({ className, style, tokens, getLineProps, getTokenProps }) => {
         return (
           <pre
             className={className}
             style={{
-              overflowX: 'auto',
+              wordBreak: 'keep-all',
+              whiteSpace: 'pre-wrap',
               ...style,
             }}
             data-testid={'code-block-pre'}
           >
-                {tokens.map((line, i) => (
-                  <div key={i} {...getLineProps({ line, key: i })}>
-                    {line.map((token, key) => (
-                      <span key={token} {...getTokenProps({ token, key })} />
-                    ))}
-                  </div>
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line, key: i })}>
+                {line.map((token, key) => (
+                  <span key={token} {...getTokenProps({ token, key })} />
                 ))}
-              </pre>
+              </div>
+            ))}
+          </pre>
         );
       }}
     </Highlight>
   );
 
-    return (
+  return (
+    <Box
+      sx={{
+        background: backgroundColor,
+        borderRadius: '0.5rem',
+        my: 3,
+      }}
+      data-testid={'code-block'}
+    >
       <Box
+        display={'flex'}
+        alignItems={'center'}
+        px={2}
+        py={1}
         sx={{
-          background: backgroundColor,
-          borderRadius: '0.5rem',
-          my: 3,
+          background: alpha(theme.palette.primary.main, 0.05),
         }}
-        data-testid={'code-block'}
       >
-        <Box
-          display={'flex'}
-          alignItems={'center'}
-          px={2}
-          py={1}
-          sx={{
-            background: alpha(theme.palette.primary.main, 0.05),
-          }}
-        >
-          {withRunButton && (
-            <Box sx={{ flexGrow: '1' }}>
-              <RunButton code={code}/>
-            </Box>
-          )}
-          <Box sx={{ flexGrow: '1' }}/>
-          <CopyButton text={code}/>
-        </Box>
-        <Box sx={{ px: 2, pb: 1 }}>
-
-          {withRunButton && (
-           <StyledEditor
+        {withRunButton && (
+          <Box sx={{ flexGrow: '1' }}>
+            <RunButton code={code} />
+          </Box>
+        )}
+        <Box sx={{ flexGrow: '1' }} />
+        <CopyButton text={code} />
+      </Box>
+      <Box sx={{ px: 2, pb: 1 }}>
+        {withRunButton && (
+          <StyledEditor
             value={code}
             onValueChange={handleChange}
             highlight={highlight}
-            padding={0}
             data-testid={'code-block-editor'}
-            textareaClassName={'code-block-textarea'}
-           />
-          )}
-          {!withRunButton && highlight(code)}
-        </Box>
+          />
+        )}
+        {!withRunButton && highlight(code)}
       </Box>
-    );
+    </Box>
+  );
 };
 
 CodeBlock.propTypes = {
