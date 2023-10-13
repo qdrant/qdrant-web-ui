@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -27,12 +27,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: 18
       - run: npm ci
+      - name: Set npm package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: npm version --allow-same-version --no-git-tag-version ${GITHUB_REF#refs/*/}
       - run: npm run build-qdrant
+      - run: npm sbom --sbom-format spdx > dist/qdrant-web-ui.spdx.json
       - name: Archive dist folder
         uses: montudor/action-zip@v1
         with:
