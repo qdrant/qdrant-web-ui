@@ -10,7 +10,7 @@ const TutorialsList = tutorialSubPages.map((page) => {
   const [slug, pageObject] = page;
   return (
     <ListItem key={slug} disablePadding sx={{ display: 'block' }}>
-      <Tooltip title={slug} placement={'right'} arrow={true}>
+      <Tooltip title={pageObject.title} placement={'right'} arrow={true}>
         <ListItemButton
           sx={{
             minHeight: 48,

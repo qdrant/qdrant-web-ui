@@ -1,6 +1,7 @@
-import * as Another from './MdxPages/Another.mdx';
-import * as Other from './MdxPages/Other.mdx';
 import * as Index from './MdxPages/Index.mdx';
+import * as Quickstart from './MdxPages/Quickstart.mdx';
+import * as FilteringClauses from './MdxPages/FilteringClauses.mdx';
+import * as FilteringConditions from './MdxPages/FilteringConditions.mdx';
 
 /**
  * MDX page object (Index etc.) contains:
@@ -11,8 +12,9 @@ import * as Index from './MdxPages/Index.mdx';
 
 export const tutorialIndexPage = Index;
 const tutorialSubPages = [
-  ['another-page', Another],
-  ['other', Other],
+  ['quickstart', Quickstart],
+  ['filtering-clauses', FilteringClauses],
+  ['filtering-conditions', FilteringConditions],
 ];
 
 export { tutorialSubPages };
