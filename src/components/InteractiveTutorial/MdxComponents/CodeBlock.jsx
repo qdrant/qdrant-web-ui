@@ -1,13 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
+import Editor from 'react-simple-code-editor';
 import { alpha, Box, Button } from '@mui/material';
 import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
 import { useTutorial } from '../../../context/tutorial-context';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from '../../Common/CopyButton';
 import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
+
+const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
+  fontFamily: '"Menlo", monospace',
+  fontSize: '16px',
+  lineHeight: '24px',
+  fontWeight: '400',
+  '& .code-block-textarea': {
+    margin: '1rem 0 !important',
+    outline: 'none',
+  },
+});
 
 /**
  * Run button for code block
@@ -18,13 +30,13 @@ import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
-    requestFromCode(code, false).then((res) => {
-      if (res && res.status === 'ok') {
+    requestFromCode(code, false)
+      .then((res) => {
         setResult(() => JSON.stringify(res));
-      } else {
-        setResult(() => JSON.stringify(res));
-      }
-    });
+      })
+      .catch((err) => {
+        setResult(() => JSON.stringify(err));
+      });
   };
   return (
     <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick} data-testid="code-block-run">
@@ -45,7 +57,7 @@ RunButton.propTypes = {
  */
 export const CodeBlock = ({ children }) => {
   const className = children.props.className || '';
-  const code = children.props.children.trim();
+  const [code, setCode] = useState(children.props.children.trim());
   const language = className.replace(/language-/, '');
   const withRunButton = children.props.withRunButton && JSON.parse(children.props.withRunButton);
   const theme = useTheme();
@@ -58,6 +70,36 @@ export const CodeBlock = ({ children }) => {
     window.Prism = Prism; // (or check for window is undefined for ssr and use global)
     (async () => await import('prismjs/components/prism-json'))();
   }, []);
+
+  const handleChange = (code) => {
+    setCode(() => code);
+  };
+
+  const highlight = (code) => (
+    <Highlight code={code} language={language} theme={prismTheme} prism={Prism}>
+      {({ className, style, tokens, getLineProps, getTokenProps }) => {
+        return (
+          <pre
+            className={className}
+            style={{
+              wordBreak: 'keep-all',
+              whiteSpace: 'pre-wrap',
+              ...style,
+            }}
+            data-testid={'code-block-pre'}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line, key: i })}>
+                {line.map((token, key) => (
+                  <span key={token} {...getTokenProps({ token, key })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        );
+      }}
+    </Highlight>
+  );
 
   return (
     <Box
@@ -86,28 +128,15 @@ export const CodeBlock = ({ children }) => {
         <CopyButton text={code} />
       </Box>
       <Box sx={{ px: 2, pb: 1 }}>
-        <Highlight code={code} language={language} theme={prismTheme} prism={Prism}>
-          {({ className, style, tokens, getLineProps, getTokenProps }) => {
-            return (
-              <pre
-                className={className}
-                style={{
-                  overflowX: 'auto',
-                  ...style,
-                }}
-                data-testid={'code-block-pre'}
-              >
-                {tokens.map((line, i) => (
-                  <div key={i} {...getLineProps({ line, key: i })}>
-                    {line.map((token, key) => (
-                      <span key={token} {...getTokenProps({ token, key })} />
-                    ))}
-                  </div>
-                ))}
-              </pre>
-            );
-          }}
-        </Highlight>
+        {withRunButton && (
+          <StyledEditor
+            value={code}
+            onValueChange={handleChange}
+            highlight={highlight}
+            data-testid={'code-block-editor'}
+          />
+        )}
+        {!withRunButton && highlight(code)}
       </Box>
     </Box>
   );

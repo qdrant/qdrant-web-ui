@@ -41,6 +41,7 @@
     "react-dom": "^18.2.0",
     "react-resizable-panels": "^0.0.51",
     "react-router-dom": "^6.8.1",
+    "react-simple-code-editor": "^0.13.1",
     "unist-util-visit": "^5.0.0",
     "vite": "^4.3.3",
     "vite-plugin-svgr": "^2.4.0",
