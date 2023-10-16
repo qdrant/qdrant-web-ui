@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from "react";
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
@@ -9,10 +9,19 @@ import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 import { TutorialFooter } from './TutorialFooter';
 import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
+import { useLocation } from "react-router-dom";
 
 const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
+  const location = useLocation();
+  const tutorialPanelRef = React.useRef(null);
+
+  useEffect(() => {
+    if (tutorialPanelRef.current) {
+      tutorialPanelRef.current.scrollTop = 0;
+    }
+  }, [location]);
 
   let TagName;
   try {
@@ -36,6 +45,7 @@ const InteractiveTutorial = ({ pageSlug }) => {
             bottom: 0,
             overflowY: 'scroll',
           }}
+          ref={tutorialPanelRef}
         >
           <TagName components={mdxComponents} />
           <TutorialFooter pageSlug={pageSlug} />

@@ -13,6 +13,7 @@ export const tutorialIndexPage = Index;
 const tutorialSubPages = [
   ['quickstart', Quickstart],
   ['filtering-clauses', FilteringClauses],
+  // add more pages here
 ];
 
 export { tutorialSubPages };
