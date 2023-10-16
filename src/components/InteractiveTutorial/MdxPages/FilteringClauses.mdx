@@ -2,7 +2,7 @@ export const title = "Filtering Clauses"
 
 # {title}
 
-<Alert severity="info">Click RUN button at code blocks to see a result of the query in the right part of the screen.<br/>Click inside a code block to edit it.</Alert>
+<Alert severity="info">Click **RUN** button at code blocks to see a result of the query in the right part of the screen.<br/>Click inside a code block to edit it.</Alert>
 <br/>
 
 Qdrant support filtering of collections combining condition and clauses.
@@ -54,7 +54,7 @@ Take a note of what data we put into points' `payload` field.
 When using `must`, the clause becomes `true` only if every condition listed inside `must` is satisfied.
 In this sense, `must` is equivalent to the operator `AND`.
 
-Example:
+Run the next example:
 
 ``` json withRunButton="true"
 POST /collections/demo1/points/scroll
@@ -67,12 +67,6 @@ POST /collections/demo1/points/scroll
         ]
     }
 }
-```
-
-Filtered points would be:
-
-```json
-[{ "id": 2, "payload": { "city": "London", "color": "red" } }]
 ```
 
 ## Should
@@ -95,17 +89,6 @@ POST /collections/demo1/points/scroll
 }
 ```
 
-Filtered points would be:
-
-```json
-[
-  { "id": 1, "payload": { "city": "London", "color": "green" } },
-  { "id": 2, "payload": { "city": "London", "color": "red" } },
-  { "id": 3, "payload": { "city": "London", "color": "blue" } },
-  { "id": 4, "payload": { "city": "Berlin", "color": "red" } }
-]
-```
-
 ## Must Not
 
 When using `must_not`, the clause becomes `true` if none if the conditions listed inside `should` is satisfied.
@@ -125,15 +108,6 @@ POST /collections/demo1/points/scroll
 }
 ```
 
-Filtered points would be:
-
-```json
-[
-  { "id": 5, "payload": { "city": "Moscow", "color": "green" } },
-  { "id": 6, "payload": { "city": "Moscow", "color": "blue" } }
-]
-```
-
 ## Clauses combination
 
 It is also possible to use several clauses simultaneously:
@@ -150,15 +124,6 @@ POST /collections/demo1/points/scroll
         ]
     }
 }
-```
-
-Filtered points would be:
-
-```json
-[
-  { "id": 1, "payload": { "city": "London", "color": "green" } },
-  { "id": 3, "payload": { "city": "London", "color": "blue" } }
-]
 ```
 
 In this case, the conditions are combined by `AND`.
@@ -180,17 +145,3 @@ POST /collections/demo1/points/scroll
     }
 }
 ```
-
-Filtered points would be:
-
-```json
-[
-  { "id": 1, "payload": { "city": "London", "color": "green" } },
-  { "id": 3, "payload": { "city": "London", "color": "blue" } },
-  { "id": 4, "payload": { "city": "Berlin", "color": "red" } },
-  { "id": 5, "payload": { "city": "Moscow", "color": "green" } },
-  { "id": 6, "payload": { "city": "Moscow", "color": "blue" } }
-]
-```
-
-In the next tutorial, you will learn how to use **filtering conditions**.
