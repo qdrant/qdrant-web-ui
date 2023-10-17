@@ -111,9 +111,9 @@ export default function Sidebar({ open, version }) {
             </ListItemButton>
           </Tooltip>
         </ListItem>
-         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
+        <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
           <SidebarTutorialSection isSidebarOpen={open} />
-         </ListItem>
+        </ListItem>
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>

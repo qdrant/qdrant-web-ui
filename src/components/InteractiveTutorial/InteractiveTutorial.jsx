@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material';
@@ -9,8 +9,8 @@ import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 import { TutorialFooter } from './TutorialFooter';
 import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
-import { useLocation } from "react-router-dom";
-import { Prism } from "prism-react-renderer";
+import { useLocation } from 'react-router-dom';
+import { Prism } from 'prism-react-renderer';
 
 const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
