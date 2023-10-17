@@ -10,12 +10,20 @@ import { useTutorial } from '../../context/tutorial-context';
 import { TutorialFooter } from './TutorialFooter';
 import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
 import { useLocation } from "react-router-dom";
+import { Prism } from "prism-react-renderer";
 
 const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
   const location = useLocation();
   const tutorialPanelRef = React.useRef(null);
+
+  useEffect(() => {
+    // we need this to use prismjs support for json highlighting
+    // which is not included in the prism-react-renderer package by default
+    window.Prism = Prism; // (or check for window is undefined for ssr and use global)
+    (async () => await import('prismjs/components/prism-json'))();
+  }, []);
 
   useEffect(() => {
     if (tutorialPanelRef.current) {

@@ -18,30 +18,49 @@ Let's start with creating a new collection and populating it with points.
 <details open={true}>
   <summary>Run these two steps:</summary>
 
-  1. Create a collection:
+1. Create a collection:
 
-  ```json withRunButton="true"
-  PUT collections/demo1
-  {
-    "vectors": {
-    "size": 4,
-    "distance": "Dot"
-    }
+``` json withRunButton="true"
+PUT collections/demo
+{
+  "vectors": {
+  "size": 4,
+  "distance": "Dot"
   }
-  ```
+}
+```
 
 2. And add points to it:
 
-```json withRunButton="true"
-PUT /collections/demo1/points
+``` json withRunButton="true"
+PUT /collections/demo/points
 {
   "points": [
-    { "id": 1, "vector": [0.1, 0.2, 0.3, 0.4], "payload": { "city": "London", "color": "green" } },
-    { "id": 2, "vector": [0.2, 0.3, 0.4, 0.5], "payload": { "city": "London", "color": "red" } },
-    { "id": 3, "vector": [0.3, 0.4, 0.5, 0.6], "payload": { "city": "London", "color": "blue" } },
-    { "id": 4, "vector": [0.4, 0.5, 0.6, 0.7], "payload": { "city": "Berlin", "color": "red" } },
-    { "id": 5, "vector": [0.5, 0.6, 0.7, 0.8], "payload": { "city": "Moscow", "color": "green" } },
-    { "id": 6, "vector": [0.6, 0.7, 0.8, 0.9], "payload": { "city": "Moscow", "color": "blue" } }
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": { "city": "London", "color": "green" }
+    }, {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": { "city": "London", "color": "red" }
+    }, {
+      "id": 3,
+      "vector": [0.3, 0.4, 0.5, 0.6],
+      "payload": { "city": "London", "color": "blue" }
+    }, {
+      "id": 4,
+      "vector": [0.4, 0.5, 0.6, 0.7],
+      "payload": { "city": "Berlin", "color": "red" }
+    }, {
+      "id": 5,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": { "city": "Moscow", "color": "green" }
+    }, {
+      "id": 6,
+      "vector": [0.6, 0.7, 0.8, 0.9],
+      "payload": { "city": "Moscow", "color": "blue" }
+    }
   ]
 }
 ```
@@ -57,15 +76,19 @@ In this sense, `must` is equivalent to the operator `AND`.
 Run the next example:
 
 ``` json withRunButton="true"
-POST /collections/demo1/points/scroll
-
+POST /collections/demo/points/scroll
 {
-    "filter": {
-        "must": [
-            { "key": "city", "match": { "value": "London" } },
-            { "key": "color", "match": { "value": "red" } }
-        ]
-    }
+  "filter": {
+    "must": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
 }
 ```
 
@@ -76,16 +99,20 @@ In this sense, `should` is equivalent to the operator `OR`.
 
 Example:
 
-```json withRunButton="true"
-POST /collections/demo1/points/scroll
-
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
 {
-    "filter": {
-        "should": [
-            { "key": "city", "match": { "value": "London" } },
-            { "key": "color", "match": { "value": "red" } }
-        ]
-    }
+  "filter": {
+    "should": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
 }
 ```
 
@@ -96,15 +123,20 @@ In this sense, `must_not` is equivalent to the expression `(NOT A) AND (NOT B) A
 
 Example:
 
-```json withRunButton="true"
-POST /collections/demo1/points/scroll
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
 {
-    "filter": {
-        "must_not": [
-            { "key": "city", "match": { "value": "London" } },
-            { "key": "color", "match": { "value": "red" } }
-        ]
-    }
+  "filter": {
+    "must_not": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
 }
 ```
 
@@ -112,17 +144,23 @@ POST /collections/demo1/points/scroll
 
 It is also possible to use several clauses simultaneously:
 
-```json withRunButton="true"
-POST /collections/demo1/points/scroll
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
 {
-    "filter": {
-        "must": [
-            { "key": "city", "match": { "value": "London" } }
-        ],
-        "must_not": [
-            { "key": "color", "match": { "value": "red" } }
-        ]
-    }
+  "filter": {
+    "must": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }
+    ],
+    "must_not": [
+      {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
 }
 ```
 
@@ -130,18 +168,23 @@ In this case, the conditions are combined by `AND`.
 
 Also, the conditions could be recursively nested. Example:
 
-```json withRunButton="true"
-POST /collections/demo1/points/scroll
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
 {
-    "filter": {
-        "must_not": [
-            {
-                "must": [
-                    { "key": "city", "match": { "value": "London" } },
-                    { "key": "color", "match": { "value": "red" } }
-                ]
-            }
+  "filter": {
+    "must_not": [
+      {
+        "must": [
+          {
+            "key": "city",
+            "match": { "value": "London" }
+          }, {
+            "key": "color",
+            "match": { "value": "red" }
+          }
         ]
-    }
+      }
+    ]
+  }
 }
 ```
