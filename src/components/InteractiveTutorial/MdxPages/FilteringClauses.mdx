@@ -1,0 +1,192 @@
+export const title = "Filtering Clauses"
+
+# {title}
+
+<Alert severity="info">Click **RUN** button at code blocks to see a result of the query in the right part of the screen.<br/>Click inside a code block to edit it.</Alert>
+<br/>
+
+Qdrant support filtering of collections combining condition and clauses.
+In this tutorial you will learn how to filter collections using **filtering clauses**.
+
+Clauses are different logical operations, such as OR, AND, and NOT.
+Clauses can be recursively nested into each other so that you can reproduce an arbitrary boolean expression.
+
+Let's start with creating a new collection and populating it with points.
+
+## Set up for this tutorial
+
+Before we start to practice with filtering conditions, let's create some datapoints to work with.
+
+<details open={true}>
+  <summary>Run these two steps:</summary>
+
+1. Create a collection:
+
+``` json withRunButton="true"
+PUT collections/demo
+{
+  "vectors": {
+  "size": 4,
+  "distance": "Dot"
+  }
+}
+```
+
+2. And add points to it:
+
+``` json withRunButton="true"
+PUT /collections/demo/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": { "city": "London", "color": "green" }
+    }, {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": { "city": "London", "color": "red" }
+    }, {
+      "id": 3,
+      "vector": [0.3, 0.4, 0.5, 0.6],
+      "payload": { "city": "London", "color": "blue" }
+    }, {
+      "id": 4,
+      "vector": [0.4, 0.5, 0.6, 0.7],
+      "payload": { "city": "Berlin", "color": "red" }
+    }, {
+      "id": 5,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": { "city": "Moscow", "color": "green" }
+    }, {
+      "id": 6,
+      "vector": [0.6, 0.7, 0.8, 0.9],
+      "payload": { "city": "Moscow", "color": "blue" }
+    }
+  ]
+}
+```
+</details>
+
+Take a note of what data we put into points' `payload` field.
+
+## Must
+
+When using `must`, the clause becomes `true` only if every condition listed inside `must` is satisfied.
+In this sense, `must` is equivalent to the operator `AND`.
+
+Run the next example:
+
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
+}
+```
+
+## Should
+
+When using `should`, the clause becomes `true` if at least one condition listed inside `should` is satisfied.
+In this sense, `should` is equivalent to the operator `OR`.
+
+Example:
+
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
+{
+  "filter": {
+    "should": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
+}
+```
+
+## Must Not
+
+When using `must_not`, the clause becomes `true` if none if the conditions listed inside `should` is satisfied.
+In this sense, `must_not` is equivalent to the expression `(NOT A) AND (NOT B) AND (NOT C)`.
+
+Example:
+
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
+{
+  "filter": {
+    "must_not": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }, {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
+}
+```
+
+## Clauses combination
+
+It is also possible to use several clauses simultaneously:
+
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "city",
+        "match": { "value": "London" }
+      }
+    ],
+    "must_not": [
+      {
+        "key": "color",
+        "match": { "value": "red" }
+      }
+    ]
+  }
+}
+```
+
+In this case, the conditions are combined by `AND`.
+
+Also, the conditions could be recursively nested. Example:
+
+``` json withRunButton="true"
+POST /collections/demo/points/scroll
+{
+  "filter": {
+    "must_not": [
+      {
+        "must": [
+          {
+            "key": "city",
+            "match": { "value": "London" }
+          }, {
+            "key": "color",
+            "match": { "value": "red" }
+          }
+        ]
+      }
+    ]
+  }
+}
+```

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
@@ -30,6 +30,7 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
 export const RunButton = ({ code }) => {
   const { setResult } = useTutorial();
   const handleClick = () => {
+    setResult('{}');
     requestFromCode(code, false)
       .then((res) => {
         setResult(() => JSON.stringify(res));
@@ -63,13 +64,6 @@ export const CodeBlock = ({ children }) => {
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
   const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
-
-  useEffect(() => {
-    // we need this to use prismjs support for json highlighting
-    // which is not included in the prism-react-renderer package by default
-    window.Prism = Prism; // (or check for window is undefined for ssr and use global)
-    (async () => await import('prismjs/components/prism-json'))();
-  }, []);
 
   const handleChange = (code) => {
     setCode(() => code);

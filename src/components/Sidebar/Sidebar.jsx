@@ -6,7 +6,7 @@ import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, List
 import { Link } from 'react-router-dom';
 import { LibraryBooks, Terminal } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-// import SidebarTutorialSection from './SidebarTutorialSection';
+import SidebarTutorialSection from './SidebarTutorialSection';
 
 const drawerWidth = 240;
 
@@ -111,10 +111,9 @@ export default function Sidebar({ open, version }) {
             </ListItemButton>
           </Tooltip>
         </ListItem>
-        {/* todo: uncomment when tutorial is ready*/}
-        {/* <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>*/}
-        {/*  <SidebarTutorialSection isSidebarOpen={open} />*/}
-        {/* </ListItem>*/}
+        <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
+          <SidebarTutorialSection isSidebarOpen={open} />
+        </ListItem>
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>
