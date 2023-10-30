@@ -17,7 +17,7 @@ function Collections() {
   async function getCollectionsCall() {
     try {
       const collections = await qdrantClient.getCollections();
-      setRawCollections(collections.collections);
+      setRawCollections(collections.collections.sort((a, b) => a.name.localeCompare(b.name)));
       setErrorMessage(null);
     } catch (error) {
       setErrorMessage(error.message);
