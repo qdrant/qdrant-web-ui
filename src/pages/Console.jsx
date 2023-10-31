@@ -9,11 +9,11 @@ import ResultEditorWindow from '../components/ResultEditorWindow';
 import SpeedDialMenu from '../components/CodeEditorWindow/Menu/SpeedDialMenu';
 import History from '../components/CodeEditorWindow/Menu/history';
 import SavedCode from '../components/CodeEditorWindow/Menu/savedCode';
-import SaveIcon from "@mui/icons-material/Save";
-import HistoryRounded from "@mui/icons-material/HistoryRounded";
-import RestartAlt from "@mui/icons-material/RestartAlt";
-import { Code } from "@mui/icons-material";
-import CommandsDrawer from "../components/CodeEditorWindow/Menu/CommandsDrawer/CommandsDrawer";
+import SaveIcon from '@mui/icons-material/Save';
+import HistoryRounded from '@mui/icons-material/HistoryRounded';
+import RestartAlt from '@mui/icons-material/RestartAlt';
+import { Code } from '@mui/icons-material';
+import CommandsDrawer from '../components/CodeEditorWindow/Menu/CommandsDrawer/CommandsDrawer';
 
 const query = `// List all collections
 GET collections
@@ -129,10 +129,10 @@ function Console() {
             openSavedCode={() => setOpenSavedCode(true)}
             resetConsole={() => onChangeCode('code', query)}
             actions={[
-              ['Save', () => setOpenSavedCode(true), <SaveIcon key='save-icon' />],
-              ['History', () => setOpenHistory(true), <HistoryRounded key='history-icon' />],
-              ['Reset', () => onChangeCode('code', query), <RestartAlt key='restart-icon' />],
-              ['Commands', () => setOpenCommands(true), <Code key='code-icon'/>],
+              ['Save', () => setOpenSavedCode(true), <SaveIcon key="save-icon" />],
+              ['History', () => setOpenHistory(true), <HistoryRounded key="history-icon" />],
+              ['Reset', () => onChangeCode('code', query), <RestartAlt key="restart-icon" />],
+              ['Commands', () => setOpenCommands(true), <Code key="code-icon" />],
             ]}
           />
           <History
@@ -147,10 +147,13 @@ function Console() {
             state={openSavedCode}
             toggleDrawer={() => setOpenSavedCode(!openSavedCode)}
           />
-          <CommandsDrawer open={openCommands}
-                          toggleDrawer={() => {
-                            console.log('aaaaa'); setOpenCommands(!openCommands)
-                          }} />
+          <CommandsDrawer
+            open={openCommands}
+            toggleDrawer={() => {
+              console.log('aaaaa');
+              setOpenCommands(!openCommands);
+            }}
+          />
         </Grid>
       </Box>
     </>

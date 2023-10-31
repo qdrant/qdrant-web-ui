@@ -9,13 +9,9 @@ function SpeedDialMenu({ actions }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const actionsList = actions.map((action) => <SpeedDialAction
-          key={action[0]}
-          icon={action[2]}
-          tooltipTitle={action[0]}
-          tooltipOpen
-          onClick={action[1]}
-        />);
+  const actionsList = actions.map((action) => (
+    <SpeedDialAction key={action[0]} icon={action[2]} tooltipTitle={action[0]} tooltipOpen onClick={action[1]} />
+  ));
 
   return (
     <SpeedDial
@@ -35,9 +31,7 @@ function SpeedDialMenu({ actions }) {
 // props validation
 SpeedDialMenu.propTypes = {
   actions: PropTypes.arrayOf(
-    PropTypes.arrayOf(
-      PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.element]),
-    ),
+    PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.element]))
   ),
 };
 
