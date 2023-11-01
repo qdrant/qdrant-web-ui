@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Drawer, Typography } from '@mui/material';
 import CommandsTable from './CommandsTable';
+import CommandSearch from "./CommandSearch";
 
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
+  const [allCommands, setAllCommands] = useState([]); // todo: use this to filter commands by tags
   const [commands, setCommands] = useState([]);
 
   useEffect(() => {
     fetch(import.meta.env.BASE_URL + './openapi.json')
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         const nextCommands = Object.keys(data.paths)
           .map((path) => {
             return Object.keys(data.paths[path]).map((method) => {
@@ -29,7 +31,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
             });
           })
           .flat();
-
+        setAllCommands(nextCommands)
         setCommands(nextCommands);
       })
       .catch((e) => console.error(e));
@@ -52,6 +54,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
       <div>
         <Typography variant={'h5'}>Commands</Typography>
         <Typography variant={'body1'}>This is a list of commands that can be used in the editor.</Typography>
+        <CommandSearch commands={allCommands} setCommands={setCommands} />
         <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand} />
       </div>
     </Drawer>
@@ -67,7 +70,9 @@ CommandsDrawer.propTypes = {
 export default CommandsDrawer;
 
 // todo:
-// - [ ] know if command has object or not
-// - [ ] add search
+// - [x] know if command has object or not
+// - [x] add search
+// - [ ] set focus on search input when drawer opens
+// - [ ] add keyboard navigation
 // - [ ] add filter by tags
 // - [ ] set cursor into the object of inserted command
