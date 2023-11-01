@@ -150,8 +150,11 @@ function Console() {
           <CommandsDrawer
             open={openCommands}
             toggleDrawer={() => {
-              console.log('aaaaa');
               setOpenCommands(!openCommands);
+            }}
+            handleInsertCommand={(command) => {
+              const nextCode = `${code}\n${command}`;
+              onChangeCode('code', nextCode);
             }}
           />
         </Grid>

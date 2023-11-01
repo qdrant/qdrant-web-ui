@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import { ArrowBack } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 
-const CommandsTableRow = ({ method, command, description, tags }) => {
+const CommandsTableRow = ({ method, command, description, tags, onClick }) => {
   const theme = useTheme();
   const getColor = (method) => {
     switch (method) {
@@ -57,7 +57,7 @@ const CommandsTableRow = ({ method, command, description, tags }) => {
     <TableRow>
       <TableCell sx={rowStyle} width={'50px'}>
         <Tooltip title={'Insert command into the console window'}>
-          <IconButton>
+          <IconButton onClick={onClick}>
             <ArrowBack />
           </IconButton>
         </Tooltip>
@@ -87,17 +87,29 @@ CommandsTableRow.propTypes = {
   method: PropTypes.string.isRequired,
   command: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
+  hasRequestBody: PropTypes.bool.isRequired,
   tags: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
-const CommandsTable = ({ commands }) => {
+const CommandsTable = ({ commands, handleInsertCommand }) => {
+  const handleClick = (command) => {
+    const commandText = `${command.method} ${command.command.substring(1)}${
+      command.hasRequestBody ? ' \n{\n  \n}' : ''
+    }`;
+
+    handleInsertCommand(commandText);
+  };
+
   const rows = commands.map((command) => (
     <CommandsTableRow
       key={command.method + '_' + command.command}
       method={command.method}
       command={command.command}
       description={command.description}
+      hasRequestBody={command.hasRequestBody}
       tags={command.tags}
+      onClick={() => handleClick(command)}
     />
   ));
   return (
@@ -116,6 +128,7 @@ CommandsTable.propTypes = {
       tags: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
     })
   ).isRequired,
+  handleInsertCommand: PropTypes.func.isRequired,
 };
 
 export default CommandsTable;
