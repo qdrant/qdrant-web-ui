@@ -4,9 +4,9 @@ import { TextField } from "@mui/material";
 import Fuse from 'fuse.js';
 
 const CommandSearch = ({commands, setCommands}) => {
-  const value = event.target.value;
-
   const handleSearch = (event) => {
+    const value = event.target.value;
+
     const fuseOptions = {
       includeScore: true,
       shouldSort: true,
