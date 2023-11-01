@@ -47,13 +47,16 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
         '& .MuiDrawer-paper': {
           width: '50vw',
           padding: '1rem',
-          pt: '5rem',
+          pt: '6rem',
+        },
+        '& .MuiBackdrop-root.MuiModal-backdrop': {
+          opacity: '0 !important',
         },
       }}
     >
       <div>
-        <Typography variant={'h5'}>Commands</Typography>
-        <Typography variant={'body1'}>This is a list of commands that can be used in the editor.</Typography>
+        <Typography variant={'h5'} mb={2}>Commands</Typography>
+        <Typography variant={'body1'} mb={4}>This is a list of commands that can be used in the editor.</Typography>
         <CommandSearch commands={allCommands} setCommands={setCommands} />
         <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand} />
       </div>
@@ -72,7 +75,7 @@ export default CommandsDrawer;
 // todo:
 // - [x] know if command has object or not
 // - [x] add search
-// - [ ] set focus on search input when drawer opens
+// - [x] set focus on search input when drawer opens
 // - [ ] add keyboard navigation
 // - [ ] add filter by tags
-// - [ ] set cursor into the object of inserted command
+// - [ ] on close, set focus back to editor - in the last inserted command

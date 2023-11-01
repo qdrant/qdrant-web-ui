@@ -4,6 +4,8 @@ import { TextField } from "@mui/material";
 import Fuse from 'fuse.js';
 
 const CommandSearch = ({commands, setCommands}) => {
+  const ref = React.useRef(null);
+
   const handleSearch = (event) => {
     const value = event.target.value;
 
@@ -29,8 +31,19 @@ const CommandSearch = ({commands, setCommands}) => {
     }
   }
 
+  // set focus on mount
+  React.useEffect(() => {
+    ref.current.focus();
+  }, []);
+
   return (
-    <TextField id="outlined-basic" label="Outlined" variant="outlined" onChange={handleSearch} />
+    <TextField
+      id="command-search"
+      label="Search command"
+      variant="outlined"
+      fullWidth
+      inputRef={ref}
+      onChange={handleSearch} />
   );
 }
 
