@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Drawer, Typography } from '@mui/material';
+import { Box, Drawer, Typography } from '@mui/material';
 import CommandsTable from './CommandsTable';
-import CommandSearch from "./CommandSearch";
+import CommandSearch from './CommandSearch';
+import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
   const [allCommands, setAllCommands] = useState([]); // todo: use this to filter commands by tags
@@ -12,7 +14,6 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
     fetch(import.meta.env.BASE_URL + './openapi.json')
       .then((response) => response.json())
       .then((data) => {
-        // console.log(data);
         const nextCommands = Object.keys(data.paths)
           .map((path) => {
             return Object.keys(data.paths[path]).map((method) => {
@@ -31,7 +32,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
             });
           })
           .flat();
-        setAllCommands(nextCommands)
+        setAllCommands(nextCommands);
         setCommands(nextCommands);
       })
       .catch((e) => console.error(e));
@@ -45,7 +46,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
       onClose={toggleDrawer}
       sx={{
         '& .MuiDrawer-paper': {
-          width: '50vw',
+          width: '52vw',
           padding: '1rem',
           pt: '6rem',
         },
@@ -55,8 +56,16 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
       }}
     >
       <div>
-        <Typography variant={'h5'} mb={2}>Commands</Typography>
-        <Typography variant={'body1'} mb={4}>This is a list of commands that can be used in the editor.</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mr: 2 }}>
+          <Typography variant={'h5'}>Commands</Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <IconButton onClick={toggleDrawer}>
+            <Close />
+          </IconButton>
+        </Box>
+        <Typography variant={'body1'} mb={4}>
+          This is a list of commands that can be used in the editor.
+        </Typography>
         <CommandSearch commands={allCommands} setCommands={setCommands} />
         <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand} />
       </div>
@@ -76,6 +85,13 @@ export default CommandsDrawer;
 // - [x] know if command has object or not
 // - [x] add search
 // - [x] set focus on search input when drawer opens
+// - [x] add search icon
 // - [ ] add keyboard navigation
-// - [ ] add filter by tags
+//   - [x] up/down to navigate
+//   - [x] enter to insert
+//   - [x] esc to close
+//   - [ ] insert at cursor position
+//   - [ ] scroll to active command
+// - [x] two lines
 // - [ ] on close, set focus back to editor - in the last inserted command
+// - [ ] add tests

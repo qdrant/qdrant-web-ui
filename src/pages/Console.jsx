@@ -153,7 +153,8 @@ function Console() {
               setOpenCommands(!openCommands);
             }}
             handleInsertCommand={(command) => {
-              const nextCode = `${code}\n${command}`;
+              const nextCode = `${command}\n\n${code}`;
+
               onChangeCode('code', nextCode);
             }}
           />
