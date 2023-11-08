@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { TableBodyWithGaps, TableWithGaps } from '../../../Common/TableWithGaps';
 import { alpha, Box, Chip, TableCell, TableRow, Typography } from '@mui/material';
@@ -7,9 +7,9 @@ import IconButton from '@mui/material/IconButton';
 import { ArrowBack } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 
-const CommandsTableRow = ({ method, command, description, tags, onClick, isActive }) => {
+const CommandsTableRow = forwardRef(({ method, command, description, tags, onClick, isActive, ...other }, ref) => {
   const theme = useTheme();
-  const ref = React.useRef(null);
+  // const ref = React.useRef(null);
   const getColor = (method) => {
     switch (method) {
       case 'GET':
@@ -33,20 +33,6 @@ const CommandsTableRow = ({ method, command, description, tags, onClick, isActiv
     background: alpha(theme.palette[colorName].light, 0.05),
     borderColor: `${color} !important`,
   };
-
-  const focusBtn = (refCurrent) => {
-    const button = refCurrent.children[0].firstChild;
-    button.focus();
-    button.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    });
-  };
-
-  useEffect(() => {
-    console.log('isActive', isActive, command);
-    if (isActive && ref.current) focusBtn(ref.current);
-  }, [isActive]);
 
   const tagList = tags.map((tag) => (
     <React.Fragment key={tag}>
@@ -78,6 +64,7 @@ const CommandsTableRow = ({ method, command, description, tags, onClick, isActiv
       }}
       ref={ref}
       onClick={onClick}
+      {...other}
     >
       <TableCell sx={rowStyle} width={'50px'}>
         <Tooltip title={'Insert command into the console window'} disableFocusListener>
@@ -110,7 +97,9 @@ const CommandsTableRow = ({ method, command, description, tags, onClick, isActiv
       </TableCell>
     </TableRow>
   );
-};
+});
+
+CommandsTableRow.displayName = 'CommandsTableRow';
 
 CommandsTableRow.propTypes = {
   method: PropTypes.string.isRequired,
@@ -120,15 +109,18 @@ CommandsTableRow.propTypes = {
   tags: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
   onClick: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
+  onFocus: PropTypes.func.isRequired,
+  tabIndex: PropTypes.number.isRequired,
 };
 
 const CommandsTable = ({ commands, handleInsertCommand }) => {
   const [active, setActive] = React.useState(null);
+  const listRefs = useRef([]);
 
-  React.useEffect(() => {
-    console.log('commands changed');
+  useEffect(() => {
     setActive(null);
-  }, [commands]);
+    listRefs.current = listRefs.current.slice(0, commands.length);
+  }, [commands, commands.length]);
 
   const handleClick = (command) => {
     const commandText = `${command.method} ${command.command.substring(1)}${
@@ -142,19 +134,32 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
     if (e.key === 'ArrowDown') {
       if (active === null) {
         setActive(0);
+        listRefs.current[0].focus();
         return;
       }
-      setActive((prevState) => (prevState + 1) % commands.length);
+      const nextActive = (active + 1) % commands.length;
+      setActive(nextActive);
+      listRefs.current[nextActive].focus();
     } else if (e.key === 'ArrowUp') {
       if (active === null) {
-        setActive(0);
+        setActive(commands.length - 1);
+        listRefs.current[commands.length - 1].focus();
         return;
       }
-      setActive((prevState) => (prevState - 1 + commands.length) % commands.length);
+      const nextActive = (active - 1 + commands.length) % commands.length;
+      setActive(nextActive);
+      listRefs.current[nextActive].focus();
+    } else if (
+      e.key === 'Enter' &&
+      active !== null &&
+      // if element is not focused but active, we need to focus it
+      document.activeElement !== listRefs.current[active]
+    ) {
+      listRefs.current[active].focus();
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
@@ -162,8 +167,19 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
     };
   }, [active]);
 
+  const focusBtn = (refCurrent) => {
+    const button = refCurrent.children[0].firstChild;
+    button.focus();
+    button.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  };
+
   const rows = commands.map((command, index) => (
     <CommandsTableRow
+      tabIndex={0} // Make the list item focusable
+      ref={(el) => (listRefs.current[index] = el)}
       key={command.method + '_' + command.command}
       method={command.method}
       command={command.command}
@@ -172,6 +188,10 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       tags={command.tags}
       isActive={active === index}
       onClick={() => handleClick(command)}
+      onFocus={() => {
+        setActive(index);
+        focusBtn(listRefs.current[index]);
+      }}
     />
   ));
 
