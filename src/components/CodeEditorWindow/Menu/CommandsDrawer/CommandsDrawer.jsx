@@ -89,17 +89,3 @@ CommandsDrawer.propTypes = {
 };
 
 export default CommandsDrawer;
-
-// todo:
-// - [x] know if command has object or not
-// - [x] add search
-// - [x] set focus on search input when drawer opens
-// - [x] add search icon
-// - [x] add keyboard navigation
-//   - [x] up/down to navigate
-//   - [x] enter to insert
-//   - [x] esc to close
-//   - [x] scroll to active command
-// - [x] two lines
-// - [ ] on close, set focus back to editor - in the last inserted command
-// - [ ] add tests
