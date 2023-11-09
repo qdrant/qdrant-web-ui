@@ -9,7 +9,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
-  const [allCommands, setAllCommands] = useState([]); // todo: use this to filter commands by tags
+  const [allCommands, setAllCommands] = useState([]);
   const [commands, setCommands] = useState([]);
   const matchesMdMedia = useMediaQuery('(max-width: 992px)');
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();

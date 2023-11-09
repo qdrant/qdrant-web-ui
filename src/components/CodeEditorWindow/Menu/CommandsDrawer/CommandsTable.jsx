@@ -9,7 +9,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
-const CommandsTableRow = forwardRef(({ method, command, description, tags, onClick, isActive, ...other }, ref) => {
+const CommandsTableRow = forwardRef((props, ref) => {
+  const { method, command, description, tags, onClick, onFocus, tabIndex, isActive } = props;
   const theme = useTheme();
 
   const getColor = (method) => {
@@ -66,7 +67,8 @@ const CommandsTableRow = forwardRef(({ method, command, description, tags, onCli
       }}
       ref={ref}
       onClick={onClick}
-      {...other} // todo
+      onFocus={onFocus}
+      tabIndex={tabIndex}
     >
       <TableCell sx={rowStyle} width={'50px'}>
         <Tooltip title={'Insert command into the console window'} disableFocusListener>
