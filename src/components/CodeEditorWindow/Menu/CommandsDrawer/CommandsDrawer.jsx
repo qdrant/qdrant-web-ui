@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Drawer, Typography } from '@mui/material';
+import { Box, Drawer, Typography, IconButton } from '@mui/material';
 import CommandsTable from './CommandsTable';
 import CommandSearch from './CommandSearch';
-import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
+import Close from '@mui/icons-material/Close';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';

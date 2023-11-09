@@ -66,7 +66,7 @@ const CommandsTableRow = forwardRef(({ method, command, description, tags, onCli
       }}
       ref={ref}
       onClick={onClick}
-      {...other}
+      {...other} // todo
     >
       <TableCell sx={rowStyle} width={'50px'}>
         <Tooltip title={'Insert command into the console window'} disableFocusListener>
@@ -199,7 +199,7 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
   ));
 
   return (
-    <TableWithGaps>
+    <TableWithGaps data-testid="commands-table">
       <TableBodyWithGaps>{rows}</TableBodyWithGaps>
     </TableWithGaps>
   );
