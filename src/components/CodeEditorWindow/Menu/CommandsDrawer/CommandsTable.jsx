@@ -6,10 +6,12 @@ import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { ArrowBack } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { useSnackbar } from 'notistack';
+import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
 const CommandsTableRow = forwardRef(({ method, command, description, tags, onClick, isActive, ...other }, ref) => {
   const theme = useTheme();
-  // const ref = React.useRef(null);
+
   const getColor = (method) => {
     switch (method) {
       case 'GET':
@@ -105,7 +107,6 @@ CommandsTableRow.propTypes = {
   method: PropTypes.string.isRequired,
   command: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  hasRequestBody: PropTypes.bool.isRequired,
   tags: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
   onClick: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
@@ -116,6 +117,8 @@ CommandsTableRow.propTypes = {
 const CommandsTable = ({ commands, handleInsertCommand }) => {
   const [active, setActive] = React.useState(null);
   const listRefs = useRef([]);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
 
   useEffect(() => {
     setActive(null);
@@ -128,6 +131,7 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
     }`;
 
     handleInsertCommand(commandText);
+    enqueueSnackbar('Command inserted', successSnackbarOptions);
   };
 
   const handleKeyDown = (e) => {
@@ -184,7 +188,6 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       method={command.method}
       command={command.command}
       description={command.description}
-      hasRequestBody={command.hasRequestBody}
       tags={command.tags}
       isActive={active === index}
       onClick={() => handleClick(command)}

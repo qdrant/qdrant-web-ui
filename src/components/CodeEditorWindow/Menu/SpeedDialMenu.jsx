@@ -16,12 +16,18 @@ function SpeedDialMenu({ actions }) {
   return (
     <SpeedDial
       ariaLabel="SpeedDial tooltip example"
-      sx={{ position: 'absolute', bottom: '40px', right: '40px' }}
+      sx={{ position: 'absolute', bottom: '106px', right: '52px' }}
       icon={<Bolt />}
       onClose={handleClose}
       onOpen={handleOpen}
       open={open}
       onClick={handleOpen}
+      FabProps={{
+        size: 'small',
+        sx: {
+          boxShadow: 1,
+        },
+      }}
     >
       {actionsList}
     </SpeedDial>

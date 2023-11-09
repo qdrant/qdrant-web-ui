@@ -5,10 +5,16 @@ import CommandsTable from './CommandsTable';
 import CommandSearch from './CommandSearch';
 import { Close } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useSnackbar } from 'notistack';
+import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
   const [allCommands, setAllCommands] = useState([]); // todo: use this to filter commands by tags
   const [commands, setCommands] = useState([]);
+  const matchesMdMedia = useMediaQuery('(max-width: 992px)');
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
 
   useEffect(() => {
     fetch(import.meta.env.BASE_URL + './openapi.json')
@@ -35,8 +41,10 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
         setAllCommands(nextCommands);
         setCommands(nextCommands);
       })
-      .catch((e) => console.error(e));
-    // todo: show snackbar on error
+      .catch((e) => {
+        enqueueSnackbar('Error fetching commands', errorSnackbarOptions);
+        console.error(e);
+      });
   }, []);
 
   return (
@@ -46,7 +54,8 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
       onClose={toggleDrawer}
       sx={{
         '& .MuiDrawer-paper': {
-          width: '52vw',
+          minWidth: matchesMdMedia ? '100vw' : '680px',
+          width: matchesMdMedia ? '100vw' : '55vw',
           padding: '1rem',
           pt: '6rem',
         },
@@ -86,12 +95,11 @@ export default CommandsDrawer;
 // - [x] add search
 // - [x] set focus on search input when drawer opens
 // - [x] add search icon
-// - [ ] add keyboard navigation
+// - [x] add keyboard navigation
 //   - [x] up/down to navigate
 //   - [x] enter to insert
 //   - [x] esc to close
-//   - [ ] insert at cursor position
-//   - [ ] scroll to active command
+//   - [x] scroll to active command
 // - [x] two lines
 // - [ ] on close, set focus back to editor - in the last inserted command
 // - [ ] add tests
