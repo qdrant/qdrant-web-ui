@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CardMedia } from '@mui/material';
+import { CardMedia, Grid } from '@mui/material';
 
 function PointImage({ data, sx }) {
   const renderImages = () => {
@@ -49,7 +49,17 @@ function PointImage({ data, sx }) {
     return images;
   };
 
-  return <>{renderImages()}</>;
+  const images = renderImages();
+
+  if (images.length === 0) {
+    return null;
+  }
+
+  return (
+    <Grid item xs={3} display="grid" justifyContent={'center'}>
+      {images}
+    </Grid>
+  );
 }
 PointImage.propTypes = {
   data: PropTypes.object.isRequired,

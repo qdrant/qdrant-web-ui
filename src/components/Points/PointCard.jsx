@@ -94,11 +94,7 @@ const PointCard = (props) => {
                 <Grid item xs my={1}>
                   <DataGridList data={point.payload} />
                 </Grid>
-                {point.payload && (
-                  <Grid item xs={3} display="grid" justifyContent={'center'}>
-                    <PointImage data={point.payload} sx={{ ml: 2 }} />
-                  </Grid>
-                )}
+                {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
               </Grid>
             </CardContent>
           </>
