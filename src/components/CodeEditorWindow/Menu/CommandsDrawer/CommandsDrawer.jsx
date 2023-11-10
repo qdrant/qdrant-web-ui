@@ -22,7 +22,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
         const nextCommands = Object.keys(data.paths)
           .map((path) => {
             return Object.keys(data.paths[path]).map((method) => {
-              const command = path.replace(/{/g, '${');
+              const command = path.replace(/{/g, '<').replace(/}/g, '>');
               const description = data.paths[path][method].summary;
               const tags = data.paths[path][method].tags;
               const hasRequestBody = !!data.paths[path][method].requestBody;

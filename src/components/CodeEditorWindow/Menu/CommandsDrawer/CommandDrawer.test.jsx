@@ -73,7 +73,7 @@ describe('CommandsDrawer', () => {
       const openApiJsonPath = openApiJson.paths[openApiCommand];
 
       expect(method).toBe(Object.keys(openApiJsonPath)[0].toUpperCase());
-      expect(command).toBe(openApiCommand.replace(/{/g, '${'));
+      expect(command).toBe(openApiCommand.replace(/{/g, '<').replace(/}/g, '>'));
       expect(description).toBe(openApiJsonPath[Object.keys(openApiJsonPath)[0]].summary);
     }
   });
