@@ -16,7 +16,7 @@ function SpeedDialMenu({ actions }) {
   return (
     <SpeedDial
       ariaLabel="SpeedDial tooltip example"
-      sx={{ position: 'absolute', bottom: '106px', right: '52px' }}
+      sx={{ position: 'absolute', bottom: '106px', right: '49px' }}
       icon={<Bolt />}
       onClose={handleClose}
       onOpen={handleOpen}

@@ -72,7 +72,7 @@ const CommandsTableRow = forwardRef((props, ref) => {
     >
       <TableCell sx={rowStyle} width={'50px'}>
         <Tooltip title={'Insert command into the console window'} disableFocusListener>
-          <IconButton onClick={onClick}>
+          <IconButton onClick={onClick} className={'insert-button'}>
             <ArrowBack />
           </IconButton>
         </Tooltip>
@@ -192,7 +192,12 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       description={command.description}
       tags={command.tags}
       isActive={active === index}
-      onClick={() => handleClick(command)}
+      onClick={(e) => {
+        // we want insert command only if user clicks on the button with the class 'insert-button'
+        if (e.target.classList.contains('insert-button') || e.target.closest('.insert-button')) {
+          handleClick(command);
+        }
+      }}
       onFocus={() => {
         setActive(index);
         focusBtn(listRefs.current[index]);
