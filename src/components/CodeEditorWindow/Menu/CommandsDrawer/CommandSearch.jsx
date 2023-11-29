@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import { InputAdornment, TextField } from '@mui/material';
-import Fuse from 'fuse.js';
 import { Search } from '@mui/icons-material';
 
 const CommandSearch = ({ commands, setCommands }) => {
@@ -10,19 +10,27 @@ const CommandSearch = ({ commands, setCommands }) => {
   const handleSearch = (event) => {
     const value = event.target.value;
 
-    const fuseOptions = {
-      includeScore: true,
-      shouldSort: true,
-      distance: 10,
-      keys: ['method', 'command', 'description', 'tags'],
-    };
-
-    const fuse = new Fuse(commands, fuseOptions);
-
     if (value === '') {
       setCommands(commands);
     } else {
-      const nextCommands = fuse.search(event.target.value).map((result) => result.item);
+      const searchTerms = value.split(' ');
+      const nextCommands = commands
+        .reduce((acc, command) => {
+          const commandTerms = [command.method, command.command, command.description];
+          const matches = searchTerms.reduce((acc, searchTerm) => {
+            const escapedSearchTerm = _.escapeRegExp(searchTerm);
+            const regex = new RegExp(`\\b(${escapedSearchTerm})`, 'gmi');
+            return acc + commandTerms.join(' ').match(regex)?.length;
+          }, 0);
+
+          if (matches > 0) {
+            acc.push({ ...command, matches });
+          }
+
+          return acc;
+        }, [])
+        .sort((a, b) => b.matches - a.matches);
+
       setCommands(nextCommands);
     }
   };
