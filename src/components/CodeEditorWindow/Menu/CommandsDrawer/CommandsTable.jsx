@@ -90,7 +90,11 @@ const CommandsTableRow = forwardRef((props, ref) => {
               {command}
             </Typography>
             <br />
-            <Typography variant={'caption'} ml={2} color={theme.palette.grey[700]}>
+            <Typography
+              variant={'caption'}
+              ml={2}
+              color={theme.palette.mode === 'light' ? theme.palette.grey[700] : theme.palette.grey[400]}
+            >
               {description}
             </Typography>
           </Box>
