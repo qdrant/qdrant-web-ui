@@ -8,7 +8,7 @@ import { ArrowBack } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
-import { debounce } from "lodash";
+import { debounce } from 'lodash';
 
 const CommandsTableRow = forwardRef((props, ref) => {
   const { method, command, description, tags, onClick, tabIndex, isActive } = props;
@@ -114,7 +114,6 @@ CommandsTableRow.propTypes = {
   isActive: PropTypes.bool.isRequired,
   tabIndex: PropTypes.number.isRequired,
 };
-
 
 const CommandsTable = ({ commands, handleInsertCommand }) => {
   const [active, setActive] = React.useState(null);
