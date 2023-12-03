@@ -10,7 +10,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
 const CommandsTableRow = forwardRef((props, ref) => {
-  const { method, command, description, tags, onClick, onFocus, tabIndex, isActive } = props;
+  const { method, command, description, tags, onClick, tabIndex, isActive } = props;
   const theme = useTheme();
 
   const getColor = (method) => {
@@ -67,7 +67,6 @@ const CommandsTableRow = forwardRef((props, ref) => {
       }}
       ref={ref}
       onClick={onClick}
-      onFocus={onFocus}
       tabIndex={tabIndex}
     >
       <TableCell sx={rowStyle} width={'50px'}>
@@ -112,7 +111,6 @@ CommandsTableRow.propTypes = {
   tags: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
   onClick: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
-  onFocus: PropTypes.func.isRequired,
   tabIndex: PropTypes.number.isRequired,
 };
 
@@ -155,13 +153,8 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       const nextActive = (active - 1 + commands.length) % commands.length;
       setActive(nextActive);
       listRefs.current[nextActive].focus();
-    } else if (
-      e.key === 'Enter' &&
-      active !== null &&
-      // if element is not focused but active, we need to focus it
-      document.activeElement !== listRefs.current[active]
-    ) {
-      listRefs.current[active].focus();
+    } else if (e.key === 'Enter' && active !== null) {
+      handleClick(commands[active]);
     }
   };
 
@@ -172,15 +165,6 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [active]);
-
-  const focusBtn = (refCurrent) => {
-    const button = refCurrent.children[0].firstChild;
-    button.focus();
-    button.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    });
-  };
 
   const rows = commands.map((command, index) => (
     <CommandsTableRow
@@ -197,10 +181,6 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
         if (e.target.classList.contains('insert-button') || e.target.closest('.insert-button')) {
           handleClick(command);
         }
-      }}
-      onFocus={() => {
-        setActive(index);
-        focusBtn(listRefs.current[index]);
       }}
     />
   ));
