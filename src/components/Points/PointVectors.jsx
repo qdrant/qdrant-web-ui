@@ -53,7 +53,11 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
               <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
                 Length:
               </Typography>
-              <Chip label={vectors[key].length} variant="outlined" size="small" />
+              <Chip
+                label={Array.isArray(vectors[key]) ? vectors[key].length : vectors[key].indices?.length}
+                variant="outlined"
+                size="small"
+              />
             </Grid>
             <Grid item xs={4} my={1} display={'flex'}>
               <Box sx={{ flexGrow: 1 }} />
