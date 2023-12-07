@@ -39,6 +39,13 @@ self.onmessage = function (e) {
       });
       return;
     } else if (data1?.result?.points[0].vector[data1?.vector_name]) {
+      if (!Array.isArray(data1?.result?.points[0].vector[data1?.vector_name])) {
+        self.postMessage({
+          data: [],
+          error: "UnSupported vector type, vector should be of type 'Array'",
+        });
+        return;
+      }
       data1?.result?.points?.forEach((point) => {
         data.push(point.vector[data1?.vector_name]);
       });
