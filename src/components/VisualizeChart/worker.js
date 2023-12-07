@@ -39,6 +39,13 @@ self.onmessage = function (e) {
       });
       return;
     } else if (data1?.result?.points[0].vector[data1?.vector_name]) {
+      if (!Array.isArray(data1?.result?.points[0].vector[data1?.vector_name])) {
+        self.postMessage({
+          data: [],
+          error: 'Vector visulization is not supported for sparse vector',
+        });
+        return;
+      }
       data1?.result?.points?.forEach((point) => {
         data.push(point.vector[data1?.vector_name]);
       });
