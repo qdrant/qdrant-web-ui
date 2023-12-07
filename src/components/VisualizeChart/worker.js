@@ -42,7 +42,7 @@ self.onmessage = function (e) {
       if (!Array.isArray(data1?.result?.points[0].vector[data1?.vector_name])) {
         self.postMessage({
           data: [],
-          error: "UnSupported vector type, vector should be of type 'Array'",
+          error: "Vector visulization is not supported for sparse vector",
         });
         return;
       }
