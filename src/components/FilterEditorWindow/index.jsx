@@ -53,7 +53,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
 
       const selectedCodeBlock = selectBlock(currentBlocks, editor.getPosition().lineNumber);
 
-      monaco.selectedCodeBlock = selectedCodeBlock;
+      monaco.editor.selectedCodeBlock = selectedCodeBlock;
 
       if (selectedCodeBlock) {
         const fromRange = selectedCodeBlock.blockStartLine;

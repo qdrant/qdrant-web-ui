@@ -51,8 +51,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
   return {
     provideCompletionItems: (model, position) => {
       // Reuse parsed code blocks to avoid parsing the same code block multiple times
-      const selectedCodeBlock = monaco.selectedCodeBlock;
-
+      const selectedCodeBlock = monaco.editor.selectedCodeBlock;
       if (!selectedCodeBlock) {
         return { suggestions: [] };
       }
