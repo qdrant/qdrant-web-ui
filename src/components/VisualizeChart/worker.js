@@ -79,7 +79,7 @@ self.onmessage = function (e) {
 
 function getDataset(data, reducedPoint) {
   const dataset = [];
-  const labelby = data.color_by;
+  const labelby = data.color_by?.payload;
   if (labelby) {
     data.labelByArrayUnique.forEach((label) => {
       dataset.push({

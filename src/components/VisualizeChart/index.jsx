@@ -43,7 +43,8 @@ const VisualizeChart = ({ scrollResult }) => {
     }
 
     const dataset = [];
-    const labelby = scrollResult.data.color_by;
+    // Color by payload field
+    const labelby = scrollResult.data.color_by?.payload;
     if (labelby) {
       if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
         enqueueSnackbar(`Visualization Unsuccessful, error: Color by field ${labelby} does not exist`, {

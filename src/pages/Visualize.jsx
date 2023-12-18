@@ -28,7 +28,13 @@ const query = `
 // Minimal example:
 
 {
-  "limit": 500
+  "limit": 500,
+  // TODO: remove this example
+  "color_by": {
+    "discover_score":{
+      "target": 42
+    }
+  }
 }
 
 
