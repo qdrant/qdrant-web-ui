@@ -8,8 +8,8 @@ export async function requestFromCode(text, collectionName) {
     // Sending request
     const colorBy = data.reqBody.color_by;
     if (colorBy?.payload) {
-      return await actionFromCode(collectionName, data, "scroll");
-    } else if (data, colorBy?.discover_score) {
+      return await actionFromCode(collectionName, data, 'scroll');
+    } else if ((data, colorBy?.discover_score)) {
       return discoverFromCode(collectionName, data);
     } else {
       return await actionFromCode(collectionName, data, 'scroll');
@@ -39,13 +39,13 @@ async function actionFromCode(collectionName, data, action) {
 }
 
 async function discoverFromCode(collectionName, data) {
-  // Do 50/50 split. 50% of the points will be returned with the query 
+  // Do 50/50 split. 50% of the points will be returned with the query
   // and 50 % will be returned with random sampling
   const limit = Math.floor(data.reqBody.limit / 2);
   data.reqBody.limit = limit;
   data.reqBody.with_payload = true;
 
-  const queryResponse = await actionFromCode(collectionName, data, "discover")
+  const queryResponse = await actionFromCode(collectionName, data, 'discover');
   if (queryResponse.error) {
     return {
       data: null,
@@ -55,13 +55,13 @@ async function discoverFromCode(collectionName, data) {
 
   // Get "random" points ids.
   // There is no sampling endpoint in Qdrant yet, so for now we just scroll excluding the previous results
-  const idsToExclude = queryResponse.data.result.map(point => point.id)
+  const idsToExclude = queryResponse.data.result.map((point) => point.id);
 
   const mustNotFilter = [{ has_id: idsToExclude }];
   data.reqBody.filter = data.reqBody.filter || {};
   data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter?.must_not || []);
 
-  const randomResponse = await actionFromCode(collectionName, data, "scroll")
+  const randomResponse = await actionFromCode(collectionName, data, 'scroll');
   if (randomResponse.error) {
     return {
       data: null,
@@ -70,17 +70,17 @@ async function discoverFromCode(collectionName, data) {
   }
 
   // Concat both results
-  const points = queryResponse.data.result.concat(randomResponse.data.result.points)
-  
+  const points = queryResponse.data.result.concat(randomResponse.data.result.points);
+
   return {
     data: {
       ...queryResponse.data,
       result: {
         points: points,
-      }
+      },
     },
-    error: null
-  }
+    error: null,
+  };
 }
 
 export function codeParse(codeText) {
@@ -102,7 +102,7 @@ export function codeParse(codeText) {
   if (reqBody.color_by) {
     const colorBy = reqBody.color_by;
 
-    if (typeof colorBy === "string") {
+    if (typeof colorBy === 'string') {
       // Parse into payload variant
       reqBody.color_by = {
         payload: colorBy,
