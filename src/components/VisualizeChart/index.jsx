@@ -67,6 +67,7 @@ const VisualizeChart = ({ scrollResult }) => {
         });
       });
     } else if (colorBy?.discover_score) {
+      // Color by discover score
       const scores = scrollResult.data.result?.points.map((point) => point.score);
       const minScore = Math.min(...scores);
       const maxScore = Math.max(...scores);
@@ -93,6 +94,7 @@ const VisualizeChart = ({ scrollResult }) => {
         data: [],
       });
     } else {
+      // No special coloring
       dataset.push({
         label: 'Data',
         data: [],
@@ -129,7 +131,7 @@ const VisualizeChart = ({ scrollResult }) => {
                 if (colorBy?.discover_score) {
                   const id = context.dataset.data[context.dataIndex].point.id;
                   const score = context.dataset.data[context.dataIndex].point.score;
-                  
+
                   return [`id: ${id}`, `score: ${score}`, `payload:`, ...payload];
                 } else {
                   return payload;
