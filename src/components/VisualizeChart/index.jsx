@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import Chart from 'chart.js/auto';
-import { useSnackbar } from 'notistack';
 import { Button } from '@mui/material';
-import ViewPointModal from './ViewPointModal';
+import Chart from 'chart.js/auto';
 import get from 'lodash/get';
+import { useSnackbar } from 'notistack';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import ViewPointModal from './ViewPointModal';
+import chroma from 'chroma-js';
 
 const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -43,9 +44,12 @@ const VisualizeChart = ({ scrollResult }) => {
     }
 
     const dataset = [];
-    // Color by payload field
-    const labelby = scrollResult.data.color_by?.payload;
-    if (labelby) {
+    const colorBy = scrollResult.data.color_by;
+
+    let labelby = null;
+    if (colorBy?.payload) {
+      labelby = colorBy.payload;
+      // Color and label by payload field
       if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
         enqueueSnackbar(`Visualization Unsuccessful, error: Color by field ${labelby} does not exist`, {
           variant: 'error',
@@ -61,6 +65,32 @@ const VisualizeChart = ({ scrollResult }) => {
           label: label,
           data: [],
         });
+      });
+    } else if (colorBy?.discover_score) {
+      const scores = scrollResult.data.result?.points.map((point) => point.score);
+      const minScore = Math.min(...scores);
+      const maxScore = Math.max(...scores);
+      
+      const colorScale = chroma.scale(['#EB5353', '#F9D923', '#36AE7C']);
+      const scoreColors = scores.map((score) => {
+        const normalizedScore = (score - minScore) / (maxScore - minScore);
+        return colorScale(normalizedScore).hex();
+      });
+
+      const pointRadii = scrollResult.data.result?.points.map((point) => {
+        if (point.from_query) {
+          return 4;
+        } else {
+          return 3;
+        }
+      });
+
+      dataset.push({
+        label: 'Discover scores',
+        pointBackgroundColor: scoreColors,
+        pointBorderColor: scoreColors,
+        pointRadius: pointRadii,
+        data: [],
       });
     } else {
       dataset.push({
@@ -92,7 +122,18 @@ const VisualizeChart = ({ scrollResult }) => {
           tooltip: {
             callbacks: {
               label: function (context) {
-                return JSON.stringify(context.dataset.data[context.dataIndex].point.payload, null, 2).split('\n');
+                const payload = JSON.stringify(
+                  context.dataset.data[context.dataIndex].point.payload, null, 1
+                ).split('\n');
+
+                if (colorBy?.discover_score) {
+                  const id = context.dataset.data[context.dataIndex].point.id;
+                  const score = context.dataset.data[context.dataIndex].point.score;
+                  
+                  return [`id: ${id}`, `score: ${score}`, `payload:`, ...payload];
+                } else {
+                  return payload;
+                }
               },
             },
           },

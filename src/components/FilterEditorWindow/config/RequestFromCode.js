@@ -39,10 +39,11 @@ async function actionFromCode(collectionName, data, action) {
 }
 
 async function discoverFromCode(collectionName, data) {
-  // Do 50/50 split. 50% of the points will be returned with the query
-  // and 50 % will be returned with random sampling
-  const limit = Math.floor(data.reqBody.limit / 2);
-  data.reqBody.limit = limit;
+  // Do 20/80 split. 20% of the points will be returned with the query
+  // and 80 % will be returned with random sampling
+  const queryLimit = Math.floor(data.reqBody.limit * 0.2);
+  const randomLimit = data.reqBody.limit - queryLimit;
+  data.reqBody.limit = queryLimit;
   data.reqBody.with_payload = true;
 
   const queryResponse = await actionFromCode(collectionName, data, 'discover');
@@ -53,14 +54,21 @@ async function discoverFromCode(collectionName, data) {
     };
   }
 
+  // Add tag to know which points were returned by the query
+  queryResponse.data.result.forEach((point) => {
+    point.from_query = true;
+  });
+
   // Get "random" points ids.
   // There is no sampling endpoint in Qdrant yet, so for now we just scroll excluding the previous results
   const idsToExclude = queryResponse.data.result.map((point) => point.id);
 
+  const originalFilter = data.reqBody.filter;
   const mustNotFilter = [{ has_id: idsToExclude }];
-  data.reqBody.filter = data.reqBody.filter || {};
+  data.reqBody.filter = originalFilter || {};
   data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter?.must_not || []);
 
+  data.reqBody.limit = randomLimit;
   const randomResponse = await actionFromCode(collectionName, data, 'scroll');
   if (randomResponse.error) {
     return {
@@ -69,8 +77,23 @@ async function discoverFromCode(collectionName, data) {
     };
   }
 
+  // Then score these random points
+  const idsToInclude = randomResponse.data.result.points.map((point) => point.id);
+  const mustFilter = [{ has_id: idsToInclude }];
+  data.reqBody.filter = originalFilter || {};
+  data.reqBody.filter.must = mustFilter.concat(data.reqBody.filter?.must || []);
+
+
+  const scoredRandomResponse = await actionFromCode(collectionName, data, 'discover');
+  if (randomResponse.error) {
+    return {
+      data: null,
+      error: randomResponse.error,
+    };
+  }
+
   // Concat both results
-  const points = queryResponse.data.result.concat(randomResponse.data.result.points);
+  const points = queryResponse.data.result.concat(scoredRandomResponse.data.result);
 
   return {
     data: {
