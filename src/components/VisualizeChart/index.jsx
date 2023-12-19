@@ -1,11 +1,11 @@
 import { Button } from '@mui/material';
 import Chart from 'chart.js/auto';
+import chroma from 'chroma-js';
 import get from 'lodash/get';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
-import chroma from 'chroma-js';
 
 const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -71,7 +71,7 @@ const VisualizeChart = ({ scrollResult }) => {
       const scores = scrollResult.data.result?.points.map((point) => point.score);
       const minScore = Math.min(...scores);
       const maxScore = Math.max(...scores);
-      
+
       const colorScale = chroma.scale(['#EB5353', '#F9D923', '#36AE7C']);
       const scoreColors = scores.map((score) => {
         const normalizedScore = (score - minScore) / (maxScore - minScore);
@@ -122,8 +122,28 @@ const VisualizeChart = ({ scrollResult }) => {
         },
         plugins: {
           tooltip: {
+            usePointStyle: true,
             callbacks: {
-              label: function (context) {
+              labelPointStyle: (context) => {
+                const imageSrc = context.dataset.data[context.dataIndex].point.payload?.image;
+                if (!imageSrc || !colorBy?.discover_score) {
+                  // Show normal icon
+                  return {};
+                }
+
+                const image = new Image(177, 100);
+                image.src = imageSrc;
+
+                return {
+                  pointStyle: image,
+                };
+              },
+              label: (context) => {
+                if (colorBy?.discover_score && context.dataset.data[context.dataIndex].point.payload?.image) {
+                  // Show only image
+                  return ' ';
+                }
+
                 const payload = JSON.stringify(
                   context.dataset.data[context.dataIndex].point.payload, null, 1
                 ).split('\n');

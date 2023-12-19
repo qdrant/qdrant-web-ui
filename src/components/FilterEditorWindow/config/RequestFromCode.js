@@ -83,12 +83,11 @@ async function discoverFromCode(collectionName, data) {
   data.reqBody.filter = originalFilter || {};
   data.reqBody.filter.must = mustFilter.concat(data.reqBody.filter?.must || []);
 
-
   const scoredRandomResponse = await actionFromCode(collectionName, data, 'discover');
-  if (randomResponse.error) {
+  if (scoredRandomResponse.error) {
     return {
       data: null,
-      error: randomResponse.error,
+      error: scoredRandomResponse.error,
     };
   }
 
