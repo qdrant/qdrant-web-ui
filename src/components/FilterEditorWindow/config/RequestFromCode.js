@@ -55,9 +55,10 @@ async function discoverFromCode(collectionName, data) {
   }
 
   // Add tag to know which points were returned by the query
-  queryResponse.data.result.forEach((point) => {
-    point.from_query = true;
-  });
+  queryResponse.data.result = queryResponse.data.result.map((point) => ({
+    ...point,
+    from_query: true,
+  }));
 
   // Get "random" points ids.
   // There is no sampling endpoint in Qdrant yet, so for now we just scroll excluding the previous results
@@ -66,7 +67,7 @@ async function discoverFromCode(collectionName, data) {
   const originalFilter = data.reqBody.filter;
   const mustNotFilter = [{ has_id: idsToExclude }];
   data.reqBody.filter = originalFilter || {};
-  data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter?.must_not || []);
+  data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter.must_not || []);
 
   data.reqBody.limit = randomLimit;
   const randomResponse = await actionFromCode(collectionName, data, 'scroll');
@@ -81,7 +82,7 @@ async function discoverFromCode(collectionName, data) {
   const idsToInclude = randomResponse.data.result.points.map((point) => point.id);
   const mustFilter = [{ has_id: idsToInclude }];
   data.reqBody.filter = originalFilter || {};
-  data.reqBody.filter.must = mustFilter.concat(data.reqBody.filter?.must || []);
+  data.reqBody.filter.must = mustFilter.concat(data.reqBody.filter.must || []);
 
   const scoredRandomResponse = await actionFromCode(collectionName, data, 'discover');
   if (scoredRandomResponse.error) {

@@ -6,6 +6,7 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
+import { imageTooltip } from './ImageTooltip';
 
 const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -122,31 +123,20 @@ const VisualizeChart = ({ scrollResult }) => {
         },
         plugins: {
           tooltip: {
+            // only use custom tooltip if color by is not discover score
+            enabled: !colorBy?.discover_score,
+            external: colorBy?.discover_score && imageTooltip || undefined,
             usePointStyle: true,
             callbacks: {
-              labelPointStyle: (context) => {
-                const imageSrc = context.dataset.data[context.dataIndex].point.payload?.image;
-                if (!imageSrc || !colorBy?.discover_score) {
-                  // Show normal icon
-                  return {};
-                }
-
-                const image = new Image(177, 100);
-                image.src = imageSrc;
-
-                return {
-                  pointStyle: image,
-                };
-              },
               label: (context) => {
-                if (colorBy?.discover_score && context.dataset.data[context.dataIndex].point.payload?.image) {
-                  // Show only image
-                  return ' ';
-                }
+                // if (colorBy?.discover_score && context.dataset.data[context.dataIndex].point.payload?.image) {
+                //   // Show only image
+                //   return ' ';
+                // }
 
-                const payload = JSON.stringify(
-                  context.dataset.data[context.dataIndex].point.payload, null, 1
-                ).split('\n');
+                const payload = JSON.stringify(context.dataset.data[context.dataIndex].point.payload, null, 1).split(
+                  '\n'
+                );
 
                 if (colorBy?.discover_score) {
                   const id = context.dataset.data[context.dataIndex].point.id;
