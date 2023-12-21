@@ -129,11 +129,6 @@ const VisualizeChart = ({ scrollResult }) => {
             usePointStyle: true,
             callbacks: {
               label: (context) => {
-                // if (colorBy?.discover_score && context.dataset.data[context.dataIndex].point.payload?.image) {
-                //   // Show only image
-                //   return ' ';
-                // }
-
                 const payload = JSON.stringify(context.dataset.data[context.dataIndex].point.payload, null, 1).split(
                   '\n'
                 );
@@ -142,7 +137,7 @@ const VisualizeChart = ({ scrollResult }) => {
                   const id = context.dataset.data[context.dataIndex].point.id;
                   const score = context.dataset.data[context.dataIndex].point.score;
 
-                  return [`id: ${id}`, `score: ${score}`, `payload:`, ...payload];
+                  return [`id: ${id}`, `score: ${score}`];
                 } else {
                   return payload;
                 }

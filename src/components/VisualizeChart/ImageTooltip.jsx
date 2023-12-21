@@ -1,4 +1,6 @@
 import { toFont } from 'chart.js/helpers';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 export function imageTooltip(context) {
   // Tooltip Element
@@ -27,43 +29,53 @@ export function imageTooltip(context) {
     tooltipEl.classList.add('no-transform');
   }
 
-  function getBody(bodyItem) {
-    return bodyItem.lines;
-  }
-
-  // Set Text
+  // Set content
   if (tooltipModel.body) {
-    // const titleLines = tooltipModel.title || [];
-    const bodyLines = tooltipModel.body.map(getBody);
+    const bodyLines = tooltipModel.body[0].lines;
 
-    let innerHtml = '<thead>';
     const imageSrc = tooltipModel.dataPoints[0].dataset.data[tooltipModel.dataPoints[0].dataIndex].point.payload?.image;
 
-    // check if we should use image
-    if (imageSrc) {
-      innerHtml += '<tr><img src="' + imageSrc + '" width=177 height=100 /></tr>';
-    }
+    const child = (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: 'auto',
+        }}
+      >
+        {imageSrc && (
+          <img
+            src={imageSrc}
+            style={{
+              width: '177px',
+              height: 'auto',
+              objectFit: 'cover',
+              border: '3px solid ' + tooltipModel.labelColors[0]?.backgroundColor || '#333333',
+              borderRadius: '10px 10px 0px 0px',
+            }}
+          />
+        )}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: '#333333',
+            borderRadius: '0px 0px 10px 10px',
+            padding: '5px',
+          }}
+        >
+          {bodyLines.map((line, i) => (
+            <span key={i} style={{ color: 'white' }}>
+              {line}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
 
-
-    innerHtml += '<div>';
-    bodyLines.forEach(function (line) {
-      // innerHtml += '<p>' + line + '<br /></p>';
-      console.log(line)
-    });
-    innerHtml += '</div>';
-    innerHtml += '</thead><tbody>';
-
-    // bodyLines.forEach(function (body, i) {
-    //   const colors = tooltipModel.labelColors[i];
-    //   let style = 'background:' + colors.backgroundColor;
-    //   style += '; border-color:' + colors.borderColor;
-    //   style += '; border-width: 2px';
-    //   const span = '<span style="' + style + '">' + body + '</span>';
-    //   innerHtml += '<tr><td>' + span + '</td></tr>';
-    // });
-    innerHtml += '</tbody>';
-
+    // Render html to insert in tooltip
     const tableRoot = tooltipEl.querySelector('table');
+    const innerHtml = ReactDOMServer.renderToString(child);
     tableRoot.innerHTML = innerHtml;
   }
 
