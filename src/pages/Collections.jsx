@@ -20,7 +20,13 @@ function Collections() {
       setRawCollections(collections.collections.sort((a, b) => a.name.localeCompare(b.name)));
       setErrorMessage(null);
     } catch (error) {
-      setErrorMessage(error.message);
+      if (error.status === 403 || error.status === 401) {
+        if (qdrantClient.getApiKey()) {
+          setErrorMessage('Your API key is invalid. Please, set a new one.');
+        }
+      } else {
+        setErrorMessage(error.message);
+      }
       setRawCollections(null);
     }
   }
