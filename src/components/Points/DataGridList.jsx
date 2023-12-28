@@ -56,7 +56,8 @@ export const DataGridList = function ({ data = {}, specialCases = {} }) {
                 variant="subtitle1"
                 color="text.secondary"
                 display={'inline'}
-                sx={{ wordBreak: 'break-word' }}>
+                sx={{ wordBreak: 'break-word' }}
+              >
                 {'\t'} {data[key].toString()}
               </Typography>
             )}
