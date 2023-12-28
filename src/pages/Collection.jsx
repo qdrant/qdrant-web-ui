@@ -9,6 +9,7 @@ import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
+import { getErrorMessage } from "../lib/get-error-message";
 
 function Collection() {
   const pageSize = 10;
@@ -58,7 +59,8 @@ function Collection() {
           setPoints({ points: newPoints });
           setErrorMessage(null);
         } catch (error) {
-          setErrorMessage(error.message);
+          const message = getErrorMessage(error, { withApiKey: {apiKey: qdrantClient.getApiKey()}});
+          message && setErrorMessage(message);
           setPoints({});
         }
       } else {
@@ -75,7 +77,8 @@ function Collection() {
           setNextPageOffset(newPoints?.next_page_offset);
           setErrorMessage(null);
         } catch (error) {
-          setErrorMessage(error.message);
+          const message = getErrorMessage(error, { withApiKey: {apiKey: qdrantClient.getApiKey()}});
+          message && setErrorMessage(message);
           setPoints({});
         }
       }
