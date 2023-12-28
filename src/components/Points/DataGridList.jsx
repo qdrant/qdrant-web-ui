@@ -52,7 +52,12 @@ export const DataGridList = function ({ data = {}, specialCases = {} }) {
 
             {/* other types of values */}
             {typeof data[key] !== 'object' && !specialKeys.includes(key) && (
-              <Typography variant="subtitle1" color="text.secondary" display={'inline'}>
+              <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                display={'inline'}
+                sx={{ wordBreak: 'break-word' }}
+              >
                 {'\t'} {data[key].toString()}
               </Typography>
             )}
