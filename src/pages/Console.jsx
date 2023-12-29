@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LinearProgress, alpha, Fab } from '@mui/material';
+import { LinearProgress, alpha, Fab, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { Grid } from '@mui/material';
@@ -124,6 +124,7 @@ function Console() {
               </Panel>
             </PanelGroup>
           </Grid>
+          <Tooltip title="Commands" placement='left' arrow>
           <Fab
             sx={{ position: 'absolute', bottom: '40px', right: '49px', boxShadow: 3 }}
             color="success"
@@ -132,6 +133,7 @@ function Console() {
           >
             <Code />
           </Fab>
+          </Tooltip>
           <SpeedDialMenu
             openHistory={() => setOpenHistory(true)}
             openSavedCode={() => setOpenSavedCode(true)}
