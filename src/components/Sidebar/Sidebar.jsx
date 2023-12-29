@@ -64,7 +64,7 @@ export default function Sidebar({ open, version }) {
       <Divider />
       <List>
         <ListItem key={'Console'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Console'} placement={'right'} arrow={true}>
+          <Tooltip title={'Console'} placement={'right'} arrow={true} disableHoverListener={open}>
             <ListItemButton
               sx={{
                 minHeight: 48,
@@ -88,7 +88,7 @@ export default function Sidebar({ open, version }) {
           </Tooltip>
         </ListItem>
         <ListItem key={'Collections'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Collections'} placement={'right'} arrow={true}>
+          <Tooltip title={'Collections'} placement={'right'} arrow={true} disableHoverListener={open}>
             <ListItemButton
               sx={{
                 minHeight: 48,

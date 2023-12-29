@@ -10,7 +10,6 @@ const TutorialsList = tutorialSubPages.map((page) => {
   const [slug, pageObject] = page;
   return (
     <ListItem key={slug} disablePadding sx={{ display: 'block' }}>
-      <Tooltip title={pageObject.title} placement={'right'} arrow={true}>
         <ListItemButton
           sx={{
             minHeight: 48,
@@ -23,7 +22,6 @@ const TutorialsList = tutorialSubPages.map((page) => {
         >
           <ListItemText primary={pageObject.title} />
         </ListItemButton>
-      </Tooltip>
     </ListItem>
   );
 });
@@ -43,7 +41,7 @@ export const SidebarTutorialSection = ({ isSidebarOpen }) => {
 
   return (
     <>
-      <Tooltip title={'Tutorial'} placement={'right'} arrow={true}>
+      <Tooltip title={'Tutorial'} placement={'right'} arrow={true} disableHoverListener={isSidebarOpen}>
         <ListItemButton
           sx={{
             minHeight: 48,
