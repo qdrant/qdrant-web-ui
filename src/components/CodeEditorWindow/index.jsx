@@ -18,6 +18,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
 
   let runBtnCommandId = null;
   let beautifyBtnCommandId = null;
+  let docsBtnCommandId = null;
 
   const handleEditorChange = (code) => {
     onChange('code', code);
@@ -73,10 +74,19 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
       ''
     );
 
+    docsBtnCommandId = editor.addCommand(
+      0,
+      async (_ctx, ...args) => {
+        const openapiDocs = args[0];
+        const docsURL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/' + openapiDocs.tags[0] + '/operation/' + openapiDocs.operationId;
+        window.open(docsURL,'_blank');
+      }
+    )
+
     // Register Code Lens Provider (Run Button)
     lensesRef.current = monaco.languages.registerCodeLensProvider(
       'custom-language',
-      btnconfig(runBtnCommandId, beautifyBtnCommandId)
+      btnconfig(runBtnCommandId, beautifyBtnCommandId, docsBtnCommandId)
     );
 
     // Listen for Mouse Postion Change

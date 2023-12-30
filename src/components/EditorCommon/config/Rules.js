@@ -1,3 +1,5 @@
+import { getCommandDocs } from "../../CodeEditorWindow/config/CommandDocs";
+
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
 
 export const Rules = {
@@ -50,7 +52,7 @@ export const options = {
   },
 };
 
-export function btnconfig(commandId, beutifyCommandId) {
+export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
   return {
     // function takes model and token as arguments
     provideCodeLenses: function (model) {
@@ -84,6 +86,19 @@ export function btnconfig(commandId, beutifyCommandId) {
             arguments: [codeBlocks[i]],
           },
         });
+
+        const commandDocs = getCommandDocs(codeBlocks[i].blockText)
+        if (commandDocs){
+          lenses.push({
+            range,
+            id: 'DOCS',
+            command: {
+              id: docsCommandId,
+              title: 'DOCS',
+              arguments: [commandDocs],
+            },
+          });
+        }
       }
 
       return {
