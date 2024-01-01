@@ -24,7 +24,7 @@
     "@uppy/progress-bar": "^3.0.2",
     "@uppy/react": "^3.1.2",
     "@uppy/xhr-upload": "^3.3.1",
-    "@vitejs/plugin-react": "^4.0.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
     "autocomplete-openapi": "^0.1.1",
     "axios": "^1.3.4",
     "chart.js": "^4.3.0",
@@ -44,8 +44,8 @@
     "react-router-dom": "^6.8.1",
     "react-simple-code-editor": "^0.13.1",
     "unist-util-visit": "^5.0.0",
-    "vite": "^4.3.3",
-    "vite-plugin-svgr": "^2.4.0",
+    "vite": "^5.0.10",
+    "vite-plugin-svgr": "^4.2.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -78,6 +78,8 @@
     ]
   },
   "devDependencies": {
+    "@swc/cli": "^0.1.63",
+    "@swc/core": "^1.3.102",
     "eslint": "^8.46.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^8.9.0",
