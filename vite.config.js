@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react';
+import reactRefresh from '@vitejs/plugin-react-swc';
 import svgrPlugin from 'vite-plugin-svgr';
 import eslintPlugin from 'vite-plugin-eslint';
 import {rehypeMetaAsAttributes} from "./src/lib/rehype-meta-as-attributes";
@@ -16,7 +16,6 @@ export default defineConfig(async () => {
       outDir: 'dist',
     },
     plugins: [
-      reactRefresh(),
       svgrPlugin({
         svgrOptions: {
           icon: true,
@@ -36,6 +35,7 @@ export default defineConfig(async () => {
           rehypeMetaAsAttributes,
         ],
       }),
+      reactRefresh(),
     ],
     test: {
       globals: true,
