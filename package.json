@@ -51,7 +51,7 @@
   "scripts": {
     "test": "vitest",
     "eject": "vite eject",
-    "start": "vite",
+    "start": "vite --host",
     "build": "vite build --base './'",
     "build-qdrant": "vite build --base '/dashboard/'",
     "serve": "vite preview",
