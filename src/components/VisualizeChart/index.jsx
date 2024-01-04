@@ -125,7 +125,7 @@ const VisualizeChart = ({ scrollResult }) => {
           tooltip: {
             // only use custom tooltip if color by is not discover score
             enabled: !colorBy?.discover_score,
-            external: colorBy?.discover_score && imageTooltip || undefined,
+            external: (colorBy?.discover_score && imageTooltip) || undefined,
             usePointStyle: true,
             callbacks: {
               label: (context) => {

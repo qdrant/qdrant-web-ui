@@ -35,6 +35,8 @@ export function imageTooltip(context) {
 
     const imageSrc = tooltipModel.dataPoints[0].dataset.data[tooltipModel.dataPoints[0].dataIndex].point.payload?.image;
 
+    const borderColor = tooltipModel.labelColors[0]?.borderColor || '#333333';
+
     const child = (
       <div
         style={{
@@ -47,10 +49,10 @@ export function imageTooltip(context) {
           <img
             src={imageSrc}
             style={{
-              width: '177px',
+              width: '250px',
               height: 'auto',
               objectFit: 'cover',
-              border: '3px solid ' + tooltipModel.labelColors[0]?.backgroundColor || '#333333',
+              border: '3px solid ' + borderColor,
               borderRadius: '10px 10px 0px 0px',
             }}
           />
