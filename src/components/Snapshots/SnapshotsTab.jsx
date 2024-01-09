@@ -104,7 +104,7 @@ export const SnapshotsTab = ({ collectionName }) => {
 
   const tableRows = snapshots.map((snapshot) => (
     <SnapshotsTableRow
-      key={snapshot.creation_time.valueOf()}
+      key={snapshot.creation_time?.valueOf() || 'unknown'}
       snapshot={snapshot}
       downloadSnapshot={downloadSnapshot}
       deleteSnapshot={deleteSnapshot}
