@@ -1,6 +1,9 @@
 import { toFont } from 'chart.js/helpers';
 import React from 'react';
-import ReactDOMServer from 'react-dom/server';
+import { createRoot } from 'react-dom/client';
+import { flushSync } from 'react-dom';
+
+const DEFAULT_BORDER_COLOR = '#333333'
 
 export function imageTooltip(context) {
   // Tooltip Element
@@ -10,7 +13,7 @@ export function imageTooltip(context) {
   if (!tooltipEl) {
     tooltipEl = document.createElement('div');
     tooltipEl.id = 'chartjs-tooltip';
-    tooltipEl.innerHTML = '<table></table>';
+    tooltipEl.appendChild(document.createElement('table'));
     document.body.appendChild(tooltipEl);
   }
 
@@ -35,7 +38,7 @@ export function imageTooltip(context) {
 
     const imageSrc = tooltipModel.dataPoints[0].dataset.data[tooltipModel.dataPoints[0].dataIndex].point.payload?.image;
 
-    const borderColor = tooltipModel.labelColors[0]?.borderColor || '#333333';
+    const borderColor = tooltipModel.labelColors[0]?.borderColor || DEFAULT_BORDER_COLOR;
 
     const child = (
       <div
@@ -77,8 +80,10 @@ export function imageTooltip(context) {
 
     // Render html to insert in tooltip
     const tableRoot = tooltipEl.querySelector('table');
-    const innerHtml = ReactDOMServer.renderToString(child);
-    tableRoot.innerHTML = innerHtml;
+    const root = createRoot(tableRoot);
+    flushSync(() => {
+      root.render(child);
+    });
   }
 
   const position = context.chart.canvas.getBoundingClientRect();

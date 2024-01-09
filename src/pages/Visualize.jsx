@@ -38,6 +38,7 @@ const query = `
 //                    "target": 42,
 //                    "context": [{"positive": 1, "negative": 0}]
 //                  }
+//                }
 //
 // - 'vector_name': specify which vector to use for visualization
 //                  if there are multiple.
@@ -46,12 +47,6 @@ const query = `
 
 {
   "limit": 500,
-  // TODO: remove this example
-  "color_by": {
-    "discover_score":{
-      "target": 42
-    }
-  }
 }
 
 

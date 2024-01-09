@@ -8,6 +8,8 @@ import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
 import { imageTooltip } from './ImageTooltip';
 
+const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
+
 const VisualizeChart = ({ scrollResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
@@ -73,7 +75,7 @@ const VisualizeChart = ({ scrollResult }) => {
       const minScore = Math.min(...scores);
       const maxScore = Math.max(...scores);
 
-      const colorScale = chroma.scale(['#EB5353', '#F9D923', '#36AE7C']);
+      const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
       const scoreColors = scores.map((score) => {
         const normalizedScore = (score - minScore) / (maxScore - minScore);
         return colorScale(normalizedScore).hex();
