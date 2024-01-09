@@ -3,7 +3,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 
-const DEFAULT_BORDER_COLOR = '#333333'
+const DEFAULT_BORDER_COLOR = '#333333';
 
 export function imageTooltip(context) {
   // Tooltip Element
