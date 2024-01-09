@@ -46,7 +46,7 @@ const query = `
 // Minimal example:
 
 {
-  "limit": 500,
+  "limit": 500
 }
 
 
