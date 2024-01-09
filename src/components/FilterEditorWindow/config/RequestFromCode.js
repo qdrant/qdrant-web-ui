@@ -4,17 +4,16 @@ export async function requestFromCode(text, collectionName) {
   const data = codeParse(text);
   if (data.error) {
     return data;
-  } else {
-    // Sending request
-    const colorBy = data.reqBody.color_by;
-    if (colorBy?.payload) {
-      return await actionFromCode(collectionName, data, 'scroll');
-    } else if ((data, colorBy?.discover_score)) {
-      return discoverFromCode(collectionName, data);
-    } else {
-      return await actionFromCode(collectionName, data, 'scroll');
-    }
   }
+  // Sending request
+  const colorBy = data.reqBody.color_by;
+  if (colorBy?.payload) {
+    return await actionFromCode(collectionName, data, 'scroll');
+  }
+  if (colorBy?.discover_score) {
+    return discoverFromCode(collectionName, data);
+  }
+  return await actionFromCode(collectionName, data, 'scroll');
 }
 
 async function actionFromCode(collectionName, data, action) {
@@ -67,7 +66,7 @@ async function discoverFromCode(collectionName, data) {
   const originalFilter = data.reqBody.filter;
   const mustNotFilter = [{ has_id: idsToExclude }];
   data.reqBody.filter = originalFilter || {};
-  data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter.must_not || []);
+  data.reqBody.filter.must_not = mustNotFilter.concat(data.reqBody.filter.must_not ?? []);
 
   data.reqBody.limit = randomLimit;
   const randomResponse = await actionFromCode(collectionName, data, 'scroll');
