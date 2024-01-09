@@ -6,7 +6,7 @@ import { Typography, Grid } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
-import { getErrorMessage } from "../lib/get-error-message";
+import { getErrorMessage } from '../lib/get-error-message';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -22,7 +22,7 @@ function Collections() {
       setErrorMessage(null);
     } catch (error) {
       const apiKey = qdrantClient.getApiKey();
-      const message = getErrorMessage(error, { withApiKey: {apiKey}});
+      const message = getErrorMessage(error, { withApiKey: { apiKey } });
       message && setErrorMessage(message);
       setRawCollections(null);
     }
