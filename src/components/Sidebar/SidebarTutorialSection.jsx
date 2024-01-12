@@ -10,18 +10,18 @@ const TutorialsList = tutorialSubPages.map((page) => {
   const [slug, pageObject] = page;
   return (
     <ListItem key={slug} disablePadding sx={{ display: 'block' }}>
-        <ListItemButton
-          sx={{
-            minHeight: 48,
-            justifyContent: 'initial',
-            pr: 2.5,
-            pl: 5,
-          }}
-          component={Link}
-          to={`/tutorial/${slug}`}
-        >
-          <ListItemText primary={pageObject.title} />
-        </ListItemButton>
+      <ListItemButton
+        sx={{
+          minHeight: 48,
+          justifyContent: 'initial',
+          pr: 2.5,
+          pl: 5,
+        }}
+        component={Link}
+        to={`/tutorial/${slug}`}
+      >
+        <ListItemText primary={pageObject.title} />
+      </ListItemButton>
     </ListItem>
   );
 });
