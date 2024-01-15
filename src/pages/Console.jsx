@@ -124,15 +124,15 @@ function Console() {
               </Panel>
             </PanelGroup>
           </Grid>
-          <Tooltip title="Commands" placement='left' arrow>
-          <Fab
-            sx={{ position: 'absolute', bottom: '40px', right: '49px', boxShadow: 3 }}
-            color="success"
-            aria-label="add"
-            onClick={() => setOpenCommands(true)}
-          >
-            <Code />
-          </Fab>
+          <Tooltip title="Commands" placement="left" arrow>
+            <Fab
+              sx={{ position: 'absolute', bottom: '40px', right: '49px', boxShadow: 3 }}
+              color="success"
+              aria-label="add"
+              onClick={() => setOpenCommands(true)}
+            >
+              <Code />
+            </Fab>
           </Tooltip>
           <SpeedDialMenu
             openHistory={() => setOpenHistory(true)}
