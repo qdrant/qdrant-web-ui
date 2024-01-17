@@ -69,7 +69,7 @@ export const SidebarTutorialSection = ({ isSidebarOpen }) => {
               display: isSidebarOpen ? 'block' : 'none',
             }}
           />
-          {isSidebarOpen && (collapsed ? <ExpandLess onClick={handleChange} /> : <ExpandMore onClick={handleChange} />)}
+          {isSidebarOpen && (collapsed ? <ExpandMore onClick={handleChange} /> : <ExpandLess onClick={handleChange} />)}
         </ListItemButton>
       </Tooltip>
       {isSidebarOpen && (
