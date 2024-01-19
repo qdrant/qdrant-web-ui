@@ -36,6 +36,12 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
+### If you want to try it with Docker, just run the command
+
+   ```sh
+   docker compose up --build -d
+   ```
+
 ## Stack used
 
 - [React](https://reactjs.org/)

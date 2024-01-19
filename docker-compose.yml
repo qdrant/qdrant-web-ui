@@ -1,0 +1,13 @@
+version: '3'
+services:
+  qdrant-web-ui:
+    container_name: qdrant-web-ui-ctn
+    build: .
+    ports:
+      - '3000:3000'
+    networks:
+      - qdrant-web-ui-net
+    restart: unless-stopped
+networks:
+  qdrant-web-ui-net:
+    driver: bridge
