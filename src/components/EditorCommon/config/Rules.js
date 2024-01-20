@@ -1,6 +1,8 @@
-import { getRequestDocs } from 'autocomplete-openapi/src/autocomplete';
+import { getRequestDocs } from 'autocomplete-openapi/src/request-docs';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
+const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
+const openapi = await response.json();
 
 export const Rules = {
   Method,
@@ -87,15 +89,15 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const commandDocs = getRequestDocs(codeBlocks[i].blockText);
-        if (commandDocs) {
+        const requestDocs = getRequestDocs(openapi, codeBlocks[i].blockText);
+        if (requestDocs) {
           lenses.push({
             range,
             id: 'DOCS',
             command: {
               id: docsCommandId,
               title: 'DOCS',
-              arguments: [commandDocs],
+              arguments: [requestDocs],
             },
           });
         }
