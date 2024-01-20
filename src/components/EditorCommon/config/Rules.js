@@ -1,8 +1,12 @@
-import { getRequestDocs } from 'autocomplete-openapi/src/request-docs';
+import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
+
 const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
 const openapi = await response.json();
+const DOCS_BASE_URL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/'
+
+const apiDocs = new OpenapiDocs(DOCS_BASE_URL, openapi);
 
 export const Rules = {
   Method,
@@ -89,7 +93,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const requestDocs = getRequestDocs(openapi, codeBlocks[i].blockText);
+        const requestDocs = apiDocs.getRequestDocs(codeBlocks[i].blockText);
         if (requestDocs) {
           lenses.push({
             range,
