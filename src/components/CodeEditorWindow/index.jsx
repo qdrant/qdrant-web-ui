@@ -74,13 +74,10 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
       ''
     );
 
-    docsBtnCommandId = editor.addCommand(
-      0,
-      async (_ctx, ...args) => {
-        const docsURL = args[0];
-        window.open(docsURL,'_blank');
-      }
-    )
+    docsBtnCommandId = editor.addCommand(0, async (_ctx, ...args) => {
+      const docsURL = args[0];
+      window.open(docsURL, '_blank');
+    });
 
     // Register Code Lens Provider (Run Button)
     lensesRef.current = monaco.languages.registerCodeLensProvider(

@@ -87,8 +87,8 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const commandDocs = getRequestDocs(codeBlocks[i].blockText)
-        if (commandDocs){
+        const commandDocs = getRequestDocs(codeBlocks[i].blockText);
+        if (commandDocs) {
           lenses.push({
             range,
             id: 'DOCS',
