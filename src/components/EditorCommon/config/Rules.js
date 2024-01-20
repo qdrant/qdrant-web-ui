@@ -1,4 +1,4 @@
-import { getCommandDocs } from "../../CodeEditorWindow/config/CommandDocs";
+import { getRequestDocs } from 'autocomplete-openapi/src/autocomplete';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
 
@@ -87,7 +87,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const commandDocs = getCommandDocs(codeBlocks[i].blockText)
+        const commandDocs = getRequestDocs(codeBlocks[i].blockText)
         if (commandDocs){
           lenses.push({
             range,

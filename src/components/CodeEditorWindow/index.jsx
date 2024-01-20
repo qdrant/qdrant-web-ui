@@ -77,8 +77,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
     docsBtnCommandId = editor.addCommand(
       0,
       async (_ctx, ...args) => {
-        const openapiDocs = args[0];
-        const docsURL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/' + openapiDocs.tags[0] + '/operation/' + openapiDocs.operationId;
+        const docsURL = args[0];
         window.open(docsURL,'_blank');
       }
     )
