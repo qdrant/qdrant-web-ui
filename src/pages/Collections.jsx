@@ -6,6 +6,7 @@ import { Typography, Grid } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
+import { getErrorMessage } from '../lib/get-error-message';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -20,13 +21,9 @@ function Collections() {
       setRawCollections(collections.collections.sort((a, b) => a.name.localeCompare(b.name)));
       setErrorMessage(null);
     } catch (error) {
-      if (error.status === 403 || error.status === 401) {
-        if (qdrantClient.getApiKey()) {
-          setErrorMessage('Your API key is invalid. Please, set a new one.');
-        }
-      } else {
-        setErrorMessage(error.message);
-      }
+      const apiKey = qdrantClient.getApiKey();
+      const message = getErrorMessage(error, { withApiKey: { apiKey } });
+      message && setErrorMessage(message);
       setRawCollections(null);
     }
   }
@@ -42,7 +39,7 @@ function Collections() {
   return (
     <>
       <CenteredFrame>
-        {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
+        {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
         <Grid container maxWidth={'xl'} spacing={3}>
           <Grid xs={12} item>
             <Typography variant="h4">Collections</Typography>
