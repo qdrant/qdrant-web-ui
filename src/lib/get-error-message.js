@@ -25,7 +25,7 @@ export const getErrorMessage = (e, options = {}) => {
     message = error.data?.status?.error || e.message || fallbackMessage;
   } catch (err) {
     // error is not instance of ApiError
-    message = e.message || fallbackMessage;
+    message = e?.message || fallbackMessage;
   }
   return message;
 };
