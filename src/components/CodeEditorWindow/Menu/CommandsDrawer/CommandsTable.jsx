@@ -132,7 +132,13 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
 
   const handleClick = (command) => {
     const commandText = `${command.method} ${command.command.substring(1)}${
-      command.hasRequestBody ? ` \n{\n  ${command.requiredBodyParameters ? command.requiredBodyParameters.map(param => `"${param}": `).join(',\n  ') : ''}\n}` : ''
+      command.hasRequestBody
+        ? ` \n{\n  ${
+            command.requiredBodyParameters
+              ? command.requiredBodyParameters.map((param) => `"${param}": `).join(',\n  ')
+              : ''
+          }\n}`
+        : ''
     }`;
 
     handleInsertCommand(commandText);
