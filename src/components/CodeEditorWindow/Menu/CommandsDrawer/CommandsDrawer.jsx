@@ -8,6 +8,20 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 
+const resolveRequiredParams = function(openapi, requestBodyContent){
+  const contentType = Object.keys(requestBodyContent)[0];
+  if ('$ref' in requestBodyContent[contentType].schema){
+    const refPath = requestBodyContent[contentType].schema.$ref;
+    // parse and navigate to the ref
+    const pathComponents = refPath.slice(2).split('/');
+    const schema = pathComponents.reduce((doc, pathComponent) => doc[pathComponent], openapi);
+    return schema.required;
+  }
+  else {
+    return requestBodyContent[contentType].schema.required;
+  }
+}
+
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
   const [allCommands, setAllCommands] = useState([]);
   const [commands, setCommands] = useState([]);
@@ -26,6 +40,10 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
               const description = data.paths[path][method].summary;
               const tags = data.paths[path][method].tags;
               const hasRequestBody = !!data.paths[path][method].requestBody;
+              let requiredBodyParameters = null;
+              if (hasRequestBody){
+                requiredBodyParameters = resolveRequiredParams(data, data.paths[path][method].requestBody.content)
+              }
 
               return {
                 method: method.toUpperCase(),
@@ -33,6 +51,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
                 description,
                 hasRequestBody,
                 tags,
+                requiredBodyParameters
               };
             });
           })
