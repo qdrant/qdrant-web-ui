@@ -32,6 +32,10 @@ export const langConfig = {
     { open: '{', close: '}' },
     { open: '[', close: ']' },
   ],
+  indentationRules: {
+    increaseIndentPattern: /{\s*$/,
+    decreaseIndentPattern: /^\s*}/,
+  },
 };
 
 export const options = {
