@@ -12,6 +12,8 @@ import Vectors from './PointVectors';
 import { PayloadEditor } from './PayloadEditor';
 import { DataGridList } from './DataGridList';
 import { CopyButton } from '../Common/CopyButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
 
 const PointCard = (props) => {
   const theme = useTheme();
@@ -19,10 +21,23 @@ const PointCard = (props) => {
   const [point, setPoint] = React.useState(props.point);
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
 
   const onPayloadEdit = (payload) => {
     setPoint({ ...point, payload: structuredClone(payload) });
   };
+
+  const deletePoint = async () => {
+    setLoading(true);
+    props.deletePoint(props.collectionName, [point.id]).then(() => {
+      setPoint(null);
+      setLoading(false);
+    });
+  };
+
+  if (!point) {
+    return null;
+  }
 
   return (
     <>
@@ -63,6 +78,16 @@ const PointCard = (props) => {
                 tooltip={'Copy point to clipboard'}
                 successMessage={'Point JSON copied to clipboard.'}
               />
+              <Tooltip title={'Delete point'} placement={'left'}>
+                <IconButton
+                  aria-label={'delete point'}
+                  onClick={() => {
+                    setOpenDeleteDialog(true);
+                  }}
+                >
+                  <DeleteIcon color={'error'} />
+                </IconButton>
+              </Tooltip>
             </>
           }
         />
@@ -120,6 +145,15 @@ const PointCard = (props) => {
         onSave={onPayloadEdit}
         setLoading={setLoading}
       />
+      <ConfirmationDialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        title={'Delete point ' + point.id}
+        content={`Are you sure you want to delete point with id ${point.id}?`}
+        warning={`This action cannot be undone.`}
+        actionName={'Delete'}
+        actionHandler={() => deletePoint()}
+      />
     </>
   );
 };
@@ -128,6 +162,7 @@ PointCard.propTypes = {
   point: PropTypes.object.isRequired,
   setRecommendationIds: PropTypes.func.isRequired,
   collectionName: PropTypes.string.isRequired, // use params instead?
+  deletePoint: PropTypes.func.isRequired,
 };
 
 export default PointCard;
