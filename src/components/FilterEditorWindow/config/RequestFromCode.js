@@ -25,6 +25,7 @@ async function actionFromCode(collectionName, data, action) {
     });
     response.data.color_by = data.reqBody.color_by;
     response.data.vector_name = data.reqBody.vector_name;
+    response.data.result.points = response.data.result.points.filter((point) => Object.keys(point.vector).length > 0);
     return {
       data: response.data,
       error: null,
