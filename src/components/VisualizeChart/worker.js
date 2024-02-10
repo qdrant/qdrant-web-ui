@@ -29,7 +29,7 @@ self.onmessage = function (e) {
     if (data1.vector_name === undefined) {
       self.postMessage({
         data: [],
-        error: 'No vector name found, select a vaild vector_name',
+        error: 'No vector name found, select a valid vector_name',
       });
       return;
     } else if (data1?.result?.points[0].vector[data1?.vector_name] === undefined) {
@@ -42,7 +42,7 @@ self.onmessage = function (e) {
       if (!Array.isArray(data1?.result?.points[0].vector[data1?.vector_name])) {
         self.postMessage({
           data: [],
-          error: 'Vector visulization is not supported for sparse vector',
+          error: 'Vector visualization is not supported for sparse vector',
         });
         return;
       }
@@ -52,14 +52,14 @@ self.onmessage = function (e) {
     } else {
       self.postMessage({
         data: [],
-        error: 'Unexpected Error Occured',
+        error: 'Unexpected Error Occurred',
       });
       return;
     }
   } else {
     self.postMessage({
       data: [],
-      error: 'Unexpected Error Occured',
+      error: 'Unexpected Error Occurred',
     });
     return;
   }
