@@ -5,6 +5,7 @@ import Collections from './pages/Collections';
 import Collection from './pages/Collection';
 import Visualize from './pages/Visualize';
 import Tutorial from './pages/Tutorial';
+import Datasets from './pages/Datasets';
 
 const routes = () => [
   {
@@ -13,6 +14,7 @@ const routes = () => [
     children: [
       { path: '/', element: <Collections /> },
       { path: '/console', element: <Console /> },
+      { path: '/datasets', element: <Datasets /> },
       { path: '/collections', element: <Collections /> },
       { path: '/collections/:collectionName', element: <Collection /> },
       {
