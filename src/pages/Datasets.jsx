@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { Grid, TableContainer, Typography } from '@mui/material';
-import axios from 'axios';
 import { TableBodyWithGaps, TableWithGaps } from '../components/Common/TableWithGaps';
 import { DatasetsHeader } from '../components/Datasets/DatasetsTableHeader';
 import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
@@ -20,9 +19,9 @@ function Datasets() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('https://snapshots.qdrant.io/manifest.json');
-        console.log(response);
-        const datasets = response.data.map((dataset) => {
+        const response = await fetch('https://snapshots.qdrant.io/manifest.json');
+        const responseJson = await response.json();
+        const datasets = responseJson.map((dataset) => {
           return {
             name: dataset.name,
             fileName: dataset.file_name,
