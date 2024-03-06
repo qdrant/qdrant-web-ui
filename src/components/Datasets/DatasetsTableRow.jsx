@@ -2,17 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme } from '@mui/material/styles';
-import {
-  Box,
-  Card,
-  CircularProgress,
-  Grid,
-  IconButton,
-  TableCell,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CircularProgress, Grid, IconButton, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { Download, FolderZip } from '@mui/icons-material';
 import ImportDatasetDialog from './ImportDatasetDialog';
 
