@@ -73,7 +73,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        Edit payload for point {point.id}
+        <>Edit payload for point {point.id}</>
       </DialogTitle>
       <DialogContent sx={{ pb: 1 }}>
         <EditorCommon
