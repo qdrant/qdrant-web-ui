@@ -4,26 +4,27 @@ import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditorCommon from '../../EditorCommon';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 function History({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState('//Selected Code');
   const [history, setHistory] = useState(
-    localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : []
+    localStorage.getItem('history') ? bigIntJSON.parse(localStorage.getItem('history')) : []
   );
 
   useEffect(() => {
-    setHistory(localStorage.getItem('history') ? JSON.parse(localStorage.getItem('history')) : []);
+    setHistory(localStorage.getItem('history') ? bigIntJSON.parse(localStorage.getItem('history')) : []);
   }, [state]);
 
   function formatJSON(val = {}) {
     if (val && Object.keys(val).length !== 0) {
       try {
-        return JSON.stringify(val, null, 2);
+        return bigIntJSON.stringify(val, null, 2);
       } catch {
         const errorJson = {
           error: `HERE ${val}`,
         };
-        return JSON.stringify(errorJson, null, 2);
+        return bigIntJSON.stringify(errorJson, null, 2);
       }
     } else {
       return '';
@@ -72,8 +73,8 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
         onClick={() => {
           const updatedHistory = history.filter((item) => item.idx != data.idx);
 
-          localStorage.setItem('history', JSON.stringify(updatedHistory));
-          setHistory(JSON.parse(localStorage.getItem('history')));
+          localStorage.setItem('history', bigIntJSON.stringify(updatedHistory));
+          setHistory(bigIntJSON.parse(localStorage.getItem('history')));
         }}
       >
         <DeleteIcon />
