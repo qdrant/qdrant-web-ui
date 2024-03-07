@@ -1,4 +1,4 @@
-import { bigIntJSON } from "../common/bigIntJSON";
+import { bigIntJSON } from '../common/bigIntJSON';
 
 /**
  * Update history in local storage

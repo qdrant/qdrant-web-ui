@@ -40,7 +40,7 @@ const ViewPointModal = (props) => {
                         Point {point.id}
                       </Typography>
 
-                      <CopyButton text={ bigIntJSON.stringify(point)} />
+                      <CopyButton text={bigIntJSON.stringify(point)} />
                     </Box>
                     <Box px={3} pt={1} pb={5}>
                       <DataGridList data={point.payload} sx={{ px: 3, py: 4 }} />
