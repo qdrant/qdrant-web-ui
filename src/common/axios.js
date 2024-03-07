@@ -17,7 +17,6 @@ function setupAxios({ apiKey }) {
         return data;
       }
       headers['Content-Type'] = 'application/json';
-      console.log(bigIntJSON.stringify(data));
       return bigIntJSON.stringify(data);
     },
   ];

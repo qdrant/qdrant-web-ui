@@ -6,13 +6,14 @@ import isEqual from 'lodash/isEqual';
 import { Button, Dialog, DialogActions, DialogTitle, DialogContent } from '@mui/material';
 import EditorCommon from '../EditorCommon';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading }) => {
   const { client: qdrantClient } = useClient();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 2000);
-  const [payload, setPayload] = useState(() => JSON.stringify(point.payload, null, 2));
+  const [payload, setPayload] = useState(() => bigIntJSON.stringify(point.payload, null, 2));
 
   const savePayload = async (collectionName, options) => {
     if (Object.keys(point.payload).length !== 0) {
@@ -28,7 +29,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
   const handleSave = () => {
     let payloadToSave;
     try {
-      payloadToSave = JSON.parse(payload);
+      payloadToSave = bigIntJSON.parse(payload);
     } catch (e) {
       enqueueSnackbar(e.message, errorSnackbarOptions);
       return;
@@ -78,7 +79,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
         <EditorCommon
           height="50vh"
           language="json"
-          value={JSON.stringify(point.payload, null, 2)}
+          value={bigIntJSON.stringify(point.payload, null, 2)}
           onChange={handleChange}
           options={{
             scrollBeyondLastLine: false,
