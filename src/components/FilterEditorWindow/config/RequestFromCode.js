@@ -112,7 +112,7 @@ export function codeParse(codeText) {
   // Parse JSON
   if (codeText) {
     try {
-      reqBody = JSON.parse(codeText);
+      reqBody = bigIntJSON.parse(codeText);
     } catch (e) {
       return {
         reqBody: codeText,
