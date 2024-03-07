@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CopyButton } from '../Common/CopyButton';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 /**
  * Component for displaying vectors of a point
@@ -42,7 +43,7 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
                 </>
               )}
               <CopyButton
-                text={JSON.stringify(vectors[key])}
+                text={bigIntJSON.stringify(vectors[key])}
                 tooltip={'Copy vector to clipboard'}
                 tooltipPlacement={'right'}
                 successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}

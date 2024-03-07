@@ -4,6 +4,7 @@ import { SwipeableDrawer, Button, Box, Stack, TextField, Typography } from '@mui
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditorCommon from '../../EditorCommon';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState(`//Current Editor Code: \n${code}`);
@@ -30,7 +31,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
         },
       ];
       localStorage.setItem('savedCodes', bigIntJSON.stringify(data));
-      setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
+      setSavedCodes(bigIntJSON.parse(localStorage.getItem('savedCodes')));
       setSaveNameText('');
     }
   }
@@ -73,7 +74,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           const updateCode = [...savedCodes];
           updateCode.splice(index, 1);
           localStorage.setItem('savedCodes', bigIntJSON.stringify(updateCode));
-          setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
+          setSavedCodes(bigIntJSON.parse(localStorage.getItem('savedCodes')));
         }}
       >
         <DeleteIcon />

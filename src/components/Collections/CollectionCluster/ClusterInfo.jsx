@@ -4,6 +4,7 @@ import { Card, CardHeader, Table, TableBody } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import ClusterInfoHead from './ClusterInfoHead';
 import ClusterShardRow from './ClusterShardRow';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 const ClusterInfo = ({ collectionCluster, ...other }) => {
   const shards = [
@@ -27,7 +28,7 @@ const ClusterInfo = ({ collectionCluster, ...other }) => {
         sx={{
           flexGrow: 1,
         }}
-        action={<CopyButton text={JSON.stringify(collectionCluster)} />}
+        action={<CopyButton text={bigIntJSON.stringify(collectionCluster)} />}
       />
       <Table>
         <ClusterInfoHead />

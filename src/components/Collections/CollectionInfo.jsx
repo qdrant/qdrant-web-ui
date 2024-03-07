@@ -8,6 +8,7 @@ import { Dot } from '../Common/Dot';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -49,7 +50,7 @@ export const CollectionInfo = ({ collectionName }) => {
           sx={{
             flexGrow: 1,
           }}
-          action={<CopyButton text={JSON.stringify(collection)} />}
+          action={<CopyButton text={bigIntJSON.stringify(collection)} />}
         />
         <CardContent>
           <DataGridList
