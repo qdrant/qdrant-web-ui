@@ -1,5 +1,5 @@
 import axios from 'axios';
-// import { parse as jsoncParse } from 'jsonc-parser';
+import { stripComments } from 'jsonc-parser';
 import { updateHistory } from '../../../lib/update-history';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 
@@ -36,16 +36,10 @@ export function codeParse(codeText) {
   const method = headerLine.split(' ')[0];
   const endpoint = headerLine.split(' ')[1];
 
-  // const parserConfig = {
-  //   allowTrailingComma: false,
-  //   disallowComments: false,
-  //   allowEmptyContent: false,
-  // };
-
   let reqBody = {};
   if (body) {
     try {
-      reqBody = body === '\n' ? {} : bigIntJSON.parse(body);
+      reqBody = bigIntJSON.parse(stripComments(body));
     } catch (e) {
       return {
         method: null,
