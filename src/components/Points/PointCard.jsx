@@ -14,6 +14,7 @@ import { DataGridList } from './DataGridList';
 import { CopyButton } from '../Common/CopyButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 const PointCard = (props) => {
   const theme = useTheme();
@@ -74,7 +75,7 @@ const PointCard = (props) => {
                 </Tooltip>
               )}
               <CopyButton
-                text={JSON.stringify(point)}
+                text={bigIntJSON.stringify(point)}
                 tooltip={'Copy point to clipboard'}
                 successMessage={'Point JSON copied to clipboard.'}
               />
@@ -107,7 +108,7 @@ const PointCard = (props) => {
                     </IconButton>
                   </Tooltip>
                   <CopyButton
-                    text={JSON.stringify(point.payload)}
+                    text={bigIntJSON.stringify(point.payload)}
                     tooltip={'Copy payload to clipboard'}
                     successMessage={'Payload JSON copied to clipboard.'}
                   />

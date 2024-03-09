@@ -5,6 +5,7 @@ import { alpha } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { DataGridList } from '../Points/DataGridList';
 import { CopyButton } from '../Common/CopyButton';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 const ViewPointModal = (props) => {
   const theme = useTheme();
@@ -39,7 +40,7 @@ const ViewPointModal = (props) => {
                         Point {point.id}
                       </Typography>
 
-                      <CopyButton text={JSON.stringify(point)} />
+                      <CopyButton text={bigIntJSON.stringify(point)} />
                     </Box>
                     <Box px={3} pt={1} pb={5}>
                       <DataGridList data={point.payload} sx={{ px: 3, py: 4 }} />

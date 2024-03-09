@@ -1,6 +1,7 @@
 import React, { useContext, createContext, useState, useEffect } from 'react';
 import setupAxios from '../common/axios';
 import qdrantClient from '../common/client';
+import { bigIntJSON } from '../common/bigIntJSON';
 
 const DEFAULT_SETTINGS = {
   apiKey: '',
@@ -8,14 +9,14 @@ const DEFAULT_SETTINGS = {
 
 // Write settings to local storage
 const persistSettings = (settings) => {
-  localStorage.setItem('settings', JSON.stringify(settings));
+  localStorage.setItem('settings', bigIntJSON.stringify(settings));
 };
 
 // Get existing Settings from Local Storage or set default values
 const getPersistedSettings = () => {
   const settings = localStorage.getItem('settings');
 
-  if (settings) return JSON.parse(settings);
+  if (settings) return bigIntJSON.parse(settings);
 
   return DEFAULT_SETTINGS;
 };

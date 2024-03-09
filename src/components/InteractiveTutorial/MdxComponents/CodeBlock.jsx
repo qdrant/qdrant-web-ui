@@ -9,6 +9,7 @@ import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from '../../Common/CopyButton';
 import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
   fontFamily: '"Menlo", monospace',
@@ -33,10 +34,10 @@ export const RunButton = ({ code }) => {
     setResult('{}');
     requestFromCode(code, false)
       .then((res) => {
-        setResult(() => JSON.stringify(res));
+        setResult(() => bigIntJSON.stringify(res));
       })
       .catch((err) => {
-        setResult(() => JSON.stringify(err));
+        setResult(() => bigIntJSON.stringify(err));
       });
   };
   return (
@@ -60,7 +61,7 @@ export const CodeBlock = ({ children }) => {
   const className = children.props.className || '';
   const [code, setCode] = useState(children.props.children.trim());
   const language = className.replace(/language-/, '');
-  const withRunButton = children.props.withRunButton && JSON.parse(children.props.withRunButton);
+  const withRunButton = children.props.withRunButton && bigIntJSON.parse(children.props.withRunButton);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
   const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;

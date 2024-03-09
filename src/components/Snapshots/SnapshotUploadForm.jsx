@@ -11,6 +11,7 @@ import { StyledStatusBar } from '../Uploader/StyledStatusBar';
 import '@uppy/core/dist/style.min.css';
 import '@uppy/drag-drop/dist/style.min.css';
 import '@uppy/status-bar/dist/style.min.css';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
@@ -46,7 +47,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     formData: true,
     fieldName: 'snapshot',
     getResponseError: (responseText) => {
-      enqueueSnackbar(JSON.parse(responseText)?.status?.error, {
+      enqueueSnackbar(bigIntJSON.parse(responseText)?.status?.error, {
         variant: 'error',
         autoHideDuration: null,
         action: (key) => (

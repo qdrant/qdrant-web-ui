@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
 import { imageTooltip } from './ImageTooltip';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 
@@ -32,7 +33,7 @@ const VisualizeChart = ({ scrollResult }) => {
     }
 
     if (scrollResult.error) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(scrollResult.error)}`, {
+      enqueueSnackbar(`Visualization Unsuccessful, error: ${bigIntJSON.stringify(scrollResult.error)}`, {
         variant: 'error',
         action,
       });
@@ -131,9 +132,9 @@ const VisualizeChart = ({ scrollResult }) => {
             usePointStyle: true,
             callbacks: {
               label: (context) => {
-                const payload = JSON.stringify(context.dataset.data[context.dataIndex].point.payload, null, 1).split(
-                  '\n'
-                );
+                const payload = bigIntJSON
+                  .stringify(context.dataset.data[context.dataIndex].point.payload, null, 1)
+                  .split('\n');
 
                 if (colorBy?.discover_score) {
                   const id = context.dataset.data[context.dataIndex].point.id;

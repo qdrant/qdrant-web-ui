@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 export async function requestFromCode(text, collectionName) {
   const data = codeParse(text);
@@ -112,7 +113,7 @@ export function codeParse(codeText) {
   // Parse JSON
   if (codeText) {
     try {
-      reqBody = JSON.parse(codeText);
+      reqBody = bigIntJSON.parse(codeText);
     } catch (e) {
       return {
         reqBody: codeText,
