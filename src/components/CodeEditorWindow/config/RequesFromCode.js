@@ -39,7 +39,7 @@ export function codeParse(codeText) {
   let reqBody = {};
   if (body) {
     try {
-      reqBody = bigIntJSON.parse(stripComments(body));
+      reqBody = body === '\n' ? {} : bigIntJSON.parse(stripComments(body));
     } catch (e) {
       return {
         method: null,
