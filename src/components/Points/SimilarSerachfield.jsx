@@ -5,19 +5,26 @@ import { MuiChipsInput } from 'mui-chips-input';
 
 function SimilarSerachfield({ value, setValue }) {
   const handleChange = (newChips) => {
-    const isnum = /^\d+$/.test(newChips);
-    const result = newChips.map(function (x) {
-      if (!isnum) {
-        return x;
+    const newValue = newChips.map(function (val) {
+      if (Number.isInteger(parseInt(val, 10))) {
+        return BigInt(val);
+      } else {
+        return val;
       }
-      return parseInt(x, 10);
     });
-    setValue(result);
+    setValue(newValue);
   };
 
   return (
     <Card sx={{ p: 2 }} variant="dual">
-      <MuiChipsInput fullWidth value={value} onChange={handleChange} placeholder={'Find Similar by ID'} />
+      <MuiChipsInput
+        fullWidth
+        value={value.map(function (x) {
+          return x.toString();
+        })}
+        onChange={handleChange}
+        placeholder={'Find Similar by ID'}
+      />
     </Card>
   );
 }
