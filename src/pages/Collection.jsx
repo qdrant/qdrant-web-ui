@@ -152,7 +152,7 @@ function Collection() {
           {currentTab === 'points' && (
             <>
               <Grid xs={12} item>
-                <SimilarSerachfield value={conditions} onConditionChange={onConditionChange} />
+                <SimilarSerachfield conditions={conditions} onConditionChange={onConditionChange} />
               </Grid>
 
               {errorMessage && (

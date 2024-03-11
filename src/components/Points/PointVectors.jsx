@@ -7,6 +7,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 /**
  * Component for displaying vectors of a point
  * @param {Object} point
+ * @param {function} onConditionChange
  * @returns {JSX.Element|null}
  * @constructor
  */

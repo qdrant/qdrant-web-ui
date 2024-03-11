@@ -18,7 +18,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 
 const PointCard = (props) => {
   const theme = useTheme();
-  const { onConditionChange ,conditions} = props;
+  const { onConditionChange, conditions } = props;
   const [point, setPoint] = React.useState(props.point);
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
