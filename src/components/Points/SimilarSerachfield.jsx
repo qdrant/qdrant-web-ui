@@ -71,7 +71,10 @@ function SimilarSerachfield({ conditions, onConditionChange }) {
         })}
         onAddChip={handleAddChip}
         onDeleteChip={handleDeleteChip}
-        placeholder={'Find Similar by ID'}
+        placeholder={
+          'Find similar by ID or filter by payload key:value pair. Example: ' +
+          'name: John Doe, age: 25, id: c0847827-d005-4e46-b328-887f72373d2d , id: 1234567890'
+        }
       />
     </Card>
   );
