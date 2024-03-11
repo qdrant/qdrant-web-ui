@@ -16,12 +16,9 @@ function Collection() {
 
   const { collectionName } = useParams();
   const [points, setPoints] = useState(null);
-  const [usingVector, setUsingVector] = useState(null);
   const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [conditions, setConditions] = useState([]);
-  const [filters, setFilters] = useState([]);
-  const [recommendationIds, setRecommendationIds] = useState([]);
   const { client: qdrantClient } = useClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,18 +36,7 @@ function Collection() {
 
   const onConditionChange = (conditions) => {
     setOffset(null);
-    conditions.forEach((condition) => {
-      if (condition.type === 'id') {
-        setRecommendationIds([...recommendationIds, condition.value]);
-        if (condition.using) {
-          setUsingVector(condition.using);
-        }
-      } else if (condition.type === 'payload') {
-        setFilters([...filters, { key: condition.key, match: { value: condition.value } }]);
-      }
-    });
     setConditions(conditions);
-
     if (conditions.length === 0) {
       setPoints({ points: [] });
     }
@@ -67,6 +53,19 @@ function Collection() {
   useEffect(() => {
     const getPoints = async () => {
       if (conditions.length !== 0) {
+        const recommendationIds = [];
+        const filters = [];
+        let usingVector = null;
+        conditions.forEach((condition) => {
+          if (condition.type === 'id') {
+            recommendationIds.push(condition.value);
+            if (condition.using) {
+              usingVector = condition.using;
+            }
+          } else if (condition.type === 'payload') {
+            filters.push({ key: condition.key, match: { value: condition.value } });
+          }
+        });
         try {
           if (recommendationIds.length !== 0) {
             const newPoints = await qdrantClient.recommend(collectionName, {
