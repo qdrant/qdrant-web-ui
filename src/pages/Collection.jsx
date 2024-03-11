@@ -16,9 +16,11 @@ function Collection() {
 
   const { collectionName } = useParams();
   const [points, setPoints] = useState(null);
-  const [vector, setVector] = useState(null);
+  const [usingVector, setUsingVector] = useState(null);
   const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [conditions, setConditions] = useState([]);
+  const [filters, setFilters] = useState([]);
   const [recommendationIds, setRecommendationIds] = useState([]);
   const { client: qdrantClient } = useClient();
   const navigate = useNavigate();
@@ -35,11 +37,21 @@ function Collection() {
     navigate(`#${newValue}`);
   };
 
-  const onIdsSelected = (ids, vectors) => {
+  const onConditionChange = (conditions) => {
     setOffset(null);
-    setRecommendationIds(ids);
-    if (vectors) setVector(vectors);
-    if (ids.length === 0) {
+    conditions.forEach((condition) => {
+      if (condition.type === 'id') {
+        setRecommendationIds([...recommendationIds, condition.value]);
+        if (condition.using) {
+          setUsingVector(condition.using);
+        }
+      } else if (condition.type === 'payload') {
+        setFilters([...filters, { key: condition.key, match: { value: condition.value } }]);
+      }
+    });
+    setConditions(conditions);
+
+    if (conditions.length === 0) {
       setPoints({ points: [] });
     }
   };
@@ -54,18 +66,37 @@ function Collection() {
 
   useEffect(() => {
     const getPoints = async () => {
-      if (recommendationIds.length !== 0) {
+      if (conditions.length !== 0) {
         try {
-          const newPoints = await qdrantClient.recommend(collectionName, {
-            positive: recommendationIds,
-            limit: pageSize + (offset || 0),
-            with_payload: true,
-            with_vector: true,
-            using: vector,
-          });
-          setNextPageOffset(newPoints.length);
-          setPoints({ points: newPoints });
-          setErrorMessage(null);
+          if (recommendationIds.length !== 0) {
+            const newPoints = await qdrantClient.recommend(collectionName, {
+              positive: recommendationIds,
+              limit: pageSize + (offset || 0),
+              with_payload: true,
+              with_vector: true,
+              using: usingVector,
+              filter: {
+                must: filters,
+              },
+            });
+            setNextPageOffset(newPoints.length);
+            setPoints({ points: newPoints });
+            setErrorMessage(null);
+          } else if (filters.length !== 0) {
+            const newPoints = await qdrantClient.scroll(collectionName, {
+              filter: {
+                must: filters,
+              },
+              limit: pageSize + (offset || 0),
+              with_payload: true,
+              with_vector: true,
+            });
+            setPoints({
+              points: [...(newPoints?.points || [])],
+            });
+            setNextPageOffset(newPoints?.next_page_offset);
+            setErrorMessage(null);
+          }
         } catch (error) {
           const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
           message && setErrorMessage(message);
@@ -92,7 +123,7 @@ function Collection() {
       }
     };
     getPoints();
-  }, [collectionName, offset, recommendationIds]);
+  }, [collectionName, offset, conditions]);
 
   return (
     <>
@@ -122,7 +153,7 @@ function Collection() {
           {currentTab === 'points' && (
             <>
               <Grid xs={12} item>
-                <SimilarSerachfield value={recommendationIds} setValue={onIdsSelected} />
+                <SimilarSerachfield value={conditions} onConditionChange={onConditionChange} />
               </Grid>
 
               {errorMessage && (
@@ -146,7 +177,8 @@ function Collection() {
                   <Grid xs={12} item key={point.id}>
                     <PointCard
                       point={point}
-                      setRecommendationIds={onIdsSelected}
+                      onConditionChange={onConditionChange}
+                      conditions={conditions}
                       collectionName={collectionName}
                       deletePoint={deletePoint}
                     />

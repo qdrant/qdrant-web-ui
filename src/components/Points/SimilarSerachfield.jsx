@@ -3,16 +3,32 @@ import PropTypes from 'prop-types';
 import { Card } from '@mui/material';
 import { MuiChipsInput } from 'mui-chips-input';
 
-function SimilarSerachfield({ value, setValue }) {
-  const handleChange = (newChips) => {
-    const newValue = newChips.map(function (val) {
-      if (Number.isInteger(parseInt(val, 10))) {
-        return BigInt(val);
-      } else {
-        return val;
-      }
+function SimilarSerachfield({ value, onConditionChange }) {
+  const handleAddChip = (chip) => {
+    if (Number.isInteger(parseInt(chip, 10))) {
+      const id = {
+        key: 'id',
+        type: 'id',
+        value: BigInt(chip),
+        label: `id: ${chip}`,
+      };
+      onConditionChange([...value, id]);
+    } else {
+      const id = {
+        key: 'id',
+        type: 'id',
+        value: chip,
+        label: `id: ${chip}`,
+      };
+      onConditionChange([...value, id]);
+    }
+  };
+
+  const handleDeleteChip = (chip) => {
+    const newValues = value.filter(function (x) {
+      return x.label !== chip;
     });
-    setValue(newValue);
+    onConditionChange(newValues);
   };
 
   return (
@@ -20,9 +36,10 @@ function SimilarSerachfield({ value, setValue }) {
       <MuiChipsInput
         fullWidth
         value={value.map(function (x) {
-          return x.toString();
+          return x.label;
         })}
-        onChange={handleChange}
+        onAddChip={handleAddChip}
+        onDeleteChip={handleDeleteChip}
         placeholder={'Find Similar by ID'}
       />
     </Card>
@@ -31,7 +48,7 @@ function SimilarSerachfield({ value, setValue }) {
 
 SimilarSerachfield.propTypes = {
   value: PropTypes.array,
-  setValue: PropTypes.func,
+  onConditionChange: PropTypes.func,
 };
 
 export default SimilarSerachfield;
