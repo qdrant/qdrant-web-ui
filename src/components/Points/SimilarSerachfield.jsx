@@ -33,6 +33,9 @@ function SimilarSerachfield({ conditions, onConditionChange }) {
     } else {
       value = keyValue[1].trim();
     }
+    if (conditions.find((c) => c.key === key && c.value === value)) {
+      return;
+    }
     if (key && value) {
       if (key === 'id') {
         const id = {

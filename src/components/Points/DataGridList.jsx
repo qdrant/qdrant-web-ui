@@ -66,6 +66,9 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                     value: data[key],
                     label: `${key}: ${data[key]}`,
                   };
+                  if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
+                    return;
+                  }
                   onConditionChange([...conditions, filter]);
                 }}
               >
