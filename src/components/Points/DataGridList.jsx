@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { JsonViewer } from '@textea/json-viewer';
 import { useTheme } from '@mui/material/styles';
-import { Divider, Grid, Typography } from '@mui/material';
+import { Divider, Grid, IconButton, Typography } from '@mui/material';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
 
 /**
  * A list of key-value pairs, where the value is either a string or an object.
@@ -57,22 +58,33 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
               <Typography
                 variant="subtitle1"
                 color="text.secondary"
-                display={'inline'}
-                sx={{ wordBreak: 'break-word' }}
-                onClick={() => {
-                  const filter = {
-                    key: key,
-                    type: 'payload',
-                    value: data[key],
-                    label: `${key}: ${data[key]}`,
-                  };
-                  if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
-                    return;
-                  }
-                  onConditionChange([...conditions, filter]);
+                sx={{
+                  wordBreak: 'break-word',
+                  width: '100%',
+                  display: 'inline-flex',
+                  justifyContent: 'space-between',
                 }}
               >
-                {'\t'} {data[key].toString()}
+                <span>
+                  {'\t'} {data[key].toString()}
+                </span>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    const filter = {
+                      key: key,
+                      type: 'payload',
+                      value: data[key],
+                      label: `${key}: ${data[key]}`,
+                    };
+                    if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
+                      return;
+                    }
+                    onConditionChange([...conditions, filter]);
+                  }}
+                >
+                  <FilterAltIcon />
+                </IconButton>
               </Typography>
             )}
           </Grid>
