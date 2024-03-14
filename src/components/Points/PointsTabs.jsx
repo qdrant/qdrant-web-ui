@@ -74,7 +74,7 @@ const PointsTabs = ({ collectionName }) => {
                   key: condition.key,
                 },
               });
-            } else if (payloadSchema[condition.key].data_type === 'text') {
+            } else if (payloadSchema[condition.key] && payloadSchema[condition.key].data_type === 'text') {
               filters.push({ key: condition.key, match: { text: condition.value } });
             } else {
               filters.push({ key: condition.key, match: { value: condition.value } });

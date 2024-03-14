@@ -12,6 +12,10 @@ function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVecto
   const handleAddChip = (chip) => {
     setErrorMessage(null);
     const keyValue = chip.split(':');
+    if (keyValue.length !== 2) {
+      setErrorMessage('Invalid format of key:value pair');
+      return;
+    }
     const key = keyValue[0].trim();
     const parseToPrimitive = (keyValue) => {
       try {
