@@ -6,7 +6,6 @@ import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
-import { validateUuid } from '../../common/utils';
 
 const PointsTabs = ({ collectionName }) => {
   const pageSize = 10;
@@ -60,15 +59,7 @@ const PointsTabs = ({ collectionName }) => {
         const recommendationIds = [];
         const filters = [];
         conditions.forEach((condition) => {
-          if (typeof condition.value === 'number' && condition.value % 1 !== 0) {
-            setErrorMessage('Float values are not supported ');
-            return;
-          }
-          if (
-            (condition.type === 'id' && typeof condition.value === 'number') ||
-            typeof condition.value === 'bigint' ||
-            validateUuid(condition.value)
-          ) {
+          if (condition.type === 'id') {
             recommendationIds.push(condition.value);
           } else if (condition.type === 'payload') {
             if (condition.value === null || condition.value === undefined) {
@@ -85,10 +76,8 @@ const PointsTabs = ({ collectionName }) => {
               });
             } else if (payloadSchema[condition.key].data_type === 'text') {
               filters.push({ key: condition.key, match: { text: condition.value } });
-            } else if (condition.type === 'payload') {
-              filters.push({ key: condition.key, match: { value: condition.value } });
             } else {
-              setErrorMessage('Only id, string, bool and integer values are supported');
+              filters.push({ key: condition.key, match: { value: condition.value } });
             }
           }
         });
