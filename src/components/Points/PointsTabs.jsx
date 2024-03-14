@@ -6,6 +6,7 @@ import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
+import { validateUuid } from '../../common/utils';
 
 const PointsTabs = ({ collectionName }) => {
   const pageSize = 10;
@@ -59,10 +60,36 @@ const PointsTabs = ({ collectionName }) => {
         const recommendationIds = [];
         const filters = [];
         conditions.forEach((condition) => {
-          if (condition.type === 'id') {
+          if (typeof condition.value === 'number' && condition.value % 1 !== 0) {
+            setErrorMessage('Float values are not supported ');
+            return;
+          }
+          if (
+            (condition.type === 'id' && typeof condition.value === 'number') ||
+            typeof condition.value === 'bigint' ||
+            validateUuid(condition.value)
+          ) {
             recommendationIds.push(condition.value);
           } else if (condition.type === 'payload') {
-            filters.push({ key: condition.key, match: { value: condition.value } });
+            if (condition.value === null || condition.value === undefined) {
+              filters.push({
+                is_null: {
+                  key: condition.key,
+                },
+              });
+            } else if (condition.value === '') {
+              filters.push({
+                is_empty: {
+                  key: condition.key,
+                },
+              });
+            } else if (payloadSchema[condition.key].data_type === 'text') {
+              filters.push({ key: condition.key, match: { text: condition.value } });
+            } else if (condition.type === 'payload') {
+              filters.push({ key: condition.key, match: { value: condition.value } });
+            } else {
+              setErrorMessage('Only id, string, bool and integer values are supported');
+            }
           }
         });
         try {

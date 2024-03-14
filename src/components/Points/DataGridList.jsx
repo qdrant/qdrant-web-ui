@@ -39,36 +39,39 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
             {/* special cases */}
             {specialKeys?.includes(key) && specialCases[key]}
 
-            {/* objects */}
-            {typeof data[key] === 'object' && !specialKeys.includes(key) && (
-              <Typography variant="subtitle1">
-                {' '}
+            <Typography
+              variant="subtitle1"
+              color="text.secondary"
+              sx={{
+                wordBreak: 'break-word',
+                width: '100%',
+                display: 'inline-flex',
+                justifyContent: 'space-between',
+              }}
+            >
+              {/* objects */}
+              {typeof data[key] === 'object' && !specialKeys.includes(key) && (
                 <JsonViewer
                   theme={theme.palette.mode}
                   value={data[key]}
                   displayDataTypes={false}
                   defaultInspectDepth={0}
                   rootName={false}
-                />{' '}
-              </Typography>
-            )}
+                />
+              )}
 
-            {/* other types of values */}
-            {typeof data[key] !== 'object' && !specialKeys.includes(key) && (
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                sx={{
-                  wordBreak: 'break-word',
-                  width: '100%',
-                  display: 'inline-flex',
-                  justifyContent: 'space-between',
-                }}
-              >
+              {/* other types of values */}
+              {typeof data[key] !== 'object' && !specialKeys.includes(key) && (
                 <span>
                   {'\t'} {data[key].toString()}
                 </span>
-                {payloadSchema && payloadSchema[key] && (
+              )}
+              {payloadSchema &&
+                payloadSchema[key] &&
+                (payloadSchema[key].data_type === 'keyword' ||
+                  payloadSchema[key].data_type === 'text' ||
+                  payloadSchema[key].data_type === 'integer' ||
+                  payloadSchema[key].data_type === 'bool') && (
                   <IconButton
                     size="small"
                     onClick={() => {
@@ -86,8 +89,7 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                     <FilterAltIcon />
                   </IconButton>
                 )}
-              </Typography>
-            )}
+            </Typography>
           </Grid>
         </Grid>
         <Divider />
