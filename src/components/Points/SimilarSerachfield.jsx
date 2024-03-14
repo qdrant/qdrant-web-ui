@@ -2,40 +2,38 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Card } from '@mui/material';
 import { MuiChipsInput } from 'mui-chips-input';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVector }) {
   const handleAddChip = (chip) => {
     const keyValue = chip.split(':');
     const key = keyValue[0].trim();
-    let value = null;
-    if (Number.isInteger(parseInt(keyValue[1], 10))) {
-      value = BigInt(keyValue[1]);
-    } else {
-      value = keyValue[1].trim();
-    }
-    if (conditions.find((c) => c.key === key && c.value === value)) {
-      return;
-    }
-    if (key && value) {
-      if (key === 'id') {
-        const id = {
-          key: 'id',
-          type: 'id',
-          value: value,
-        };
-        if (vectors.length > 0 && usingVector === null) {
-          onConditionChange([...conditions, id], vectors[0]); // TODO: add vector selection
-          return;
-        }
-        onConditionChange([...conditions, id]);
-      } else {
-        const payload = {
-          key: key,
-          type: 'payload',
-          value: value,
-        };
-        onConditionChange([...conditions, payload]);
+    const parseToPrimitive = (keyValue) => {
+      try {
+        return bigIntJSON.parse(keyValue[1].trim());
+      } catch (e) {
+        return keyValue[1].trim();
       }
+    };
+    const value = parseToPrimitive(keyValue);
+    if (key === 'id' && value) {
+      const id = {
+        key: 'id',
+        type: 'id',
+        value: value,
+      };
+      if (vectors.length > 0 && usingVector === null) {
+        onConditionChange([...conditions, id], vectors[0]); // TODO: add vector selection
+        return;
+      }
+      onConditionChange([...conditions, id]);
+    } else if (key) {
+      const payload = {
+        key: key,
+        type: 'payload',
+        value: value,
+      };
+      onConditionChange([...conditions, payload]);
     }
   };
 
