@@ -118,7 +118,12 @@ const PointCard = (props) => {
             <CardContent>
               <Grid container display={'flex'}>
                 <Grid item xs my={1}>
-                  <DataGridList data={point.payload} onConditionChange={onConditionChange} conditions={conditions} />
+                  <DataGridList
+                    data={point.payload}
+                    onConditionChange={onConditionChange}
+                    conditions={conditions}
+                    payloadSchema={props.payloadSchema}
+                  />
                 </Grid>
                 {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
               </Grid>
@@ -163,6 +168,7 @@ PointCard.propTypes = {
   conditions: PropTypes.array.isRequired,
   collectionName: PropTypes.string.isRequired, // use params instead?
   deletePoint: PropTypes.func.isRequired,
+  payloadSchema: PropTypes.object.isRequired,
 };
 
 export default PointCard;

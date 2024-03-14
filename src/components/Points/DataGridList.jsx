@@ -14,7 +14,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
  * @param {Array} conditions - current conditions
  * @return {unknown[]} - array of JSX elements
  */
-export const DataGridList = function ({ data = {}, specialCases = {}, onConditionChange, conditions }) {
+export const DataGridList = function ({ data = {}, specialCases = {}, onConditionChange, conditions, payloadSchema }) {
   const theme = useTheme();
   const specialKeys = Object.keys(specialCases) || [];
 
@@ -68,23 +68,24 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                 <span>
                   {'\t'} {data[key].toString()}
                 </span>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const filter = {
-                      key: key,
-                      type: 'payload',
-                      value: data[key],
-                      label: `${key}: ${data[key]}`,
-                    };
-                    if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
-                      return;
-                    }
-                    onConditionChange([...conditions, filter]);
-                  }}
-                >
-                  <FilterAltIcon />
-                </IconButton>
+                {payloadSchema && payloadSchema[key] && (
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      const filter = {
+                        key: key,
+                        type: 'payload',
+                        value: data[key],
+                      };
+                      if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
+                        return;
+                      }
+                      onConditionChange([...conditions, filter]);
+                    }}
+                  >
+                    <FilterAltIcon />
+                  </IconButton>
+                )}
               </Typography>
             )}
           </Grid>
@@ -108,4 +109,5 @@ DataGridList.propTypes = {
   }),
   onConditionChange: PropTypes.func,
   conditions: PropTypes.array,
+  payloadSchema: PropTypes.object,
 };

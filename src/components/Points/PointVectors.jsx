@@ -74,8 +74,6 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                         key: 'id',
                         type: 'id',
                         value: point.id,
-                        label: key === '' ? `id: ${point.id}` : `id: ${point.id} using: ${key}`,
-                        using: key,
                       },
                     ],
                     key === '' ? null : key

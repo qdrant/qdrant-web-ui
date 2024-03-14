@@ -15,8 +15,14 @@ const PointsTabs = ({ collectionName }) => {
   const [conditions, setConditions] = useState([]);
   const { client: qdrantClient } = useClient();
   const [nextPageOffset, setNextPageOffset] = useState(null);
+  const [usingVector, setUsingVector] = useState(null);
+  const [payloadSchema, setPayloadSchema] = useState({});
+  const [vectors, setVectors] = useState([]);
 
-  const onConditionChange = (conditions) => {
+  const onConditionChange = (conditions, usingVector) => {
+    if (usingVector) {
+      setUsingVector(usingVector);
+    }
     setOffset(null);
     setConditions(conditions);
     if (conditions.length === 0) {
@@ -33,17 +39,28 @@ const PointsTabs = ({ collectionName }) => {
   };
 
   useEffect(() => {
+    const getCollection = async () => {
+      const collectionInfo = await qdrantClient.getCollection(collectionName);
+      const vectors = [];
+      Object.keys(collectionInfo.config.params.vectors).map((key) => {
+        if (typeof collectionInfo.config.params.vectors[key] === 'object') {
+          vectors.push(key);
+        }
+      });
+      setVectors(vectors);
+      setPayloadSchema(collectionInfo.payload_schema);
+    };
+    getCollection();
+  }, []);
+
+  useEffect(() => {
     const getPoints = async () => {
       if (conditions.length !== 0) {
         const recommendationIds = [];
         const filters = [];
-        let usingVector = null;
         conditions.forEach((condition) => {
           if (condition.type === 'id') {
             recommendationIds.push(condition.value);
-            if (condition.using) {
-              usingVector = condition.using;
-            }
           } else if (condition.type === 'payload') {
             filters.push({ key: condition.key, match: { value: condition.value } });
           }
@@ -109,7 +126,12 @@ const PointsTabs = ({ collectionName }) => {
     <Grid container spacing={3}>
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
       <Grid xs={12} item>
-        <SimilarSerachfield conditions={conditions} onConditionChange={onConditionChange} />
+        <SimilarSerachfield
+          conditions={conditions}
+          onConditionChange={onConditionChange}
+          vectors={vectors}
+          usingVector={usingVector}
+        />
       </Grid>
 
       {errorMessage && (
@@ -137,6 +159,7 @@ const PointsTabs = ({ collectionName }) => {
               conditions={conditions}
               collectionName={collectionName}
               deletePoint={deletePoint}
+              payloadSchema={payloadSchema}
             />
           </Grid>
         ))}
