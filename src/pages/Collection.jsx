@@ -9,6 +9,7 @@ import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
+import { getErrorMessage } from '../lib/get-error-message';
 
 function Collection() {
   const pageSize = 10;
@@ -43,6 +44,14 @@ function Collection() {
     }
   };
 
+  const deletePoint = (collectionName, pointIds) => {
+    return qdrantClient.delete(collectionName, { points: pointIds }).catch((error) => {
+      console.log(error);
+      const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
+      message && setErrorMessage(message);
+    });
+  };
+
   useEffect(() => {
     const getPoints = async () => {
       if (recommendationIds.length !== 0) {
@@ -58,7 +67,8 @@ function Collection() {
           setPoints({ points: newPoints });
           setErrorMessage(null);
         } catch (error) {
-          setErrorMessage(error.message);
+          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
+          message && setErrorMessage(message);
           setPoints({});
         }
       } else {
@@ -75,7 +85,8 @@ function Collection() {
           setNextPageOffset(newPoints?.next_page_offset);
           setErrorMessage(null);
         } catch (error) {
-          setErrorMessage(error.message);
+          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
+          message && setErrorMessage(message);
           setPoints({});
         }
       }
@@ -133,7 +144,12 @@ function Collection() {
                 !errorMessage &&
                 points.points?.map((point) => (
                   <Grid xs={12} item key={point.id}>
-                    <PointCard point={point} setRecommendationIds={onIdsSelected} collectionName={collectionName} />
+                    <PointCard
+                      point={point}
+                      setRecommendationIds={onIdsSelected}
+                      collectionName={collectionName}
+                      deletePoint={deletePoint}
+                    />
                   </Grid>
                 ))}
               <Grid xs={12} item textAlign={'center'}>

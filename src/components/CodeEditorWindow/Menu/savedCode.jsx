@@ -4,16 +4,17 @@ import { SwipeableDrawer, Button, Box, Stack, TextField, Typography } from '@mui
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditorCommon from '../../EditorCommon';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 
 function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
   const [viewCode, setViewCode] = React.useState(`//Current Editor Code: \n${code}`);
   const [saveNameText, setSaveNameText] = useState('');
   const [savedCodes, setSavedCodes] = useState(
-    localStorage.getItem('savedCodes') ? JSON.parse(localStorage.getItem('savedCodes')) : []
+    localStorage.getItem('savedCodes') ? bigIntJSON.parse(localStorage.getItem('savedCodes')) : []
   );
 
   useEffect(() => {
-    setSavedCodes(localStorage.getItem('savedCodes') ? JSON.parse(localStorage.getItem('savedCodes')) : []);
+    setSavedCodes(localStorage.getItem('savedCodes') ? bigIntJSON.parse(localStorage.getItem('savedCodes')) : []);
     setViewCode(`//Current Editor Code: \n${code}`);
   }, [state]);
 
@@ -29,8 +30,8 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           date: new Date().toLocaleDateString(),
         },
       ];
-      localStorage.setItem('savedCodes', JSON.stringify(data));
-      setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
+      localStorage.setItem('savedCodes', bigIntJSON.stringify(data));
+      setSavedCodes(bigIntJSON.parse(localStorage.getItem('savedCodes')));
       setSaveNameText('');
     }
   }
@@ -72,8 +73,8 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
           const index = savedCodes.indexOf(data);
           const updateCode = [...savedCodes];
           updateCode.splice(index, 1);
-          localStorage.setItem('savedCodes', JSON.stringify(updateCode));
-          setSavedCodes(JSON.parse(localStorage.getItem('savedCodes')));
+          localStorage.setItem('savedCodes', bigIntJSON.stringify(updateCode));
+          setSavedCodes(bigIntJSON.parse(localStorage.getItem('savedCodes')));
         }}
       >
         <DeleteIcon />

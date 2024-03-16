@@ -7,6 +7,7 @@ import { ErrorMarker, errChecker } from './config/ErrorMarker';
 import { codeParse, requestFromCode } from './config/RequesFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) => {
   const editorRef = useRef(null);
@@ -44,7 +45,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
         setRequestCount((prev) => prev + 1);
         const data = args[0];
         const result = await requestFromCode(data);
-        onChangeResult('code', JSON.stringify(result));
+        onChangeResult('code', bigIntJSON.stringify(result));
         setRequestCount((prev) => prev - 1);
       },
       ''
@@ -56,7 +57,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
         const codeBlock = args[0];
         const data = codeParse(codeBlock.blockText);
         if (data.reqBody && Object.keys(data.reqBody).length > 0) {
-          const newCodeBlockText = JSON.stringify(data.reqBody, null, 2);
+          const newCodeBlockText = bigIntJSON.stringify(data.reqBody, null, 2);
           editor.executeEdits('beautify', [
             {
               forceMoveMarkers: true,
@@ -115,7 +116,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
           setRequestCount((prev) => prev + 1);
           const data = selectedCodeBlock.blockText;
           const result = await requestFromCode(data);
-          onChangeResult('code', JSON.stringify(result));
+          onChangeResult('code', bigIntJSON.stringify(result));
           setRequestCount((prev) => prev - 1);
         });
       }

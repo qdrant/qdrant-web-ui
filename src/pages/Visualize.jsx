@@ -20,7 +20,25 @@ const query = `
 // - 'filter': filter expression to select vectors for visualization.
 //             See https://qdrant.tech/documentation/concepts/filtering/
 //
-// - 'color_by': specify payload field to use for coloring points.
+// - 'color_by': specify score or payload field to use for coloring points.
+//               How to use:
+//
+//                "color_by": "field_name"
+//
+//                or
+//
+//                "color_by": {
+//                  "payload": "field_name"
+//                }
+//
+//                or
+//
+//                "color_by": {
+//                  "discover_score": {
+//                    "target": 42,
+//                    "context": [{"positive": 1, "negative": 0}]
+//                  }
+//                }
 //
 // - 'vector_name': specify which vector to use for visualization
 //                  if there are multiple.

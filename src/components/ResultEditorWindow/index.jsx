@@ -1,17 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import EditorCommon from '../EditorCommon';
+import { bigIntJSON } from '../../common/bigIntJSON';
 
 const ResultEditorWindow = ({ code }) => {
   function formatJSON(val = {}) {
     try {
-      const res = JSON.parse(val);
-      return JSON.stringify(res, null, 2);
+      const res = bigIntJSON.parse(val);
+      return bigIntJSON.stringify(res, null, 2);
     } catch {
       const errorJson = {
         error: `HERE ${val}`,
       };
-      return JSON.stringify(errorJson, null, 2);
+      return bigIntJSON.stringify(errorJson, null, 2);
     }
   }
   return (

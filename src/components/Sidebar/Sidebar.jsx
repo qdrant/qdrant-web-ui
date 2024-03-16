@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal } from '@mui/icons-material';
+import { LibraryBooks, Terminal, Animation } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
 
@@ -64,7 +64,7 @@ export default function Sidebar({ open, version }) {
       <Divider />
       <List>
         <ListItem key={'Console'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Console'} placement={'right'} arrow={true}>
+          <Tooltip title={'Console'} placement={'right'} arrow={true} disableHoverListener={open}>
             <ListItemButton
               sx={{
                 minHeight: 48,
@@ -88,7 +88,7 @@ export default function Sidebar({ open, version }) {
           </Tooltip>
         </ListItem>
         <ListItem key={'Collections'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Collections'} placement={'right'} arrow={true}>
+          <Tooltip title={'Collections'} placement={'right'} arrow={true} disableHoverListener={open}>
             <ListItemButton
               sx={{
                 minHeight: 48,
@@ -113,6 +113,30 @@ export default function Sidebar({ open, version }) {
         </ListItem>
         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
           <SidebarTutorialSection isSidebarOpen={open} />
+        </ListItem>
+        <ListItem key={'Datasets'} disablePadding sx={{ display: 'block' }}>
+          <Tooltip title={'Datasets'} placement={'right'} arrow={true}>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
+              }}
+              component={Link}
+              to="/Datasets"
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+                <Animation />
+              </ListItemIcon>
+              <ListItemText primary={'Datasets'} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </Tooltip>
         </ListItem>
       </List>
       <List style={{ marginTop: `auto` }}>
