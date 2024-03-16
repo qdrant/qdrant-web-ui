@@ -6,7 +6,7 @@ const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
 const openapi = await response.json();
 const DOCS_BASE_URL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/';
 
-const apiDocs = new OpenapiDocs(DOCS_BASE_URL, openapi);
+const apiDocs = new OpenapiDocs(openapi);
 
 export const Rules = {
   Method,
@@ -93,15 +93,16 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const requestDocs = apiDocs.getRequestDocs(codeBlocks[i].blockText);
-        if (requestDocs) {
+        const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
+        if (terminal) {
+          const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/operation/' + terminal.operationId;
           lenses.push({
             range,
             id: 'DOCS',
             command: {
               id: docsCommandId,
               title: 'DOCS',
-              arguments: [requestDocs],
+              arguments: [docsURL],
             },
           });
         }
