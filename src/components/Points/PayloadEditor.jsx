@@ -8,6 +8,7 @@ import EditorCommon from '../EditorCommon';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import ReactDiffViewer from 'react-diff-viewer-continued';
+import { useTheme } from '@mui/material/styles';
 
 export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading }) => {
   const { client: qdrantClient } = useClient();
@@ -16,6 +17,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 2000);
   const [payload, setPayload] = useState(() => bigIntJSON.stringify(point.payload, null, 2));
   const [showDiff, setShowDiff] = useState(false);
+  const theme = useTheme();
 
   const savePayload = async (collectionName, options) => {
     if (Object.keys(point.payload).length !== 0) {
@@ -143,6 +145,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
             oldValue={bigIntJSON.stringify(point.payload, null, 2)}
             newValue={payload}
             splitView={true}
+            useDarkTheme={theme.palette.mode === 'dark'}
             styles={{
               diffContainer: {
                 fontSize: '12px',
