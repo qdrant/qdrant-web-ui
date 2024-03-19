@@ -18,7 +18,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 
 const PointCard = (props) => {
   const theme = useTheme();
-  const { setRecommendationIds } = props;
+  const { onConditionChange, conditions } = props;
   const [point, setPoint] = React.useState(props.point);
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -118,7 +118,12 @@ const PointCard = (props) => {
             <CardContent>
               <Grid container display={'flex'}>
                 <Grid item xs my={1}>
-                  <DataGridList data={point.payload} />
+                  <DataGridList
+                    data={point.payload}
+                    onConditionChange={onConditionChange}
+                    conditions={conditions}
+                    payloadSchema={props.payloadSchema}
+                  />
                 </Grid>
                 {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
               </Grid>
@@ -132,9 +137,7 @@ const PointCard = (props) => {
             background: alpha(theme.palette.primary.main, 0.05),
           }}
         />
-        <CardContent>
-          {point?.vector && <Vectors point={point} setRecommendationIds={setRecommendationIds} />}
-        </CardContent>
+        <CardContent>{point?.vector && <Vectors point={point} onConditionChange={onConditionChange} />}</CardContent>
       </Card>
       <PayloadEditor
         collectionName={props.collectionName}
@@ -161,9 +164,11 @@ const PointCard = (props) => {
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
-  setRecommendationIds: PropTypes.func.isRequired,
+  onConditionChange: PropTypes.func.isRequired,
+  conditions: PropTypes.array.isRequired,
   collectionName: PropTypes.string.isRequired, // use params instead?
   deletePoint: PropTypes.func.isRequired,
+  payloadSchema: PropTypes.object.isRequired,
 };
 
 export default PointCard;

@@ -7,10 +7,11 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 /**
  * Component for displaying vectors of a point
  * @param {Object} point
+ * @param {function} onConditionChange
  * @returns {JSX.Element|null}
  * @constructor
  */
-const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
+const Vectors = memo(function Vectors({ point, onConditionChange }) {
   if (!Object.getOwnPropertyDescriptor(point, 'vector')) {
     return null;
   }
@@ -67,7 +68,16 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
                 size="small"
                 variant="outlined"
                 onClick={() => {
-                  setRecommendationIds([point.id], key === '' ? null : key);
+                  onConditionChange(
+                    [
+                      {
+                        key: 'id',
+                        type: 'id',
+                        value: point.id,
+                      },
+                    ],
+                    key === '' ? null : key
+                  );
                 }}
               >
                 Find Similar
@@ -82,7 +92,7 @@ const Vectors = memo(function Vectors({ point, setRecommendationIds }) {
 
 Vectors.propTypes = {
   point: PropTypes.object.isRequired,
-  setRecommendationIds: PropTypes.func.isRequired,
+  onConditionChange: PropTypes.func.isRequired,
 };
 
 export default Vectors;
