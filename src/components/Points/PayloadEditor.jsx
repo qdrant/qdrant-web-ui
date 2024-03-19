@@ -149,8 +149,8 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
               },
               wordDiff: {
                 padding: '0px',
-                wordBreak: "normal",
-              }
+                wordBreak: 'normal',
+              },
             }}
           />
         </DialogContent>
