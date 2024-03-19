@@ -1,7 +1,5 @@
 # Qdrant web-ui
 
-**WORK IN PROGRESS**
-
 This is a self-hosted web UI for [Qdrant](https://github.com/qdrant/qdrant) Vector Search Engine.
 
 This UI is supposed to be served by Qdrant itself, but you can use it as a standalone application.
