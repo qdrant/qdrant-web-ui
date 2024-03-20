@@ -6,6 +6,7 @@ import Collection from './pages/Collection';
 import Visualize from './pages/Visualize';
 import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
+import Jwt from './pages/Jwt';
 
 const routes = () => [
   {
@@ -23,6 +24,7 @@ const routes = () => [
       },
       { path: '/tutorial', element: <Tutorial /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },
+      { path: '/jwt', element: <Jwt /> },
     ],
   },
 ];
