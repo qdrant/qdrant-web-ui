@@ -21,8 +21,20 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
   const [collectionName, setCollectionName] = useState('');
   const [formError, setFormError] = useState(false);
+  const [formMessage, setFormMessage] = useState('');
   const textFieldRef = useRef(null);
-  const collectionNameRegex = /^[a-zA-Z0-9()*_\-!#$%&]*$/;
+
+  function validateCollectionName(value) {
+    const INVALID_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*', '\0', '\u{1F}'];
+
+    const invalidChar = INVALID_CHARS.find((c) => value.includes(c));
+
+    if (invalidChar !== undefined) {
+      return `Collection name cannot contain "${invalidChar}" char`;
+    } else {
+      return null;
+    }
+  }
   const MAX_COLLECTION_NAME_LENGTH = 255;
 
   const getHeaders = () => {
@@ -92,12 +104,20 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const handleTextChange = (event) => {
     // if there will be more forms use schema validation instead
     const newCollectionName = event.target.value;
-    const hasForbiddenSymbols = !collectionNameRegex.test(newCollectionName);
+    const hasForbiddenSymbolsMessage = validateCollectionName(newCollectionName);
+    const hasForbiddenSymbols = hasForbiddenSymbolsMessage !== null;
     const isTooShort = newCollectionName?.length < 1;
     const isTooLong = newCollectionName?.length > MAX_COLLECTION_NAME_LENGTH;
 
     setCollectionName(newCollectionName);
     setFormError(isTooShort || isTooLong || hasForbiddenSymbols);
+    setFormMessage(
+      isTooShort
+        ? 'Collection name is too short'
+        : isTooLong
+        ? 'Collection name is too long'
+        : hasForbiddenSymbolsMessage
+    );
   };
 
   const handleNext = () => {
@@ -127,7 +147,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
                 id="collection-name"
                 label="Collection Name"
                 value={collectionName}
-                helperText={formError ? 'This collection name is not valid' : ' '}
+                helperText={formError ? formMessage : ''}
                 onChange={handleTextChange}
                 fullWidth={true}
                 inputRef={textFieldRef}
