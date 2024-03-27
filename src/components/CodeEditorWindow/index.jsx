@@ -19,6 +19,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
 
   let runBtnCommandId = null;
   let beautifyBtnCommandId = null;
+  let docsBtnCommandId = null;
 
   const handleEditorChange = (code) => {
     onChange('code', code);
@@ -74,10 +75,15 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
       ''
     );
 
+    docsBtnCommandId = editor.addCommand(0, async (_ctx, ...args) => {
+      const docsURL = args[0];
+      window.open(docsURL, '_blank');
+    });
+
     // Register Code Lens Provider (Run Button)
     lensesRef.current = monaco.languages.registerCodeLensProvider(
       'custom-language',
-      btnconfig(runBtnCommandId, beautifyBtnCommandId)
+      btnconfig(runBtnCommandId, beautifyBtnCommandId, docsBtnCommandId)
     );
 
     // Listen for Mouse Postion Change
