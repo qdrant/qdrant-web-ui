@@ -1,9 +1,7 @@
 import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
+import openapi from '/openapi.json?url';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
-
-const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
-const openapi = await response.json();
 const DOCS_BASE_URL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/';
 
 const apiDocs = new OpenapiDocs(openapi);
