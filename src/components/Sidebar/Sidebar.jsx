@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal, Animation } from '@mui/icons-material';
+import { LibraryBooks, Terminal, Animation, Key } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
 
@@ -69,6 +69,7 @@ export default function Sidebar({ open, version }) {
           <SidebarTutorialSection isSidebarOpen={open} />
         </ListItem>
         {sidebarItem('Datasets', <Animation />, '/datasets', open)}
+        {sidebarItem('JWT Keys', <Key />, '/jwt', open)}
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>
