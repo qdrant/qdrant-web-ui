@@ -10,8 +10,8 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useTheme } from '@mui/material/styles';
 
-export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading }) => {
-  const { client: qdrantClient } = useClient();
+export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading, client }) => {
+  const qdrantClient = client ? client : useClient().client;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 2000);
@@ -177,6 +177,7 @@ PayloadEditor.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func,
   setLoading: PropTypes.func.isRequired,
+  client: PropTypes.object,
 };
 
 PayloadEditor.displayName = 'PayloadEditor';

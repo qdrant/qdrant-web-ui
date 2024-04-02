@@ -148,6 +148,7 @@ const PointCard = (props) => {
         }}
         onSave={onPayloadEdit}
         setLoading={setLoading}
+        client={props.client}
       />
       <ConfirmationDialog
         open={openDeleteDialog}
@@ -169,6 +170,7 @@ PointCard.propTypes = {
   collectionName: PropTypes.string.isRequired, // use params instead?
   deletePoint: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object.isRequired,
+  client : PropTypes.object
 };
 
 export default PointCard;

@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Grid, TextField, Select, MenuItem, Switch, Chip, ListItemText, Checkbox } from '@mui/material';
+import {
+  Typography,
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  Switch,
+  Chip,
+  ListItemText,
+  Checkbox,
+  Divider,
+} from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
@@ -9,6 +20,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import * as jose from 'jose';
 import { CopyButton } from '../components/Common/CopyButton';
 import { Box } from '@mui/system';
+import PreviewTokenAccess from '../components/JwtSection/PreviewTokenAccess';
 
 function Jwt() {
   const { client: qdrantClient } = useClient();
@@ -102,41 +114,39 @@ function Jwt() {
           </Select>
         </Grid>
 
-        {collectionSelector(collections, selectedCollections, setSelectedCollections)}
+        <Grid item xs={6}>
+          <Typography variant="h5">Collections :</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Select
+            multiple
+            value={selectedCollections}
+            onChange={(e) => setSelectedCollections(e.target.value)}
+            fullWidth
+            renderValue={(selected) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value) => (
+                  <Chip key={value} label={value} />
+                ))}
+              </Box>
+            )}
+          >
+            {collections.map((collection) => (
+              <MenuItem key={collection} value={collection}>
+                <Checkbox checked={selectedCollections.indexOf(collection) > -1} />
+                <ListItemText primary={collection} />
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Divider />
+        </Grid>
+
+        <PreviewTokenAccess token={token} collections={collections} />
       </Grid>
     </CenteredFrame>
-  );
-}
-
-function collectionSelector(collections, selectedCollections, setSelectedCollections) {
-  return (
-    <>
-      <Grid item xs={6}>
-        <Typography variant="h5">Collections :</Typography>
-      </Grid>
-      <Grid item xs={6}>
-        <Select
-          multiple
-          value={selectedCollections}
-          onChange={(e) => setSelectedCollections(e.target.value)}
-          fullWidth
-          renderValue={(selected) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} />
-              ))}
-            </Box>
-          )}
-        >
-          {collections.map((collection) => (
-            <MenuItem key={collection} value={collection}>
-              <Checkbox checked={selectedCollections.indexOf(collection) > -1} />
-              <ListItemText primary={collection} />
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-    </>
   );
 }
 
