@@ -170,7 +170,7 @@ PointCard.propTypes = {
   collectionName: PropTypes.string.isRequired, // use params instead?
   deletePoint: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object.isRequired,
-  client : PropTypes.object
+  client: PropTypes.object,
 };
 
 export default PointCard;
