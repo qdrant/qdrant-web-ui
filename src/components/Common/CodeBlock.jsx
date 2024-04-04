@@ -3,13 +3,10 @@ import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
 import { alpha, Box, Button } from '@mui/material';
-import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
-import { useTutorial } from '../../../context/tutorial-context';
 import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
-import { CopyButton } from '../../Common/CopyButton';
-import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
-import { bigIntJSON } from '../../../common/bigIntJSON';
+import { CopyButton } from './CopyButton';
+import { DARK_BACKGROUND, LIGHT_BACKGROUND } from '../InteractiveTutorial/MdxComponents/MdxComponents';
 
 const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
   fontFamily: '"Menlo", monospace',
@@ -25,23 +22,13 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
 /**
  * Run button for code block
  * @param {string} code
+ * @param {function} onRun
  * @return {JSX.Element}
  * @constructor
  */
-export const RunButton = ({ code }) => {
-  const { setResult } = useTutorial();
-  const handleClick = () => {
-    setResult('{}');
-    requestFromCode(code, false)
-      .then((res) => {
-        setResult(() => bigIntJSON.stringify(res));
-      })
-      .catch((err) => {
-        setResult(() => bigIntJSON.stringify(err));
-      });
-  };
+export const RunButton = ({ code, onRun }) => {
   return (
-    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick} data-testid="code-block-run">
+    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={() => onRun(code)} data-testid="code-block-run">
       Run
     </Button>
   );
@@ -49,19 +36,16 @@ export const RunButton = ({ code }) => {
 
 RunButton.propTypes = {
   code: PropTypes.string.isRequired,
+  onRun: PropTypes.func.isRequired,
 };
 
 /**
  * Code block with syntax highlighting
- * @param {object} children - code block content from mdx
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ children }) => {
-  const className = children.props.className || '';
-  const [code, setCode] = useState(children.props.children.trim());
-  const language = className.replace(/language-/, '');
-  const withRunButton = children.props.withRunButton && bigIntJSON.parse(children.props.withRunButton);
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun }) => {
+  const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
   const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
@@ -114,9 +98,9 @@ export const CodeBlock = ({ children }) => {
           background: alpha(theme.palette.primary.main, 0.05),
         }}
       >
-        {withRunButton && (
+        {withRunButton &&  onRun && (
           <Box sx={{ flexGrow: '1' }}>
-            <RunButton code={code} />
+            <RunButton code={code} onRun={onRun}/>
           </Box>
         )}
         <Box sx={{ flexGrow: '1' }} />
@@ -138,11 +122,8 @@ export const CodeBlock = ({ children }) => {
 };
 
 CodeBlock.propTypes = {
-  children: PropTypes.shape({
-    props: PropTypes.shape({
-      className: PropTypes.string,
-      children: PropTypes.string.isRequired,
-      withRunButton: PropTypes.string,
-    }),
-  }),
+  codeStr: PropTypes.string.isRequired,
+  language: PropTypes.string,
+  withRunButton: PropTypes.bool,
+  onRun: PropTypes.func,
 };

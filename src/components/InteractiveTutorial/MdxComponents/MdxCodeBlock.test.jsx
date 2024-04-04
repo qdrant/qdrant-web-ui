@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { CodeBlock, RunButton } from './CodeBlock';
+import { MdxCodeBlock } from './MdxCodeBlock';
 import * as requestFromCodeMod from '../../CodeEditorWindow/config/RequesFromCode';
 import { TutorialProvider } from '../../../context/tutorial-context';
 
@@ -25,32 +25,11 @@ const requestFromCodeSpy = vi.spyOn(requestFromCodeMod, 'requestFromCode').mockI
 );
 
 describe('CodeBlock', () => {
-  it('should render RunButton with given code', () => {
-    render(
-      <TutorialProvider>
-        <RunButton code={props.children.props.children} />
-      </TutorialProvider>
-    );
-
-    expect(screen.getByTestId('code-block-run')).toBeInTheDocument();
-    expect(screen.getByText(/Run/)).toBeInTheDocument();
-  });
-
-  it('should call requestFromCode with given code', () => {
-    render(
-      <TutorialProvider>
-        <RunButton code={props.children.props.children} />
-      </TutorialProvider>
-    );
-    screen.getByTestId('code-block-run').click();
-
-    expect(requestFromCodeSpy).toHaveBeenCalledWith('{\n  "name": "test"\n}', false);
-  });
 
   it('should render CodeBlock with given code', () => {
     render(
       <TutorialProvider>
-        <CodeBlock {...props} />
+        <MdxCodeBlock {...props} />
       </TutorialProvider>
     );
 
@@ -67,7 +46,7 @@ describe('CodeBlock', () => {
     const propsWithoutButton = structuredClone(props);
     propsWithoutButton.children.props.withRunButton = 'false';
 
-    render(<CodeBlock {...propsWithoutButton} />);
+    render(<MdxCodeBlock {...propsWithoutButton} />);
 
     expect(screen.getByTestId('code-block')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
@@ -77,7 +56,7 @@ describe('CodeBlock', () => {
   it('should render an editor with given code if RunButton is present', () => {
     render(
       <TutorialProvider>
-        <CodeBlock {...props} />
+        <MdxCodeBlock {...props} />
       </TutorialProvider>
     );
 

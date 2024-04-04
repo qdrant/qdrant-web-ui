@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Link, Alert } from '@mui/material';
-import { CodeBlock } from './CodeBlock';
+import { MdxCodeBlock } from './MdxCodeBlock';
 import { useTheme } from '@mui/material/styles';
 
 // if we will use mdx in other places, then this is better to be done on the App level
@@ -49,7 +49,7 @@ export const mdxComponents = {
   p: (props) => <Typography component={'p'} variant={'body1'} mb={2} {...props} />,
   a: (props) => <CustomLink {...props} />,
   img: (props) => <img width={'100%'} {...props} alt={props.alt || 'image'} />,
-  pre: (props) => <CodeBlock {...props} />,
+  pre: (props) => <MdxCodeBlock {...props} />,
   em: (props) => <Typography component={'em'} variant={'body1'} {...props} />,
   code: (props) => <InlineCode {...props} />,
   Alert: (props) => <Alert {...props} />,
