@@ -6,7 +6,6 @@ import { alpha, Box, Button } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from './CopyButton';
-import { DARK_BACKGROUND, LIGHT_BACKGROUND } from '../InteractiveTutorial/MdxComponents/MdxComponents';
 
 const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
   fontFamily: '"Menlo", monospace',
@@ -44,11 +43,10 @@ RunButton.propTypes = {
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ codeStr, language, withRunButton, onRun }) => {
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable=true }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
-  const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
 
   const handleChange = (code) => {
     setCode(() => code);
@@ -83,7 +81,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun }) => {
   return (
     <Box
       sx={{
-        background: backgroundColor,
+        background: theme.palette.background.code,
         borderRadius: '0.5rem',
         my: 3,
       }}
@@ -107,7 +105,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun }) => {
         <CopyButton text={code} />
       </Box>
       <Box sx={{ px: 2, pb: 1 }}>
-        {withRunButton && (
+        {withRunButton && editable && (
           <StyledEditor
             value={code}
             onValueChange={handleChange}
@@ -115,7 +113,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun }) => {
             data-testid={'code-block-editor'}
           />
         )}
-        {!withRunButton && highlight(code)}
+        {((withRunButton && !editable) || !withRunButton) && highlight(code)}
       </Box>
     </Box>
   );
@@ -126,4 +124,5 @@ CodeBlock.propTypes = {
   language: PropTypes.string,
   withRunButton: PropTypes.bool,
   onRun: PropTypes.func,
+  editable: PropTypes.bool, // by default code block is editable
 };

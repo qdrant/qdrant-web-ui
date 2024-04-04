@@ -20,6 +20,11 @@ const getVariant = ({ theme, ownerState }) => {
 
 // these options override the base light theme
 export const lightThemeOptions = {
+  palette: {
+    background: {
+      code: '#fbfbfb'
+    }
+  },
   components: {
     MuiCard: {
       styleOverrides: {
