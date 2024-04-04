@@ -79,7 +79,7 @@ function JwtForm() {
       </Box>
 
       <Box display={'flex'} gap={2} mb={3}>
-        <Card sx={{ minWidth: '35%' }}>
+        <Card sx={{ minWidth: '35%' }} variant="dual">
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
               {/* Switch */}
@@ -93,7 +93,7 @@ function JwtForm() {
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
           </CardContent>
         </Card>
-        <Card sx={{ flexGrow: 1 }}>
+        <Card sx={{ flexGrow: 1 }} variant="dual">
           <CardContent>
             <Box>
               <Typography component={'p'} variant={'h6'} mb={2}>

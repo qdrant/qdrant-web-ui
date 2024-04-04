@@ -22,8 +22,8 @@ const getVariant = ({ theme, ownerState }) => {
 export const lightThemeOptions = {
   palette: {
     background: {
-      code: '#fbfbfb'
-    }
+      code: '#fbfbfb',
+    },
   },
   components: {
     MuiCard: {

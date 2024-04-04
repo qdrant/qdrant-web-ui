@@ -43,7 +43,7 @@ RunButton.propTypes = {
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable=true }) => {
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable = true }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
@@ -96,9 +96,9 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable=tr
           background: alpha(theme.palette.primary.main, 0.05),
         }}
       >
-        {withRunButton &&  onRun && (
+        {withRunButton && onRun && (
           <Box sx={{ flexGrow: '1' }}>
-            <RunButton code={code} onRun={onRun}/>
+            <RunButton code={code} onRun={onRun} />
           </Box>
         )}
         <Box sx={{ flexGrow: '1' }} />
