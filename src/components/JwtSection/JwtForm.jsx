@@ -57,7 +57,6 @@ const Collections = ({ collections, setCollections }) => {
     setCollections((prev) => prev.filter((c) => c !== collection));
   };
 
-  console.log(collections);
   return (
     <Card sx={{ flexGrow: 1 }} variant="dual">
       <CardContent>
@@ -65,12 +64,11 @@ const Collections = ({ collections, setCollections }) => {
           <Typography component={'p'} variant={'h6'} mb={2}>
             Collections:
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 5 }}>
-            {collections.map((collection, i) => (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
+            {collections.map((collection) => (
               <Chip
                 key={collection}
                 label={collection}
-                sx={{ ml: i === 0 ? 0 : 2, mb: '2px' }}
                 deleteIcon={
                   <Tooltip title={'Remove from set'} placement={'right'}>
                     <CancelOutlined fontSize="small" />
@@ -91,16 +89,15 @@ Collections.propTypes = {
   setCollections: PropTypes.func.isRequired,
 };
 
-function JwtForm({ token, expiration, setExpiration, writable, setWritable, collections, setCollections }) {
+function JwtForm({ token, expiration, setExpiration, writable, setWritable, collections, setCollections, sx }) {
   const [isVisible, setIsVisible] = React.useState(false);
 
   const handleVisibility = () => {
     setIsVisible((prev) => !prev);
   };
-  // todo:
 
   return (
-    <form>
+    <Box sx={{ ...sx }}>
       <TextField
         id="outlined-basic"
         label="JWT Token"
@@ -123,7 +120,7 @@ function JwtForm({ token, expiration, setExpiration, writable, setWritable, coll
       </Box>
 
       <Box display={'flex'} gap={2} mb={3}>
-        <Card sx={{ minWidth: '35%' }} variant="dual">
+        <Card sx={{ minWidth: '270px', width: '35%' }} variant="dual">
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
               {/* Switch */}
@@ -139,7 +136,7 @@ function JwtForm({ token, expiration, setExpiration, writable, setWritable, coll
         </Card>
         <Collections collections={collections} setCollections={setCollections} />
       </Box>
-    </form>
+    </Box>
   );
 }
 
@@ -151,6 +148,7 @@ JwtForm.propTypes = {
   setWritable: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,
   setCollections: PropTypes.func.isRequired,
+  sx: PropTypes.object,
 };
 
 export default JwtForm;

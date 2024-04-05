@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
-import { alpha, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
@@ -8,13 +8,15 @@ import JwtResultForm from '../components/JwtSection/JwtResultForm';
 import * as jose from 'jose';
 
 function Jwt() {
+  const headerHeight = 64;
   const { client: qdrantClient } = useClient();
   const [errorMessage, setErrorMessage] = useState(null);
   const [writable, setWritable] = useState(false);
   const [expiration, setExpiration] = useState(0);
   const [token, setToken] = useState('');
   const [collections, setCollections] = useState([]);
-  const [selectedCollections, setSelectedCollections] = useState([]);
+  const [selectedCollections, setSelectedCollections] = useState('');
+  const [settings, setSettings] = React.useState({});
 
   useEffect(() => {
     const token = {};
@@ -39,9 +41,23 @@ function Jwt() {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', height: '100%' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignContent: 'stretch',
+        height: `calc(100vh - ${headerHeight}px)`,
+        overflowY: 'scroll',
+      }}
+    >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
-      <Box
+      <JwtForm
+        token={token}
+        expiration={expiration}
+        setExpiration={setExpiration}
+        writable={writable}
+        setWritable={setWritable}
+        collections={collections}
+        setCollections={setCollections}
         sx={{
           px: 2,
           pt: 4,
@@ -51,25 +67,21 @@ function Jwt() {
           maxWidth: '1200px',
           mx: 'auto',
         }}
-      >
-        <JwtForm
-          token={token}
-          expiration={expiration}
-          setExpiration={setExpiration}
-          writable={writable}
-          setWritable={setWritable}
+      />
+      {collections.length > 0 && (
+        <JwtResultForm
           collections={collections}
-          setCollections={setCollections}
+          selectedCollections={selectedCollections}
+          setSelectedCollections={setSelectedCollections}
+          settings={settings}
+          setSettings={setSettings}
+          sx={{
+            height: `calc(100vh - ${headerHeight}px)`,
+            overflowY: 'scroll',
+            width: '50%',
+          }}
         />
-      </Box>
-      <Box
-        sx={{
-          overflowY: 'scroll',
-          width: '50%',
-        }}
-      >
-        <JwtResultForm />
-      </Box>
+      )}
     </Box>
   );
 }
