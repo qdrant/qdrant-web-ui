@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  // InputLabel,
   MenuItem,
   Select,
   TableCell,
@@ -48,7 +47,7 @@ function JwtResultForm() {
   return (
     <Box
       sx={{
-        background: theme.palette.mode === 'dark' ? theme.palette.background.code : theme.palette.background.paper,
+        background: theme.palette.mode === 'dark' ? theme.palette.background.code : theme.palette.background.code,
         height: `calc(100vh - ${headerHeight}px)`,
         p: 2,
         px: 5,
@@ -98,7 +97,7 @@ function JwtResultForm() {
         </TableHeadWithGaps>
         <TableBodyWithGaps>
           {/* todo: move to separate component, do not ducplicate code */}
-          <TableRow>
+          <TableRow sx={theme.palette.mode === 'light' ? { background: theme.palette.background.paper } : {}}>
             <TableCell>
               <Box
                 sx={{
@@ -116,7 +115,7 @@ function JwtResultForm() {
             </TableCell>
           </TableRow>
 
-          <TableRow>
+          <TableRow sx={theme.palette.mode === 'light' ? { background: theme.palette.background.paper } : {}}>
             <TableCell>
               <Box
                 sx={{

@@ -15,12 +15,10 @@ import {
   Typography,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
-import { CancelOutlined, Visibility } from '@mui/icons-material';
+import { CancelOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
 import { CopyButton } from '../Common/CopyButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
-import { isVisible } from '@testing-library/user-event/dist/utils';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -29,7 +27,6 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
 
   return (
     <Box sx={{ mb: 4 }}>
-      {/* <Typography component={"p"} variant={"h6"} mb={3}>Set Expiration Period:</Typography>*/}
       <FormControl fullWidth>
         <InputLabel id="demo-simple-select-label">Expiration</InputLabel>
         <Select
@@ -39,9 +36,11 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
           label="Expiration"
           onChange={handleChange}
         >
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
+          <MenuItem value={1}>1 day</MenuItem>
+          <MenuItem value={7}>7 days</MenuItem>
+          <MenuItem value={30}>30 days</MenuItem>
+          <MenuItem value={90}>90 days</MenuItem>
+          <MenuItem value={0}>Never</MenuItem>
         </Select>
       </FormControl>
     </Box>
@@ -49,12 +48,55 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
 };
 
 ExpirationSelect.propTypes = {
-  expiration: PropTypes.string.isRequired,
+  expiration: PropTypes.number.isRequired,
   setExpiration: PropTypes.func.isRequired,
 };
 
-function JwtForm() {
-  const [expiration, setExpiration] = React.useState('');
+const Collections = ({ collections, setCollections }) => {
+  const handleDelete = (collection) => {
+    setCollections((prev) => prev.filter((c) => c !== collection));
+  };
+
+  console.log(collections);
+  return (
+    <Card sx={{ flexGrow: 1 }} variant="dual">
+      <CardContent>
+        <Box>
+          <Typography component={'p'} variant={'h6'} mb={2}>
+            Collections:
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 5 }}>
+            {collections.map((collection, i) => (
+              <Chip
+                key={collection}
+                label={collection}
+                sx={{ ml: i === 0 ? 0 : 2, mb: '2px' }}
+                deleteIcon={
+                  <Tooltip title={'Remove from set'} placement={'right'}>
+                    <CancelOutlined fontSize="small" />
+                  </Tooltip>
+                }
+                onDelete={() => handleDelete(collection)}
+              />
+            ))}
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+Collections.propTypes = {
+  collections: PropTypes.array.isRequired,
+  setCollections: PropTypes.func.isRequired,
+};
+
+function JwtForm({ token, expiration, setExpiration, writable, setWritable, collections, setCollections }) {
+  const [isVisible, setIsVisible] = React.useState(false);
+
+  const handleVisibility = () => {
+    setIsVisible((prev) => !prev);
+  };
   // todo:
 
   return (
@@ -65,11 +107,13 @@ function JwtForm() {
         variant="outlined"
         sx={{ mb: 3 }}
         fullWidth
+        value={isVisible ? token : '•'.repeat(token.length)}
+        disabled
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
-              <CopyButton text={''} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
+              <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
+              <CopyButton text={token} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
             </InputAdornment>
           ),
         }}
@@ -83,9 +127,9 @@ function JwtForm() {
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
               {/* Switch */}
-              <Switch color="primary" />
+              <Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />
               <Typography component={'p'} ml={1}>
-                Allow Global Access
+                Allow write operations
               </Typography>
             </Box>
 
@@ -93,50 +137,20 @@ function JwtForm() {
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
           </CardContent>
         </Card>
-        <Card sx={{ flexGrow: 1 }} variant="dual">
-          <CardContent>
-            <Box>
-              <Typography component={'p'} variant={'h6'} mb={2}>
-                Collections:
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 5 }}>
-                <Chip
-                  label={`Col 1`}
-                  sx={{ mb: '2px' }}
-                  deleteIcon={
-                    <Tooltip title={'Remove from set'} placement={'right'}>
-                      <CancelOutlined fontSize="small" />
-                    </Tooltip>
-                  }
-                  onDelete={() => console.log('Auch!')}
-                />
-                <Chip
-                  label={`Col 1`}
-                  sx={{ ml: 2, mb: '2px' }}
-                  deleteIcon={
-                    <Tooltip title={'Remove from set'} placement={'right'}>
-                      <CancelOutlined fontSize="small" />
-                    </Tooltip>
-                  }
-                  onDelete={() => console.log('Auch!')}
-                />
-                <Chip
-                  label={`Col 1`}
-                  sx={{ ml: 2, mb: '2px' }}
-                  deleteIcon={
-                    <Tooltip title={'Remove from set'} placement={'right'}>
-                      <CancelOutlined fontSize="small" />
-                    </Tooltip>
-                  }
-                  onDelete={() => console.log('Auch!')}
-                />
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
+        <Collections collections={collections} setCollections={setCollections} />
       </Box>
     </form>
   );
 }
+
+JwtForm.propTypes = {
+  token: PropTypes.string.isRequired,
+  expiration: PropTypes.number.isRequired,
+  setExpiration: PropTypes.func.isRequired,
+  writable: PropTypes.bool.isRequired,
+  setWritable: PropTypes.func.isRequired,
+  collections: PropTypes.array.isRequired,
+  setCollections: PropTypes.func.isRequired,
+};
 
 export default JwtForm;
