@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import TextField from '@mui/material/TextField';
-import { CodeBlock } from '../Common/CodeBlock';
 import {
   Box,
   Card,
@@ -13,12 +11,10 @@ import {
   Select,
   Switch,
   Typography,
+  FormControlLabel
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
-import { CancelOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
-import { CopyButton } from '../Common/CopyButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
+import { CancelOutlined } from '@mui/icons-material';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -52,7 +48,7 @@ ExpirationSelect.propTypes = {
   setExpiration: PropTypes.func.isRequired,
 };
 
-const Collections = ({ collections, setCollections }) => {
+const Collections = ({ globalAccess, collections, setCollections }) => {
   const handleDelete = (collection) => {
     setCollections((prev) => prev.filter((c) => c !== collection));
   };
@@ -64,20 +60,32 @@ const Collections = ({ collections, setCollections }) => {
           <Typography component={'p'} variant={'h6'} mb={2}>
             Collections:
           </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
-            {collections.map((collection) => (
-              <Chip
-                key={collection}
-                label={collection}
-                deleteIcon={
-                  <Tooltip title={'Remove from set'} placement={'right'}>
-                    <CancelOutlined fontSize="small" />
-                  </Tooltip>
-                }
-                onDelete={() => handleDelete(collection)}
-              />
-            ))}
-          </Box>
+          {
+            globalAccess && (
+              <Typography component={'p'} variant={'body2'} mb={2}>
+                Global access is enabled. All collections will be accessible.
+              </Typography>
+            )
+          }
+          {
+            !globalAccess && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
+                {collections.map((collection) => (
+                  <Chip
+                    key={collection}
+                    label={collection}
+                    deleteIcon={
+                      <Tooltip title={'Remove from set'} placement={'right'}>
+                        <CancelOutlined fontSize="small" />
+                      </Tooltip>
+                    }
+                    onDelete={() => handleDelete(collection)}
+                  />
+                ))}
+              </Box>
+            )
+          }
+
         </Box>
       </CardContent>
     </Card>
@@ -85,65 +93,57 @@ const Collections = ({ collections, setCollections }) => {
 };
 
 Collections.propTypes = {
+  globalAccess: PropTypes.bool.isRequired,
   collections: PropTypes.array.isRequired,
   setCollections: PropTypes.func.isRequired,
 };
 
-function JwtForm({ token, expiration, setExpiration, writable, setWritable, collections, setCollections, sx }) {
-  const [isVisible, setIsVisible] = React.useState(false);
-
-  const handleVisibility = () => {
-    setIsVisible((prev) => !prev);
-  };
-
+function JwtForm({
+  expiration, setExpiration,
+  globalAccess, setGlobalAccess,
+  writable, setWritable,
+  collections, setCollections,
+  sx
+}) {
   return (
     <Box sx={{ ...sx }}>
-      <TextField
-        id="outlined-basic"
-        label="JWT Token"
-        variant="outlined"
-        sx={{ mb: 3 }}
-        fullWidth
-        value={isVisible ? token : '•'.repeat(token.length)}
-        disabled
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
-              <CopyButton text={token} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
-            </InputAdornment>
-          ),
-        }}
-      />
-      <Box sx={{ mb: 5 }}>
-        <CodeBlock codeStr={'{}'} language={'json'} withRunButton onRun={() => {}} editable={false} />
-      </Box>
-
       <Box display={'flex'} gap={2} mb={3}>
         <Card sx={{ minWidth: '270px', width: '35%' }} variant="dual">
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-              {/* Switch */}
-              <Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />
-              <Typography component={'p'} ml={1}>
-                Allow write operations
-              </Typography>
+            <Box ml={1} >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <FormControlLabel control={
+                  <Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />
+                } label="Allow global access" />
+              </Box>
+
+
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                <FormControlLabel disabled={!globalAccess} control={
+                  <Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />
+                } label="Allow write operations" />
+              </Box>
             </Box>
 
             {/* Select */}
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
           </CardContent>
         </Card>
-        <Collections collections={collections} setCollections={setCollections} />
+        <Collections
+          globalAccess={globalAccess}
+          collections={collections}
+          setCollections={setCollections}
+        />
       </Box>
     </Box>
   );
 }
 
 JwtForm.propTypes = {
-  token: PropTypes.string.isRequired,
   expiration: PropTypes.number.isRequired,
   setExpiration: PropTypes.func.isRequired,
+  globalAccess: PropTypes.bool.isRequired,
+  setGlobalAccess: PropTypes.func.isRequired,
   writable: PropTypes.bool.isRequired,
   setWritable: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,

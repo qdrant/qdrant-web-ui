@@ -1,38 +1,72 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
 import JwtResultForm from '../components/JwtSection/JwtResultForm';
 import * as jose from 'jose';
+import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
+
+
+async function getJwt(apiKey, token, setJwt) {
+  const jwt = await new jose
+    .SignJWT(token)
+    .setProtectedHeader({ alg: 'HS256' })
+    .sign(new TextEncoder().encode(apiKey));
+  setJwt(jwt);
+}
+
+function generateToken(globalAccess, writable, expirationDays) {
+  const token = {};
+  if (globalAccess) {
+    if (writable) {
+      token.access = 'rw';
+    } else {
+      token.access = 'r';
+    }
+  } else {
+    token.access = [];
+  }
+
+  if (expirationDays) {
+    const secondsInDay = 24 * 60 * 60;
+
+    token.exp = Math.floor(Date.now() / 1000) + expirationDays * secondsInDay;
+  }
+
+  return token;
+}
+
 
 function Jwt() {
   const headerHeight = 64;
   const { client: qdrantClient } = useClient();
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const [globalAccess, setGlobalAccess] = useState(true);
+
   const [writable, setWritable] = useState(false);
-  const [expiration, setExpiration] = useState(0);
-  const [token, setToken] = useState('');
+  const [expirationDays, setExpirationDays] = useState(0);
+
   const [collections, setCollections] = useState([]);
-  const [selectedCollections, setSelectedCollections] = useState('');
-  const [settings, setSettings] = React.useState({});
+  const [configuredCollections, setConfiguredCollections] = useState([]);
+
+  const [jwt, setJwt] = useState('');
+
+
+  const token = generateToken(globalAccess, writable, expirationDays);
+
+  const apiKey = qdrantClient.getApiKey();
+
+  if (!apiKey) {
+    setErrorMessage('Set API key first');
+  }
 
   useEffect(() => {
-    const token = {};
-    if (writable) token.w = true;
-    if (expiration) token.exp = expiration;
-    if (selectedCollections.length) token.collections = selectedCollections;
+    getJwt(apiKey, token, setJwt)
+  }, [token, apiKey])
 
-    const apiKey = qdrantClient.getApiKey();
-    if (!apiKey) {
-      setToken('');
-      setErrorMessage('Set API key first');
-      return;
-    }
-    const jwt = new jose.SignJWT(token).setProtectedHeader({ alg: 'HS256' }).sign(new TextEncoder().encode(apiKey));
-    jwt.then((token) => setToken(token));
-  }, [writable, expiration, selectedCollections]);
 
   useEffect(() => {
     qdrantClient.getCollections().then((collections) => {
@@ -50,31 +84,43 @@ function Jwt() {
       }}
     >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
-      <JwtForm
-        token={token}
-        expiration={expiration}
-        setExpiration={setExpiration}
-        writable={writable}
-        setWritable={setWritable}
-        collections={collections}
-        setCollections={setCollections}
-        sx={{
-          px: 2,
-          pt: 4,
-          pb: 20,
-          width: '50%',
-          overflowY: 'scroll',
-          maxWidth: '1200px',
-          mx: 'auto',
-        }}
-      />
+
+      <Box sx={{
+        px: 2,
+        pt: 4,
+        pb: 20,
+        width: '50%',
+        overflowY: 'scroll',
+        maxWidth: '1200px',
+        mx: 'auto',
+      }}>
+        <Typography variant="h4" gutterBottom>
+          Generate new Access Token
+        </Typography>
+
+        <JwtForm
+          expiration={expirationDays}
+          setExpiration={setExpirationDays}
+          globalAccess={globalAccess}
+          setGlobalAccess={setGlobalAccess}
+          writable={writable}
+          setWritable={setWritable}
+          collections={configuredCollections}
+          setCollections={setConfiguredCollections}
+        />
+
+        <JwtTokenViewer
+          jwt={jwt}
+          token={token}
+        />
+
+      </Box>
       {collections.length > 0 && (
         <JwtResultForm
-          collections={collections}
-          selectedCollections={selectedCollections}
-          setSelectedCollections={setSelectedCollections}
-          settings={settings}
-          setSettings={setSettings}
+          allCollecitons={collections}
+          configuredCollections={configuredCollections}
+          setConfiguredCollections={setConfiguredCollections}
+          jwt={jwt}
           sx={{
             height: `calc(100vh - ${headerHeight}px)`,
             overflowY: 'scroll',

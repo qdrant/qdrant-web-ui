@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
@@ -43,10 +43,14 @@ RunButton.propTypes = {
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable = true }) => {
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
+
+  useEffect(() => {
+    setCode(codeStr);
+  }, [codeStr])
 
   const handleChange = (code) => {
     setCode(() => code);
@@ -101,6 +105,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, editable = 
             <RunButton code={code} onRun={onRun} />
           </Box>
         )}
+        {title && <Box>{title}</Box>}
         <Box sx={{ flexGrow: '1' }} />
         <CopyButton text={code} />
       </Box>
@@ -124,5 +129,6 @@ CodeBlock.propTypes = {
   language: PropTypes.string,
   withRunButton: PropTypes.bool,
   onRun: PropTypes.func,
+  title: PropTypes.string,
   editable: PropTypes.bool, // by default code block is editable
 };

@@ -15,117 +15,68 @@ import {
   TableCell,
   TableRow,
   IconButton,
+  Typography,
 } from '@mui/material';
 import { ArrowDropDown, Settings } from '@mui/icons-material';
 import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useClient } from '../../context/client-context';
-import { getErrorMessage } from '../../lib/get-error-message';
 import { JsonViewer } from '@textea/json-viewer';
 
+import qdrantClient from '../../common/client';
+
+function renderErrorMessage(error) {
+  const data = error.data;
+
+  // If data is a string, return it as is
+  if (typeof data === 'string') {
+    return data;
+  }
+  // If data is an object, try to extract the message
+  if (typeof data === 'object') {
+    if (data?.status?.error) {
+      return data.status.error;
+    }
+    return JSON.stringify(data);
+  }
+}
+
 // todo: remove eslint-disable
-const CollectionPoints = ({ selectedCollections }) => {
+const CollectionPoints = ({ selectedCollection, jwt }) => {
   const theme = useTheme();
-  const { client: qdrantClient } = useClient();
   const [expandedPoint, setExpandedPoint] = React.useState(null);
 
   // todo: this copy-pasted from PointsTabs.jsx, need to be refactored to avoid duplication
   // perhaps, it should be moved to a separate hook
   const pageSize = 10;
   const [points, setPoints] = useState(null);
-  const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [conditions, setConditions] = useState([]);
-  const [nextPageOffset, setNextPageOffset] = useState(null);
-  const [usingVector, setUsingVector] = useState(null);
-  const [payloadSchema, setPayloadSchema] = useState({});
+
+  const client = qdrantClient({apiKey: jwt});
 
   useEffect(() => {
-    console.log('selectedCollections', selectedCollections);
     const getPoints = async (collectionName) => {
-      if (conditions.length !== 0) {
-        const recommendationIds = [];
-        const filters = [];
-        conditions.forEach((condition) => {
-          if (condition.type === 'id') {
-            recommendationIds.push(condition.value);
-          } else if (condition.type === 'payload') {
-            if (condition.value === null || condition.value === undefined) {
-              filters.push({
-                is_null: {
-                  key: condition.key,
-                },
-              });
-            } else if (condition.value === '') {
-              filters.push({
-                is_empty: {
-                  key: condition.key,
-                },
-              });
-            } else if (payloadSchema[condition.key] && payloadSchema[condition.key].data_type === 'text') {
-              filters.push({ key: condition.key, match: { text: condition.value } });
-            } else {
-              filters.push({ key: condition.key, match: { value: condition.value } });
-            }
-          }
+      if (!collectionName) {
+        setPoints({});
+        return;
+      }
+      try {
+        const newPoints = await client.scroll(collectionName, {
+          limit: pageSize,
+          with_vector: false,
+          with_payload: true,
         });
-        try {
-          if (recommendationIds.length !== 0) {
-            const newPoints = await qdrantClient.recommend(collectionName, {
-              positive: recommendationIds,
-              limit: pageSize + (offset || 0),
-              with_payload: true,
-              with_vector: true,
-              using: usingVector,
-              filter: {
-                must: filters,
-              },
-            });
-            setNextPageOffset(newPoints.length);
-            setPoints({ points: newPoints });
-            setErrorMessage(null);
-          } else if (filters.length !== 0) {
-            const newPoints = await qdrantClient.scroll(collectionName, {
-              filter: {
-                must: filters,
-              },
-              limit: pageSize + (offset || 0),
-              with_payload: true,
-              with_vector: true,
-            });
-            setPoints({
-              points: [...(newPoints?.points || [])],
-            });
-            setNextPageOffset(newPoints?.next_page_offset);
-            setErrorMessage(null);
-          }
-        } catch (error) {
-          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
-          message && setErrorMessage(message);
-          setPoints({});
-        }
-      } else {
-        try {
-          const newPoints = await qdrantClient.scroll(collectionName, {
-            offset,
-            limit: pageSize,
-            with_vector: true,
-            with_payload: true,
-          });
-          setPoints({
-            points: [...(points?.points || []), ...(newPoints?.points || [])],
-          });
-          setNextPageOffset(newPoints?.next_page_offset);
-          setErrorMessage(null);
-        } catch (error) {
-          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
-          message && setErrorMessage(message);
-          setPoints({});
-        }
+        setPoints({
+          points: newPoints?.points || [],
+        });
+        setErrorMessage(null);
+      } catch (error) {
+        const message = "Status: " + error.status + ", message: " + renderErrorMessage(error);
+        message && setErrorMessage(message);
+        setPoints({});
       }
     };
-    getPoints(selectedCollections);
-  }, [selectedCollections]);
+    getPoints(selectedCollection);
+  }, [selectedCollection, jwt]);
 
   // end of copy-paste
 
@@ -146,52 +97,56 @@ const CollectionPoints = ({ selectedCollections }) => {
             sx={theme.palette.mode === 'light' ? { background: theme.palette.background.paper } : {}}
           >
             <TableCell>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                Id: {point.id}
-                <IconButton onClick={() => handleTogglePoint(point.id)}>
-                  <ArrowDropDown />
-                </IconButton>
+              <Box>
+                <JsonViewer
+                  theme={theme.palette.mode}
+                  value={{
+                    id: point.id,
+                    payload: point.payload,
+                  }}
+                  displayDataTypes={false}
+                  defaultInspectDepth={1}
+                  rootName={false}
+                  enableClipboard={false}
+                />
               </Box>
-              {expandedPoint === point.id && (
-                <Box>
-                  <JsonViewer
-                    theme={theme.palette.mode}
-                    value={point.payload}
-                    displayDataTypes={false}
-                    defaultInspectDepth={0}
-                    rootName={false}
-                    enableClipboard={false}
-                  />
-                </Box>
-              )}
             </TableCell>
           </TableRow>
         ))}
+      {errorMessage && (
+        <TableRow>
+          <TableCell colSpan={2}>
+            <Typography color="error">{errorMessage}</Typography>
+          </TableCell>
+        </TableRow>
+      )}
     </TableBodyWithGaps>
   );
 };
 
 CollectionPoints.propTypes = {
-  selectedCollections: PropTypes.string.isRequired,
+  selectedCollection: PropTypes.string.isRequired,
+  jwt: PropTypes.string.isRequired,
 };
 
-function JwtResultForm({ collections, selectedCollections, setSelectedCollections, settings, setSettings, sx }) {
+function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCollections, jwt, sx }) {
   const theme = useTheme();
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
+  const [selectedCollection, setSelectedCollection] = React.useState('');
+
   const handleCollectionChange = (event) => {
-    setSelectedCollections(event.target.value);
+    setSelectedCollection(event.target.value);
   };
 
   const handleSettingChange = (newSettings) => {
-    setSettings(newSettings);
     setSettingsDialogOpen(false);
   };
+
+  useEffect(() => {
+    if (allCollecitons.length > 0 && selectedCollection === '') {
+      setSelectedCollection(allCollecitons[0]);
+    }
+  }, [allCollecitons]);
 
   return (
     <Box
@@ -213,29 +168,35 @@ function JwtResultForm({ collections, selectedCollections, setSelectedCollection
                   justifyContent: 'space-between',
                 }}
               >
-                <FormControl sx={{ minWidth: 120, mt: -1, mb: -1 }}>
-                  <Select
-                    id="collection-select"
-                    value={selectedCollections}
-                    displayEmpty
-                    variant="outlined"
-                    onChange={handleCollectionChange}
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        border: 'none',
-                      },
-                    }}
-                  >
-                    <MenuItem value={''}>
-                      <em>Collection</em>
-                    </MenuItem>
-                    {collections.map((collection) => (
-                      <MenuItem key={collection} value={collection}>
-                        {collection}
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                }}>
+                  <Typography>Preview:</Typography>
+                  <FormControl sx={{ minWidth: 120, mt: -1, mb: -1 }}>
+                    <Select
+                      id="collection-select"
+                      value={selectedCollection}
+                      displayEmpty
+                      variant="outlined"
+                      onChange={handleCollectionChange}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: 'none',
+                        },
+                      }}
+                    >
+                      <MenuItem value={''}>
+                        <em>Not Selected</em>
                       </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                      {allCollecitons.map((collection) => (
+                        <MenuItem key={collection} value={collection}>
+                          {collection}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
                 <IconButton onClick={() => setSettingsDialogOpen(true)}>
                   <Settings />
                 </IconButton>
@@ -243,15 +204,18 @@ function JwtResultForm({ collections, selectedCollections, setSelectedCollection
             </TableCell>
           </TableRow>
         </TableHeadWithGaps>
-        <CollectionPoints selectedCollections={selectedCollections} />
+        <CollectionPoints 
+          selectedCollection={selectedCollection}
+          jwt={jwt}
+        />
       </TableWithGaps>
       <Dialog fullWidth open={settingsDialogOpen} onClose={() => setSettingsDialogOpen(false)}>
-        <DialogTitle>{'Settings'}</DialogTitle>
+        <DialogTitle>Access Settings</DialogTitle>
         <DialogContent>
           <DialogContentText>Change settings here</DialogContentText>
           <JsonViewer
             theme={theme.palette.mode}
-            value={settings}
+            value={{}}
             displayDataTypes={false}
             defaultInspectDepth={0}
             rootName={false}
@@ -268,11 +232,10 @@ function JwtResultForm({ collections, selectedCollections, setSelectedCollection
 }
 
 JwtResultForm.propTypes = {
-  collections: PropTypes.array.isRequired,
-  selectedCollections: PropTypes.string.isRequired,
-  setSelectedCollections: PropTypes.func.isRequired,
-  settings: PropTypes.object.isRequired,
-  setSettings: PropTypes.func.isRequired,
+  allCollecitons: PropTypes.array.isRequired,
+  configuredCollections: PropTypes.array.isRequired,
+  setConfiguredCollections: PropTypes.func.isRequired,
+  jwt: PropTypes.string.isRequired,
   sx: PropTypes.object,
 };
 
