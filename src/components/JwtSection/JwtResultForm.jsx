@@ -2,22 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
-import {
-  Box,
-  FormControl,
-  MenuItem,
-  Select,
-  TableCell,
-  TableRow,
-  IconButton,
-  Typography,
-} from '@mui/material';
+import { Box, FormControl, MenuItem, Select, TableCell, TableRow, IconButton, Typography } from '@mui/material';
 import { Settings } from '@mui/icons-material';
 import { TableBodyWithGaps, TableHeadWithGaps, SmallTableWithGaps } from '../Common/TableWithGaps';
 import { JsonViewer } from '@textea/json-viewer';
 
 import CollectionAccessDialog from './CollectionAccessDialog';
-
 
 import qdrantClient from '../../common/client';
 
@@ -67,7 +57,7 @@ const CollectionPoints = ({ selectedCollection, jwt }) => {
         });
         setErrorMessage(null);
       } catch (error) {
-        const message = "Status: " + error.status + ", message: " + renderErrorMessage(error);
+        const message = 'Status: ' + error.status + ', message: ' + renderErrorMessage(error);
         message && setErrorMessage(message);
         setPoints({});
       }
@@ -131,7 +121,6 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const [selectedCollection, setSelectedCollection] = React.useState('');
 
-
   function getCollectionAccess(collection) {
     const collectionAccess = configuredCollections.find((c) => c.collection === collection);
     const accessConfig = {
@@ -183,10 +172,12 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
                   justifyContent: 'space-between',
                 }}
               >
-                <Box sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
                   <Typography>Preview:</Typography>
                   <FormControl sx={{ minWidth: 120, mt: -1, mb: -1 }}>
                     <Select
@@ -219,23 +210,20 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
             </TableCell>
           </TableRow>
         </TableHeadWithGaps>
-        <CollectionPoints
-          selectedCollection={selectedCollection}
-          jwt={jwt}
-        />
+        <CollectionPoints selectedCollection={selectedCollection} jwt={jwt} />
       </SmallTableWithGaps>
       <CollectionAccessDialog
         show={settingsDialogOpen}
         setShow={setSettingsDialogOpen}
         initState={getCollectionAccess(selectedCollection)}
-        onSave={({ isAccessible, isWritable, payloadFilters }) => { 
+        onSave={({ isAccessible, isWritable, payloadFilters }) => {
           if (isAccessible) {
             // Add `selectedCollection` to `configuredCollections` with new settings
             const collectionAccess = {
               collection: selectedCollection,
             };
 
-            collectionAccess.access = isWritable ? "rw" : "r";
+            collectionAccess.access = isWritable ? 'rw' : 'r';
 
             if (Object.keys(payloadFilters).length > 0) {
               collectionAccess.payload = payloadFilters;

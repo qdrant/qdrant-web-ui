@@ -11,7 +11,7 @@ import {
   Select,
   Switch,
   Typography,
-  FormControlLabel
+  FormControlLabel,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { CancelOutlined } from '@mui/icons-material';
@@ -60,39 +60,32 @@ const Collections = ({ globalAccess, collections, setCollections }) => {
           <Typography component={'p'} variant={'h6'} mb={2}>
             Collections:
           </Typography>
-          {
-            globalAccess && (
-              <Typography component={'p'} variant={'body2'} mb={2}>
-                Global access is enabled. All collections will be accessible.
-              </Typography>
-            )
-          }
-          {
-            !globalAccess && collections.length == 0 && (
-              <Typography component={'p'} variant={'body2'} mb={2}>
-                No collections access configured.
-              </Typography>
-            )
-          }
-          {
-            !globalAccess && collections && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
-                {collections.map((collection) => (
-                  <Chip
-                    key={collection.collection}
-                    label={collection.collection}
-                    deleteIcon={
-                      <Tooltip title={'Remove from set'} placement={'right'}>
-                        <CancelOutlined fontSize="small" />
-                      </Tooltip>
-                    }
-                    onDelete={() => handleDelete(collection)}
-                  />
-                ))}
-              </Box>
-            )
-          }
-
+          {globalAccess && (
+            <Typography component={'p'} variant={'body2'} mb={2}>
+              Global access is enabled. All collections will be accessible.
+            </Typography>
+          )}
+          {!globalAccess && collections.length == 0 && (
+            <Typography component={'p'} variant={'body2'} mb={2}>
+              No collections access configured.
+            </Typography>
+          )}
+          {!globalAccess && collections && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
+              {collections.map((collection) => (
+                <Chip
+                  key={collection.collection}
+                  label={collection.collection}
+                  deleteIcon={
+                    <Tooltip title={'Remove from set'} placement={'right'}>
+                      <CancelOutlined fontSize="small" />
+                    </Tooltip>
+                  }
+                  onDelete={() => handleDelete(collection)}
+                />
+              ))}
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>
@@ -106,29 +99,35 @@ Collections.propTypes = {
 };
 
 function JwtForm({
-  expiration, setExpiration,
-  globalAccess, setGlobalAccess,
-  writable, setWritable,
-  collections, setCollections,
-  sx
+  expiration,
+  setExpiration,
+  globalAccess,
+  setGlobalAccess,
+  writable,
+  setWritable,
+  collections,
+  setCollections,
+  sx,
 }) {
   return (
     <Box sx={{ ...sx }}>
       <Box display={'flex'} gap={2} mb={3}>
         <Card sx={{ minWidth: '270px', width: '35%' }} variant="dual">
           <CardContent>
-            <Box ml={1} >
+            <Box ml={1}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <FormControlLabel control={
-                  <Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />
-                } label="Allow global access" />
+                <FormControlLabel
+                  control={<Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />}
+                  label="Allow global access"
+                />
               </Box>
 
-
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                <FormControlLabel disabled={!globalAccess} control={
-                  <Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />
-                } label="Allow write operations" />
+                <FormControlLabel
+                  disabled={!globalAccess}
+                  control={<Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />}
+                  label="Allow write operations"
+                />
               </Box>
             </Box>
 
@@ -136,11 +135,7 @@ function JwtForm({
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
           </CardContent>
         </Card>
-        <Collections
-          globalAccess={globalAccess}
-          collections={collections}
-          setCollections={setCollections}
-        />
+        <Collections globalAccess={globalAccess} collections={collections} setCollections={setCollections} />
       </Box>
     </Box>
   );

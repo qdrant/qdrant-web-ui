@@ -50,7 +50,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
 
   useEffect(() => {
     setCode(codeStr);
-  }, [codeStr])
+  }, [codeStr]);
 
   const handleChange = (code) => {
     setCode(() => code);

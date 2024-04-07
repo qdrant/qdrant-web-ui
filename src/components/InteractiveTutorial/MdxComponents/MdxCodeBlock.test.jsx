@@ -25,7 +25,6 @@ const requestFromCodeSpy = vi.spyOn(requestFromCodeMod, 'requestFromCode').mockI
 );
 
 describe('CodeBlock', () => {
-
   it('should render CodeBlock with given code', () => {
     render(
       <TutorialProvider>

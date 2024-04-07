@@ -8,12 +8,8 @@ import JwtResultForm from '../components/JwtSection/JwtResultForm';
 import * as jose from 'jose';
 import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
 
-
 async function getJwt(apiKey, token, setJwt) {
-  const jwt = await new jose
-    .SignJWT(token)
-    .setProtectedHeader({ alg: 'HS256' })
-    .sign(new TextEncoder().encode(apiKey));
+  const jwt = await new jose.SignJWT(token).setProtectedHeader({ alg: 'HS256' }).sign(new TextEncoder().encode(apiKey));
   setJwt(jwt);
 }
 
@@ -38,7 +34,6 @@ function generateToken(globalAccess, writable, expirationDays, configuredCollect
   return token;
 }
 
-
 function Jwt() {
   const headerHeight = 64;
   const { client: qdrantClient } = useClient();
@@ -54,7 +49,6 @@ function Jwt() {
 
   const [jwt, setJwt] = useState('');
 
-
   const token = generateToken(globalAccess, writable, expirationDays, configuredCollections);
 
   const apiKey = qdrantClient.getApiKey();
@@ -64,9 +58,8 @@ function Jwt() {
   }
 
   useEffect(() => {
-    getJwt(apiKey, token, setJwt)
-  }, [token, apiKey])
-
+    getJwt(apiKey, token, setJwt);
+  }, [token, apiKey]);
 
   useEffect(() => {
     qdrantClient.getCollections().then((collections) => {
@@ -85,15 +78,17 @@ function Jwt() {
     >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
 
-      <Box sx={{
-        px: 2,
-        pt: 4,
-        pb: 20,
-        width: '50%',
-        overflowY: 'scroll',
-        maxWidth: '1200px',
-        mx: 'auto',
-      }}>
+      <Box
+        sx={{
+          px: 2,
+          pt: 4,
+          pb: 20,
+          width: '50%',
+          overflowY: 'scroll',
+          maxWidth: '1200px',
+          mx: 'auto',
+        }}
+      >
         <Typography variant="h4" gutterBottom>
           Generate new Access Token
         </Typography>
@@ -109,11 +104,7 @@ function Jwt() {
           setCollections={setConfiguredCollections}
         />
 
-        <JwtTokenViewer
-          jwt={jwt}
-          token={token}
-        />
-
+        <JwtTokenViewer jwt={jwt} token={token} />
       </Box>
       {collections.length > 0 && (
         <JwtResultForm

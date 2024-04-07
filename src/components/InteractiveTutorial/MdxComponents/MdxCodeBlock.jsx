@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
 import { useTutorial } from '../../../context/tutorial-context';
 import { bigIntJSON } from '../../../common/bigIntJSON';
-import { CodeBlock } from "../../Common/CodeBlock";
+import { CodeBlock } from '../../Common/CodeBlock';
 
 /**
  * Code block with syntax highlighting
@@ -21,17 +21,15 @@ export const MdxCodeBlock = ({ children }) => {
   const handleRun = (code) => {
     setResult('{}');
     requestFromCode(code, false)
-    .then((res) => {
-      setResult(() => bigIntJSON.stringify(res));
-    })
-    .catch((err) => {
-      setResult(() => bigIntJSON.stringify(err));
-    });
+      .then((res) => {
+        setResult(() => bigIntJSON.stringify(res));
+      })
+      .catch((err) => {
+        setResult(() => bigIntJSON.stringify(err));
+      });
   };
 
-  return (
-    <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} />
-  );
+  return <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} />;
 };
 
 MdxCodeBlock.propTypes = {
