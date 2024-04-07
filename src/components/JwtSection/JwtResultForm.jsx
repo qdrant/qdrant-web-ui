@@ -4,11 +4,6 @@ import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   MenuItem,
   Select,
@@ -17,10 +12,12 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { ArrowDropDown, Settings } from '@mui/icons-material';
-import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
-import DialogContentText from '@mui/material/DialogContentText';
+import { Settings } from '@mui/icons-material';
+import { TableBodyWithGaps, TableHeadWithGaps, SmallTableWithGaps } from '../Common/TableWithGaps';
 import { JsonViewer } from '@textea/json-viewer';
+
+import CollectionAccessDialog from './CollectionAccessDialog';
+
 
 import qdrantClient from '../../common/client';
 
@@ -51,7 +48,7 @@ const CollectionPoints = ({ selectedCollection, jwt }) => {
   const [points, setPoints] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const client = qdrantClient({apiKey: jwt});
+  const client = qdrantClient({ apiKey: jwt });
 
   useEffect(() => {
     const getPoints = async (collectionName) => {
@@ -134,6 +131,24 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const [selectedCollection, setSelectedCollection] = React.useState('');
 
+
+  function getCollectionAccess(collection) {
+    const collectionAccess = configuredCollections.find((c) => c.collection === collection);
+    const accessConfig = {
+      collection: collection,
+    };
+
+    if (collectionAccess) {
+      accessConfig.isAccessible = true;
+      accessConfig.isWritable = collectionAccess.access === 'rw';
+      accessConfig.payloadFilters = collectionAccess.payload || {};
+    } else {
+      accessConfig.isAccessible = false;
+    }
+
+    return accessConfig;
+  }
+
   const handleCollectionChange = (event) => {
     setSelectedCollection(event.target.value);
   };
@@ -157,7 +172,7 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
         ...sx,
       }}
     >
-      <TableWithGaps>
+      <SmallTableWithGaps>
         <TableHeadWithGaps>
           <TableRow>
             <TableCell>
@@ -204,29 +219,37 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
             </TableCell>
           </TableRow>
         </TableHeadWithGaps>
-        <CollectionPoints 
+        <CollectionPoints
           selectedCollection={selectedCollection}
           jwt={jwt}
         />
-      </TableWithGaps>
-      <Dialog fullWidth open={settingsDialogOpen} onClose={() => setSettingsDialogOpen(false)}>
-        <DialogTitle>Access Settings</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Change settings here</DialogContentText>
-          <JsonViewer
-            theme={theme.palette.mode}
-            value={{}}
-            displayDataTypes={false}
-            defaultInspectDepth={0}
-            rootName={false}
-            enableClipboard={false}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSettingsDialogOpen(false)}>Cancel</Button>
-          <Button onClick={() => handleSettingChange()}>Save</Button>
-        </DialogActions>{' '}
-      </Dialog>
+      </SmallTableWithGaps>
+      <CollectionAccessDialog
+        show={settingsDialogOpen}
+        setShow={setSettingsDialogOpen}
+        initState={getCollectionAccess(selectedCollection)}
+        onSave={({ isAccessible, isWritable, payloadFilters }) => { 
+          if (isAccessible) {
+            // Add `selectedCollection` to `configuredCollections` with new settings
+            const collectionAccess = {
+              collection: selectedCollection,
+            };
+
+            collectionAccess.access = isWritable ? "rw" : "r";
+
+            if (Object.keys(payloadFilters).length > 0) {
+              collectionAccess.payload = payloadFilters;
+            }
+
+            const newConfiguredCollections = configuredCollections.filter((c) => c.collection !== selectedCollection);
+            setConfiguredCollections([...newConfiguredCollections, collectionAccess]);
+          } else {
+            // Remove `selectedCollection` from `configuredCollections` if any
+            const newConfiguredCollections = configuredCollections.filter((c) => c.collection !== selectedCollection);
+            setConfiguredCollections(newConfiguredCollections);
+          }
+        }}
+      />
     </Box>
   );
 }

@@ -68,12 +68,19 @@ const Collections = ({ globalAccess, collections, setCollections }) => {
             )
           }
           {
-            !globalAccess && (
+            !globalAccess && collections.length == 0 && (
+              <Typography component={'p'} variant={'body2'} mb={2}>
+                No collections access configured.
+              </Typography>
+            )
+          }
+          {
+            !globalAccess && collections && (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
                 {collections.map((collection) => (
                   <Chip
-                    key={collection}
-                    label={collection}
+                    key={collection.collection}
+                    label={collection.collection}
                     deleteIcon={
                       <Tooltip title={'Remove from set'} placement={'right'}>
                         <CancelOutlined fontSize="small" />
