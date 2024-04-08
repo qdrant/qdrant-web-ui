@@ -73,7 +73,7 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
 
         {Object.keys(payloadFilters).map((key) => {
           return (
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }} key={key}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2, '& > :not(:last-of-type)': { width: '40%' }}} key={key}>
               <TextField disabled label="Key" value={key} />
               <TextField disabled label="Value" value={payloadFilters[key]} />
               <IconButton

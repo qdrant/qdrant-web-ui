@@ -13,11 +13,11 @@ async function getJwt(apiKey, token, setJwt) {
   setJwt(jwt);
 }
 
-function generateToken(globalAccess, writable, expirationDays, configuredCollections) {
+function generateToken(globalAccess, manageAccess, expirationDays, configuredCollections) {
   const token = {};
   if (globalAccess) {
-    if (writable) {
-      token.access = 'rw';
+    if (manageAccess) {
+      token.access = 'm';
     } else {
       token.access = 'r';
     }
@@ -41,7 +41,7 @@ function Jwt() {
 
   const [globalAccess, setGlobalAccess] = useState(true);
 
-  const [writable, setWritable] = useState(false);
+  const [manageAccess, setManageAccess] = useState(false);
   const [expirationDays, setExpirationDays] = useState(0);
 
   const [collections, setCollections] = useState([]);
@@ -49,7 +49,7 @@ function Jwt() {
 
   const [jwt, setJwt] = useState('');
 
-  const token = generateToken(globalAccess, writable, expirationDays, configuredCollections);
+  const token = generateToken(globalAccess, manageAccess, expirationDays, configuredCollections);
 
   const apiKey = qdrantClient.getApiKey();
 
@@ -98,8 +98,8 @@ function Jwt() {
           setExpiration={setExpirationDays}
           globalAccess={globalAccess}
           setGlobalAccess={setGlobalAccess}
-          writable={writable}
-          setWritable={setWritable}
+          manageAccess={manageAccess}
+          setManageAccess={setManageAccess}
           collections={configuredCollections}
           setCollections={setConfiguredCollections}
         />

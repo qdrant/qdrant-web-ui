@@ -103,8 +103,8 @@ function JwtForm({
   setExpiration,
   globalAccess,
   setGlobalAccess,
-  writable,
-  setWritable,
+  manageAccess,
+  setManageAccess,
   collections,
   setCollections,
   sx,
@@ -125,8 +125,8 @@ function JwtForm({
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
                 <FormControlLabel
                   disabled={!globalAccess}
-                  control={<Switch checked={writable} onChange={(e) => setWritable(e.target.checked)} />}
-                  label="Allow write operations"
+                  control={<Switch checked={manageAccess} onChange={(e) => setManageAccess(e.target.checked)} />}
+                  label="Allow mange operations"
                 />
               </Box>
             </Box>
@@ -146,8 +146,8 @@ JwtForm.propTypes = {
   setExpiration: PropTypes.func.isRequired,
   globalAccess: PropTypes.bool.isRequired,
   setGlobalAccess: PropTypes.func.isRequired,
-  writable: PropTypes.bool.isRequired,
-  setWritable: PropTypes.func.isRequired,
+  manageAccess: PropTypes.bool.isRequired,
+  setManageAccess: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,
   setCollections: PropTypes.func.isRequired,
   sx: PropTypes.object,

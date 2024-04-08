@@ -226,7 +226,6 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
         </TableHeadWithGaps>
         <CollectionPoints selectedCollection={selectedCollection} jwt={jwt} />
       </SmallTableWithGaps>
-      {JSON.stringify(selectedCollectionInfo)}
       <CollectionAccessDialog
         show={settingsDialogOpen}
         setShow={setSettingsDialogOpen}
