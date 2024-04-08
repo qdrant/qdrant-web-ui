@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 
 import TextField from '@mui/material/TextField';
 import { CodeBlock } from '../Common/CodeBlock';
@@ -28,23 +28,25 @@ function JwtTokenViewer({ jwt, token, sx }) {
           title={'JWT Token Payload'}
         />
       </Box>
-      <TextField
-        id="outlined-basic"
-        label="JWT Token"
-        variant="outlined"
-        sx={{ mb: 1 }}
-        fullWidth
-        value={isVisible ? jwt : '•'.repeat(jwt.length)}
-        disabled
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
-              <CopyButton text={jwt} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Tooltip title="Use this JWT token as an API key to get restricted access to the Qdrant API">
+        <TextField
+          id="outlined-basic"
+          label="JWT Token"
+          variant="outlined"
+          sx={{ mb: 1 }}
+          fullWidth
+          value={isVisible ? jwt : '•'.repeat(jwt.length)}
+          disabled
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
+                <CopyButton text={jwt} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Tooltip>
     </Box>
   );
 }

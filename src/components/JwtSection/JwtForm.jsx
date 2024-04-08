@@ -26,7 +26,7 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
       <FormControl fullWidth>
         <InputLabel id="expiration-label">Expiration</InputLabel>
         <Select
-          id='expiration-select'
+          id="expiration-select"
           labelId="expiration-label"
           value={expiration}
           label="Expiration"
@@ -116,18 +116,27 @@ function JwtForm({
           <CardContent>
             <Box ml={1}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <FormControlLabel
-                  control={<Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />}
-                  label="Allow global access"
-                />
+                <Tooltip title="Allows read access to all collections in the cluster." placement="right">
+                  <FormControlLabel
+                    control={<Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />}
+                    label="Allow global access"
+                  />
+                </Tooltip>
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                <FormControlLabel
-                  disabled={!globalAccess}
-                  control={<Switch checked={manageAccess} onChange={(e) => setManageAccess(e.target.checked)} />}
-                  label="Allow mange operations"
-                />
+                <Tooltip
+                  title="Allows full access to the cluster, including
+                    writing and deleting data,
+                    creating and deleting collections, changing topology, etc."
+                  placement="right"
+                >
+                  <FormControlLabel
+                    disabled={!globalAccess}
+                    control={<Switch checked={manageAccess} onChange={(e) => setManageAccess(e.target.checked)} />}
+                    label="Allow mange operations"
+                  />
+                </Tooltip>
               </Box>
             </Box>
 

@@ -8,7 +8,6 @@ import { TableBodyWithGaps, TableHeadWithGaps, SmallTableWithGaps } from '../Com
 import { JsonViewer } from '@textea/json-viewer';
 import { useClient } from '../../context/client-context';
 
-
 import CollectionAccessDialog from './CollectionAccessDialog';
 
 import qdrantClient from '../../common/client';
@@ -156,7 +155,6 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
       setSelectedCollection(allCollecitons[0]);
     }
   }, [allCollecitons]);
-
 
   useEffect(() => {
     if (selectedCollection) {
