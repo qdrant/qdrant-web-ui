@@ -44,7 +44,7 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
     setNewPayloadFilterValue('');
   }, [show, initState]);
 
-  const availablePayloadKeys = Object.keys(collectionInfo?.payload_schema || {})
+  const availablePayloadKeys = Object.keys(collectionInfo?.payload_schema || {});
 
   return (
     <Dialog fullWidth open={show} onClose={() => setShow(false)}>
@@ -91,12 +91,14 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
           );
         })}
 
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, '& > :not(:last-of-type)': { width: '40%' } }}>
           <FormControl>
-            <InputLabel id="filter-key-input">Payload Key</InputLabel>
+            <InputLabel id="filter-key-slect-label">Payload Key</InputLabel>
             <Select
-              labelId="filter-key-input"
+              id="filter-key-select"
+              labelId="filter-key-slect-label"
               disabled={!isAccessible || isWritable}
+              label="Payload Key"
               value={newPayloadFilterKey}
               onChange={(e) => setNewPayloadFilterKey(e.target.value)}
             >
