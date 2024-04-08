@@ -16,12 +16,16 @@ import {
   TextField,
   Typography,
   IconButton,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
 } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-function CollectionAccessDialog({ show, setShow, onSave, initState }) {
+function CollectionAccessDialog({ show, setShow, onSave, initState, collectionInfo }) {
   const [isAccessible, setIsAccessible] = React.useState(false);
   const [isWritable, setIsWritable] = React.useState(false);
 
@@ -39,6 +43,8 @@ function CollectionAccessDialog({ show, setShow, onSave, initState }) {
     setNewPayloadFilterKey('');
     setNewPayloadFilterValue('');
   }, [show, initState]);
+
+  const availablePayloadKeys = Object.keys(collectionInfo?.payload_schema || {})
 
   return (
     <Dialog fullWidth open={show} onClose={() => setShow(false)}>
@@ -86,12 +92,22 @@ function CollectionAccessDialog({ show, setShow, onSave, initState }) {
         })}
 
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Key"
-            disabled={!isAccessible || isWritable}
-            value={newPayloadFilterKey}
-            onChange={(e) => setNewPayloadFilterKey(e.target.value)}
-          />
+          <FormControl>
+            <InputLabel id="filter-key-input">Payload Key</InputLabel>
+            <Select
+              labelId="filter-key-input"
+              disabled={!isAccessible || isWritable}
+              value={newPayloadFilterKey}
+              onChange={(e) => setNewPayloadFilterKey(e.target.value)}
+            >
+              {availablePayloadKeys.map((key) => (
+                <MenuItem key={key} value={key}>
+                  {key}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <TextField
             label="Value"
             disabled={!isAccessible || isWritable}
@@ -139,6 +155,7 @@ CollectionAccessDialog.propTypes = {
   setShow: PropTypes.func.isRequired,
   onSave: PropTypes.func.isRequired,
   initState: PropTypes.object,
+  collectionInfo: PropTypes.object,
 };
 
 export default CollectionAccessDialog;

@@ -6,6 +6,8 @@ import { Box, FormControl, MenuItem, Select, TableCell, TableRow, IconButton, Ty
 import { Settings } from '@mui/icons-material';
 import { TableBodyWithGaps, TableHeadWithGaps, SmallTableWithGaps } from '../Common/TableWithGaps';
 import { JsonViewer } from '@textea/json-viewer';
+import { useClient } from '../../context/client-context';
+
 
 import CollectionAccessDialog from './CollectionAccessDialog';
 
@@ -120,6 +122,9 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
   const theme = useTheme();
   const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
   const [selectedCollection, setSelectedCollection] = React.useState('');
+  const [selectedCollectionInfo, setSelectedCollectionInfo] = React.useState({});
+
+  const { client: fullAccessClient } = useClient();
 
   function getCollectionAccess(collection) {
     const collectionAccess = configuredCollections.find((c) => c.collection === collection);
@@ -151,6 +156,15 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
       setSelectedCollection(allCollecitons[0]);
     }
   }, [allCollecitons]);
+
+
+  useEffect(() => {
+    if (selectedCollection) {
+      fullAccessClient.getCollection(selectedCollection).then((info) => {
+        setSelectedCollectionInfo(info);
+      });
+    }
+  }, [selectedCollection]);
 
   return (
     <Box
@@ -212,10 +226,12 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
         </TableHeadWithGaps>
         <CollectionPoints selectedCollection={selectedCollection} jwt={jwt} />
       </SmallTableWithGaps>
+      {JSON.stringify(selectedCollectionInfo)}
       <CollectionAccessDialog
         show={settingsDialogOpen}
         setShow={setSettingsDialogOpen}
         initState={getCollectionAccess(selectedCollection)}
+        collectionInfo={selectedCollectionInfo}
         onSave={({ isAccessible, isWritable, payloadFilters }) => {
           if (isAccessible) {
             // Add `selectedCollection` to `configuredCollections` with new settings

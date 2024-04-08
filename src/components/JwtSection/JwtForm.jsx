@@ -24,10 +24,10 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
   return (
     <Box sx={{ mb: 4 }}>
       <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Expiration</InputLabel>
+        <InputLabel id="expiration-label">Expiration</InputLabel>
         <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
+          id='expiration-select'
+          labelId="expiration-label"
           value={expiration}
           label="Expiration"
           onChange={handleChange}
