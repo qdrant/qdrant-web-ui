@@ -162,7 +162,7 @@ const PointsTabs = ({ collectionName }) => {
       )}
       {points && !errorMessage && points.points?.length === 0 && (
         <Grid xs={12} item textAlign={'center'}>
-          <Typography>📪 No Points are presents, {collectionName} is empty</Typography>
+          <Typography>📪 No Points are present, {collectionName} is empty</Typography>
         </Grid>
       )}
       {points &&
