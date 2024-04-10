@@ -9,6 +9,7 @@ import { JsonViewer } from '@textea/json-viewer';
 import { useClient } from '../../context/client-context';
 
 import CollectionAccessDialog from './CollectionAccessDialog';
+import configureCollection from './RbacCollectionSettings';
 
 import qdrantClient from '../../common/client';
 
@@ -230,25 +231,14 @@ function JwtResultForm({ allCollecitons, configuredCollections, setConfiguredCol
         initState={getCollectionAccess(selectedCollection)}
         collectionInfo={selectedCollectionInfo}
         onSave={({ isAccessible, isWritable, payloadFilters }) => {
-          if (isAccessible) {
-            // Add `selectedCollection` to `configuredCollections` with new settings
-            const collectionAccess = {
-              collection: selectedCollection,
-            };
-
-            collectionAccess.access = isWritable ? 'rw' : 'r';
-
-            if (Object.keys(payloadFilters).length > 0) {
-              collectionAccess.payload = payloadFilters;
-            }
-
-            const newConfiguredCollections = configuredCollections.filter((c) => c.collection !== selectedCollection);
-            setConfiguredCollections([...newConfiguredCollections, collectionAccess]);
-          } else {
-            // Remove `selectedCollection` from `configuredCollections` if any
-            const newConfiguredCollections = configuredCollections.filter((c) => c.collection !== selectedCollection);
-            setConfiguredCollections(newConfiguredCollections);
-          }
+          configureCollection({
+            collectionName: selectedCollection,
+            isAccessible,
+            isWritable,
+            payloadFilters,
+            configuredCollections,
+            setConfiguredCollections,
+          });
         }}
       />
     </Box>

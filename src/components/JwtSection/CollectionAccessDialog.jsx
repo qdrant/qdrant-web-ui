@@ -2,13 +2,13 @@
 
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useClient } from '../../context/client-context';
 
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Box,
   FormControlLabel,
@@ -28,11 +28,29 @@ import AddIcon from '@mui/icons-material/Add';
 function CollectionAccessDialog({ show, setShow, onSave, initState, collectionInfo }) {
   const [isAccessible, setIsAccessible] = React.useState(false);
   const [isWritable, setIsWritable] = React.useState(false);
+  const [collections, setCollections] = React.useState([]);
+
+  const [selectedCollection, setSelectedCollection] = React.useState(collectionInfo);
+
+  const { client: qdrantClient } = useClient();
 
   const [payloadFilters, setPayloadFilters] = React.useState({});
 
   const [newPayloadFilterKey, setNewPayloadFilterKey] = React.useState('');
   const [newPayloadFilterValue, setNewPayloadFilterValue] = React.useState('');
+
+  useEffect(() => {
+    setPayloadFilters({});
+  }, [selectedCollection]);
+
+  useEffect(() => {
+    if (!collectionInfo) {
+      const fetchCollections = async () => {
+        setCollections((await qdrantClient.getCollections()).collections);
+      };
+      fetchCollections();
+    }
+  }, [show]);
 
   useEffect(() => {
     if (initState) {
@@ -44,12 +62,47 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
     setNewPayloadFilterValue('');
   }, [show, initState]);
 
-  const availablePayloadKeys = Object.keys(collectionInfo?.payload_schema || {});
+  const availablePayloadKeys = Object.keys(selectedCollection?.payload_schema || {});
 
   return (
     <Dialog fullWidth open={show} onClose={() => setShow(false)}>
       <DialogTitle>Access Settings</DialogTitle>
       <DialogContent>
+        {collections && !collectionInfo && (
+          <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 1 }}>
+            <FormControl fullWidth>
+              <InputLabel id="collection-select-label">Collection</InputLabel>
+              <Select
+                id="collection-select"
+                labelId="collection-select-label"
+                label="Collection"
+                value={selectedCollection?.name || ''}
+                onChange={(e) => {
+                  if (e.target.value === '') {
+                    setSelectedCollection({});
+                    return;
+                  }
+                  qdrantClient.getCollection(e.target.value).then((collection) => {
+                    setSelectedCollection({
+                      name: e.target.value,
+                      ...collection,
+                    });
+                  });
+                }}
+              >
+                <MenuItem value="" key="">
+                  Not Selected
+                </MenuItem>
+                {collections.map((collection) => (
+                  <MenuItem key={collection.name} value={collection.name}>
+                    {collection.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        )}
+
         <Box>
           <FormControlLabel
             control={<Switch checked={isAccessible} onChange={(e) => setIsAccessible(e.target.checked)} />}
@@ -141,6 +194,7 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
               isAccessible,
               isWritable,
               payloadFilters,
+              selectedCollection: selectedCollection.name,
             });
             setShow(false);
           }}

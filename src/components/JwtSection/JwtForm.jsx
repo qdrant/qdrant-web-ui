@@ -12,9 +12,15 @@ import {
   Switch,
   Typography,
   FormControlLabel,
+  CardHeader,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { CancelOutlined } from '@mui/icons-material';
+
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import CollectionAccessDialog from './CollectionAccessDialog';
+import configureCollection from './RbacCollectionSettings';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -53,13 +59,36 @@ const Collections = ({ globalAccess, collections, setCollections }) => {
     setCollections((prev) => prev.filter((c) => c !== collection));
   };
 
+  const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
+
   return (
     <Card sx={{ flexGrow: 1 }} variant="dual">
+      <CardHeader
+        title="Collections"
+        action={
+          <IconButton disabled={globalAccess} onClick={() => setSettingsDialogOpen(true)}>
+            <AddIcon />
+          </IconButton>
+        }
+      />
+
+      <CollectionAccessDialog
+        show={settingsDialogOpen}
+        setShow={setSettingsDialogOpen}
+        onSave={({ isAccessible, isWritable, payloadFilters, selectedCollection }) => {
+          configureCollection({
+            collectionName: selectedCollection,
+            isAccessible,
+            isWritable,
+            payloadFilters,
+            configuredCollections: collections,
+            setConfiguredCollections: setCollections,
+          });
+        }}
+      />
+
       <CardContent>
         <Box>
-          <Typography component={'p'} variant={'h6'} mb={2}>
-            Collections:
-          </Typography>
           {globalAccess && (
             <Typography component={'p'} variant={'body2'} mb={2}>
               Global access is enabled. All collections will be accessible.
