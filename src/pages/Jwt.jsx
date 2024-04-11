@@ -46,25 +46,27 @@ function Jwt() {
 
   const [collections, setCollections] = useState([]);
   const [configuredCollections, setConfiguredCollections] = useState([]);
+  const [apiKey, setApiKey] = useState('');
 
   const [jwt, setJwt] = useState('');
 
   const token = generateToken(globalAccess, manageAccess, expirationDays, configuredCollections);
 
-  const apiKey = qdrantClient.getApiKey();
-
-  if (!apiKey) {
-    setErrorMessage('Set API key first');
-  }
-
   useEffect(() => {
-    getJwt(apiKey, token, setJwt);
+    if (apiKey && token) {
+      getJwt(apiKey, token, setJwt);
+    }
+    if (!apiKey) {
+      setErrorMessage('Please provide API key');
+    }
   }, [token, apiKey]);
 
   useEffect(() => {
     qdrantClient.getCollections().then((collections) => {
       setCollections(collections.collections.map((collection) => collection.name));
     });
+    const apiKey = qdrantClient.getApiKey();
+    setApiKey(apiKey);
   }, []);
 
   return (
