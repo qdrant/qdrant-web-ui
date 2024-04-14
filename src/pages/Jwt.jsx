@@ -56,9 +56,6 @@ function Jwt() {
     if (apiKey && token) {
       getJwt(apiKey, token, setJwt);
     }
-    if (!apiKey) {
-      setErrorMessage('Please provide API key');
-    }
   }, [token, apiKey]);
 
   useEffect(() => {
@@ -66,6 +63,9 @@ function Jwt() {
       setCollections(collections.collections.map((collection) => collection.name));
     });
     const apiKey = qdrantClient.getApiKey();
+    if (!apiKey) {
+      setErrorMessage('Please provide API key');
+    }
     setApiKey(apiKey);
   }, []);
 
