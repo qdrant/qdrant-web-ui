@@ -150,7 +150,7 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
             <Select
               id="filter-key-select"
               labelId="filter-key-slect-label"
-              disabled={!isAccessible || isWritable}
+              disabled={!isAccessible || isWritable || availablePayloadKeys.length === 0}
               label="Payload Key"
               value={newPayloadFilterKey}
               onChange={(e) => setNewPayloadFilterKey(e.target.value)}
@@ -165,7 +165,7 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
 
           <TextField
             label="Value"
-            disabled={!isAccessible || isWritable}
+            disabled={!isAccessible || isWritable || availablePayloadKeys.length === 0}
             value={newPayloadFilterValue}
             onChange={(e) => setNewPayloadFilterValue(e.target.value)}
           />
@@ -184,6 +184,13 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
           >
             <AddIcon />
           </IconButton>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 1 }}>
+          {availablePayloadKeys.length === 0 && (
+            <Typography variant="body2" color="red">
+              Note: No indexed field present in this collection!
+            </Typography>
+          )}
         </Box>
       </DialogContent>
       <DialogActions>
