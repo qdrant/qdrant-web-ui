@@ -49,6 +49,8 @@ function CollectionAccessDialog({ show, setShow, onSave, initState, collectionIn
         setCollections((await qdrantClient.getCollections()).collections);
       };
       fetchCollections();
+    } else {
+      setSelectedCollection(collectionInfo);
     }
   }, [show]);
 
