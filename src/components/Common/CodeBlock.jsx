@@ -1,15 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
 import { alpha, Box, Button } from '@mui/material';
-import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
-import { useTutorial } from '../../../context/tutorial-context';
 import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
-import { CopyButton } from '../../Common/CopyButton';
-import { DARK_BACKGROUND, LIGHT_BACKGROUND } from './MdxComponents';
-import { bigIntJSON } from '../../../common/bigIntJSON';
+import { CopyButton } from './CopyButton';
 
 const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
   fontFamily: '"Menlo", monospace',
@@ -25,23 +21,13 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
 /**
  * Run button for code block
  * @param {string} code
+ * @param {function} onRun
  * @return {JSX.Element}
  * @constructor
  */
-export const RunButton = ({ code }) => {
-  const { setResult } = useTutorial();
-  const handleClick = () => {
-    setResult('{}');
-    requestFromCode(code, false)
-      .then((res) => {
-        setResult(() => bigIntJSON.stringify(res));
-      })
-      .catch((err) => {
-        setResult(() => bigIntJSON.stringify(err));
-      });
-  };
+export const RunButton = ({ code, onRun }) => {
   return (
-    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={handleClick} data-testid="code-block-run">
+    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={() => onRun(code)} data-testid="code-block-run">
       Run
     </Button>
   );
@@ -49,22 +35,22 @@ export const RunButton = ({ code }) => {
 
 RunButton.propTypes = {
   code: PropTypes.string.isRequired,
+  onRun: PropTypes.func.isRequired,
 };
 
 /**
  * Code block with syntax highlighting
- * @param {object} children - code block content from mdx
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ children }) => {
-  const className = children.props.className || '';
-  const [code, setCode] = useState(children.props.children.trim());
-  const language = className.replace(/language-/, '');
-  const withRunButton = children.props.withRunButton && bigIntJSON.parse(children.props.withRunButton);
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true }) => {
+  const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
-  const backgroundColor = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
+
+  useEffect(() => {
+    setCode(codeStr);
+  }, [codeStr]);
 
   const handleChange = (code) => {
     setCode(() => code);
@@ -99,7 +85,7 @@ export const CodeBlock = ({ children }) => {
   return (
     <Box
       sx={{
-        background: backgroundColor,
+        background: theme.palette.background.code,
         borderRadius: '0.5rem',
         my: 3,
       }}
@@ -114,16 +100,17 @@ export const CodeBlock = ({ children }) => {
           background: alpha(theme.palette.primary.main, 0.05),
         }}
       >
-        {withRunButton && (
+        {withRunButton && onRun && (
           <Box sx={{ flexGrow: '1' }}>
-            <RunButton code={code} />
+            <RunButton code={code} onRun={onRun} />
           </Box>
         )}
+        {title && <Box>{title}</Box>}
         <Box sx={{ flexGrow: '1' }} />
         <CopyButton text={code} />
       </Box>
       <Box sx={{ px: 2, pb: 1 }}>
-        {withRunButton && (
+        {withRunButton && editable && (
           <StyledEditor
             value={code}
             onValueChange={handleChange}
@@ -131,18 +118,17 @@ export const CodeBlock = ({ children }) => {
             data-testid={'code-block-editor'}
           />
         )}
-        {!withRunButton && highlight(code)}
+        {((withRunButton && !editable) || !withRunButton) && highlight(code)}
       </Box>
     </Box>
   );
 };
 
 CodeBlock.propTypes = {
-  children: PropTypes.shape({
-    props: PropTypes.shape({
-      className: PropTypes.string,
-      children: PropTypes.string.isRequired,
-      withRunButton: PropTypes.string,
-    }),
-  }),
+  codeStr: PropTypes.string.isRequired,
+  language: PropTypes.string,
+  withRunButton: PropTypes.bool,
+  onRun: PropTypes.func,
+  title: PropTypes.string,
+  editable: PropTypes.bool, // by default code block is editable
 };

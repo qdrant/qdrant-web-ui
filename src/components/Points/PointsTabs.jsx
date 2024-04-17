@@ -7,13 +7,13 @@ import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 
-const PointsTabs = ({ collectionName }) => {
+const PointsTabs = ({ collectionName, client }) => {
   const pageSize = 10;
   const [points, setPoints] = useState(null);
   const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [conditions, setConditions] = useState([]);
-  const { client: qdrantClient } = useClient();
+  const qdrantClient = client ? client : useClient().client;
   const [nextPageOffset, setNextPageOffset] = useState(null);
   const [usingVector, setUsingVector] = useState(null);
   const [payloadSchema, setPayloadSchema] = useState({});
@@ -176,6 +176,7 @@ const PointsTabs = ({ collectionName }) => {
               collectionName={collectionName}
               deletePoint={deletePoint}
               payloadSchema={payloadSchema}
+              client={client}
             />
           </Grid>
         ))}
@@ -196,6 +197,7 @@ const PointsTabs = ({ collectionName }) => {
 
 PointsTabs.propTypes = {
   collectionName: PropTypes.string.isRequired,
+  client: PropTypes.object,
 };
 
 export default PointsTabs;

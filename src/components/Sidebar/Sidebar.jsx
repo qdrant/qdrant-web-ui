@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal, Animation } from '@mui/icons-material';
+import { LibraryBooks, Terminal, Animation, Key } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
 
@@ -57,87 +57,19 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-export default function Sidebar({ open, version }) {
+export default function Sidebar({ open, version, jwtEnabled }) {
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />
       <Divider />
       <List>
-        <ListItem key={'Console'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Console'} placement={'right'} arrow={true} disableHoverListener={open}>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-              }}
-              component={Link}
-              to="/console"
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                }}
-              >
-                <Terminal />
-              </ListItemIcon>
-              <ListItemText primary={'Console'} sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </Tooltip>
-        </ListItem>
-        <ListItem key={'Collections'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Collections'} placement={'right'} arrow={true} disableHoverListener={open}>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-              }}
-              component={Link}
-              to="/collections"
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                }}
-              >
-                <LibraryBooks />
-              </ListItemIcon>
-              <ListItemText primary={'Collections'} sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </Tooltip>
-        </ListItem>
+        {sidebarItem('Console', <Terminal />, '/console', open)}
+        {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
           <SidebarTutorialSection isSidebarOpen={open} />
         </ListItem>
-        <ListItem key={'Datasets'} disablePadding sx={{ display: 'block' }}>
-          <Tooltip title={'Datasets'} placement={'right'} arrow={true}>
-            <ListItemButton
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-              }}
-              component={Link}
-              to="/Datasets"
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                }}
-              >
-                <Animation />
-              </ListItemIcon>
-              <ListItemText primary={'Datasets'} sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </Tooltip>
-        </ListItem>
+        {sidebarItem('Datasets', <Animation />, '/datasets', open)}
+        {sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>
@@ -150,7 +82,39 @@ export default function Sidebar({ open, version }) {
   );
 }
 
+function sidebarItem(title, icon, linkPath, isOpen, enabled = true) {
+  console.log('enabled', enabled);
+  return (
+    <ListItem key={title} disablePadding sx={{ display: 'block' }}>
+      <Tooltip title={title} placement="right" arrow disableHoverListener={isOpen}>
+        <ListItemButton
+          sx={{
+            minHeight: 48,
+            justifyContent: isOpen ? 'initial' : 'center',
+            px: 2.5,
+          }}
+          component={Link}
+          to={linkPath}
+          disabled={!enabled}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: isOpen ? 3 : 'auto',
+              justifyContent: 'center',
+            }}
+          >
+            {icon}
+          </ListItemIcon>
+          <ListItemText primary={title} sx={{ opacity: isOpen ? 1 : 0 }} />
+        </ListItemButton>
+      </Tooltip>
+    </ListItem>
+  );
+}
+
 Sidebar.propTypes = {
   open: PropTypes.bool,
   version: PropTypes.string,
+  jwtEnabled: PropTypes.bool,
 };

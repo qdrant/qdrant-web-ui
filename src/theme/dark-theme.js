@@ -23,6 +23,11 @@ const getVariant = ({ theme, ownerState }) => {
 
 // these options override the base dark theme
 export const darkThemeOptions = {
+  palette: {
+    background: {
+      code: '#1e1e1e',
+    },
+  },
   components: {
     MuiCard: {
       styleOverrides: {

@@ -38,6 +38,39 @@ export const TableWithGaps = styled(Table)`
 
 /**
  * @description
+ * This component is a styled version of MUI Table component.
+ * It has a gap between rows.
+ *
+ * @example
+ *
+ * import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from "./TableWithGaps";
+ *
+ * <TableWithGaps>
+ *   <TableHeadWithGaps>
+ *     <TableRow>
+ *       <TableCell>...</TableCell>
+ *       <TableCell>...</TableCell>
+ *     </TableRow>
+ *   </TableHeadWithGaps>
+ *   <TableBodyWithGaps>
+ *     <TableRow>
+ *       <TableCell>...</TableCell>
+ *       <TableCell>...</TableCell>
+ *     </TableRow>
+ *   </TableBodyWithGaps>
+ * </TableWithGaps>
+ *
+ * @typedef {import("@mui/material").Theme} Theme
+ * @type {StyledComponent<PropsOf<OverridableComponent<TableTypeMap>> & MUIStyledCommonProps<Theme>, {}, {}>}
+ */
+export const SmallTableWithGaps = styled(Table)`
+  min-width: 350px;
+  border-spacing: 0 ${SPACING};
+  border-collapse: separate;
+`;
+
+/**
+ * @description
  * This component is a styled version of MUI TableHead component.
  * Use it inside TableWithGaps component.
  * @typedef {import("@mui/material").Theme} Theme
