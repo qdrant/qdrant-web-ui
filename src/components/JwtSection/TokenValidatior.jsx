@@ -65,10 +65,7 @@ const TokenValidatior = ({ setTokenValidatior }) => {
   return (
     <>
       {/* <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}> */}
-      <Tooltip
-        title="Configures validation of the token based on record stored in the collection"
-        placement="right"
-      >
+      <Tooltip title="Configures validation of the token based on record stored in the collection" placement="right">
         <FormControlLabel
           control={<Switch checked={isTokenValidator} onChange={handleToggle} />}
           label="Token Validator"
