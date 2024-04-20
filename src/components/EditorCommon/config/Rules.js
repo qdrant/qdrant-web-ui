@@ -1,4 +1,10 @@
+import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
+import openapi from '/openapi.json??url&raw';
+
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
+const DOCS_BASE_URL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/';
+
+const apiDocs = new OpenapiDocs(JSON.parse(openapi));
 
 export const Rules = {
   Method,
@@ -54,7 +60,7 @@ export const options = {
   },
 };
 
-export function btnconfig(commandId, beutifyCommandId) {
+export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
   return {
     // function takes model and token as arguments
     provideCodeLenses: function (model) {
@@ -88,6 +94,20 @@ export function btnconfig(commandId, beutifyCommandId) {
             arguments: [codeBlocks[i]],
           },
         });
+
+        const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
+        if (terminal) {
+          const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/operation/' + terminal.operationId;
+          lenses.push({
+            range,
+            id: 'DOCS',
+            command: {
+              id: docsCommandId,
+              title: 'DOCS',
+              arguments: [docsURL],
+            },
+          });
+        }
       }
 
       return {
