@@ -21,6 +21,7 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import CollectionAccessDialog from './CollectionAccessDialog';
 import configureCollection from './RbacCollectionSettings';
+import TokenValidatior from './TokenValidatior';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -28,7 +29,7 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box>
       <FormControl fullWidth>
         <InputLabel id="expiration-label">Expiration</InputLabel>
         <Select
@@ -136,6 +137,7 @@ function JwtForm({
   setManageAccess,
   collections,
   setCollections,
+  setTokenValidatior,
   sx,
 }) {
   return (
@@ -153,7 +155,7 @@ function JwtForm({
                 </Tooltip>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Tooltip
                   title="Allows full access to the cluster, including
                     writing and deleting data,
@@ -166,6 +168,9 @@ function JwtForm({
                     label="Allow mange operations"
                   />
                 </Tooltip>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                <TokenValidatior setTokenValidatior={setTokenValidatior} />
               </Box>
             </Box>
 
@@ -188,6 +193,7 @@ JwtForm.propTypes = {
   setManageAccess: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,
   setCollections: PropTypes.func.isRequired,
+  setTokenValidatior: PropTypes.func.isRequired,
   sx: PropTypes.object,
 };
 
