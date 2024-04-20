@@ -13,7 +13,7 @@ async function getJwt(apiKey, token, setJwt) {
   setJwt(jwt);
 }
 
-function generateToken(globalAccess, manageAccess, expirationDays, configuredCollections) {
+function generateToken(globalAccess, manageAccess, expirationDays, configuredCollections, tokenValidatior) {
   const token = {};
   if (globalAccess) {
     if (manageAccess) {
@@ -29,6 +29,9 @@ function generateToken(globalAccess, manageAccess, expirationDays, configuredCol
     const secondsInDay = 24 * 60 * 60;
 
     token.exp = Math.floor(Date.now() / 1000) + expirationDays * secondsInDay;
+  }
+  if (tokenValidatior && tokenValidatior.collection && tokenValidatior.matches.length > 0) {
+    token.value_exists = tokenValidatior;
   }
 
   return token;
@@ -46,11 +49,12 @@ function Jwt() {
 
   const [collections, setCollections] = useState([]);
   const [configuredCollections, setConfiguredCollections] = useState([]);
+  const [tokenValidatior, setTokenValidatior] = useState({});
   const [apiKey, setApiKey] = useState('');
 
   const [jwt, setJwt] = useState('');
 
-  const token = generateToken(globalAccess, manageAccess, expirationDays, configuredCollections);
+  const token = generateToken(globalAccess, manageAccess, expirationDays, configuredCollections, tokenValidatior);
 
   useEffect(() => {
     if (apiKey && token) {
@@ -104,6 +108,7 @@ function Jwt() {
           setManageAccess={setManageAccess}
           collections={configuredCollections}
           setCollections={setConfiguredCollections}
+          setTokenValidatior={setTokenValidatior}
         />
 
         <JwtTokenViewer jwt={jwt} token={token} />

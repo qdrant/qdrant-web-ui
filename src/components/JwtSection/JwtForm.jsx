@@ -21,6 +21,7 @@ import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import CollectionAccessDialog from './CollectionAccessDialog';
 import configureCollection from './RbacCollectionSettings';
+import TokenValidatior from './TokenValidatior';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -136,6 +137,7 @@ function JwtForm({
   setManageAccess,
   collections,
   setCollections,
+  setTokenValidatior,
   sx,
 }) {
   return (
@@ -171,6 +173,7 @@ function JwtForm({
 
             {/* Select */}
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
+            <TokenValidatior setTokenValidatior={setTokenValidatior} />
           </CardContent>
         </Card>
         <Collections globalAccess={globalAccess} collections={collections} setCollections={setCollections} />
@@ -188,6 +191,7 @@ JwtForm.propTypes = {
   setManageAccess: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,
   setCollections: PropTypes.func.isRequired,
+  setTokenValidatior: PropTypes.func.isRequired,
   sx: PropTypes.object,
 };
 
