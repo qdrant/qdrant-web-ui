@@ -14,6 +14,7 @@ import {
   Switch,
   TextField,
   Typography,
+  Tooltip,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useClient } from '../../context/client-context';
@@ -63,12 +64,17 @@ const TokenValidatior = ({ setTokenValidatior }) => {
 
   return (
     <>
-      <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+      {/* <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}> */}
+      <Tooltip
+        title="Configures validation of the token based on record stored in the collection"
+        placement="right"
+      >
         <FormControlLabel
           control={<Switch checked={isTokenValidator} onChange={handleToggle} />}
           label="Token Validator"
         />
-      </Box>
+      </Tooltip>
+      {/* </Box> */}
       <Dialog fullWidth open={open} onClose={handleClose}>
         <DialogTitle>Token Validator</DialogTitle>
         <DialogContent>

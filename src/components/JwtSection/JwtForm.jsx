@@ -29,7 +29,7 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box>
       <FormControl fullWidth>
         <InputLabel id="expiration-label">Expiration</InputLabel>
         <Select
@@ -155,7 +155,7 @@ function JwtForm({
                 </Tooltip>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Tooltip
                   title="Allows full access to the cluster, including
                     writing and deleting data,
@@ -169,11 +169,13 @@ function JwtForm({
                   />
                 </Tooltip>
               </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+                <TokenValidatior setTokenValidatior={setTokenValidatior} />
+              </Box>
             </Box>
 
             {/* Select */}
             <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
-            <TokenValidatior setTokenValidatior={setTokenValidatior} />
           </CardContent>
         </Card>
         <Collections globalAccess={globalAccess} collections={collections} setCollections={setCollections} />
