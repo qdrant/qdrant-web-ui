@@ -36,7 +36,10 @@ const TokenValidatior = ({ setTokenValidatior }) => {
   const [isTokenValidator, setIsTokenValidator] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState('');
   const [collections, setCollections] = useState([]);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setIsTokenValidator(false);
+  };
   const [matches, setMatches] = useState({});
   const { client: qdrantClient } = useClient();
   const [newMatchesKey, setNewMatchesKey] = useState('');
@@ -60,10 +63,12 @@ const TokenValidatior = ({ setTokenValidatior }) => {
 
   return (
     <>
-      <FormControlLabel
-        control={<Switch checked={isTokenValidator} onChange={handleToggle} />}
-        label="Token Validator"
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+        <FormControlLabel
+          control={<Switch checked={isTokenValidator} onChange={handleToggle} />}
+          label="Token Validator"
+        />
+      </Box>
       <Dialog fullWidth open={open} onClose={handleClose}>
         <DialogTitle>Token Validator</DialogTitle>
         <DialogContent>
