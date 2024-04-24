@@ -165,7 +165,7 @@ function JwtForm({
                   <FormControlLabel
                     disabled={!globalAccess}
                     control={<Switch checked={manageAccess} onChange={(e) => setManageAccess(e.target.checked)} />}
-                    label="Allow mange operations"
+                    label="Allow manage operations"
                   />
                 </Tooltip>
               </Box>
