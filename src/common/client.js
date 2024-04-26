@@ -1,5 +1,5 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { getBaseURL } from './utils';
+import { getBaseURL, getPathHeader } from './utils';
 
 /**
  * Extended QdrantClient class with additional methods
@@ -8,8 +8,8 @@ import { getBaseURL } from './utils';
  */
 export class QdrantClientExtended extends QdrantClient {
   #downloadController;
-  constructor({ url, apiKey, port }) {
-    super({ url, apiKey, port });
+  constructor({ url, apiKey, port, headers }) {
+    super({ url, apiKey, port, headers });
 
     this.downloadSnapshot = this.downloadSnapshot.bind(this);
     this.getSnapshotUploadUrl = this.getSnapshotUploadUrl.bind(this);
@@ -19,6 +19,7 @@ export class QdrantClientExtended extends QdrantClient {
     this.url = url;
     this.apiKey = apiKey;
     this.port = port;
+    this.headers = headers;
 
     this.#downloadController = new AbortController();
   }
@@ -83,27 +84,19 @@ export class QdrantClientExtended extends QdrantClient {
 }
 
 export default function qdrantClient({ apiKey }) {
-  let url;
-  let port = 6333;
-  if (process.env.NODE_ENV === 'development') {
-    url = 'http://localhost:6333';
-  } else {
-    url = getBaseURL();
-    if (window.location.port) {
-      port = window.location.port;
-    } else {
-      if (window.location.protocol === 'https:') {
-        port = 443;
-      } else {
-        port = 80;
-      }
-    }
+  const port = 443;
+  const url = getBaseURL();
+  const pathHeader = getPathHeader();
+  const headers = {};
+  if (pathHeader) {
+    headers['x-route-service'] = pathHeader;
   }
 
   const options = {
     url,
     apiKey,
     port,
+    headers,
   };
 
   return new QdrantClientExtended(options);

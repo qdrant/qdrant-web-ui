@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { getBaseURL } from './utils';
+import { getBaseURL, getPathHeader } from './utils';
 import { bigIntJSON } from './bigIntJSON';
 
 function setupAxios({ apiKey }) {
-  if (process.env.NODE_ENV === 'development') {
-    axios.defaults.baseURL = 'http://localhost:6333';
-  } else {
-    axios.defaults.baseURL = getBaseURL();
+  axios.defaults.baseURL = getBaseURL();
+  const pathHeader = getPathHeader();
+  if (pathHeader) {
+    axios.defaults.headers.common['x-route-service'] = pathHeader;
   }
   if (apiKey) {
     axios.defaults.headers.common['api-key'] = apiKey;

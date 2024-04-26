@@ -1,7 +1,13 @@
 export const getBaseURL = function () {
-  const url = new URL(window.location.href);
-  const pathname = url.pathname.replace(/dashboard$/, '');
-  return new URL(pathname, url.href).href;
+  return window.location.origin;
+};
+
+export const getPathHeader = function () {
+  const paths = window.location.pathname.split('/');
+  if (paths.length > 1) {
+    return paths[1];
+  }
+  return '';
 };
 
 export const pumpFile = function (reader, callback, chunks = []) {
