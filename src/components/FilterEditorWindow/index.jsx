@@ -81,7 +81,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     });
   }
   function handleEditorWillMount(monaco) {
-    autocomplete(monaco, qdrantClient).then((autocomplete) => {
+    autocomplete(monaco, qdrantClient, collectionName).then((autocomplete) => {
       autocompleteRef.current = monaco.languages.registerCompletionItemProvider('custom-language', autocomplete);
     });
   }
