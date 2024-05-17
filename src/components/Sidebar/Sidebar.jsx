@@ -83,7 +83,6 @@ export default function Sidebar({ open, version, jwtEnabled }) {
 }
 
 function sidebarItem(title, icon, linkPath, isOpen, enabled = true) {
-  console.log('enabled', enabled);
   return (
     <ListItem key={title} disablePadding sx={{ display: 'block' }}>
       <Tooltip title={title} placement="right" arrow disableHoverListener={isOpen}>

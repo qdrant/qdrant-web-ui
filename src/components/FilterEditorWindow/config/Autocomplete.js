@@ -1,12 +1,17 @@
 import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
 
-export const autocomplete = async (monaco, qdrantClient) => {
+export const autocomplete = async (monaco, qdrantClient,collectionName) => {
   const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
   const openapi = await response.json();
-
-  let collections = [];
+  
+  const vectorNames = [];
   try {
-    collections = (await qdrantClient.getCollections()).collections.map((c) => c.name);
+   const collectionInfo = await qdrantClient.getCollection(collectionName);
+  Object.keys(collectionInfo.config.params.vectors).map((key) => {
+    if (typeof collectionInfo.config.params.vectors[key] === 'object') {
+      vectorNames.push(key);
+    }
+  });
   } catch (e) {
     console.error(e);
   }
@@ -35,7 +40,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
       vector_name: {
         description: 'Vector field name',
         type: 'string',
-        nullable: true,
+        enum: vectorNames,
       },
       color_by: {
         description: 'Color points by this field',
@@ -46,7 +51,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
   };
   openapi.components.schemas.FilterRequest = FilterRequest;
 
-  const autocomplete = new OpenapiAutocomplete(openapi, collections);
+  const autocomplete = new OpenapiAutocomplete(openapi, []);
 
   return {
     provideCompletionItems: (model, position) => {
