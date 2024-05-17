@@ -1,17 +1,17 @@
 import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
 
-export const autocomplete = async (monaco, qdrantClient,collectionName) => {
+export const autocomplete = async (monaco, qdrantClient, collectionName) => {
   const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
   const openapi = await response.json();
-  
+
   const vectorNames = [];
   try {
-   const collectionInfo = await qdrantClient.getCollection(collectionName);
-  Object.keys(collectionInfo.config.params.vectors).map((key) => {
-    if (typeof collectionInfo.config.params.vectors[key] === 'object') {
-      vectorNames.push(key);
-    }
-  });
+    const collectionInfo = await qdrantClient.getCollection(collectionName);
+    Object.keys(collectionInfo.config.params.vectors).map((key) => {
+      if (typeof collectionInfo.config.params.vectors[key] === 'object') {
+        vectorNames.push(key);
+      }
+    });
   } catch (e) {
     console.error(e);
   }
