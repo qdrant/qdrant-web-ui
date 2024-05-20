@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar } from '@mui/material';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, Badge } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Outlet } from 'react-router-dom';
@@ -12,6 +12,8 @@ import KeyIcon from '@mui/icons-material/Key';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import axios from 'axios';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -28,6 +30,8 @@ export default function MiniDrawer() {
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const colorMode = React.useContext(ColorModeContext);
+  const [issusesCount, setIssusesCount] = useState(0);
+  const [issuses, setIssuses] = useState([]);
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
@@ -59,6 +63,24 @@ export default function MiniDrawer() {
     setOpen(!open);
   };
 
+  async function getIssuesCount() {
+    try {
+      const issues = await axios.get('/issues');
+      setIssuses(issues.data.result.issues);
+      setIssusesCount(issues.data.result.issues.length);
+    } catch (error) {
+      console.log('error', error);
+    }
+  }
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      getIssuesCount();
+      console.log('This will run every 5 seconds!', issuses);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -84,6 +106,14 @@ export default function MiniDrawer() {
           </IconButton>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
+          <Tooltip title="Issuses">
+            <IconButton size="large">
+              <Badge color="error" badgeContent={issusesCount}>
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+
           <Tooltip title="Color Mode">
             <IconButton size="large" onClick={colorMode.toggleColorMode}>
               {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
