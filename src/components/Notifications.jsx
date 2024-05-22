@@ -15,7 +15,7 @@ import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
 import axios from 'axios';
 import { CodeBlock } from './Common/CodeBlock';
-import { Box } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../common/bigIntJSON';
 import PropTypes from 'prop-types';
@@ -223,28 +223,72 @@ function Notification({ issue }) {
               dangerouslySetInnerHTML={{ __html: issue.description }}
             />
           </Typography>
-          <Typography gutterBottom variant="body2" color="text.secondary">
-            <span
-              id="notification-message"
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: issue.solution.immediate.message }}
-            />
-          </Typography>
-          <Box
-            sx={{
-              width: '100%',
-            }}
-          >
-            <CodeBlock
-              codeStr={`${issue.solution.immediate.action.method} ${issue.solution.immediate.action.uri}
+          {issue.solution && issue.solution.immediate && (
+            <React.Fragment>
+              <Typography gutterBottom variant="body2" color="text.secondary">
+                <span
+                  id="notification-message"
+                  // eslint-disable-next-line react/no-danger
+                  dangerouslySetInnerHTML={{ __html: issue.solution.immediate.message }}
+                />
+              </Typography>
+              <Box
+                sx={{
+                  width: '100%',
+                }}
+              >
+                <CodeBlock
+                  codeStr={`${issue.solution.immediate.action.method} ${issue.solution.immediate.action.uri}
 ${JSON.stringify(issue.solution.immediate.action.body, null, 2)}`}
-              language="json"
-              withRunButton={true}
-              onRun={handleRun}
-              title="Solution"
-              editable={false}
-            />
-          </Box>
+                  language="json"
+                  withRunButton={true}
+                  onRun={handleRun}
+                  title="Solution"
+                  editable={false}
+                />
+              </Box>
+            </React.Fragment>
+          )}
+          {issue.solution && issue.solution.immediate_choice && (
+            <React.Fragment>
+              <Typography gutterBottom variant="body" color="text.secondary">
+                Choose one of the following solutions:
+              </Typography>
+              {issue.solution.immediate_choice.map((choice, index) => (
+                <React.Fragment key={index}>
+                  <Typography gutterBottom variant="body2" color="text.secondary">
+                    <span
+                      id="notification-message"
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{ __html: choice.message }}
+                    />
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: '100%',
+                    }}
+                  >
+                    <CodeBlock
+                      codeStr={`${choice.action.method} ${choice.action.uri}
+${JSON.stringify(choice.action.body, null, 2)}`}
+                      language="json"
+                      withRunButton={true}
+                      onRun={handleRun}
+                      title="Solution"
+                      editable={false}
+                    />
+                  </Box>
+                  {index < issue.solution.immediate_choice.length - 1 ? (
+                    <Divider sx={
+                      {width: '100%'}
+                    }>
+                      <Chip label="OR" size="small" />
+                    </Divider>
+                  ) : null}
+                </React.Fragment>
+              ))}
+            </React.Fragment>
+          )}
 
           {issue.timestamp && (
             <Typography variant="caption" color="text.secondary">
