@@ -279,9 +279,7 @@ ${JSON.stringify(choice.action.body, null, 2)}`}
                     />
                   </Box>
                   {index < issue.solution.immediate_choice.length - 1 ? (
-                    <Divider sx={
-                      {width: '100%'}
-                    }>
+                    <Divider sx={{ width: '100%' }}>
                       <Chip label="OR" size="small" />
                     </Divider>
                   ) : null}
