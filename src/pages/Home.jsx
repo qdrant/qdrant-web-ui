@@ -85,7 +85,7 @@ export default function MiniDrawer() {
           </IconButton>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
-          <Notifications/>
+          <Notifications />
           <Tooltip title="Color Mode">
             <IconButton size="large" onClick={colorMode.toggleColorMode}>
               {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
