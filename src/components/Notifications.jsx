@@ -132,7 +132,7 @@ export default function Notifications() {
             </IconButton>
           </Box>
           <Typography variant={'body1'} mb={4}>
-            This is a list of notifications that can be used in the editor.
+            Configuration Issues Detected
           </Typography>
           <List>
             {!loading ? (
