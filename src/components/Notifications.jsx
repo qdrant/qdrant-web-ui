@@ -144,7 +144,7 @@ export default function Notifications() {
                 ))
               ) : (
                 <ListItem>
-                  <Typography color="text.secondary">No notifications</Typography>
+                  <Typography color="text.secondary">No notifications (issues)</Typography>
                 </ListItem>
               )
             ) : (
