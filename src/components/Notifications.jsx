@@ -1,24 +1,22 @@
 import * as React from 'react';
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
 import Typography from '@mui/material/Typography';
-import Popper from '@mui/material/Popper';
-import Grow from '@mui/material/Grow';
-import MuiPaper from '@mui/material/Paper';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import MuiList from '@mui/material/List';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import List from '@mui/material/List';
 import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
 import axios from 'axios';
 import { CodeBlock } from './Common/CodeBlock';
-import { Box, Chip } from '@mui/material';
+import { Box, Chip, Drawer, useMediaQuery } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../common/bigIntJSON';
 import PropTypes from 'prop-types';
+import { Close } from '@mui/icons-material';
 
 async function fetchNotifications() {
   try {
@@ -29,22 +27,15 @@ async function fetchNotifications() {
   }
 }
 
-const Paper = styled(MuiPaper)({
-  transformOrigin: 'top right',
-  backgroundImage: 'none',
-});
-
-const List = styled(MuiList)(({ theme }) => ({
-  width: theme.spacing(90),
-  maxHeight: 540,
-  overflow: 'auto',
-  padding: theme.spacing(1, 0),
-}));
-
-const ListItem = styled(MuiListItem)({
+const ListItem = styled(MuiListItem)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-});
+  background: alpha(theme.palette.info.main, 0.05),
+  borderColor: `${theme.palette.info.main} !important`,
+  borderRadius: '5px',
+  padding: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+}));
 
 const Loading = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -63,12 +54,13 @@ export default function Notifications() {
   const [issues, setIssues] = React.useState([]);
   const [issuesCount, setIssuesCount] = React.useState(0);
   const [loading, setLoading] = React.useState(true);
+  const matchesMdMedia = useMediaQuery('(max-width: 992px)');
 
   React.useEffect(() => {
     setLoading(true);
     fetchNotifications().then((data) => {
-      setIssues(data);
       setIssuesCount(data.length);
+      setIssues(data);
       setLoading(false);
     });
   }, []);
@@ -115,65 +107,54 @@ export default function Notifications() {
           </Badge>
         </IconButton>
       </Tooltip>
-      <Popper
-        id="notifications-popup"
-        anchorEl={anchorRef.current}
+      <Drawer
+        anchor={'right'}
         open={open}
-        placement="bottom-end"
-        transition
-        disablePortal
-        role={undefined}
+        onClose={handleToggle}
+        sx={{
+          '& .MuiDrawer-paper': {
+            minWidth: matchesMdMedia ? '100vw' : '680px',
+            width: matchesMdMedia ? '100vw' : '55vw',
+            padding: '1rem',
+            pt: '6rem',
+          },
+          '& .MuiBackdrop-root.MuiModal-backdrop': {
+            opacity: '0 !important',
+          },
+        }}
       >
-        {({ TransitionProps }) => (
-          <ClickAwayListener
-            onClickAway={() => {
-              setOpen(false);
-              setIssuesCount(0);
-            }}
-          >
-            <Grow in={open} {...TransitionProps}>
-              <Paper
-                sx={(theme) =>
-                  theme.palette.mode === 'dark'
-                    ? {
-                        mt: 0.5,
-                        border: '1px solid',
-                        borderColor: 'primaryDark.700',
-                        boxShadow: `0px 4px 20px rgba(0, 0, 0, 0.5)`,
-                      }
-                    : {
-                        mt: 0.5,
-                        border: '1px solid',
-                        borderColor: 'grey.200',
-                        boxShadow: `0px 4px 20px rgba(170, 180, 190, 0.3)`,
-                      }
-                }
-              >
-                <List>
-                  {!loading ? (
-                    issues.length > 0 ? (
-                      issues.map((issue, index) => (
-                        <React.Fragment key={issue.id}>
-                          <Notification issue={issue} />
-                          {index < issues.length - 1 ? <Divider /> : null}
-                        </React.Fragment>
-                      ))
-                    ) : (
-                      <ListItem>
-                        <Typography color="text.secondary">No notifications</Typography>
-                      </ListItem>
-                    )
-                  ) : (
-                    <Loading>
-                      <CircularProgress size={32} />
-                    </Loading>
-                  )}
-                </List>
-              </Paper>
-            </Grow>
-          </ClickAwayListener>
-        )}
-      </Popper>
+        <div>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mr: 2 }}>
+            <Typography variant={'h5'}>Notifications</Typography>
+            <Box sx={{ flexGrow: 1 }} />
+            <IconButton onClick={handleToggle}>
+              <Close />
+            </IconButton>
+          </Box>
+          <Typography variant={'body1'} mb={4}>
+            This is a list of notifications that can be used in the editor.
+          </Typography>
+          <List>
+            {!loading ? (
+              issues.length > 0 ? (
+                issues.map((issue) => (
+                  <React.Fragment key={issue.id}>
+                    <Notification issue={issue} />
+                  </React.Fragment>
+                ))
+              ) : (
+                <ListItem>
+                  <Typography color="text.secondary">No notifications</Typography>
+                </ListItem>
+              )
+            ) : (
+              <Loading>
+                <CircularProgress size={32} />
+              </Loading>
+            )}
+          </List>
+        </div>
+      </Drawer>
     </React.Fragment>
   );
 }
@@ -197,32 +178,65 @@ function Notification({ issue }) {
   };
 
   return (
-    <ListItem alignItems="flex-start">
+    <ListItem
+      alignItems="flex-start"
+      sx={
+        result
+          ? {
+              background: 'rgba(0, 255, 0, 0.1)',
+              borderColor: 'rgba(0, 255, 0, 0.5) !important',
+            }
+          : error
+          ? {
+              background: 'rgba(255, 0, 0, 0.1)',
+              borderColor: 'rgba(255, 0, 0, 0.5) !important',
+            }
+          : null
+      }
+    >
       {loading ? (
         <CircularProgress size={32} />
       ) : result ? (
-        <Typography color="green">{result}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <CheckCircleOutlineIcon color="success" />
+          <Typography color="success" variant="body1">
+            <b>Success!, Indexing success acknowledged</b>
+          </Typography>
+        </Box>
       ) : (
         <React.Fragment>
           {error ? (
-            <CodeBlock
-              codeStr={error.toString()}
-              language="json"
-              withRunButton={false}
-              title="Error"
-              editable={false}
-            />
+            <Box>
+              <Typography color="error" variant="body1">
+                <b>Error</b>
+              </Typography>
+              <CodeBlock
+                codeStr={error.toString()}
+                language="json"
+                withRunButton={false}
+                title="Error"
+                editable={false}
+              />
+            </Box>
           ) : null}
+          <Typography
+            component={'span'}
+            variant={'caption'}
+            sx={(theme) => ({
+              display: 'inline-block',
+              color: theme.palette.info.main,
+              border: `1px solid ${theme.palette.info.main}`,
+              px: 0.5,
+              borderRadius: '5px',
+              my: 0.5,
+            })}
+          >
+            #{issue.id}
+          </Typography>
           <Typography gutterBottom>
-            <b>{issue.id}</b>
+            <b>{issue.description}</b>
           </Typography>
-          <Typography gutterBottom variant="body2" color="text.secondary">
-            <span
-              id="notification-message"
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: issue.description }}
-            />
-          </Typography>
+
           {issue.solution && issue.solution.immediate && (
             <React.Fragment>
               <Typography gutterBottom variant="body2" color="text.secondary">
