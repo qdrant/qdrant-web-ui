@@ -200,7 +200,7 @@ function Notification({ issue }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <CheckCircleOutlineIcon color="success" />
           <Typography color="success" variant="body1">
-            <b>Success!, Indexing success acknowledged</b>
+            <b>Success! Indexing successfully acknowledged.</b>
           </Typography>
         </Box>
       ) : (
