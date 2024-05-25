@@ -12,7 +12,7 @@ import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
 import axios from 'axios';
 import { CodeBlock } from './Common/CodeBlock';
-import { Box, Chip, Drawer, useMediaQuery } from '@mui/material';
+import { Box, Button, Chip, Drawer, useMediaQuery } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../common/bigIntJSON';
 import PropTypes from 'prop-types';
@@ -24,6 +24,16 @@ async function fetchNotifications() {
     return issues.data.result.issues;
   } catch (error) {
     console.log('error', error);
+  }
+}
+
+async function deleteNotifications() {
+  try {
+    const res = await axios.delete('/issues');
+    return res.data;
+  } catch (error) {
+    console.log('error', error);
+    return error;
   }
 }
 
@@ -79,6 +89,16 @@ export default function Notifications() {
     setTooltipOpen(false);
   };
 
+  const handleDeleteAll = () => {
+    setLoading(true);
+    deleteNotifications().then(() => {
+      fetchNotifications().then((data) => {
+        setIssues(data);
+        setLoading(false);
+      });
+    });
+  };
+
   return (
     <React.Fragment>
       <Tooltip
@@ -131,9 +151,16 @@ export default function Notifications() {
               <Close />
             </IconButton>
           </Box>
-          <Typography variant={'body1'} mb={4}>
-            Configuration Issues Detected
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mr: 2 }}>
+            <Typography variant={'body1'}>Configuration Issues Detected</Typography>
+            <Box sx={{ flexGrow: 1 }} />
+            {issues.length > 0 && (
+              <Button color="error" variant="contained" onClick={handleDeleteAll}>
+                Delete all issues
+              </Button>
+            )}
+          </Box>
+
           <List>
             {!loading ? (
               issues.length > 0 ? (
