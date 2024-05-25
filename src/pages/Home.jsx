@@ -12,6 +12,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
+import Notifications from '../components/Notifications';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -84,6 +85,7 @@ export default function MiniDrawer() {
           </IconButton>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
+          <Notifications />
           <Tooltip title="Color Mode">
             <IconButton size="large" onClick={colorMode.toggleColorMode}>
               {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
