@@ -71,7 +71,8 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                 (payloadSchema[key].data_type === 'keyword' ||
                   payloadSchema[key].data_type === 'text' ||
                   payloadSchema[key].data_type === 'integer' ||
-                  payloadSchema[key].data_type === 'bool') && (
+                  payloadSchema[key].data_type === 'bool') &&
+                typeof data[key] !== 'object' && (
                   <IconButton
                     size="small"
                     onClick={() => {
