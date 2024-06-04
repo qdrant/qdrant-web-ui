@@ -30,8 +30,8 @@ export const Rules = {
 
 export const langConfig = {
   comments: {
-    lineComment: "//",
-    blockComment: [ "/*", "*/" ]
+    lineComment: '//',
+    blockComment: ['/*', '*/'],
   },
   surroundingPairs: [
     { open: '{', close: '}' },
