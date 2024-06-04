@@ -29,6 +29,10 @@ export const Rules = {
 };
 
 export const langConfig = {
+  comments: {
+    lineComment: '//',
+    blockComment: ['/*', '*/'],
+  },
   surroundingPairs: [
     { open: '{', close: '}' },
     { open: '[', close: ']' },
