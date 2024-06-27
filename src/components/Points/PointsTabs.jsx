@@ -18,6 +18,7 @@ const PointsTabs = ({ collectionName, client }) => {
   const [usingVector, setUsingVector] = useState(null);
   const [payloadSchema, setPayloadSchema] = useState({});
   const [vectors, setVectors] = useState([]);
+  const [pointCount, setPointCount] = useState(0);
 
   const onConditionChange = (conditions, usingVector) => {
     if (usingVector) {
@@ -25,9 +26,7 @@ const PointsTabs = ({ collectionName, client }) => {
     }
     setOffset(null);
     setConditions(conditions);
-    if (conditions.length === 0) {
-      setPoints({ points: [] });
-    }
+    setPoints({ points: [] });
   };
 
   const deletePoint = (collectionName, pointIds) => {
@@ -48,6 +47,7 @@ const PointsTabs = ({ collectionName, client }) => {
         }
       });
       setVectors(vectors);
+      setPointCount(collectionInfo.points_count);
       setPayloadSchema(collectionInfo.payload_schema);
     };
     getCollection();
@@ -93,7 +93,11 @@ const PointsTabs = ({ collectionName, client }) => {
                 must: filters,
               },
             });
-            setNextPageOffset(newPoints.length);
+            if(offset+pageSize<pointCount){
+              setNextPageOffset(newPoints.length);
+            }else{
+              setNextPageOffset(null);
+            }
             setPoints({ points: newPoints });
             setErrorMessage(null);
           } else if (filters.length !== 0) {
@@ -101,12 +105,13 @@ const PointsTabs = ({ collectionName, client }) => {
               filter: {
                 must: filters,
               },
-              limit: pageSize + (offset || 0),
+              limit: pageSize,
+              offset,
               with_payload: true,
               with_vector: true,
             });
             setPoints({
-              points: [...(newPoints?.points || [])],
+              points: [...(points?.points || []), ...(newPoints?.points || [])],
             });
             setNextPageOffset(newPoints?.next_page_offset);
             setErrorMessage(null);
