@@ -93,9 +93,9 @@ const PointsTabs = ({ collectionName, client }) => {
                 must: filters,
               },
             });
-            if(offset+pageSize<pointCount){
+            if (offset + pageSize < pointCount) {
               setNextPageOffset(newPoints.length);
-            }else{
+            } else {
               setNextPageOffset(null);
             }
             setPoints({ points: newPoints });
