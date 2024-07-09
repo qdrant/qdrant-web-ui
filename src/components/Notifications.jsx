@@ -103,7 +103,7 @@ export default function Notifications() {
     <React.Fragment>
       <Tooltip
         open={tooltipOpen}
-        title={'toggleNotifications'}
+        title="Toggle notifications"
         enterDelay={300}
         onOpen={() => {
           setTooltipOpen(!open);
