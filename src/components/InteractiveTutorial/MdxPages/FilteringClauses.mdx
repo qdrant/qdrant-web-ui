@@ -2,18 +2,16 @@ export const title = "Filtering Clauses"
 
 # {title}
 
-<Alert severity="info">Click **RUN** button at code blocks to see a result of the query in the right part of the screen.<br/>Click inside a code block to edit it.</Alert>
-<br/>
+<Alert severity="info">Click **RUN** to send the API request. Your response will be on the right. <br/>You may edit any code block and rerun the request.</Alert>
 
-Qdrant support filtering of collections combining condition and clauses.
-In this tutorial you will learn how to filter collections using **filtering clauses**.
+Qdrant lets you to filter collections by combining **conditions** and **clauses**. In this tutorial, you will learn how to filter collections using filtering clauses.
 
 Clauses are different logical operations, such as OR, AND, and NOT.
-Clauses can be recursively nested into each other so that you can reproduce an arbitrary boolean expression.
+You can nest them inside each other to create any boolean expression.
 
-Let's start with creating a new collection and populating it with points.
+Start by creating a new collection and adding vectors.
 
-## Set up for this tutorial
+## Setup
 
 Before we start to practice with filtering conditions, let's create some datapoints to work with.
 
@@ -32,7 +30,7 @@ PUT collections/demo
 }
 ```
 
-2. And add points to it:
+2. Add vectors:
 
 ``` json withRunButton="true"
 PUT /collections/demo/points
@@ -68,7 +66,7 @@ PUT /collections/demo/points
 ```
 </details>
 
-Take a note of what data we put into points' `payload` field.
+**Note:** Take a good look at each point's `payload` field. You will need to add a filter using this payload.
 
 ## Must
 
@@ -142,9 +140,9 @@ POST /collections/demo/points/scroll
 }
 ```
 
-## Clauses combination
+## Combination
 
-It is also possible to use several clauses simultaneously:
+You can also use join different clauses:
 
 ``` json withRunButton="true"
 POST /collections/demo/points/scroll
