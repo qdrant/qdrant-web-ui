@@ -7,6 +7,7 @@ import Visualize from './pages/Visualize';
 import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
+import Graph from "./pages/Graph";
 
 const routes = () => [
   {
@@ -21,6 +22,10 @@ const routes = () => [
       {
         path: '/collections/:collectionName/visualize',
         element: <Visualize />,
+      },
+      {
+        path: '/collections/:collectionName/graph',
+        element: <Graph />,
       },
       { path: '/tutorial', element: <Tutorial /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },

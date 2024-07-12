@@ -1,0 +1,180 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from 'react-router-dom';
+import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import FilterEditorWindow from '../components/FilterEditorWindow';
+import GraphVisualisation
+  from "../components/GraphVisualisation/GraphVisualisation";
+import { useWindowResize } from "../hooks/windowHooks";
+import { useClient } from "../context/client-context";
+
+const query = `{
+  "limit": 5
+}
+
+// Specify request parameters to select data for visualization.
+//
+// Available parameters:
+//
+// - 'limit': maximum number of vectors to visualize.
+//            *Warning*: large values may cause browser to freeze.
+//
+// - 'filter': filter expression to select vectors for visualization.
+//             See https://qdrant.tech/documentation/concepts/filtering/
+//
+// - 'color_by': specify score or payload field to use for coloring points.
+//               How to use:
+//
+//                "color_by": "field_name"
+//
+//                or
+//
+//                "color_by": {
+//                  "payload": "field_name"
+//                }
+//
+//                or
+//
+//                "color_by": {
+//                  "discover_score": {
+//                    "target": 42,
+//                    "context": [{"positive": 1, "negative": 0}]
+//                  }
+//                }
+//
+// - 'vector_name': specify which vector to use for visualization
+//                  if there are multiple.
+//
+// Minimal example:
+
+
+`;
+
+function Graph() {
+  const defaultResult = {};
+  const theme = useTheme();
+  const [code, setCode] = useState(query);
+  const [result, setResult] = useState(defaultResult);
+  const navigate = useNavigate();
+  const params = useParams();
+  const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
+  const VisualizeChartWrapper = useRef(null);
+  const { height } = useWindowResize();
+
+  // todo: add setOptions function
+  const [options] = useState({
+    limit: 5,
+    filter: null,
+    using: null,
+  });
+
+  const { client: qdrantClient } = useClient();
+
+  useEffect(() => {
+    setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
+  }, [height, VisualizeChartWrapper]);
+
+  const handleNodeClick = async function(pointsId) {
+    const points = await qdrantClient.recommend(params.collectionName, {
+      positive: pointsId,
+      limit: 5,
+      with_payload: true,
+      with_vector: true,
+    });
+    const newResult = {...result }
+    newResult.data.result.points = [...newResult.data.result.points, ...points]
+    setResult(() => ({ ...newResult}));
+    return newResult;
+  }
+
+  return (
+    <>
+      <Box component="main">
+        <Grid container>
+          <Grid xs={12} item>
+            <PanelGroup direction="horizontal">
+              <Panel style={{ display: 'flex' }}>
+                <Box width={'100%'}>
+                  <Box>
+                    <Paper
+                      variant="heading"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        p: 1,
+                        borderRadius: 0,
+                      }}
+                    >
+                      <Tooltip title={'Back to collection'}>
+                        <IconButton
+                          sx={{ mr: 3 }}
+                          size="small"
+                          onClick={() => navigate(`/collections/${params.collectionName}`)}
+                        >
+                          <ArrowBack />
+                        </IconButton>
+                      </Tooltip>
+                      <Typography variant="h6">{params.collectionName}</Typography>
+                    </Paper>
+                  </Box>
+
+                  <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
+                      <GraphVisualisation
+                        options={{...options, collectionName: params.collectionName}} onNodeClick={handleNodeClick} />
+                  </Box>
+
+                </Box>
+              </Panel>
+              <PanelResizeHandle
+                style={{
+                  width: '10px',
+                  background: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
+                  &#8942;
+                </Box>
+              </PanelResizeHandle>
+              <Panel>
+                <PanelGroup direction="vertical">
+                <Panel>
+                  <FilterEditorWindow code={code} onChange={setCode} onChangeResult={setResult} />
+                </Panel>
+                  <PanelResizeHandle
+                    style={{
+                      height: '10px',
+                      background: alpha(theme.palette.primary.main, 0.05),
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                      }}
+                    >
+                      &#8943;
+                    </Box>
+                  </PanelResizeHandle>
+                  <Panel></Panel>
+                </PanelGroup>
+              </Panel>
+            </PanelGroup>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
+  );
+}
+
+export default Graph;

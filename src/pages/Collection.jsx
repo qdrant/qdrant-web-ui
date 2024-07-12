@@ -35,6 +35,7 @@ function Collection() {
                 <Tab label="Info" value={'info'} />
                 <Tab label="Snapshots" value={'snapshots'} />
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
+                <Tab label="Graph" component={Link} to={`${location.pathname}/graph`} />
               </Tabs>
             </Box>
           </Grid>
