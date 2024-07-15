@@ -8,12 +8,12 @@ import {
 import ForceGraph from "force-graph";
 import { useClient } from "../../context/client-context";
 
-// eslint-disable-next-line no-unused-vars
-const GraphVisualisation = ({ options, onNodeClick }) => {
+const GraphVisualisation = ({ options, onDataDisplay }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
 
  const handleNodeClick = async (node) => {
+   node.clicked = true;
    const {nodes, links} = graphRef.current.graphData();
    const pointId = node.id;
    const similarPoints = await getSimilarPoints(qdrantClient, {
@@ -34,9 +34,25 @@ const GraphVisualisation = ({ options, onNodeClick }) => {
   useEffect(() => {
     if (!graphRef.current) {
       const elem = document.getElementById('graph');
+      const NODE_R = 4;
+      let hoverNode = null;
       // eslint-disable-next-line new-cap
       graphRef.current = ForceGraph()(elem)
-      .onNodeHover(node => elem.style.cursor = node ? 'pointer' : null);
+      .nodeColor(
+          node => node.clicked ? '#e94' : '#2cb')
+        .onNodeHover((node) => {
+          if (node) hoverNode = node;
+          elem.style.cursor = node ? 'pointer' : null;
+          node && onDataDisplay(node);
+        })
+      .nodeCanvasObjectMode(node => node?.id === hoverNode?.id ? 'before' : undefined)
+      .nodeCanvasObject((node, ctx) => {
+        // add ring for last hovered nodes
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
+        ctx.fillStyle = node?.id === hoverNode?.id ? '#817' : 'transparent';
+        ctx.fill();
+      })
     }
   }, []);
 
@@ -45,9 +61,10 @@ const GraphVisualisation = ({ options, onNodeClick }) => {
       const graphData = await initGraph(
         qdrantClient, options
       );
-      console.log('graphData', graphData);
       if (graphRef.current && options) {
-        graphRef.current.graphData(graphData).onNodeClick(handleNodeClick);
+        graphRef.current.graphData(graphData)
+        .linkDirectionalArrowLength(3)
+        .onNodeClick(handleNodeClick);
       }
     };
     initNewGraph().catch(console.error);
@@ -58,7 +75,7 @@ const GraphVisualisation = ({ options, onNodeClick }) => {
 
 GraphVisualisation.propTypes = {
   options: PropTypes.object.isRequired,
-  onNodeClick: PropTypes.func.isRequired
+  onDataDisplay: PropTypes.func.isRequired
 };
 
 export default memo(GraphVisualisation);

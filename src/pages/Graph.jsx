@@ -1,93 +1,54 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate, useParams } from 'react-router-dom';
-import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
+import {
+  alpha,
+  Paper,
+  Box,
+  Tooltip,
+  Typography,
+  Grid,
+  IconButton,
+  CardContent,
+} from "@mui/material";
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import FilterEditorWindow from '../components/FilterEditorWindow';
 import GraphVisualisation
   from "../components/GraphVisualisation/GraphVisualisation";
 import { useWindowResize } from "../hooks/windowHooks";
-import { useClient } from "../context/client-context";
-
-const query = `{
-  "limit": 5
-}
-
-// Specify request parameters to select data for visualization.
-//
-// Available parameters:
-//
-// - 'limit': maximum number of vectors to visualize.
-//            *Warning*: large values may cause browser to freeze.
-//
-// - 'filter': filter expression to select vectors for visualization.
-//             See https://qdrant.tech/documentation/concepts/filtering/
-//
-// - 'color_by': specify score or payload field to use for coloring points.
-//               How to use:
-//
-//                "color_by": "field_name"
-//
-//                or
-//
-//                "color_by": {
-//                  "payload": "field_name"
-//                }
-//
-//                or
-//
-//                "color_by": {
-//                  "discover_score": {
-//                    "target": 42,
-//                    "context": [{"positive": 1, "negative": 0}]
-//                  }
-//                }
-//
-// - 'vector_name': specify which vector to use for visualization
-//                  if there are multiple.
-//
-// Minimal example:
-
-
-`;
+import PointImage from "../components/Points/PointImage";
 
 function Graph() {
-  const defaultResult = {};
   const theme = useTheme();
-  const [code, setCode] = useState(query);
-  const [result, setResult] = useState(defaultResult);
   const navigate = useNavigate();
   const params = useParams();
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
 
+  const [activePoint, setActivePoint] = useState(null);
   // todo: add setOptions function
-  const [options] = useState({
+  const options = useMemo(() => ({
     limit: 5,
     filter: null,
     using: null,
-  });
-
-  const { client: qdrantClient } = useClient();
+    collectionName: params.collectionName, // Assuming collectionName doesn't change often
+  }), []);
 
   useEffect(() => {
+    console.log('height', height);
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
-  const handleNodeClick = async function(pointsId) {
-    const points = await qdrantClient.recommend(params.collectionName, {
-      positive: pointsId,
-      limit: 5,
-      with_payload: true,
-      with_vector: true,
-    });
-    const newResult = {...result }
-    newResult.data.result.points = [...newResult.data.result.points, ...points]
-    setResult(() => ({ ...newResult}));
-    return newResult;
-  }
+  const handlePointDisplay = useCallback((point) => {
+    setActivePoint(point);
+  }, []);
 
   return (
     <>
@@ -122,7 +83,8 @@ function Graph() {
 
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
                       <GraphVisualisation
-                        options={{...options, collectionName: params.collectionName}} onNodeClick={handleNodeClick} />
+                        options={options}
+                        onDataDisplay={handlePointDisplay} />
                   </Box>
 
                 </Box>
@@ -147,7 +109,6 @@ function Graph() {
               <Panel>
                 <PanelGroup direction="vertical">
                 <Panel>
-                  <FilterEditorWindow code={code} onChange={setCode} onChangeResult={setResult} />
                 </Panel>
                   <PanelResizeHandle
                     style={{
@@ -166,7 +127,19 @@ function Graph() {
                       &#8943;
                     </Box>
                   </PanelResizeHandle>
-                  <Panel></Panel>
+                  <Panel>
+
+
+                    { activePoint &&
+                    <CardContent>
+                      <Grid container display={'flex'}>
+                        {activePoint.payload && <PointImage data={activePoint.payload} sx={{ ml: 2 }} />}
+                      </Grid>
+                    </CardContent>
+                    }
+
+
+                  </Panel>
                 </PanelGroup>
               </Panel>
             </PanelGroup>

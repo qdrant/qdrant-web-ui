@@ -3,6 +3,7 @@ export const initGraph = async (qdrantClient, {collectionName,  limit, filter, u
   if (!firstPoint) {
     throw new Error('No points found for filter: ' + JSON.stringify(filter));
   }
+  firstPoint.clicked = true;
 
   const points = await getSimilarPoints(qdrantClient, {collectionName, pointId: firstPoint.id, limit, filter, using});
 
