@@ -14,7 +14,6 @@ import {
   Typography,
   Grid,
   IconButton,
-  CardContent,
 } from "@mui/material";
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -22,7 +21,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import GraphVisualisation
   from "../components/GraphVisualisation/GraphVisualisation";
 import { useWindowResize } from "../hooks/windowHooks";
-import PointImage from "../components/Points/PointImage";
+import PointPreview from "../components/GraphVisualisation/PointPreview";
 
 function Graph() {
   const theme = useTheme();
@@ -127,18 +126,12 @@ function Graph() {
                       &#8943;
                     </Box>
                   </PanelResizeHandle>
-                  <Panel>
-
-
+                  <Panel style={{
+                    overflowY: 'scroll',
+                  }}>
                     { activePoint &&
-                    <CardContent>
-                      <Grid container display={'flex'}>
-                        {activePoint.payload && <PointImage data={activePoint.payload} sx={{ ml: 2 }} />}
-                      </Grid>
-                    </CardContent>
+                      <PointPreview point={activePoint} />
                     }
-
-
                   </Panel>
                 </PanelGroup>
               </Panel>
