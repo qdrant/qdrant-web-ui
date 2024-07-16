@@ -53,7 +53,7 @@ const PointPreview = ({point}) => {
 
               <Grid container display={'flex'}>
                 {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} />}
-                <Grid item my={1}>
+                <Grid item xs={12} my={1}>
                   <DataGridList
                     data={{id: point.id, ...point.payload}}
                     onConditionChange={onConditionChange}

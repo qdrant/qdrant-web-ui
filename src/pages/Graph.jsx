@@ -41,7 +41,6 @@ function Graph() {
   }), []);
 
   useEffect(() => {
-    console.log('height', height);
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
@@ -54,8 +53,8 @@ function Graph() {
       <Box component="main">
         <Grid container>
           <Grid xs={12} item>
-            <PanelGroup direction="horizontal">
-              <Panel style={{ display: 'flex' }}>
+            <PanelGroup direction="horizontal" autoSaveId="persistence">
+              <Panel defaultSize={50}>
                 <Box width={'100%'}>
                   <Box>
                     <Paper
@@ -83,7 +82,9 @@ function Graph() {
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
                       <GraphVisualisation
                         options={options}
-                        onDataDisplay={handlePointDisplay} />
+                        onDataDisplay={handlePointDisplay}
+                        wrapperRef={VisualizeChartWrapper.current}
+                      />
                   </Box>
 
                 </Box>
@@ -107,7 +108,7 @@ function Graph() {
               </PanelResizeHandle>
               <Panel>
                 <PanelGroup direction="vertical">
-                <Panel>
+                <Panel defaultSize={20}>
                 </Panel>
                   <PanelResizeHandle
                     style={{
@@ -126,14 +127,15 @@ function Graph() {
                       &#8943;
                     </Box>
                   </PanelResizeHandle>
-                  <Panel style={{
+                  <Panel defaultSize={80}
+                    style={{
                     overflowY: 'scroll',
                   }}>
                     { activePoint &&
                       <PointPreview point={activePoint} />
                     }
                   </Panel>
-                </PanelGroup>
+                </PanelGroup >
               </Panel>
             </PanelGroup>
           </Grid>

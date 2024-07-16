@@ -8,7 +8,7 @@ import {
 import ForceGraph from "force-graph";
 import { useClient } from "../../context/client-context";
 
-const GraphVisualisation = ({ options, onDataDisplay }) => {
+const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
 
@@ -40,21 +40,27 @@ const GraphVisualisation = ({ options, onDataDisplay }) => {
       graphRef.current = ForceGraph()(elem)
       .nodeColor(
           node => node.clicked ? '#e94' : '#2cb')
-        .onNodeHover((node) => {
-          if (node) hoverNode = node;
-          elem.style.cursor = node ? 'pointer' : null;
-          node && onDataDisplay(node);
-        })
+      .onNodeHover((node) => {
+        if (!node) return;
+        elem.style.cursor = 'pointer';
+        hoverNode = node;
+        onDataDisplay(node);
+      })
       .nodeCanvasObjectMode(node => node?.id === hoverNode?.id ? 'before' : undefined)
       .nodeCanvasObject((node, ctx) => {
+        if (!node) return;
         // add ring for last hovered nodes
         ctx.beginPath();
         ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
-        ctx.fillStyle = node?.id === hoverNode?.id ? '#817' : 'transparent';
+        ctx.fillStyle = node.id === hoverNode?.id ? '#817' : 'transparent';
         ctx.fill();
       })
     }
   }, []);
+
+ useEffect(() => {
+   graphRef.current.width(wrapperRef?.clientWidth).height(wrapperRef?.clientHeight);
+ }, [wrapperRef]);
 
   useEffect( () => {
     const initNewGraph = async () => {
@@ -75,7 +81,8 @@ const GraphVisualisation = ({ options, onDataDisplay }) => {
 
 GraphVisualisation.propTypes = {
   options: PropTypes.object.isRequired,
-  onDataDisplay: PropTypes.func.isRequired
+  onDataDisplay: PropTypes.func.isRequired,
+  wrapperRef: PropTypes.object,
 };
 
 export default memo(GraphVisualisation);
