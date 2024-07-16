@@ -11,6 +11,8 @@ import { useClient } from "../../context/client-context";
 const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
+  const NODE_R = 4;
+  let highlightedNode = null;
 
  const handleNodeClick = async (node) => {
    node.clicked = true;
@@ -24,7 +26,6 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
       using: options.using
     });
 
-
    graphRef.current.graphData({
      nodes: [...nodes, ...deduplicatePoints(nodes, similarPoints) ],
      links: [...links, ...similarPoints.map((point) => ({ source: pointId, target: point.id }))]
@@ -34,8 +35,6 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
   useEffect(() => {
     if (!graphRef.current) {
       const elem = document.getElementById('graph');
-      const NODE_R = 4;
-      let hoverNode = null;
       // eslint-disable-next-line new-cap
       graphRef.current = ForceGraph()(elem)
       .nodeColor(
@@ -43,18 +42,19 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
       .onNodeHover((node) => {
         if (!node) return;
         elem.style.cursor = 'pointer';
-        hoverNode = node;
+        highlightedNode = node;
         onDataDisplay(node);
       })
-      .nodeCanvasObjectMode(node => node?.id === hoverNode?.id ? 'before' : undefined)
+      .nodeCanvasObjectMode(node => node?.id === highlightedNode?.id ? 'before' : undefined)
       .nodeCanvasObject((node, ctx) => {
         if (!node) return;
         // add ring for last hovered nodes
         ctx.beginPath();
         ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
-        ctx.fillStyle = node.id === hoverNode?.id ? '#817' : 'transparent';
+        ctx.fillStyle = node.id === highlightedNode?.id ? '#817' : 'transparent';
         ctx.fill();
       })
+        .linkColor(() => '#a6a6a6')
     }
   }, []);
 
@@ -68,6 +68,9 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
         qdrantClient, options
       );
       if (graphRef.current && options) {
+        const initialActiveNode = graphData.nodes[0];
+        onDataDisplay(initialActiveNode);
+        highlightedNode = initialActiveNode;
         graphRef.current.graphData(graphData)
         .linkDirectionalArrowLength(3)
         .onNodeClick(handleNodeClick);
