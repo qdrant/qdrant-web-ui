@@ -8,7 +8,8 @@ import {
 import ForceGraph from "force-graph";
 import { useClient } from "../../context/client-context";
 
-const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
+const GraphVisualisation = ({ options, initialData, onDataDisplay, wrapperRef }) => {
+  // todo: initialData - process data from param
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
   const NODE_R = 4;
@@ -33,6 +34,8 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
  }
 
   useEffect(() => {
+    console.log('initialData', initialData);
+    console.log('options', options);
     if (!graphRef.current) {
       const elem = document.getElementById('graph');
       // eslint-disable-next-line new-cap
@@ -40,11 +43,16 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
       .nodeColor(
           node => node.clicked ? '#e94' : '#2cb')
       .onNodeHover((node) => {
-        if (!node) return;
+        if (!node) {
+          elem.style.cursor = 'default';
+          return;
+        }
+        node.aa = 1;
         elem.style.cursor = 'pointer';
         highlightedNode = node;
         onDataDisplay(node);
       })
+      .autoPauseRedraw(false)
       .nodeCanvasObjectMode(node => node?.id === highlightedNode?.id ? 'before' : undefined)
       .nodeCanvasObject((node, ctx) => {
         if (!node) return;
@@ -84,6 +92,7 @@ const GraphVisualisation = ({ options, onDataDisplay, wrapperRef }) => {
 
 GraphVisualisation.propTypes = {
   options: PropTypes.object.isRequired,
+  initialData: PropTypes.object.isRequired,
   onDataDisplay: PropTypes.func.isRequired,
   wrapperRef: PropTypes.object,
 };

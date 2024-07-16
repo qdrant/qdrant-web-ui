@@ -22,6 +22,13 @@ import GraphVisualisation
   from "../components/GraphVisualisation/GraphVisualisation";
 import { useWindowResize } from "../hooks/windowHooks";
 import PointPreview from "../components/GraphVisualisation/PointPreview";
+import CodeEditorWindow from "../components/FilterEditorWindow";
+
+const defaultQuery = `
+{
+  "limit": 5
+}
+`;
 
 function Graph() {
   const theme = useTheme();
@@ -31,14 +38,20 @@ function Graph() {
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
 
+  const [result, setResult] = useState({});
+  const [code, setCode] = useState(defaultQuery);
+  const getCodeParams = useCallback((param) => {
+    return JSON.parse(code)[param] || null;
+  }, [result]);
+
   const [activePoint, setActivePoint] = useState(null);
   // todo: add setOptions function
   const options = useMemo(() => ({
-    limit: 5,
-    filter: null,
-    using: null,
+    limit: getCodeParams('limit'),
+    filter: getCodeParams('filter'),
+    using: getCodeParams('using'),
     collectionName: params.collectionName, // Assuming collectionName doesn't change often
-  }), []);
+  }), [result]);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
@@ -82,6 +95,7 @@ function Graph() {
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
                       <GraphVisualisation
                         options={options}
+                        initialData={result}
                         onDataDisplay={handlePointDisplay}
                         wrapperRef={VisualizeChartWrapper.current}
                       />
@@ -109,6 +123,7 @@ function Graph() {
               <Panel>
                 <PanelGroup direction="vertical">
                 <Panel defaultSize={20}>
+                  <CodeEditorWindow code={code} onChange={setCode} onChangeResult={setResult} />
                 </Panel>
                   <PanelResizeHandle
                     style={{
