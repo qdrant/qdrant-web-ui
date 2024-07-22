@@ -84,7 +84,7 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
       }
     };
     initNewGraph().catch((e) => {
-      enqueueSnackbar(e.message, { variant: 'error' });
+      enqueueSnackbar(JSON.stringify(e.getActualType()), { variant: 'error' });
     });
   }, [initNode, options]);
 
