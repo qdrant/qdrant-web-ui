@@ -135,7 +135,7 @@ function Graph() {
               </PanelResizeHandle>
               <Panel>
                 <PanelGroup direction="vertical">
-                  <Panel defaultSize={20}>
+                  <Panel defaultSize={40}>
                     <CodeEditorWindow code={code} onChange={setCode} onChangeResult={handleRunCode} />
                   </Panel>
                   <PanelResizeHandle
@@ -156,7 +156,7 @@ function Graph() {
                     </Box>
                   </PanelResizeHandle>
                   <Panel
-                    defaultSize={80}
+                    defaultSize={60}
                     style={{
                       overflowY: 'scroll',
                     }}
