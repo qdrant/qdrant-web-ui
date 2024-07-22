@@ -13,9 +13,23 @@ import { getFirstPoint } from '../lib/graph-visualization-helpers';
 import { useSnackbar } from 'notistack';
 
 const defaultQuery = `
+// Try me!
+
 {
   "limit": 5
 }
+// Parameters for expansion request:
+//
+// Available parameters:
+//
+// - 'limit': number of records to use on each step.
+//
+// - 'filter': filter expression to select vectors for visualization.
+//             See https://qdrant.tech/documentation/concepts/filtering/
+//
+// - 'using': specify which vector to use for visualization
+//                  if there are multiple.
+
 `;
 
 function Graph() {
