@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { deduplicatePoints, getSimilarPoints, initGraph } from '../../lib/graph-visualization-helpers';
 import ForceGraph from 'force-graph';
@@ -29,38 +29,36 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
   };
 
   useEffect(() => {
-    if (!graphRef.current) {
-      const elem = document.getElementById('graph');
-      // eslint-disable-next-line new-cap
-      graphRef.current = ForceGraph()(elem)
-        .nodeColor((node) => (node.clicked ? '#e94' : '#2cb'))
-        .onNodeHover((node) => {
-          if (!node) {
-            elem.style.cursor = 'default';
-            return;
-          }
-          node.aa = 1;
-          elem.style.cursor = 'pointer';
-          highlightedNode = node;
-          onDataDisplay(node);
-        })
-        .autoPauseRedraw(false)
-        .nodeCanvasObjectMode((node) => (node?.id === highlightedNode?.id ? 'before' : undefined))
-        .nodeCanvasObject((node, ctx) => {
-          if (!node) return;
-          // add ring for last hovered nodes
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
-          ctx.fillStyle = node.id === highlightedNode?.id ? '#817' : 'transparent';
-          ctx.fill();
-        })
-        .linkColor(() => '#a6a6a6');
-    }
-  }, []);
+    const elem = document.getElementById('graph');
+    // eslint-disable-next-line new-cap
+    graphRef.current = ForceGraph()(elem)
+      .nodeColor((node) => (node.clicked ? '#e94' : '#2cb'))
+      .onNodeHover((node) => {
+        if (!node) {
+          elem.style.cursor = 'default';
+          return;
+        }
+        node.aa = 1;
+        elem.style.cursor = 'pointer';
+        highlightedNode = node;
+        onDataDisplay(node);
+      })
+      .autoPauseRedraw(false)
+      .nodeCanvasObjectMode((node) => (node?.id === highlightedNode?.id ? 'before' : undefined))
+      .nodeCanvasObject((node, ctx) => {
+        if (!node) return;
+        // add ring for last hovered nodes
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
+        ctx.fillStyle = node.id === highlightedNode?.id ? '#817' : 'transparent';
+        ctx.fill();
+      })
+      .linkColor(() => '#a6a6a6');
+  }, [initNode, options]);
 
   useEffect(() => {
     graphRef.current.width(wrapperRef?.clientWidth).height(wrapperRef?.clientHeight);
-  }, [wrapperRef]);
+  }, [wrapperRef, initNode, options]);
 
   useEffect(() => {
     const initNewGraph = async () => {
@@ -78,6 +76,7 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
     initNewGraph().catch(console.error);
   }, [initNode, options]);
 
+
   return <div id="graph"></div>;
 };
 
@@ -88,4 +87,4 @@ GraphVisualisation.propTypes = {
   wrapperRef: PropTypes.object,
 };
 
-export default memo(GraphVisualisation);
+export default GraphVisualisation;
