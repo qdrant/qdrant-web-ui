@@ -7,7 +7,7 @@ import Visualize from './pages/Visualize';
 import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
-import Graph from "./pages/Graph";
+import Graph from './pages/Graph';
 
 const routes = () => [
   {

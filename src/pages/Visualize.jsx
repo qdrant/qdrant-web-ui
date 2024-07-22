@@ -7,9 +7,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
-import {
-  requestFromCode
-} from "../components/FilterEditorWindow/config/RequestFromCode";
+import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
 
 const query = `
 
@@ -71,11 +69,10 @@ function Visualize() {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
-  const onEditorCodeRun = async(data, collectionName) => {
-
+  const onEditorCodeRun = async (data, collectionName) => {
     const result = await requestFromCode(data, collectionName);
     setResult(result);
-  }
+  };
 
   return (
     <>

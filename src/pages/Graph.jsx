@@ -1,29 +1,15 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  alpha,
-  Paper,
-  Box,
-  Tooltip,
-  Typography,
-  Grid,
-  IconButton,
-} from "@mui/material";
+import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import GraphVisualisation
-  from "../components/GraphVisualisation/GraphVisualisation";
-import { useWindowResize } from "../hooks/windowHooks";
-import PointPreview from "../components/GraphVisualisation/PointPreview";
-import CodeEditorWindow from "../components/FilterEditorWindow";
-import { useClient } from "../context/client-context";
-import { getFirstPoint } from "../lib/graph-visualization-helpers";
+import GraphVisualisation from '../components/GraphVisualisation/GraphVisualisation';
+import { useWindowResize } from '../hooks/windowHooks';
+import PointPreview from '../components/GraphVisualisation/PointPreview';
+import CodeEditorWindow from '../components/FilterEditorWindow';
+import { useClient } from '../context/client-context';
+import { getFirstPoint } from '../lib/graph-visualization-helpers';
 
 const defaultQuery = `
 {
@@ -61,14 +47,13 @@ function Graph() {
 
   const handleRunCode = async (data, collectionName) => {
     // scroll
-    const firstPoint = await getFirstPoint(qdrantClient,
-      {collectionName: collectionName, filter: data?.filter});
+    const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
     setInitNode(firstPoint);
     setOptions({
       collectionName: collectionName,
-      ...data
+      ...data,
     });
-  }
+  };
 
   return (
     <>
@@ -102,14 +87,13 @@ function Graph() {
                   </Box>
 
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                      <GraphVisualisation
-                        options={options}
-                        initNode={initNode}
-                        onDataDisplay={handlePointDisplay}
-                        wrapperRef={VisualizeChartWrapper.current}
-                      />
+                    <GraphVisualisation
+                      options={options}
+                      initNode={initNode}
+                      onDataDisplay={handlePointDisplay}
+                      wrapperRef={VisualizeChartWrapper.current}
+                    />
                   </Box>
-
                 </Box>
               </Panel>
               <PanelResizeHandle
@@ -131,9 +115,9 @@ function Graph() {
               </PanelResizeHandle>
               <Panel>
                 <PanelGroup direction="vertical">
-                <Panel defaultSize={20}>
-                  <CodeEditorWindow code={code} onChange={setCode} onChangeResult={handleRunCode} />
-                </Panel>
+                  <Panel defaultSize={20}>
+                    <CodeEditorWindow code={code} onChange={setCode} onChangeResult={handleRunCode} />
+                  </Panel>
                   <PanelResizeHandle
                     style={{
                       height: '10px',
@@ -151,15 +135,15 @@ function Graph() {
                       &#8943;
                     </Box>
                   </PanelResizeHandle>
-                  <Panel defaultSize={80}
+                  <Panel
+                    defaultSize={80}
                     style={{
-                    overflowY: 'scroll',
-                  }}>
-                    { activePoint &&
-                      <PointPreview point={activePoint} />
-                    }
+                      overflowY: 'scroll',
+                    }}
+                  >
+                    {activePoint && <PointPreview point={activePoint} />}
                   </Panel>
-                </PanelGroup >
+                </PanelGroup>
               </Panel>
             </PanelGroup>
           </Grid>

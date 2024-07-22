@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
 import { autocomplete } from './config/Autocomplete';
-import { codeParse, requestFromCode } from "./config/RequestFromCode";
+import { codeParse, requestFromCode } from './config/RequestFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
