@@ -1,4 +1,3 @@
-
 import Chart from 'chart.js/auto';
 import chroma from 'chroma-js';
 import get from 'lodash/get';

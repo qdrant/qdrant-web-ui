@@ -71,7 +71,6 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
 
   useEffect(() => {
     const initNewGraph = async () => {
-
       const graphData = await initGraph(qdrantClient, {
         ...options,
         initNode,
@@ -87,7 +86,6 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
       enqueueSnackbar(JSON.stringify(e.getActualType()), { variant: 'error' });
     });
   }, [initNode, options]);
-
 
   return <div id="graph"></div>;
 };

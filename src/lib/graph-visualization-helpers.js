@@ -9,7 +9,7 @@ export const initGraph = async (qdrantClient, { collectionName, initNode, limit,
 
   const points = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
 
-  const graphData =  {
+  const graphData = {
     nodes: [initNode, ...points],
     links: points.map((point) => ({ source: initNode.id, target: point.id })),
   };
