@@ -2,7 +2,7 @@ import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
 import openapi from '/openapi.json??url&raw';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
-const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/'
+const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/';
 
 const apiDocs = new OpenapiDocs(JSON.parse(openapi));
 
