@@ -74,6 +74,41 @@ function Visualize() {
     setResult(result);
   };
 
+  const filterRequestSchema = (vectorNames) => ({
+    description: 'Filter request',
+    type: 'object',
+    properties: {
+      limit: {
+        description: 'Page size. Default: 10',
+        type: 'integer',
+        format: 'uint',
+        minimum: 1,
+        nullable: true,
+      },
+      filter: {
+        description: 'Look only for points which satisfies this conditions. If not provided - all points.',
+        anyOf: [
+          {
+            $ref: '#/components/schemas/Filter',
+          },
+          {
+            nullable: true,
+          },
+        ],
+      },
+      vector_name: {
+        description: 'Vector field name',
+        type: 'string',
+        enum: vectorNames,
+      },
+      color_by: {
+        description: 'Color points by this field',
+        type: 'string',
+        nullable: true,
+      },
+    },
+  });
+
   return (
     <>
       <Box component="main">
@@ -133,7 +168,12 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <FilterEditorWindow code={code} onChange={setCode} onChangeResult={onEditorCodeRun} />
+                <FilterEditorWindow
+                  code={code}
+                  onChange={setCode}
+                  onChangeResult={onEditorCodeRun}
+                  customRequestSchema={filterRequestSchema}
+                />
               </Panel>
             </PanelGroup>
           </Grid>

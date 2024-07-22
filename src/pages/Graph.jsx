@@ -75,6 +75,36 @@ function Graph() {
     }
   };
 
+  const queryRequestSchema = (vectorNames) => ({
+    description: 'Filter request',
+    type: 'object',
+    properties: {
+      limit: {
+        description: 'Page size. Default: 10',
+        type: 'integer',
+        format: 'uint',
+        minimum: 1,
+        nullable: true,
+      },
+      filter: {
+        description: 'Look only for points which satisfies this conditions. If not provided - all points.',
+        anyOf: [
+          {
+            $ref: '#/components/schemas/Filter',
+          },
+          {
+            nullable: true,
+          },
+        ],
+      },
+      using: {
+        description: 'Vector field name',
+        type: 'string',
+        enum: vectorNames,
+      },
+    },
+  });
+
   return (
     <>
       <Box component="main">
@@ -136,7 +166,12 @@ function Graph() {
               <Panel>
                 <PanelGroup direction="vertical">
                   <Panel defaultSize={40}>
-                    <CodeEditorWindow code={code} onChange={setCode} onChangeResult={handleRunCode} />
+                    <CodeEditorWindow
+                      code={code}
+                      onChange={setCode}
+                      onChangeResult={handleRunCode}
+                      customRequestSchema={queryRequestSchema}
+                    />
                   </Panel>
                   <PanelResizeHandle
                     style={{
