@@ -1,7 +1,6 @@
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -23,6 +22,8 @@ import GraphVisualisation
 import { useWindowResize } from "../hooks/windowHooks";
 import PointPreview from "../components/GraphVisualisation/PointPreview";
 import CodeEditorWindow from "../components/FilterEditorWindow";
+import { useClient } from "../context/client-context";
+import { getFirstPoint } from "../lib/graph-visualization-helpers";
 
 const defaultQuery = `
 {
@@ -34,24 +35,21 @@ function Graph() {
   const theme = useTheme();
   const navigate = useNavigate();
   const params = useParams();
+  const [initNode, setInitNode] = useState(null);
+  const [options, setOptions] = useState({
+    limit: 5,
+    filter: null,
+    using: null,
+    collectionName: params.collectionName,
+  });
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
+  const { client: qdrantClient } = useClient();
 
-  const [result, setResult] = useState({});
   const [code, setCode] = useState(defaultQuery);
-  const getCodeParams = useCallback((param) => {
-    return JSON.parse(code)[param] || null;
-  }, [result]);
 
   const [activePoint, setActivePoint] = useState(null);
-  // todo: add setOptions function
-  const options = useMemo(() => ({
-    limit: getCodeParams('limit'),
-    filter: getCodeParams('filter'),
-    using: getCodeParams('using'),
-    collectionName: params.collectionName, // Assuming collectionName doesn't change often
-  }), [result]);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
@@ -60,6 +58,17 @@ function Graph() {
   const handlePointDisplay = useCallback((point) => {
     setActivePoint(point);
   }, []);
+
+  const handleRunCode = async (data, collectionName) => {
+    // scroll
+    const firstPoint = await getFirstPoint(qdrantClient,
+      {collectionName: collectionName, filter: data?.filter});
+    setInitNode(firstPoint);
+    setOptions({
+      collectionName: collectionName,
+      ...data
+    });
+  }
 
   return (
     <>
@@ -95,7 +104,7 @@ function Graph() {
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
                       <GraphVisualisation
                         options={options}
-                        initialData={result}
+                        initNode={initNode}
                         onDataDisplay={handlePointDisplay}
                         wrapperRef={VisualizeChartWrapper.current}
                       />
@@ -123,7 +132,7 @@ function Graph() {
               <Panel>
                 <PanelGroup direction="vertical">
                 <Panel defaultSize={20}>
-                  <CodeEditorWindow code={code} onChange={setCode} onChangeResult={setResult} />
+                  <CodeEditorWindow code={code} onChange={setCode} onChangeResult={handleRunCode} />
                 </Panel>
                   <PanelResizeHandle
                     style={{

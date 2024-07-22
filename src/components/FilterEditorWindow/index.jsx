@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
 import { autocomplete } from './config/Autocomplete';
-import { requestFromCode } from './config/RequestFromCode';
+import { codeParse, requestFromCode } from "./config/RequestFromCode";
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
@@ -36,9 +36,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
     runBtnCommandId = editor.addCommand(
       0,
       async (_ctx, ...args) => {
-        const data = args[0];
-        const result = await requestFromCode(data, collectionName);
-        onChangeResult(result);
+        const data = codeParse(args[0]);
+        if (data.error) {
+          return data;
+        }
+        onChangeResult(data, collectionName);
       },
       ''
     );

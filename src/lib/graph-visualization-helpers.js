@@ -1,15 +1,17 @@
-export const initGraph = async (qdrantClient, {collectionName,  limit, filter, using}) => {
-  const firstPoint = await getFirstPoint(qdrantClient, {collectionName, filter});
-  if (!firstPoint) {
-    throw new Error('No points found for filter: ' + JSON.stringify(filter));
+export const initGraph = async (qdrantClient, {collectionName, initNode, limit, filter, using}) => {
+  if (!initNode) {
+    return {
+      nodes: [],
+      links: [],
+    };
   }
-  firstPoint.clicked = true;
+  initNode.clicked = true;
 
-  const points = await getSimilarPoints(qdrantClient, {collectionName, pointId: firstPoint.id, limit, filter, using});
+  const points = await getSimilarPoints(qdrantClient, {collectionName, pointId: initNode.id, limit, filter, using});
 
   return {
-    nodes: [firstPoint, ...points],
-    links: points.map((point) => ({source: firstPoint.id, target: point.id})),
+    nodes: [initNode, ...points],
+    links: points.map((point) => ({source: initNode.id, target: point.id})),
   };
 }
 

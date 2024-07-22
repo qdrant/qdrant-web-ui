@@ -8,8 +8,7 @@ import {
 import ForceGraph from "force-graph";
 import { useClient } from "../../context/client-context";
 
-const GraphVisualisation = ({ options, initialData, onDataDisplay, wrapperRef }) => {
-  // todo: initialData - process data from param
+const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
   const NODE_R = 4;
@@ -34,8 +33,6 @@ const GraphVisualisation = ({ options, initialData, onDataDisplay, wrapperRef })
  }
 
   useEffect(() => {
-    console.log('initialData', initialData);
-    console.log('options', options);
     if (!graphRef.current) {
       const elem = document.getElementById('graph');
       // eslint-disable-next-line new-cap
@@ -73,7 +70,10 @@ const GraphVisualisation = ({ options, initialData, onDataDisplay, wrapperRef })
   useEffect( () => {
     const initNewGraph = async () => {
       const graphData = await initGraph(
-        qdrantClient, options
+        qdrantClient, {
+          ...options,
+          initNode,
+        }
       );
       if (graphRef.current && options) {
         const initialActiveNode = graphData.nodes[0];
@@ -85,14 +85,14 @@ const GraphVisualisation = ({ options, initialData, onDataDisplay, wrapperRef })
       }
     };
     initNewGraph().catch(console.error);
-  }, [options]);
+  }, [initNode, options]);
 
   return <div id="graph"></div>;
 };
 
 GraphVisualisation.propTypes = {
+  initNode: PropTypes.object,
   options: PropTypes.object.isRequired,
-  initialData: PropTypes.object.isRequired,
   onDataDisplay: PropTypes.func.isRequired,
   wrapperRef: PropTypes.object,
 };

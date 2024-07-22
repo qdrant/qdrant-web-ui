@@ -1,11 +1,54 @@
 import axios from 'axios';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 
-export async function requestFromCode(text, collectionName) {
-  const data = codeParse(text);
-  if (data.error) {
-    return data;
+function parseDataToRequest(reqBody) {
+  // Validate color_by
+  if (reqBody.color_by) {
+    const colorBy = reqBody.color_by;
+
+    if (typeof colorBy === 'string') {
+      // Parse into payload variant
+      reqBody.color_by = {
+        payload: colorBy,
+      };
+    } else {
+      // Check we only have one of the options: payload, or discover_score
+      const options = [colorBy.payload, colorBy.discover_score];
+      const optionsCount = options.filter((option) => option).length;
+      if (optionsCount !== 1) {
+        return {
+          reqBody: reqBody,
+          error: '`color_by`: Only one of `payload`, or `discover_score` can be used',
+        };
+      }
+
+      // Put search arguments in main request body
+      if (colorBy.discover_score) {
+        reqBody = {
+          ...reqBody,
+          ...colorBy.discover_score,
+        };
+      }
+    }
   }
+
+  // Set with_vector name
+  if (reqBody.vector_name) {
+    reqBody.with_vector = [reqBody.vector_name];
+    return {
+      reqBody: reqBody,
+      error: null,
+    };
+  } else if (!reqBody.vector_name) {
+    reqBody.with_vector = true;
+    return {
+      reqBody: reqBody,
+      error: null,
+    };
+  }
+}
+export async function requestFromCode(dataRaw, collectionName) {
+  const data = parseDataToRequest(dataRaw);
   // Sending request
   const colorBy = data.reqBody.color_by;
   if (colorBy?.payload) {
@@ -108,62 +151,15 @@ async function discoverFromCode(collectionName, data) {
 }
 
 export function codeParse(codeText) {
-  let reqBody = {};
-
   // Parse JSON
   if (codeText) {
     try {
-      reqBody = bigIntJSON.parse(codeText);
+      return bigIntJSON.parse(codeText);
     } catch (e) {
       return {
         reqBody: codeText,
         error: 'Fix the position brackets to run & check the json',
       };
     }
-  }
-
-  // Validate color_by
-  if (reqBody.color_by) {
-    const colorBy = reqBody.color_by;
-
-    if (typeof colorBy === 'string') {
-      // Parse into payload variant
-      reqBody.color_by = {
-        payload: colorBy,
-      };
-    } else {
-      // Check we only have one of the options: payload, or discover_score
-      const options = [colorBy.payload, colorBy.discover_score];
-      const optionsCount = options.filter((option) => option).length;
-      if (optionsCount !== 1) {
-        return {
-          reqBody: reqBody,
-          error: '`color_by`: Only one of `payload`, or `discover_score` can be used',
-        };
-      }
-
-      // Put search arguments in main request body
-      if (colorBy.discover_score) {
-        reqBody = {
-          ...reqBody,
-          ...colorBy.discover_score,
-        };
-      }
-    }
-  }
-
-  // Set with_vector name
-  if (reqBody.vector_name) {
-    reqBody.with_vector = [reqBody.vector_name];
-    return {
-      reqBody: reqBody,
-      error: null,
-    };
-  } else if (!reqBody.vector_name) {
-    reqBody.with_vector = true;
-    return {
-      reqBody: reqBody,
-      error: null,
-    };
   }
 }
