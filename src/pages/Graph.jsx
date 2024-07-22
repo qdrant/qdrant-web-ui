@@ -10,6 +10,7 @@ import PointPreview from '../components/GraphVisualisation/PointPreview';
 import CodeEditorWindow from '../components/FilterEditorWindow';
 import { useClient } from '../context/client-context';
 import { getFirstPoint } from '../lib/graph-visualization-helpers';
+import { useSnackbar } from 'notistack';
 
 const defaultQuery = `
 {
@@ -31,6 +32,7 @@ function Graph() {
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
+  const { enqueueSnackbar } = useSnackbar();
   const { client: qdrantClient } = useClient();
 
   const [code, setCode] = useState(defaultQuery);
@@ -47,12 +49,16 @@ function Graph() {
 
   const handleRunCode = async (data, collectionName) => {
     // scroll
-    const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
-    setInitNode(firstPoint);
-    setOptions({
-      collectionName: collectionName,
-      ...data,
-    });
+    try {
+      const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
+      setInitNode(firstPoint);
+      setOptions({
+        collectionName: collectionName,
+        ...data,
+      });
+    } catch (e) {
+      enqueueSnackbar(e.message, { variant: 'error' });
+    }
   };
 
   return (

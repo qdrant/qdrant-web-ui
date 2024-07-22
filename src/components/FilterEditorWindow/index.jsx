@@ -5,16 +5,17 @@ import { useParams } from 'react-router-dom';
 import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
 import { autocomplete } from './config/Autocomplete';
+import { useSnackbar } from 'notistack';
 import { codeParse, requestFromCode } from './config/RequestFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
 const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const editorRef = useRef(null);
   const lensesRef = useRef(null);
   const autocompleteRef = useRef(null);
   const { collectionName } = useParams();
-
   const { client: qdrantClient } = useClient();
 
   let runBtnCommandId = null;
@@ -38,6 +39,9 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
       async (_ctx, ...args) => {
         const data = codeParse(args[0]);
         if (data.error) {
+          enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(data.error)}`, {
+            variant: 'error',
+          });
           return data;
         }
         onChangeResult(data, collectionName);

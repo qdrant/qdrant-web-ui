@@ -3,10 +3,12 @@ import PropTypes from 'prop-types';
 import { deduplicatePoints, getSimilarPoints, initGraph } from '../../lib/graph-visualization-helpers';
 import ForceGraph from 'force-graph';
 import { useClient } from '../../context/client-context';
+import { useSnackbar } from 'notistack';
 
 const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
+  const { enqueueSnackbar } = useSnackbar();
   const NODE_R = 4;
   let highlightedNode = null;
 
@@ -14,13 +16,20 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
     node.clicked = true;
     const { nodes, links } = graphRef.current.graphData();
     const pointId = node.id;
-    const similarPoints = await getSimilarPoints(qdrantClient, {
-      collectionName: options.collectionName,
-      pointId,
-      limit: options.limit,
-      filter: options.filter,
-      using: options.using,
-    });
+
+    let similarPoints = [];
+    try {
+      similarPoints = await getSimilarPoints(qdrantClient, {
+        collectionName: options.collectionName,
+        pointId,
+        limit: options.limit,
+        filter: options.filter,
+        using: options.using,
+      });
+    } catch (e) {
+      enqueueSnackbar(e.message, { variant: 'error' });
+      return;
+    }
 
     graphRef.current.graphData({
       nodes: [...nodes, ...deduplicatePoints(nodes, similarPoints)],
@@ -62,6 +71,7 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
 
   useEffect(() => {
     const initNewGraph = async () => {
+
       const graphData = await initGraph(qdrantClient, {
         ...options,
         initNode,
@@ -73,7 +83,9 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
         graphRef.current.graphData(graphData).linkDirectionalArrowLength(3).onNodeClick(handleNodeClick);
       }
     };
-    initNewGraph().catch(console.error);
+    initNewGraph().catch((e) => {
+      enqueueSnackbar(e.message, { variant: 'error' });
+    });
   }, [initNode, options]);
 
 

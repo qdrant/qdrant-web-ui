@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';
+
 import Chart from 'chart.js/auto';
 import chroma from 'chroma-js';
 import get from 'lodash/get';
@@ -12,20 +12,9 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 
 const VisualizeChart = ({ scrollResult }) => {
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
-  const action = (snackbarId) => (
-    <Button
-      variant="outlined"
-      color="inherit"
-      onClick={() => {
-        closeSnackbar(snackbarId);
-      }}
-    >
-      Dismiss
-    </Button>
-  );
 
   useEffect(() => {
     if (!scrollResult.data && !scrollResult.error) {
@@ -35,14 +24,12 @@ const VisualizeChart = ({ scrollResult }) => {
     if (scrollResult.error) {
       enqueueSnackbar(`Visualization Unsuccessful, error: ${bigIntJSON.stringify(scrollResult.error)}`, {
         variant: 'error',
-        action,
       });
 
       return;
     } else if (!scrollResult.data?.result?.points.length) {
       enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, {
         variant: 'error',
-        action,
       });
       return;
     }
@@ -57,7 +44,6 @@ const VisualizeChart = ({ scrollResult }) => {
       if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
         enqueueSnackbar(`Visualization Unsuccessful, error: Color by field ${labelby} does not exist`, {
           variant: 'error',
-          action,
         });
         return;
       }
@@ -183,7 +169,6 @@ const VisualizeChart = ({ scrollResult }) => {
       if (m.data.error) {
         enqueueSnackbar(`Visualization Unsuccessful, error: ${m.data.error}`, {
           variant: 'error',
-          action,
         });
       } else if (m.data.result && m.data.result.length > 0) {
         m.data.result.forEach((dataset, index) => {
@@ -191,7 +176,7 @@ const VisualizeChart = ({ scrollResult }) => {
         });
         myChart.update();
       } else {
-        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error', action });
+        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
       }
     };
 
