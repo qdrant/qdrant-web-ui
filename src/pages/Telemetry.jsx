@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Card,
+  Collapse,
   FormControl,
   Grid,
-  IconButton,
   InputLabel,
+  Link,
   MenuItem,
   Select,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useClient } from '../context/client-context';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Chart from 'chart.js/auto';
 import { useTheme } from '@mui/material/styles';
-import { Info } from '@mui/icons-material';
 
 function Telemetry() {
   const [selectedEndpoint, setSelectedEndpoint] = useState('GET /telemetry');
@@ -26,6 +26,8 @@ function Telemetry() {
   const [telemetryData, setTelemetryData] = useState(null);
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
+  const [open, setOpen] = useState(true);
+
   const theme = useTheme();
 
   useEffect(() => {
@@ -181,6 +183,23 @@ function Telemetry() {
           <Typography variant="h4">Telemetry</Typography>
         </Grid>
         <Grid item xs={12}>
+          <Collapse in={open}>
+            <Alert
+              onClose={() => {
+                setOpen(false);
+              }}
+              sx={{ mb: 2 }}
+              severity="info"
+            >
+              Looking for a full-scale monitoring solution? Our cloud platform offers advanced features and detailed
+              insights.{'  '}
+              <Link href="https://cloud.qdrant.io/" target="_blank" rel="noreferrer" color="inherit" underline="always">
+                Click here to explore more.
+              </Link>
+            </Alert>
+          </Collapse>
+        </Grid>
+        <Grid item xs={12}>
           <Card
             sx={{
               display: 'flex',
@@ -243,15 +262,6 @@ function Telemetry() {
                   <MenuItem value={60}>1 minute</MenuItem>
                 </Select>
               </FormControl>
-
-              <Tooltip
-                title="Looking for a full-scale monitoring solution? Our cloud 
-              platform offers advanced features and detailed insights. Click here to explore more."
-              >
-                <IconButton size="large" onClick={() => window.open('https://cloud.qdrant.io/')}>
-                  <Info />
-                </IconButton>
-              </Tooltip>
             </Box>
           </Card>
         </Grid>
