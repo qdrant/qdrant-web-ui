@@ -1,3 +1,4 @@
+import { Button } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
@@ -5,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { HashRouter } from 'react-router-dom';
 import { ClientProvider } from './context/client-context';
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider, closeSnackbar } from 'notistack';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -18,6 +19,17 @@ root.render(
             horizontal: 'center',
           }}
           style={{ flexWrap: 'nowrap' }}
+          action={(snackbarId) => (
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={() => {
+                closeSnackbar(snackbarId);
+              }}
+            >
+              Dismiss
+            </Button>
+          )}
         >
           <App />
         </SnackbarProvider>

@@ -1,80 +1,81 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import FilterEditorWindow from '../components/FilterEditorWindow';
-import VisualizeChart from '../components/VisualizeChart';
+import GraphVisualisation from '../components/GraphVisualisation/GraphVisualisation';
 import { useWindowResize } from '../hooks/windowHooks';
-import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
+import PointPreview from '../components/GraphVisualisation/PointPreview';
+import CodeEditorWindow from '../components/FilterEditorWindow';
+import { useClient } from '../context/client-context';
+import { getFirstPoint } from '../lib/graph-visualization-helpers';
+import { useSnackbar } from 'notistack';
 
-const query = `
+const defaultQuery = `
+// Try me!
 
-// Specify request parameters to select data for visualization.
+{
+  "limit": 5
+}
+// Parameters for expansion request:
 //
 // Available parameters:
 //
-// - 'limit': maximum number of vectors to visualize.
-//            *Warning*: large values may cause browser to freeze.
+// - 'limit': number of records to use on each step.
 //
 // - 'filter': filter expression to select vectors for visualization.
 //             See https://qdrant.tech/documentation/concepts/filtering/
 //
-// - 'color_by': specify score or payload field to use for coloring points.
-//               How to use:
-//
-//                "color_by": "field_name"
-//
-//                or
-//
-//                "color_by": {
-//                  "payload": "field_name"
-//                }
-//
-//                or
-//
-//                "color_by": {
-//                  "discover_score": {
-//                    "target": 42,
-//                    "context": [{"positive": 1, "negative": 0}]
-//                  }
-//                }
-//
-// - 'vector_name': specify which vector to use for visualization
+// - 'using': specify which vector to use for visualization
 //                  if there are multiple.
-//
-// Minimal example:
-
-{
-  "limit": 500
-}
-
 
 `;
-const defaultResult = {};
 
-function Visualize() {
+function Graph() {
   const theme = useTheme();
-  const [code, setCode] = useState(query);
-  const [result, setResult] = useState(defaultResult);
-  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
   const navigate = useNavigate();
   const params = useParams();
+  const [initNode, setInitNode] = useState(null);
+  const [options, setOptions] = useState({
+    limit: 5,
+    filter: null,
+    using: null,
+    collectionName: params.collectionName,
+  });
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
+  const { enqueueSnackbar } = useSnackbar();
+  const { client: qdrantClient } = useClient();
+
+  const [code, setCode] = useState(defaultQuery);
+
+  const [activePoint, setActivePoint] = useState(null);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
-  const onEditorCodeRun = async (data, collectionName) => {
-    const result = await requestFromCode(data, collectionName);
-    setResult(result);
+  const handlePointDisplay = useCallback((point) => {
+    setActivePoint(point);
+  }, []);
+
+  const handleRunCode = async (data, collectionName) => {
+    // scroll
+    try {
+      const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
+      setInitNode(firstPoint);
+      setOptions({
+        collectionName: collectionName,
+        ...data,
+      });
+    } catch (e) {
+      enqueueSnackbar(e.message, { variant: 'error' });
+    }
   };
 
-  const filterRequestSchema = (vectorNames) => ({
+  const queryRequestSchema = (vectorNames) => ({
     description: 'Filter request',
     type: 'object',
     properties: {
@@ -96,15 +97,10 @@ function Visualize() {
           },
         ],
       },
-      vector_name: {
+      using: {
         description: 'Vector field name',
         type: 'string',
         enum: vectorNames,
-      },
-      color_by: {
-        description: 'Color points by this field',
-        type: 'string',
-        nullable: true,
       },
     },
   });
@@ -112,16 +108,10 @@ function Visualize() {
   return (
     <>
       <Box component="main">
-        {/* {errorMessage !== null && <ErrorNotifier {...{message: errorMessage}} />} */}
         <Grid container>
-          {/*  {errorMessage && (*/}
-          {/*    <Grid xs={12} item textAlign={'center'}>*/}
-          {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
-          {/*    </Grid>*/}
-          {/*  )}*/}
           <Grid xs={12} item>
-            <PanelGroup direction="horizontal">
-              <Panel style={{ display: 'flex' }}>
+            <PanelGroup direction="horizontal" autoSaveId="persistence">
+              <Panel defaultSize={50}>
                 <Box width={'100%'}>
                   <Box>
                     <Paper
@@ -145,8 +135,14 @@ function Visualize() {
                       <Typography variant="h6">{params.collectionName}</Typography>
                     </Paper>
                   </Box>
+
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} />
+                    <GraphVisualisation
+                      options={options}
+                      initNode={initNode}
+                      onDataDisplay={handlePointDisplay}
+                      wrapperRef={VisualizeChartWrapper.current}
+                    />
                   </Box>
                 </Box>
               </Panel>
@@ -168,12 +164,41 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <FilterEditorWindow
-                  code={code}
-                  onChange={setCode}
-                  onChangeResult={onEditorCodeRun}
-                  customRequestSchema={filterRequestSchema}
-                />
+                <PanelGroup direction="vertical">
+                  <Panel defaultSize={40}>
+                    <CodeEditorWindow
+                      code={code}
+                      onChange={setCode}
+                      onChangeResult={handleRunCode}
+                      customRequestSchema={queryRequestSchema}
+                    />
+                  </Panel>
+                  <PanelResizeHandle
+                    style={{
+                      height: '10px',
+                      background: alpha(theme.palette.primary.main, 0.05),
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                      }}
+                    >
+                      &#8943;
+                    </Box>
+                  </PanelResizeHandle>
+                  <Panel
+                    defaultSize={60}
+                    style={{
+                      overflowY: 'scroll',
+                    }}
+                  >
+                    {activePoint && <PointPreview point={activePoint} />}
+                  </Panel>
+                </PanelGroup>
               </Panel>
             </PanelGroup>
           </Grid>
@@ -183,4 +208,4 @@ function Visualize() {
   );
 }
 
-export default Visualize;
+export default Graph;

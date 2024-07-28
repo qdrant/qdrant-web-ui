@@ -1,6 +1,6 @@
 import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
 
-export const autocomplete = async (monaco, qdrantClient, collectionName) => {
+export const autocomplete = async (monaco, qdrantClient, collectionName, customRequestSchema) => {
   const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
   const openapi = await response.json();
 
@@ -15,41 +15,8 @@ export const autocomplete = async (monaco, qdrantClient, collectionName) => {
   } catch (e) {
     console.error(e);
   }
-  const FilterRequest = {
-    description: 'Filter request',
-    type: 'object',
-    properties: {
-      limit: {
-        description: 'Page size. Default: 10',
-        type: 'integer',
-        format: 'uint',
-        minimum: 1,
-        nullable: true,
-      },
-      filter: {
-        description: 'Look only for points which satisfies this conditions. If not provided - all points.',
-        anyOf: [
-          {
-            $ref: '#/components/schemas/Filter',
-          },
-          {
-            nullable: true,
-          },
-        ],
-      },
-      vector_name: {
-        description: 'Vector field name',
-        type: 'string',
-        enum: vectorNames,
-      },
-      color_by: {
-        description: 'Color points by this field',
-        type: 'string',
-        nullable: true,
-      },
-    },
-  };
-  openapi.components.schemas.FilterRequest = FilterRequest;
+
+  openapi.components.schemas.CustomRequest = customRequestSchema(vectorNames);
 
   const autocomplete = new OpenapiAutocomplete(openapi, []);
 
@@ -79,7 +46,7 @@ export const autocomplete = async (monaco, qdrantClient, collectionName) => {
 
         const requestBody = requestBodyLines.join('\n');
 
-        let suggestions = autocomplete.completeRequestBodyByDataRef('#/components/schemas/FilterRequest', requestBody);
+        let suggestions = autocomplete.completeRequestBodyByDataRef('#/components/schemas/CustomRequest', requestBody);
         suggestions = suggestions.map((s) => {
           return {
             label: s,
