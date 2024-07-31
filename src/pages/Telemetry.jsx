@@ -1,288 +1,121 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  Collapse,
-  FormControl,
-  Grid,
-  InputLabel,
-  Link,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material';
-import { useClient } from '../context/client-context';
-import { CenteredFrame } from '../components/Common/CenteredFrame';
-import Chart from 'chart.js/auto';
-import { useTheme } from '@mui/material/styles';
+import React, { useState } from 'react';
+import { Alert, Box, Collapse, Grid, Link } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import TelemetryEditorWindow from '../components/Telemetry/Editor';
+import Charts from '../components/Telemetry/Charts';
 
+const query = `
+
+// app.system.ram_size
+// app.system.disk_size
+// collections.number_of_collections
+// collections.collections[0].init_time_ms
+// collections.collections[0].config.params.vectors.size
+// collections.collections[0].config.params.shard_number
+// collections.collections[0].config.params.replication_factor
+// collections.collections[0].config.params.write_consistency_factor
+// collections.collections[0].config.hnsw_config.m
+// collections.collections[0].config.hnsw_config.ef_construct
+// collections.collections[0].config.hnsw_config.full_scan_threshold
+// collections.collections[0].config.hnsw_config.max_indexing_threads
+// collections.collections[0].config.optimizer_config.deleted_threshold
+// collections.collections[0].config.optimizer_config.vacuum_min_vector_number
+// collections.collections[0].config.optimizer_config.default_segment_number
+// collections.collections[0].config.optimizer_config.indexing_threshold
+// collections.collections[0].config.optimizer_config.flush_interval_sec
+// collections.collections[0].config.optimizer_config.max_optimization_threads
+// collections.collections[0].config.wal_config.wal_capacity_mb
+// collections.collections[0].config.wal_config.wal_segments_ahead
+
+
+
+{
+  "reload_interval": 2,
+  "paths": [
+    "app.system.disk_size",
+    "app.system.ram_size",
+    "collections.collections[0].shards[0].local.segments[0].info.num_indexed_vectors",
+    "requests.rest.responses['GET /telemetry'][200].count",
+    "requests.rest.responses['OPTIONS /collections'][200].count"
+  ]
+}`;
+const defaultResult = '{}';
 function Telemetry() {
-  const [selectedEndpoint, setSelectedEndpoint] = useState('GET /telemetry');
-  const [chartData, setChartData] = useState({});
-  const [selectedEndpoints, setSelectedEndpoints] = useState([]);
-  const [refreshInterval, setRefreshInterval] = useState(1);
-  const [telemetryData, setTelemetryData] = useState(null);
-  const { client: qdrantClient } = useClient();
-  const [chartInstances, setChartInstances] = useState({});
+  const [code, setCode] = useState(query);
+  const [result, setResult] = useState(defaultResult);
   const [open, setOpen] = useState(true);
-
   const theme = useTheme();
 
-  useEffect(() => {
-    const fetchTelemetryData = async () => {
-      try {
-        const response = await qdrantClient.api('service').telemetry();
-        setTelemetryData(response.data.result.requests.rest.responses);
-
-        const currentTime = new Date().toLocaleTimeString();
-
-        selectedEndpoints.forEach((endpoint) => {
-          setChartData((prevData) => ({
-            ...prevData,
-            [endpoint]: {
-              ...prevData[endpoint],
-              [currentTime]: response.data.result.requests.rest.responses[endpoint][200],
-            },
-          }));
-        });
-      } catch (error) {
-        console.error('Failed to fetch telemetry data', error);
-      }
-    };
-
-    fetchTelemetryData();
-
-    const intervalId = setInterval(() => {
-      fetchTelemetryData();
-    }, refreshInterval * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [refreshInterval, selectedEndpoints]);
-
-  const updateRefreshInterval = (interval) => {
-    setRefreshInterval(interval);
-    setChartData(
-      Object.keys(chartData).reduce((acc, endpoint) => {
-        acc[endpoint] = {};
-        return acc;
-      }, {})
-    );
-  };
-
-  const addChart = (endpoint) => {
-    Object.keys(chartInstances).forEach((chart) => {
-      chartInstances[chart].destroy();
-    });
-    setChartInstances({});
-
-    setSelectedEndpoints((prevEndpoints) => [...prevEndpoints, endpoint]);
-    setChartData((prevData) => ({
-      ...prevData,
-      [endpoint]: {},
-    }));
-  };
-
-  useEffect(() => {
-    selectedEndpoints.forEach((endpoint) => {
-      const context = document.getElementById(endpoint);
-
-      const chart = new Chart(context, {
-        type: 'line',
-        data: {
-          labels: Object.keys(chartData[endpoint]),
-          datasets: [
-            {
-              label: 'Avg query latency(ms)',
-              data: Object.values(chartData[endpoint])?.map((value) => value?.avg_duration_micros) || [],
-              yAxisID: 'y',
-            },
-            {
-              label: 'Query count',
-              data: Object.values(chartData[endpoint])?.map((value) => value?.count) || [],
-              yAxisID: 'y1',
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          stacked: false,
-          plugins: {
-            title: {
-              display: true,
-              text: endpoint,
-            },
-          },
-          scales: {
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              grid: {
-                drawOnChartArea: false,
-              },
-            },
-          },
-        },
-      });
-
-      setChartInstances((prevInstances) => ({
-        ...prevInstances,
-        [endpoint]: chart,
-      }));
-    });
-  }, [selectedEndpoints]);
-
-  useEffect(() => {
-    syncColors();
-    Object.keys(chartInstances).forEach((endpoint) => {
-      const chart = chartInstances[endpoint];
-      chart.data.datasets[0].data = Object.values(chartData[endpoint]).map((value) => value?.avg_duration_micros) || [];
-      chart.data.datasets[1].data = Object.values(chartData[endpoint]).map((value) => value?.count) || [];
-      chart.data.labels = Object.keys(chartData[endpoint]);
-      chart.update();
-    });
-  }, [chartData]);
-
-  const syncColors = () => {
-    Object.keys(chartInstances).forEach((endpoint) => {
-      const chart = chartInstances[endpoint];
-      const color = theme.palette.mode === 'dark' ? 'white' : 'black';
-      const gridColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
-      chart.options.scales.x.grid.color = gridColor;
-      chart.options.scales.y.grid.color = gridColor;
-      chart.options.scales.y1.grid.color = gridColor;
-      chart.options.plugins.title.color = color;
-      chart.options.scales.x.ticks.color = color;
-      chart.options.scales.y.ticks.color = color;
-      chart.options.scales.y1.ticks.color = color;
-
-      chart.update();
-    });
-  };
-
-  useEffect(() => {
-    syncColors();
-  }, [theme.palette.mode]);
-
   return (
-    <CenteredFrame>
-      <Grid container maxWidth="xl" spacing={3}>
-        <Grid item xs={12}>
-          <Typography variant="h4">Telemetry</Typography>
-        </Grid>
-        <Grid item xs={12}>
-          <Collapse in={open}>
-            <Alert
-              onClose={() => {
-                setOpen(false);
-              }}
-              sx={{ mb: 2 }}
-              severity="info"
-            >
-              Looking for a full-scale monitoring solution? Our cloud platform offers advanced features and detailed
-              insights.{'  '}
-              <Link href="https://cloud.qdrant.io/" target="_blank" rel="noreferrer" color="inherit" underline="always">
-                Click here to explore more.
-              </Link>
-            </Alert>
-          </Collapse>
-        </Grid>
-        <Grid item xs={12}>
-          <Card
+    <>
+      <Box component="main">
+        <Grid container>
+          <Grid
+            xs={12}
+            item
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              p: 2,
+              flexDirection: 'column',
+              height: 'calc(100vh - 64px)',
             }}
-            variant="outlined"
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                flexGrow: 1,
-              }}
-            >
-              <FormControl fullWidth sx={{ maxWidth: 400 }}>
-                <Select value={selectedEndpoint} onChange={(e) => setSelectedEndpoint(e.target.value)}>
-                  {telemetryData
-                    ? Object.keys(telemetryData)
-                        .sort()
-                        .map((endpoint) => (
-                          <MenuItem key={endpoint} value={endpoint}>
-                            {endpoint}
-                          </MenuItem>
-                        ))
-                    : null}
-                </Select>
-              </FormControl>
-              <Button
-                variant="outlined"
-                color="success"
-                size="large"
-                onClick={() => addChart(selectedEndpoint)}
-                disabled={selectedEndpoints.includes(selectedEndpoint)}
-              >
-                Add Graph
-              </Button>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-              }}
-            >
-              <FormControl fullWidth sx={{ maxWidth: 200 }}>
-                <InputLabel id="refresh-interval-label">Refresh Interval</InputLabel>
-                <Select
-                  labelId="refresh-interval-label"
-                  label="Refresh Interval"
-                  value={refreshInterval}
-                  onChange={(e) => updateRefreshInterval(e.target.value)}
+            <PanelGroup direction="horizontal">
+              <Panel>
+                <Box
+                  sx={{
+                    height: '100%',
+                    overflow: 'auto',
+                  }}
                 >
-                  <MenuItem value={1}>1 second</MenuItem>
-                  <MenuItem value={5}>5 seconds</MenuItem>
-                  <MenuItem value={15}>15 seconds</MenuItem>
-                  <MenuItem value={30}>30 seconds</MenuItem>
-                  <MenuItem value={60}>1 minute</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          </Card>
+                  <Collapse in={open}>
+                    <Alert
+                      onClose={() => {
+                        setOpen(false);
+                      }}
+                      severity="info"
+                    >
+                      Looking for a full-scale monitoring solution? Our cloud platform offers advanced features and
+                      detailed insights.{'  '}
+                      <Link
+                        href="https://cloud.qdrant.io/"
+                        target="_blank"
+                        rel="noreferrer"
+                        color="inherit"
+                        underline="always"
+                      >
+                        Click here to explore more.
+                      </Link>
+                    </Alert>
+                  </Collapse>
+                  <Charts chartSpecsText={result} />
+                </Box>
+              </Panel>
+              <PanelResizeHandle
+                style={{
+                  width: '10px',
+                  background: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
+                  &#8942;
+                </Box>
+              </PanelResizeHandle>
+              <Panel>
+                <TelemetryEditorWindow code={code} onChange={setCode} onChangeResult={setResult} />
+              </Panel>
+            </PanelGroup>
+          </Grid>
         </Grid>
-        <Grid item xs={12}>
-          {selectedEndpoints.map((endpoint) => (
-            <Box
-              key={endpoint}
-              sx={{
-                border: '1px solid',
-                borderColor: 'grey.300',
-                p: 2,
-                borderRadius: 2,
-                mb: 2,
-              }}
-            >
-              <canvas id={endpoint} height="70vh"></canvas>
-            </Box>
-          ))}
-        </Grid>
-      </Grid>
-    </CenteredFrame>
+      </Box>
+    </>
   );
 }
 
