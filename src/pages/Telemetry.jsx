@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Box, Collapse, Grid, Link } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import TelemetryEditorWindow from '../components/Telemetry/Editor';
@@ -40,11 +40,19 @@ const query = `
     "requests.rest.responses['OPTIONS /collections'][200].count"
   ]
 }`;
-const defaultResult = '{}';
+const defaultResult = `{
+  "reload_interval": 2,
+  "paths": [
+    "app.system.disk_size",
+    "app.system.ram_size",
+    "collections.collections[0].shards[0].local.segments[0].info.num_indexed_vectors",
+    "requests.rest.responses['GET /telemetry'][200].count",
+    "requests.rest.responses['OPTIONS /collections'][200].count"
+  ]
+}`;
 function Telemetry() {
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
-  const [open, setOpen] = useState(true);
   const theme = useTheme();
 
   return (
@@ -68,26 +76,6 @@ function Telemetry() {
                     overflow: 'auto',
                   }}
                 >
-                  <Collapse in={open}>
-                    <Alert
-                      onClose={() => {
-                        setOpen(false);
-                      }}
-                      severity="info"
-                    >
-                      Looking for a full-scale monitoring solution? Our cloud platform offers advanced features and
-                      detailed insights.{'  '}
-                      <Link
-                        href="https://cloud.qdrant.io/"
-                        target="_blank"
-                        rel="noreferrer"
-                        color="inherit"
-                        underline="always"
-                      >
-                        Click here to explore more.
-                      </Link>
-                    </Alert>
-                  </Collapse>
                   <Charts chartSpecsText={result} />
                 </Box>
               </Panel>

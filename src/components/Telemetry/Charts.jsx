@@ -1,22 +1,85 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@mui/material';
+import { Alert, Box, Collapse, Link } from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
 import { Chart } from 'chart.js';
+
+const AlertComponent = ({ alert, index, setAlerts }) => {
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    if (alert.autoClose) {
+      setTimeout(() => {
+        setOpen(false);
+      }, 5000);
+    }
+  }, [alert.autoClose]);
+
+  return (
+    <Collapse
+      key={index}
+      in={open}
+      onAnimationEnd={() => {
+        if (!open) {
+          setAlerts((prevAlerts) => prevAlerts.filter((_, i) => i !== index));
+        }
+      }}
+    >
+      <Alert
+        onClose={() => {
+          setOpen(false);
+          console.log('index', setAlerts);
+        }}
+        severity={alert.severity}
+      >
+        {alert.message}
+      </Alert>
+    </Collapse>
+  );
+};
+
+AlertComponent.propTypes = {
+  alert: PropTypes.object.isRequired,
+  index: PropTypes.number.isRequired,
+  setAlerts: PropTypes.func.isRequired,
+};
 
 const Charts = ({ chartSpecsText }) => {
   const [chartsData, setChartsData] = useState({});
   const [chartLabels, setChartLabels] = useState([]);
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
+  // const [open, setOpen] = useState(true);
+  const [alerts, setAlerts] = useState([
+    {
+      severity: 'info',
+      message: (
+        <>
+          Looking for a full-scale monitoring solution? Our cloud platform offers advanced features and detailed
+          insights.{'  '}
+          <Link href="https://cloud.qdrant.io/" target="_blank" rel="noreferrer" color="inherit" underline="always">
+            Click here to explore more.
+          </Link>
+        </>
+      ),
+      autoClose: false,
+    },
+  ]);
 
   useEffect(() => {
     let intervalId;
 
     const initializeCharts = async () => {
       if (!chartSpecsText) {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'info',
+            message: 'No chart specs provided. Please provide a valid JSON to render charts.',
+            autoClose: true,
+          },
+        ]);
         return;
       }
 
@@ -25,11 +88,67 @@ const Charts = ({ chartSpecsText }) => {
       try {
         requestBody = bigIntJSON.parse(chartSpecsText);
       } catch (e) {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'Invalid JSON provided. Please provide a valid JSON to render charts.',
+            autoClose: true,
+          },
+        ]);
         console.error('Invalid JSON:', e);
         return;
       }
-
-      if (requestBody.paths) {
+      if (!requestBody.paths) {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'Invalid request body. Please provide a valid JSON to render charts.',
+            autoClose: true,
+          },
+        ]);
+        console.error('Invalid request body:', requestBody);
+        return;
+      } else if (!Array.isArray(requestBody.paths)) {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'Invalid paths provided. Please provide an array of paths to render charts.',
+            autoClose: true,
+          },
+        ]);
+        console.error('Invalid paths:', requestBody.paths);
+        return;
+      } else if (requestBody.paths.length === 0) {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'No paths provided. Please provide at least one path to render charts.',
+            autoClose: true,
+          },
+        ]);
+        console.error('No paths provided:', requestBody.paths);
+        return;
+      } else if (requestBody.reload_interval && typeof requestBody.reload_interval !== 'number') {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'Invalid reload interval provided. Please provide a valid number to reload charts.',
+            autoClose: true,
+          },
+        ]);
+        console.error('Invalid reload interval:', requestBody.reload_interval);
+        return;
+      } else if (
+        requestBody.paths &&
+        requestBody.paths.length > 0 &&
+        requestBody.reload_interval &&
+        typeof requestBody.reload_interval === 'number'
+      ) {
         const fetchTelemetryData = async () => {
           try {
             const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
@@ -51,15 +170,22 @@ const Charts = ({ chartSpecsText }) => {
 
         await fetchTelemetryData();
 
-        if (!requestBody.paths) {
-          console.error('Invalid request body:', requestBody);
-          return;
-        } else {
-          setChartLabels(requestBody.paths);
-        }
+        setChartLabels(requestBody.paths);
+
         if (requestBody.reload_interval) {
           intervalId = setInterval(fetchTelemetryData, requestBody.reload_interval * 1000);
         }
+      } else {
+        setAlerts((prevAlerts) => [
+          ...prevAlerts,
+          {
+            severity: 'error',
+            message: 'Invalid request body. Please provide a valid JSON to render charts.',
+            autoClose: true,
+          },
+        ]);
+        console.error('Invalid request body:', requestBody);
+        return;
       }
     };
     initializeCharts();
@@ -123,6 +249,9 @@ const Charts = ({ chartSpecsText }) => {
 
   return (
     <>
+      {alerts.map((alert, index) => (
+        <AlertComponent key={index} alert={alert} index={index} setAlerts={setAlerts} />
+      ))}
       {Object.keys(chartsData).map((path) => (
         <Box
           key={path}
