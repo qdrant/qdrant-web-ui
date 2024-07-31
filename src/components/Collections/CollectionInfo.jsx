@@ -69,7 +69,9 @@ export const CollectionInfo = ({ collectionName }) => {
 
       {clusterInfo && <ClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo} />}
 
-      {collection && <VectorsInfo vectors={collection?.config?.params?.vectors} sx={{ mt: 5 }} />}
+      {collection && (
+        <VectorsInfo collectionName={collectionName} vectors={collection?.config?.params?.vectors} sx={{ mt: 5 }} />
+      )}
     </Box>
   );
 };
