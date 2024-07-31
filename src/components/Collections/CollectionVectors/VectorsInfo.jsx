@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { checkIndexAccuracy } from './check-index-accuracy';
 import { useClient } from '../../../context/client-context';
 
-const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality }) => {
+const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, accuracy }) => {
   return (
     <TableRow data-testid="vector-row">
       <TableCell>
@@ -29,7 +29,7 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality }) => {
       </TableCell>
       <TableCell>
         <Typography variant="subtitle1" component={'span'} color="text.secondary">
-          1111
+          {accuracy ? `${accuracy * 100}%` : '—'}
         </Typography>
         <Tooltip title={'Check index quality'} placement="left">
           <IconButton
@@ -49,13 +49,24 @@ VectorTableRow.propTypes = {
   vectorObj: PropTypes.object,
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
+  accuracy: PropTypes.number,
 };
 
 const VectorsInfo = ({ collectionName, vectors, ...other }) => {
   const { client } = useClient();
-  const [accuracy, setAccuracy] = useState([]);
-
+  const isNamedVector = !(vectors?.size && vectors?.distance);
+  const vectorsNames = isNamedVector ? Object.keys(vectors) : null;
+  const [accuracy, setAccuracy] = useState(() => {
+    if (vectorsNames) {
+      return vectorsNames.reduce((acc, name) => {
+        acc[name] = null;
+        return acc;
+      }, {});
+    }
+    return null;
+  });
   // todo:
+  // - how timeout should work for several requests?
   // - timeout, show warning/explanation
   // - show spinner
   // - limit?
@@ -77,6 +88,8 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
         limit: 100,
         timeout: 20000,
       });
+      // if exceeded timeout:
+
       const idxs = scrollResult.points.map((point) => point.id);
 
       for (const idx of idxs) {
@@ -86,7 +99,16 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
         }
       }
 
-      setAccuracy(accs);
+      if (vectorName) {
+        setAccuracy((prev) => {
+          return {
+            ...prev,
+            [vectorName]: accs.reduce((acc, val) => acc + val, 0) / accs.length,
+          };
+        });
+      } else {
+        setAccuracy(accs.reduce((acc, val) => acc + val, 0) / accs.length);
+      }
     } catch (e) {
       // todo
       console.error(e);
@@ -136,13 +158,18 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
 
         <TableBody>
           {vectors.size && vectors.distance ? (
-            <VectorTableRow vectorObj={vectors} onCheckIndexQuality={() => onCheckIndexAccuracy(null)} />
+            <VectorTableRow
+              vectorObj={vectors}
+              onCheckIndexQuality={() => onCheckIndexAccuracy(null)}
+              accuracy={accuracy}
+            />
           ) : (
             Object.keys(vectors).map((key) => (
               <VectorTableRow
                 vectorObj={vectors[key]}
                 name={key}
                 onCheckIndexQuality={() => onCheckIndexAccuracy(key)}
+                accuracy={accuracy ? accuracy[key] : null}
                 key={key}
               />
             ))
@@ -155,7 +182,7 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
 
 VectorsInfo.propTypes = {
   collectionName: PropTypes.string,
-  vectors: PropTypes.object,
+  vectors: PropTypes.object.isRequired,
   other: PropTypes.object,
 };
 
