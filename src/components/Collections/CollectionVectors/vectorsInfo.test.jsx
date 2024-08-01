@@ -30,7 +30,7 @@ describe('collection vectors info', () => {
     useClient.mockReturnValue({
       client: {
         scroll: vi.fn().mockResolvedValue({ points: [{ id: 1 }, { id: 2 }] }),
-        recommend: vi.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]),
+        query: vi.fn().mockResolvedValue({ points: [{ id: 1 }, { id: 2 }] }),
       },
     });
   });
@@ -69,7 +69,7 @@ describe('collection vectors info', () => {
     fireEvent.click(button);
     await waitFor(() => {
       expect(useClient().client.scroll).toHaveBeenCalled();
-      expect(useClient().client.recommend).toHaveBeenCalled();
+      expect(useClient().client.query).toHaveBeenCalled();
     });
   });
 });
