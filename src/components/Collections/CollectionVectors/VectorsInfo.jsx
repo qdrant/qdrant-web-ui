@@ -52,7 +52,7 @@ VectorTableRow.propTypes = {
   accuracy: PropTypes.number,
 };
 
-const VectorsInfo = ({ collectionName, vectors, ...other }) => {
+const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => {
   const { client } = useClient();
   const isNamedVector = !(vectors?.size && vectors?.distance);
   const vectorsNames = isNamedVector ? Object.keys(vectors) : null;
@@ -66,13 +66,21 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
     return null;
   });
   // todo:
+  // - log
   // - how timeout should work for several requests?
   // - timeout, show warning/explanation
   // - show spinner
   // - limit?
 
   useEffect(() => {
-    console.log('accuracy', accuracy);
+    // if accuracy is null or is object in which each key value is null
+    if (!accuracy || (isNamedVector && Object.values(accuracy).every((val) => val === null))) {
+      onRequestResult && onRequestResult(JSON.stringify('No accuracy data is requested'));
+      return;
+    }
+
+    onRequestResult &&
+      onRequestResult(JSON.stringify('Mean accuracy for collection: ' + JSON.stringify(accuracy).replace(/"/g, "'")));
   }, [accuracy]);
 
   if (!vectors) {
@@ -88,12 +96,16 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
         limit: 100,
         timeout: 20000,
       });
-      // if exceeded timeout:
+
+      onRequestResult && onRequestResult(JSON.stringify(scrollResult)); // todo: bigIntJSON.stringify?
+
+      // todo: if exceeded timeout
 
       const idxs = scrollResult.points.map((point) => point.id);
 
       for (const idx of idxs) {
         const acc = await checkIndexAccuracy(client, collectionName, idx, vectorName);
+        onRequestResult && onRequestResult(idx + ': ' + acc);
         if (acc) {
           accs.push(acc);
         }
@@ -103,15 +115,18 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
         setAccuracy((prev) => {
           return {
             ...prev,
+            // todo: wrong rounding
             [vectorName]: accs.reduce((acc, val) => acc + val, 0) / accs.length,
           };
         });
       } else {
+        // todo: wrong rounding
         setAccuracy(accs.reduce((acc, val) => acc + val, 0) / accs.length);
       }
     } catch (e) {
       // todo
       console.error(e);
+      onRequestResult && onRequestResult(JSON.stringify(e));
     }
   };
 
@@ -183,6 +198,7 @@ const VectorsInfo = ({ collectionName, vectors, ...other }) => {
 VectorsInfo.propTypes = {
   collectionName: PropTypes.string,
   vectors: PropTypes.object.isRequired,
+  onRequestResult: PropTypes.func,
   other: PropTypes.object,
 };
 
