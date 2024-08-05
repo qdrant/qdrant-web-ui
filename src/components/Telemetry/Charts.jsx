@@ -240,7 +240,8 @@ const Charts = ({ chartSpecsText }) => {
             x: {
               type: 'realtime',
               realtime: {
-                duration: reloadInterval * 5000,
+                duration: reloadInterval * 4000,
+                delay: 3000,
               },
             },
           },
