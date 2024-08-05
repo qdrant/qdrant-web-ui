@@ -57,7 +57,7 @@ const Charts = ({ chartSpecsText }) => {
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
   const [reloadInterval, setReloadInterval] = useState(2);
-  const [intervalId, setIntervalId] = useState(null); // Store a single interval ID
+  const [intervalId, setIntervalId] = useState(null);
   const [alerts, setAlerts] = useState([
     {
       severity: 'info',
@@ -180,11 +180,9 @@ const Charts = ({ chartSpecsText }) => {
 
         if (requestBody.reload_interval) {
           if (intervalId) {
-            console.log('Clearing interval ID:', intervalId);
             clearInterval(intervalId);
           }
           const newIntervalId = setInterval(fetchTelemetryData, requestBody.reload_interval * 1000);
-          console.log('Setting interval ID:', newIntervalId);
           setIntervalId(newIntervalId);
         }
       } else {
@@ -205,7 +203,6 @@ const Charts = ({ chartSpecsText }) => {
 
     return () => {
       if (intervalId) {
-        console.log('Clearing interval ID:', intervalId);
         clearInterval(intervalId);
       }
       setChartsData({});
@@ -224,15 +221,14 @@ const Charts = ({ chartSpecsText }) => {
       const newChart = new Chart(context, {
         type: 'line',
         data: {
-          labels: [],
+          labels: Object.keys(chartsData[path]) ?? [],
           datasets: [
             {
               label: path,
-              data: [],
+              data: Object.values(chartsData[path]) ?? [],
             },
           ],
         },
-
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -240,12 +236,11 @@ const Charts = ({ chartSpecsText }) => {
             mode: 'index',
             intersect: false,
           },
-          animation: false,
           scales: {
             x: {
               type: 'realtime',
               realtime: {
-                delay: reloadInterval * 1000,
+                duration: reloadInterval * 5000,
               },
             },
           },
@@ -268,7 +263,7 @@ const Charts = ({ chartSpecsText }) => {
       const chart = chartInstances[path];
       chart.data.labels = Object.keys(chartsData[path]) ?? [];
       chart.data.datasets[0].data = Object.values(chartsData[path]) ?? [];
-      chart.update();
+      chart.update('quiet');
     });
   }, [chartsData]);
 
