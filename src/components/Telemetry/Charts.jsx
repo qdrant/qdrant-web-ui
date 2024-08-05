@@ -182,7 +182,7 @@ const Charts = ({ chartSpecsText }) => {
           if (intervalId) {
             console.log('Clearing interval ID:', intervalId);
             clearInterval(intervalId);
-          }   
+          }
           const newIntervalId = setInterval(fetchTelemetryData, requestBody.reload_interval * 1000);
           console.log('Setting interval ID:', newIntervalId);
           setIntervalId(newIntervalId);
@@ -211,7 +211,7 @@ const Charts = ({ chartSpecsText }) => {
       setChartsData({});
       setChartLabels([]);
     };
-  }, [chartSpecsText]); 
+  }, [chartSpecsText]);
 
   useEffect(() => {
     Object.keys(chartInstances).forEach((chart) => {
@@ -300,4 +300,4 @@ Charts.propTypes = {
   chartSpecsText: PropTypes.string.isRequired,
 };
 
-export default Charts
+export default Charts;
