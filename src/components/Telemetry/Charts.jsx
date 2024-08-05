@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Box, Collapse, Link } from '@mui/material';
+import { Alert, Box, Collapse, Link, useTheme } from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
@@ -58,6 +58,7 @@ const Charts = ({ chartSpecsText }) => {
   const [chartInstances, setChartInstances] = useState({});
   const [reloadInterval, setReloadInterval] = useState(2);
   const [intervalId, setIntervalId] = useState(null);
+  const theme = useTheme();
   const [alerts, setAlerts] = useState([
     {
       severity: 'info',
@@ -267,6 +268,26 @@ const Charts = ({ chartSpecsText }) => {
       chart.update('quiet');
     });
   }, [chartsData]);
+
+  const syncColors = () => {
+    Object.keys(chartInstances).forEach((path) => {
+      const chart = chartInstances[path];
+      const color = theme.palette.mode === 'dark' ? 'white' : 'black';
+      const gridColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+      chart.options.scales.x.grid.color = gridColor;
+      chart.options.scales.y.grid.color = gridColor;
+      chart.options.plugins.title.color = color;
+      chart.options.scales.x.ticks.color = color;
+      chart.options.scales.y.ticks.color = color;
+
+      chart.update();
+    });
+  };
+
+  useEffect(() => {
+    syncColors();
+  }, [theme.palette.mode]);
 
   return (
     <>
