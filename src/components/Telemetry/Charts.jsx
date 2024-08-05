@@ -5,14 +5,21 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
 import { Chart } from 'chart.js';
+import StreamingPlugin from '@robloche/chartjs-plugin-streaming';
+import 'chartjs-adapter-luxon';
+
+Chart.register(StreamingPlugin);
 
 const AlertComponent = ({ alert, index, setAlerts }) => {
   const [open, setOpen] = useState(true);
+
   useEffect(() => {
     if (alert.autoClose) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setOpen(false);
       }, 5000);
+
+      return () => clearTimeout(timer);
     }
   }, [alert.autoClose]);
 
@@ -29,7 +36,6 @@ const AlertComponent = ({ alert, index, setAlerts }) => {
       <Alert
         onClose={() => {
           setOpen(false);
-          console.log('index', setAlerts);
         }}
         severity={alert.severity}
       >
@@ -50,7 +56,8 @@ const Charts = ({ chartSpecsText }) => {
   const [chartLabels, setChartLabels] = useState([]);
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
-  // const [open, setOpen] = useState(true);
+  const [reloadInterval, setReloadInterval] = useState(2);
+  const [intervalId, setIntervalId] = useState(null); // Store a single interval ID
   const [alerts, setAlerts] = useState([
     {
       severity: 'info',
@@ -68,8 +75,6 @@ const Charts = ({ chartSpecsText }) => {
   ]);
 
   useEffect(() => {
-    let intervalId;
-
     const initializeCharts = async () => {
       if (!chartSpecsText) {
         setAlerts((prevAlerts) => [
@@ -171,9 +176,16 @@ const Charts = ({ chartSpecsText }) => {
         await fetchTelemetryData();
 
         setChartLabels(requestBody.paths);
+        setReloadInterval(requestBody.reload_interval);
 
         if (requestBody.reload_interval) {
-          intervalId = setInterval(fetchTelemetryData, requestBody.reload_interval * 1000);
+          if (intervalId) {
+            console.log('Clearing interval ID:', intervalId);
+            clearInterval(intervalId);
+          }   
+          const newIntervalId = setInterval(fetchTelemetryData, requestBody.reload_interval * 1000);
+          console.log('Setting interval ID:', newIntervalId);
+          setIntervalId(newIntervalId);
         }
       } else {
         setAlerts((prevAlerts) => [
@@ -188,14 +200,18 @@ const Charts = ({ chartSpecsText }) => {
         return;
       }
     };
+
     initializeCharts();
 
     return () => {
-      clearInterval(intervalId);
+      if (intervalId) {
+        console.log('Clearing interval ID:', intervalId);
+        clearInterval(intervalId);
+      }
       setChartsData({});
       setChartLabels([]);
     };
-  }, [chartSpecsText, qdrantClient]);
+  }, [chartSpecsText]); 
 
   useEffect(() => {
     Object.keys(chartInstances).forEach((chart) => {
@@ -208,11 +224,11 @@ const Charts = ({ chartSpecsText }) => {
       const newChart = new Chart(context, {
         type: 'line',
         data: {
-          labels: Object.keys(chartsData[path]),
+          labels: [],
           datasets: [
             {
               label: path,
-              data: Object.values(chartsData[path]),
+              data: [],
             },
           ],
         },
@@ -224,6 +240,15 @@ const Charts = ({ chartSpecsText }) => {
             mode: 'index',
             intersect: false,
           },
+          animation: false,
+          scales: {
+            x: {
+              type: 'realtime',
+              realtime: {
+                delay: reloadInterval * 1000,
+              },
+            },
+          },
         },
       });
       setChartInstances((prevInstances) => ({
@@ -233,7 +258,7 @@ const Charts = ({ chartSpecsText }) => {
     };
 
     chartLabels.forEach(createChart);
-  }, [chartLabels]);
+  }, [chartLabels, reloadInterval]);
 
   useEffect(() => {
     if (Object.keys(chartsData).length === 0) {
@@ -275,4 +300,4 @@ Charts.propTypes = {
   chartSpecsText: PropTypes.string.isRequired,
 };
 
-export default Charts;
+export default Charts

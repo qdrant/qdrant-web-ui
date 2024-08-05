@@ -40,16 +40,7 @@ const query = `
     "requests.rest.responses['OPTIONS /collections'][200].count"
   ]
 }`;
-const defaultResult = `{
-  "reload_interval": 2,
-  "paths": [
-    "app.system.disk_size",
-    "app.system.ram_size",
-    "collections.collections[0].shards[0].local.segments[0].info.num_indexed_vectors",
-    "requests.rest.responses['GET /telemetry'][200].count",
-    "requests.rest.responses['OPTIONS /collections'][200].count"
-  ]
-}`;
+const defaultResult = ``;
 function Telemetry() {
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
