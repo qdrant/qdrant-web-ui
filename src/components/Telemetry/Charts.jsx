@@ -248,6 +248,8 @@ const Charts = ({ chartSpecsText }) => {
           },
         },
       });
+     
+      syncColors(newChart);
       setChartInstances((prevInstances) => ({
         ...prevInstances,
         [path]: newChart,
@@ -269,24 +271,22 @@ const Charts = ({ chartSpecsText }) => {
     });
   }, [chartsData]);
 
-  const syncColors = () => {
-    Object.keys(chartInstances).forEach((path) => {
-      const chart = chartInstances[path];
+  const syncColors = (chart) => {
       const color = theme.palette.mode === 'dark' ? 'white' : 'black';
       const gridColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-
       chart.options.scales.x.grid.color = gridColor;
       chart.options.scales.y.grid.color = gridColor;
       chart.options.plugins.title.color = color;
       chart.options.scales.x.ticks.color = color;
       chart.options.scales.y.ticks.color = color;
-
       chart.update();
-    });
   };
 
   useEffect(() => {
-    syncColors();
+    Object.keys(chartInstances).forEach((path) => {
+      const chart = chartInstances[path];
+      syncColors(chart);
+    });
   }, [theme.palette.mode]);
 
   return (
