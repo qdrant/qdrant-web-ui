@@ -22,7 +22,7 @@ window.MonacoEnvironment = {
 
 loader.config({ monaco });
 
-const EditorCommon = ({ beforeMount, onChange = () => {}, ...props }) => {
+const EditorCommon = ({ beforeMount, ...props }) => {
   const monacoRef = useRef(null);
   const editorWrapper = useRef(null);
   const theme = useTheme();
@@ -61,7 +61,6 @@ const EditorCommon = ({ beforeMount, onChange = () => {}, ...props }) => {
         theme={props.theme ?? 'custom-language-theme'} // todo: move to config
         height={editorHeight}
         beforeMount={handleEditorWillMount}
-        onChange={onChange}
         {...props}
       />
     </div>
@@ -71,7 +70,6 @@ const EditorCommon = ({ beforeMount, onChange = () => {}, ...props }) => {
 EditorCommon.propTypes = {
   height: PropTypes.string,
   beforeMount: PropTypes.func,
-  onChange: PropTypes.func,
   ...Editor.propTypes,
 };
 

@@ -16,14 +16,11 @@ const CollectionAccuracy = ({ collectionName }) => {
   const [log, setLog] = React.useState('');
 
   const handleLogUpdate = (newLog) => {
+    const date = new Date().toLocaleString();
+    newLog = `[${date}] ${newLog}`;
     setLog((prevLog) => {
-      return prevLog + newLog + '\n';
+      return newLog + '\n' + prevLog;
     });
-  };
-
-  const logChangeCallback = (monaco) => {
-    console.log(monaco);
-    // todo: implement
   };
 
   useEffect(() => {
@@ -63,7 +60,6 @@ const CollectionAccuracy = ({ collectionName }) => {
           <EditorCommon
             theme={'custom-language-theme'}
             value={log}
-            beforeMount={logChangeCallback}
             options={{
               scrollBeyondLastLine: false,
               fontSize: 12,

@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardHeader, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, IconButton } from '@mui/material';
+import {
+  Card,
+  CardHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Tooltip,
+  IconButton,
+  FormControlLabel,
+  Switch,
+  CardContent,
+} from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import Typography from '@mui/material/Typography';
 import { PublishedWithChanges } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
 import { checkIndexAccuracy } from './check-index-accuracy';
 import { useClient } from '../../../context/client-context';
+import CodeEditorWindow from '../../FilterEditorWindow';
 
 const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, accuracy }) => {
   return (
@@ -65,12 +78,47 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
     }
     return null;
   });
+
+  const [advancedMod, setAdvancedMod] = useState(false);
+
+  const [code, setCode] = useState('');
+  const handleRunCode = async (code) => {
+    console.log('handle run code', code);
+  };
+
+  const queryRequestSchema = (vectorNames) => ({
+    description: 'Filter request',
+    type: 'object',
+    properties: {
+      limit: {
+        description: 'Page size. Default: 10',
+        type: 'integer',
+        format: 'uint',
+        minimum: 1,
+        nullable: true,
+      },
+      filter: {
+        description: 'Look only for points which satisfies this conditions. If not provided - all points.',
+        anyOf: [
+          {
+            $ref: '#/components/schemas/Filter',
+          },
+          {
+            nullable: true,
+          },
+        ],
+      },
+      using: {
+        description: 'Vector field name',
+        type: 'string',
+        enum: vectorNames,
+      },
+    },
+  });
   // todo:
-  // - log
   // - how timeout should work for several requests?
   // - timeout, show warning/explanation
   // - show spinner
-  // - limit?
 
   useEffect(() => {
     // if accuracy is null or is object in which each key value is null
@@ -105,7 +153,7 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
 
       for (const idx of idxs) {
         const acc = await checkIndexAccuracy(client, collectionName, idx, vectorName);
-        onRequestResult && onRequestResult(idx + ': ' + acc);
+        onRequestResult && onRequestResult('Point ID ' + idx + ' accuracy: ' + acc);
         if (acc) {
           accs.push(acc);
         }
@@ -133,64 +181,89 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
   return (
     <Card variant="dual" data-testid="vectors-info" {...other}>
       <CardHeader
-        title={'Vectors Info'}
+        title={
+          <>
+            {!advancedMod ? 'Vectors Info' : 'Console'}
+            <FormControlLabel
+              sx={{ ml: 2 }}
+              control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="small" />}
+              label={
+                <Typography component={'span'} variant={'caption'}>
+                  Advanced Mod
+                </Typography>
+              }
+            />
+          </>
+        }
         variant="heading"
         sx={{
           flexGrow: 1,
         }}
         action={
           <>
-            <CopyButton text={bigIntJSON.stringify(vectors)} />
-            <Link to={`/collections/${collectionName}/accuracy-check`}>Check index quality</Link>
+            <CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />
           </>
         }
       />
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>
-              <Typography variant="subtitle1" fontWeight={600}>
-                Name
-              </Typography>
-            </TableCell>
-            <TableCell>
-              <Typography variant="subtitle1" fontWeight={600}>
-                Size
-              </Typography>
-            </TableCell>
-            <TableCell>
-              <Typography variant="subtitle1" fontWeight={600}>
-                Distance
-              </Typography>
-            </TableCell>
-            <TableCell>
-              <Typography variant="subtitle1" fontWeight={600}>
-                Accuracy
-              </Typography>
-            </TableCell>
-          </TableRow>
-        </TableHead>
+      {!advancedMod && (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Name
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Size
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Distance
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Accuracy
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableHead>
 
-        <TableBody>
-          {vectors.size && vectors.distance ? (
-            <VectorTableRow
-              vectorObj={vectors}
-              onCheckIndexQuality={() => onCheckIndexAccuracy(null)}
-              accuracy={accuracy}
-            />
-          ) : (
-            Object.keys(vectors).map((key) => (
+          <TableBody>
+            {vectors.size && vectors.distance ? (
               <VectorTableRow
-                vectorObj={vectors[key]}
-                name={key}
-                onCheckIndexQuality={() => onCheckIndexAccuracy(key)}
-                accuracy={accuracy ? accuracy[key] : null}
-                key={key}
+                vectorObj={vectors}
+                onCheckIndexQuality={() => onCheckIndexAccuracy(null)}
+                accuracy={accuracy}
               />
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              Object.keys(vectors).map((key) => (
+                <VectorTableRow
+                  vectorObj={vectors[key]}
+                  name={key}
+                  onCheckIndexQuality={() => onCheckIndexAccuracy(key)}
+                  accuracy={accuracy ? accuracy[key] : null}
+                  key={key}
+                />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      )}
+
+      {advancedMod && (
+        <CardContent sx={{ pl: 0, height: '25vh' }}>
+          <CodeEditorWindow
+            code={code}
+            onChange={setCode}
+            onChangeResult={handleRunCode}
+            customRequestSchema={queryRequestSchema}
+          />
+        </CardContent>
+      )}
     </Card>
   );
 };
