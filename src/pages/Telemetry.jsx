@@ -6,27 +6,23 @@ import TelemetryEditorWindow from '../components/Telemetry/Editor';
 import Charts from '../components/Telemetry/Charts';
 
 const query = `
+// Graph Rendering:
+// Graphs are rendered based on numerical outputs obtained from the specified JSON paths.
+// Only metrics that return numeric values are used to create visual representations.
+// This ensures that the graphs are meaningful and accurately reflect the system's status.
 
-// app.system.ram_size
-// app.system.disk_size
-// collections.number_of_collections
-// collections.collections[0].init_time_ms
-// collections.collections[0].config.params.vectors.size
-// collections.collections[0].config.params.shard_number
-// collections.collections[0].config.params.replication_factor
-// collections.collections[0].config.params.write_consistency_factor
-// collections.collections[0].config.hnsw_config.m
-// collections.collections[0].config.hnsw_config.ef_construct
-// collections.collections[0].config.hnsw_config.full_scan_threshold
-// collections.collections[0].config.hnsw_config.max_indexing_threads
-// collections.collections[0].config.optimizer_config.deleted_threshold
-// collections.collections[0].config.optimizer_config.vacuum_min_vector_number
-// collections.collections[0].config.optimizer_config.default_segment_number
-// collections.collections[0].config.optimizer_config.indexing_threshold
-// collections.collections[0].config.optimizer_config.flush_interval_sec
-// collections.collections[0].config.optimizer_config.max_optimization_threads
-// collections.collections[0].config.wal_config.wal_capacity_mb
-// collections.collections[0].config.wal_config.wal_segments_ahead
+// JSON Path:
+// The JSON paths listed here are extracted from the /telemetry?details_level=10 endpoint.
+// They represent specific fields within the JSON response structure returned by the API.
+// For example, paths like 'collections.collections[0].shards[0].local.segments[0].info.num_indexed_vectors'
+// indicate nested structures where specific values are accessed using indices or keys.
+// This path extracts the number of indexed vectors in the first segment of the first shard of the first collection,
+// which is crucial for understanding the indexing performance of the collection.
+
+// Reload Interval:
+// The reload_interval is set to 2 seconds in this example.
+// This means that the graphs and data metrics on the page will be updated every 2 seconds,
+// providing near real-time monitoring of the system's performance.
 
 
 

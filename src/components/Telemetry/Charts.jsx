@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Box, Collapse, Link, useTheme } from '@mui/material';
+import { Alert, Box, Collapse, Link, MenuItem, Select, useTheme } from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
@@ -74,6 +74,13 @@ const Charts = ({ chartSpecsText }) => {
       autoClose: false,
     },
   ]);
+
+  // New state for time window selection
+  const [timeWindow, setTimeWindow] = useState(60000); // default to 1 minute
+
+  const handleTimeWindowChange = (event) => {
+    setTimeWindow(event.target.value);
+  };
 
   useEffect(() => {
     const initializeCharts = async () => {
@@ -241,8 +248,7 @@ const Charts = ({ chartSpecsText }) => {
             x: {
               type: 'realtime',
               realtime: {
-                duration: reloadInterval * 4000,
-                delay: 3000,
+                duration: timeWindow, // Use timeWindow state here
               },
             },
           },
@@ -257,7 +263,7 @@ const Charts = ({ chartSpecsText }) => {
     };
 
     chartLabels.forEach(createChart);
-  }, [chartLabels, reloadInterval]);
+  }, [chartLabels, reloadInterval, timeWindow]);
 
   useEffect(() => {
     if (Object.keys(chartsData).length === 0) {
@@ -294,6 +300,16 @@ const Charts = ({ chartSpecsText }) => {
       {alerts.map((alert, index) => (
         <AlertComponent key={index} alert={alert} index={index} setAlerts={setAlerts} />
       ))}
+
+      {/* Time window selector */}
+      <Box sx={{ display: 'flex', justifyContent: 'center', m: 2 }}>
+        <Select value={timeWindow} onChange={handleTimeWindowChange} sx={{ minWidth: 120 }}>
+          <MenuItem value={60000}>1 Minute</MenuItem>
+          <MenuItem value={300000}>5 Minutes</MenuItem>
+          <MenuItem value={600000}>10 Minutes</MenuItem>
+        </Select>
+      </Box>
+
       {Object.keys(chartsData).map((path) => (
         <Box
           key={path}
