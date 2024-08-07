@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Box, Collapse, Link, MenuItem, Select, useTheme } from '@mui/material';
+import { Alert, Box, Button, Collapse, Link, MenuItem, Select, Tooltip, Typography, useTheme } from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
@@ -51,7 +51,7 @@ AlertComponent.propTypes = {
   setAlerts: PropTypes.func.isRequired,
 };
 
-const Charts = ({ chartSpecsText }) => {
+const Charts = ({ chartSpecsText, setChartSpecsText }) => {
   const [chartsData, setChartsData] = useState({});
   const [chartLabels, setChartLabels] = useState([]);
   const { client: qdrantClient } = useClient();
@@ -59,6 +59,8 @@ const Charts = ({ chartSpecsText }) => {
   const [reloadInterval, setReloadInterval] = useState(2);
   const [intervalId, setIntervalId] = useState(null);
   const theme = useTheme();
+  const [timeWindow, setTimeWindow] = useState(60000);
+
   const [alerts, setAlerts] = useState([
     {
       severity: 'info',
@@ -75,8 +77,16 @@ const Charts = ({ chartSpecsText }) => {
     },
   ]);
 
-  // New state for time window selection
-  const [timeWindow, setTimeWindow] = useState(60000); // default to 1 minute
+  const removeChart = (path) => {
+    try {
+      const requestBody = bigIntJSON.parse(chartSpecsText);
+      const newPaths = requestBody.paths.filter((p) => p !== path);
+      requestBody.paths = newPaths;
+      setChartSpecsText(JSON.stringify(requestBody, null, 2));
+    } catch (e) {
+      console.error('Failed to remove chart', e);
+    }
+  };
 
   const handleTimeWindowChange = (event) => {
     setTimeWindow(event.target.value);
@@ -134,17 +144,6 @@ const Charts = ({ chartSpecsText }) => {
         ]);
         console.error('Invalid paths:', requestBody.paths);
         return;
-      } else if (requestBody.paths.length === 0) {
-        setAlerts((prevAlerts) => [
-          ...prevAlerts,
-          {
-            severity: 'error',
-            message: 'No paths provided. Please provide at least one path to render charts.',
-            autoClose: true,
-          },
-        ]);
-        console.error('No paths provided:', requestBody.paths);
-        return;
       } else if (requestBody.reload_interval && typeof requestBody.reload_interval !== 'number') {
         setAlerts((prevAlerts) => [
           ...prevAlerts,
@@ -156,12 +155,7 @@ const Charts = ({ chartSpecsText }) => {
         ]);
         console.error('Invalid reload interval:', requestBody.reload_interval);
         return;
-      } else if (
-        requestBody.paths &&
-        requestBody.paths.length > 0 &&
-        requestBody.reload_interval &&
-        typeof requestBody.reload_interval === 'number'
-      ) {
+      } else if (requestBody.paths && requestBody.reload_interval && typeof requestBody.reload_interval === 'number') {
         const fetchTelemetryData = async () => {
           try {
             const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
@@ -248,7 +242,7 @@ const Charts = ({ chartSpecsText }) => {
             x: {
               type: 'realtime',
               realtime: {
-                duration: timeWindow, // Use timeWindow state here
+                duration: timeWindow,
               },
             },
           },
@@ -311,18 +305,40 @@ const Charts = ({ chartSpecsText }) => {
       </Box>
 
       {Object.keys(chartsData).map((path) => (
-        <Box
-          key={path}
-          sx={{
-            border: '1px solid',
-            borderColor: 'grey.300',
-            height: 300,
-            p: 2,
-            borderRadius: 2,
-            m: 2,
-          }}
-        >
-          <canvas id={path}></canvas>
+        <Box key={path} sx={{ p: 2, borderRadius: 2, m: 2, border: '1px solid', borderColor: 'grey.300' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Typography variant="h6">
+              {path.length > 50 ? (
+                <Tooltip title={path} arrow>
+                  <span>{path.substring(0, 50)}...</span>
+                </Tooltip>
+              ) : (
+                <span>{path}</span>
+              )}
+            </Typography>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => {
+                removeChart(path);
+              }}
+            >
+              Remove
+            </Button>
+          </Box>
+          <Box
+            sx={{
+              height: 300,
+            }}
+          >
+            <canvas id={path}></canvas>
+          </Box>
         </Box>
       ))}
     </>
@@ -331,6 +347,7 @@ const Charts = ({ chartSpecsText }) => {
 
 Charts.propTypes = {
   chartSpecsText: PropTypes.string.isRequired,
+  setChartSpecsText: PropTypes.func.isRequired,
 };
 
 export default Charts;

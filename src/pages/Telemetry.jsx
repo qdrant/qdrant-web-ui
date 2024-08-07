@@ -63,7 +63,7 @@ function Telemetry() {
                     overflow: 'auto',
                   }}
                 >
-                  <Charts chartSpecsText={result} />
+                  <Charts chartSpecsText={result} setChartSpecsText={setResult} />
                 </Box>
               </Panel>
               <PanelResizeHandle
