@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
+import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
 
 function Collection() {
   const { collectionName } = useParams();
@@ -33,6 +34,7 @@ function Collection() {
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
                 <Tab label="Info" value={'info'} />
+                <Tab label="Search Quality" value={'quality'} />
                 <Tab label="Snapshots" value={'snapshots'} />
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
                 <Tab label="Graph" component={Link} to={`${location.pathname}/graph`} />
@@ -42,6 +44,7 @@ function Collection() {
 
           <Grid xs={12} item>
             {currentTab === 'info' && <CollectionInfo collectionName={collectionName} />}
+            {currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
             {currentTab === 'points' && <PointsTabs collectionName={collectionName} />}
             {currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
           </Grid>

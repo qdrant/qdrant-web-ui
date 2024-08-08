@@ -10,7 +10,7 @@ import { codeParse } from './config/RequestFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
-const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema }) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema, customHeight = null }) => {
   const { enqueueSnackbar } = useSnackbar();
   const editorRef = useRef(null);
   const lensesRef = useRef(null);
@@ -97,6 +97,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema 
 
   return (
     <EditorCommon
+      customHeight={customHeight}
       language={'custom-language'}
       value={code}
       theme={'custom-language-theme'}
@@ -117,5 +118,6 @@ CodeEditorWindow.propTypes = {
   code: PropTypes.string.isRequired,
   onChangeResult: PropTypes.func.isRequired,
   customRequestSchema: PropTypes.func.isRequired,
+  customHeight: PropTypes.number,
 };
 export default CodeEditorWindow;

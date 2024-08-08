@@ -22,12 +22,12 @@ window.MonacoEnvironment = {
 
 loader.config({ monaco });
 
-const EditorCommon = ({ beforeMount, ...props }) => {
+const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
   const monacoRef = useRef(null);
   const editorWrapper = useRef(null);
   const theme = useTheme();
   const { height } = useWindowResize();
-  const [editorHeight, setEditorHeight] = useState(0);
+  const [editorHeight, setEditorHeight] = useState(customHeight || 0);
 
   function handleEditorWillMount(monaco) {
     monacoRef.current = monaco;
@@ -52,6 +52,9 @@ const EditorCommon = ({ beforeMount, ...props }) => {
   }, [theme]);
 
   useEffect(() => {
+    if (customHeight) {
+      return;
+    }
     setEditorHeight(height - editorWrapper.current?.offsetTop);
   }, [height, editorWrapper]);
 
@@ -70,6 +73,7 @@ const EditorCommon = ({ beforeMount, ...props }) => {
 EditorCommon.propTypes = {
   height: PropTypes.string,
   beforeMount: PropTypes.func,
+  customHeight: PropTypes.number,
   ...Editor.propTypes,
 };
 
