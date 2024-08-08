@@ -65,7 +65,7 @@ VectorTableRow.propTypes = {
   precision: PropTypes.number,
 };
 
-const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => {
+const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
   const { client } = useClient();
   const vectorsNames = Object.keys(vectors);
   const [precision, setPrecision] = useState(() => {
@@ -79,6 +79,7 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
   });
 
   const [advancedMod, setAdvancedMod] = useState(false);
+  // const [inProgress, setInProgress] = useState(false);
 
   const [code, setCode] = useState('');
   const handleRunCode = async (code) => {
@@ -123,7 +124,8 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
     return <>No vectors</>;
   }
 
-  const onCheckIndexPrecisioncheckIndexPrecision = async (vectorName) => {
+  const onCheckIndexQuality = async (vectorName) => {
+    clearLogsFoo && clearLogsFoo();
     const precisions = [];
     try {
       const scrollResult = await client.scroll(collectionName, {
@@ -139,13 +141,15 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
       const pointIds = scrollResult.points.map((point) => point.id);
       const total = pointIds.length;
 
+      loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + vectorName || "---");
+
       for (let idx = 0; idx < total; idx++) {
         const pointId = pointIds[idx];
         const precision = await checkIndexPrecision(
           client,
           collectionName,
           pointId,
-          onRequestResult,
+          loggingFoo,
           idx,
           total,
           vectorName,
@@ -157,14 +161,14 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
       }
 
       // Round to 2 decimal places
-      const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+      const round = (num) => Math.round((num + Number.EPSILON) * 10000) / 10000;
 
       const avgPrecision = round(precisions.reduce((x, val) => x + val, 0) / precisions.length);
       const stdDev = round(
         Math.sqrt(precisions.reduce((x, val) => x + (val - avgPrecision) ** 2, 0) / precisions.length)
       );
 
-      onRequestResult('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
+      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
 
       setPrecision((prev) => {
         return {
@@ -176,7 +180,7 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
     } catch (e) {
       // todo
       console.error(e);
-      onRequestResult && onRequestResult(JSON.stringify(e));
+      loggingFoo && loggingFoo(JSON.stringify(e));
     }
   };
 
@@ -235,13 +239,13 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
           </TableHead>
 
           <TableBody>
-            {Object.keys(vectors).map((key) => (
+            {Object.keys(vectors).map((vectorName) => (
               <VectorTableRow
-                vectorObj={vectors[key]}
-                name={key}
-                onCheckIndexQuality={() => onCheckIndexPrecisioncheckIndexPrecision(key)}
-                precision={precision ? precision[key] : null}
-                key={key}
+                vectorObj={vectors[vectorName]}
+                name={vectorName}
+                onCheckIndexQuality={() => onCheckIndexQuality(vectorName)}
+                precision={precision ? precision[vectorName] : null}
+                key={vectorName}
               />
             ))}
           </TableBody>
@@ -265,7 +269,8 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
 VectorsInfo.propTypes = {
   collectionName: PropTypes.string,
   vectors: PropTypes.object.isRequired,
-  onRequestResult: PropTypes.func,
+  loggingFoo: PropTypes.func,
+  clearLogsFoo: PropTypes.func,
   other: PropTypes.object,
 };
 

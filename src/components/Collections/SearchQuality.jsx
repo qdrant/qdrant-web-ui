@@ -24,6 +24,10 @@ const SearchQuality = ({ collectionName }) => {
     });
   };
 
+  const clearLogs = () => {
+    setLog('');
+  }
+
   useEffect(() => {
     client
       .getCollection(collectionName)
@@ -50,7 +54,8 @@ const SearchQuality = ({ collectionName }) => {
         <VectorsInfo
           collectionName={collectionName}
           vectors={vectors}
-          onRequestResult={handleLogUpdate}
+          loggingFoo={handleLogUpdate}
+          clearLogsFoo={clearLogs}
           sx={{ mt: 5 }}
         />
       )}

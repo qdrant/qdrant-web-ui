@@ -6,7 +6,6 @@ import { DataGridList } from '../Points/DataGridList';
 import { CopyButton } from '../Common/CopyButton';
 import { Dot } from '../Common/Dot';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
-import VectorsInfo from './CollectionVectors/VectorsInfo';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
@@ -68,10 +67,6 @@ export const CollectionInfo = ({ collectionName }) => {
       </Card>
 
       {clusterInfo && <ClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo} />}
-
-      {collection?.config?.params?.vectors && (
-        <VectorsInfo collectionName={collectionName} vectors={collection.config.params.vectors} sx={{ mt: 5 }} />
-      )}
     </Box>
   );
 };
