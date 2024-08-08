@@ -139,7 +139,6 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
       const pointIds = scrollResult.points.map((point) => point.id);
       const total = pointIds.length;
 
-
       for (let idx = 0; idx < total; idx++) {
         const pointId = pointIds[idx];
         const precision = await checkIndexPrecision(
