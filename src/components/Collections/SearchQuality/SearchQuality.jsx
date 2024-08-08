@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
-import { useClient } from '../../context/client-context';
-import SearchQualityPannel from './CollectionVectors/SearchQualityPannel';
+import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
+import { useClient } from '../../../context/client-context';
+import SearchQualityPannel from './SearchQualityPannel';
 import { useSnackbar } from 'notistack';
 import { Box, Card, CardHeader } from '@mui/material';
-import { CopyButton } from '../Common/CopyButton';
-import { bigIntJSON } from '../../common/bigIntJSON';
-import EditorCommon from '../EditorCommon';
+import { CopyButton } from '../../Common/CopyButton';
+import { bigIntJSON } from '../../../common/bigIntJSON';
+import EditorCommon from '../../EditorCommon';
 import _ from 'lodash';
 
 const SearchQuality = ({ collectionName }) => {

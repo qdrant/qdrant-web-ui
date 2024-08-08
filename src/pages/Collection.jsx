@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
-import SearchQuality from '../components/Collections/SearchQuality';
+import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
 
 function Collection() {
   const { collectionName } = useParams();
