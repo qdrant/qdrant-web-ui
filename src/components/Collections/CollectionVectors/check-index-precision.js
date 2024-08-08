@@ -5,6 +5,8 @@ export const checkIndexPrecision = async (
   logFoo,
   idx,
   total,
+  filter = null,
+  params = null,
   vectorName = null,
   limit = 10
 ) => {
@@ -21,6 +23,7 @@ export const checkIndexPrecision = async (
       params: {
         exact: true,
       },
+      filter: filter,
       using: vectorName,
       timeout: TIMEOUT,
     });
@@ -35,9 +38,8 @@ export const checkIndexPrecision = async (
       with_payload: false,
       with_vectors: false,
       query: pointId,
-      params: {
-        exact: false,
-      },
+      params: params,
+      filter: filter,
       using: vectorName,
     });
 

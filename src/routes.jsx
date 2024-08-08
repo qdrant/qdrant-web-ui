@@ -8,7 +8,6 @@ import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
 import Graph from './pages/Graph';
-import IndexAccuracyCheck from './pages/IndexAccuracyCheck';
 
 const routes = () => [
   {
@@ -27,10 +26,6 @@ const routes = () => [
       {
         path: '/collections/:collectionName/graph',
         element: <Graph />,
-      },
-      {
-        path: '/collections/:collectionName/accuracy-check',
-        element: <IndexAccuracyCheck />,
       },
       { path: '/tutorial', element: <Tutorial /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },
