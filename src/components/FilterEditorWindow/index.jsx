@@ -10,7 +10,7 @@ import { codeParse } from './config/RequestFromCode';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
-const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema, customHeight=null }) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema, customHeight = null }) => {
   const { enqueueSnackbar } = useSnackbar();
   const editorRef = useRef(null);
   const lensesRef = useRef(null);

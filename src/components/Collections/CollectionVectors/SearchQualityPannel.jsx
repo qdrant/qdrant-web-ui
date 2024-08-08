@@ -59,7 +59,6 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
               </IconButton>
             </Tooltip>
           </>
-
         )}
       </TableCell>
     </TableRow>
@@ -144,16 +143,16 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
         enum: vectorNames,
       },
       params: {
-        description: "Additional search params",
+        description: 'Additional search params',
         anyOf: [
           {
-            $ref: "#/components/schemas/SearchParams"
+            $ref: '#/components/schemas/SearchParams',
           },
           {
-            nullable: true
-          }
-        ]
-      }
+            nullable: true,
+          },
+        ],
+      },
     },
   });
 
@@ -161,8 +160,7 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
     return <>No vectors</>;
   }
 
-  const onCheckIndexQuality = async ({ using = "", limit = 10, params = null, filter = null }) => {
-
+  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null }) => {
     setInProgress(true);
 
     clearLogsFoo && clearLogsFoo();
@@ -179,7 +177,7 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
       const pointIds = scrollResult.points.map((point) => point.id);
       const total = pointIds.length;
 
-      loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + using || "---");
+      loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + using || '---');
 
       for (let idx = 0; idx < total; idx++) {
         const pointId = pointIds[idx];
@@ -229,7 +227,6 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
     onCheckIndexQuality(qulityCheckParams);
   };
 
-
   return (
     <Card variant="dual" data-testid="vectors-info" {...other}>
       <CardHeader
@@ -261,22 +258,22 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ width: "25%" }}>
+              <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Vector Name
                 </Typography>
               </TableCell>
-              <TableCell sx={{ width: "25%" }}>
+              <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Size
                 </Typography>
               </TableCell>
-              <TableCell sx={{ width: "25%" }}>
+              <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Distance
                 </Typography>
               </TableCell>
-              <TableCell sx={{ width: "25%" }}>
+              <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Precision
                 </Typography>

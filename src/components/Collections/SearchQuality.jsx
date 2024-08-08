@@ -26,7 +26,7 @@ const SearchQuality = ({ collectionName }) => {
 
   const clearLogs = () => {
     setLog('');
-  }
+  };
 
   useEffect(() => {
     client
