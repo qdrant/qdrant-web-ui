@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Switch,
   CardContent,
+  LinearProgress,
 } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
@@ -22,7 +23,7 @@ import { checkIndexPrecision } from './check-index-precision';
 import { useClient } from '../../../context/client-context';
 import CodeEditorWindow from '../../FilterEditorWindow';
 
-const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision }) => {
+const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInProgress }) => {
   return (
     <TableRow data-testid="vector-row">
       <TableCell>
@@ -41,18 +42,22 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision }) => 
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography variant="subtitle1" component={'span'} color="text.secondary">
-          {precision ? `${precision * 100}%` : '—'}
-        </Typography>
-        <Tooltip title={'Check index quality'} placement="left">
-          <IconButton
-            aria-label="Check index quality"
-            data-testid="index-quality-check-button"
-            onClick={onCheckIndexQuality}
-          >
-            <PublishedWithChanges color={'primary'} />
-          </IconButton>
-        </Tooltip>
+        {isInProgress && <LinearProgress />}
+        {!isInProgress && (
+          <Tooltip title="Check index quality">
+            <Typography variant="subtitle1" component={'span'} color="text.secondary">
+              {precision ? `${precision * 100}%` : '—'}
+            </Typography>
+            <IconButton
+              aria-label="Check index quality"
+              data-testid="index-quality-check-button"
+              onClick={onCheckIndexQuality}
+              sx={{ p: 0, ml: 1 }}
+            >
+              <PublishedWithChanges color={'primary'} />
+            </IconButton>
+          </Tooltip>
+        )}
       </TableCell>
     </TableRow>
   );
@@ -63,6 +68,7 @@ VectorTableRow.propTypes = {
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
   precision: PropTypes.number,
+  isInProgress: PropTypes.bool,
 };
 
 const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
@@ -79,7 +85,7 @@ const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...oth
   });
 
   const [advancedMod, setAdvancedMod] = useState(false);
-  // const [inProgress, setInProgress] = useState(false);
+  const [inProgress, setInProgress] = useState(false);
 
   const [code, setCode] = useState('');
   const handleRunCode = async (code) => {
@@ -125,6 +131,9 @@ const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...oth
   }
 
   const onCheckIndexQuality = async (vectorName) => {
+
+    setInProgress(true);
+
     clearLogsFoo && clearLogsFoo();
     const precisions = [];
     try {
@@ -177,8 +186,10 @@ const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...oth
           [vectorName]: avgPrecision,
         };
       });
+
+      setInProgress(false);
     } catch (e) {
-      // todo
+      setInProgress(false);
       console.error(e);
       loggingFoo && loggingFoo(JSON.stringify(e));
     }
@@ -215,22 +226,22 @@ const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...oth
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell sx={{ width: "25%" }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Name
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ width: "25%" }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Size
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ width: "25%" }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Distance
                 </Typography>
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ width: "25%" }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Precision
                 </Typography>
@@ -246,6 +257,7 @@ const VectorsInfo = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...oth
                 onCheckIndexQuality={() => onCheckIndexQuality(vectorName)}
                 precision={precision ? precision[vectorName] : null}
                 key={vectorName}
+                isInProgress={inProgress}
               />
             ))}
           </TableBody>
