@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Card,
@@ -18,16 +18,16 @@ import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import Typography from '@mui/material/Typography';
 import { PublishedWithChanges } from '@mui/icons-material';
-import { checkIndexAccuracy } from './check-index-accuracy';
+import { checkIndexPrecision } from './check-index-precision';
 import { useClient } from '../../../context/client-context';
 import CodeEditorWindow from '../../FilterEditorWindow';
 
-const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, accuracy }) => {
+const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision }) => {
   return (
     <TableRow data-testid="vector-row">
       <TableCell>
         <Typography variant="subtitle1" component={'span'} color="text.secondary">
-          {name ?? '—'}
+          {name == '' ? '—' : name}
         </Typography>
       </TableCell>
       <TableCell>
@@ -42,7 +42,7 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, accuracy }) => {
       </TableCell>
       <TableCell>
         <Typography variant="subtitle1" component={'span'} color="text.secondary">
-          {accuracy ? `${accuracy * 100}%` : '—'}
+          {precision ? `${precision * 100}%` : '—'}
         </Typography>
         <Tooltip title={'Check index quality'} placement="left">
           <IconButton
@@ -62,18 +62,17 @@ VectorTableRow.propTypes = {
   vectorObj: PropTypes.object,
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
-  accuracy: PropTypes.number,
+  precision: PropTypes.number,
 };
 
 const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => {
   const { client } = useClient();
-  const isNamedVector = !(vectors?.size && vectors?.distance);
-  const vectorsNames = isNamedVector ? Object.keys(vectors) : null;
-  const [accuracy, setAccuracy] = useState(() => {
+  const vectorsNames = Object.keys(vectors);
+  const [precision, setPrecision] = useState(() => {
     if (vectorsNames) {
-      return vectorsNames.reduce((acc, name) => {
-        acc[name] = null;
-        return acc;
+      return vectorsNames.reduce((precision, name) => {
+        precision[name] = null;
+        return precision;
       }, {});
     }
     return null;
@@ -120,57 +119,61 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
   // - timeout, show warning/explanation
   // - show spinner
 
-  useEffect(() => {
-    // if accuracy is null or is object in which each key value is null
-    if (!accuracy || (isNamedVector && Object.values(accuracy).every((val) => val === null))) {
-      onRequestResult && onRequestResult(JSON.stringify('No accuracy data is requested'));
-      return;
-    }
-
-    onRequestResult &&
-      onRequestResult(JSON.stringify('Mean accuracy for collection: ' + JSON.stringify(accuracy).replace(/"/g, "'")));
-  }, [accuracy]);
-
   if (!vectors) {
     return <>No vectors</>;
   }
 
-  const onCheckIndexAccuracy = async (vectorName) => {
-    const accs = [];
+  const onCheckIndexPrecisioncheckIndexPrecision = async (vectorName) => {
+    const precisions = [];
     try {
       const scrollResult = await client.scroll(collectionName, {
         with_payload: false,
         with_vector: false,
         limit: 100,
-        timeout: 20000,
       });
 
-      onRequestResult && onRequestResult(JSON.stringify(scrollResult)); // todo: bigIntJSON.stringify?
+      const limit = 10;
 
       // todo: if exceeded timeout
 
-      const idxs = scrollResult.points.map((point) => point.id);
+      const pointIds = scrollResult.points.map((point) => point.id);
+      const total = pointIds.length;
 
-      for (const idx of idxs) {
-        const acc = await checkIndexAccuracy(client, collectionName, idx, vectorName);
-        onRequestResult && onRequestResult('Point ID ' + idx + ' accuracy: ' + acc);
-        if (acc) {
-          accs.push(acc);
+
+      for (let idx = 0; idx < total; idx++) {
+        const pointId = pointIds[idx];
+        const precision = await checkIndexPrecision(
+          client,
+          collectionName,
+          pointId,
+          onRequestResult,
+          idx,
+          total,
+          vectorName,
+          limit
+        );
+        if (precision) {
+          precisions.push(precision);
         }
       }
 
-      if (vectorName) {
-        setAccuracy((prev) => {
-          return {
-            ...prev,
-            // todo: wrong rounding
-            [vectorName]: accs.reduce((acc, val) => acc + val, 0) / accs.length,
-          };
-        });
-      } else {
-        // todo: wrong rounding
-        setAccuracy(accs.reduce((acc, val) => acc + val, 0) / accs.length);
-      }
+      // Round to 2 decimal places
+      const round = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+
+      const avgPrecision = round(precisions.reduce((x, val) => x + val, 0) / precisions.length);
+      const stdDev = round(
+        Math.sqrt(precisions.reduce((x, val) => x + (val - avgPrecision) ** 2, 0) / precisions.length)
+      );
+
+      onRequestResult('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
+
+      setPrecision((prev) => {
+        return {
+          ...prev,
+          // todo: wrong rounding
+          [vectorName]: avgPrecision,
+        };
+      });
     } catch (e) {
       // todo
       console.error(e);
@@ -226,30 +229,22 @@ const VectorsInfo = ({ collectionName, vectors, onRequestResult, ...other }) => 
               </TableCell>
               <TableCell>
                 <Typography variant="subtitle1" fontWeight={600}>
-                  Accuracy
+                  Precision
                 </Typography>
               </TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {vectors.size && vectors.distance ? (
+            {Object.keys(vectors).map((key) => (
               <VectorTableRow
-                vectorObj={vectors}
-                onCheckIndexQuality={() => onCheckIndexAccuracy(null)}
-                accuracy={accuracy}
+                vectorObj={vectors[key]}
+                name={key}
+                onCheckIndexQuality={() => onCheckIndexPrecisioncheckIndexPrecision(key)}
+                precision={precision ? precision[key] : null}
+                key={key}
               />
-            ) : (
-              Object.keys(vectors).map((key) => (
-                <VectorTableRow
-                  vectorObj={vectors[key]}
-                  name={key}
-                  onCheckIndexQuality={() => onCheckIndexAccuracy(key)}
-                  accuracy={accuracy ? accuracy[key] : null}
-                  key={key}
-                />
-              ))
-            )}
+            ))}
           </TableBody>
         </Table>
       )}
