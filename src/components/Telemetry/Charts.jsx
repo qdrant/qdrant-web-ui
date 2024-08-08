@@ -159,17 +159,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
         const fetchTelemetryData = async () => {
           try {
             const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
-            requestBody.paths?.forEach((path) => {
-              const data = _.get(response.data.result, path, 0);
-
-              setChartsData((prevData) => ({
-                ...prevData,
-                [path]: {
-                  ...prevData[path],
-                  [new Date().toLocaleTimeString()]: data,
-                },
-              }));
-            });
+            setChartsData(response.data.result);
           } catch (error) {
             console.error('Failed to fetch telemetry data', error);
           }
@@ -223,11 +213,16 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
       const newChart = new Chart(context, {
         type: 'line',
         data: {
-          labels: Object.keys(chartsData[path]) ?? [],
+          labels: [Date.now()],
           datasets: [
             {
               label: path,
-              data: Object.values(chartsData[path]) ?? [],
+              data: [
+                {
+                  x: Date.now(),
+                  y: _.get(chartsData, path, 0),
+                },
+              ],
             },
           ],
         },
@@ -265,9 +260,14 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
     }
     Object.keys(chartInstances).forEach((path) => {
       const chart = chartInstances[path];
-      chart.data.labels = Object.keys(chartsData[path]) ?? [];
-      chart.data.datasets[0].data = Object.values(chartsData[path]) ?? [];
-      chart.update('quiet');
+      const data = _.get(chartsData, path, 0);
+      chart.data.datasets.forEach(function (dataset) {
+        dataset.data.push({
+          x: Date.now(),
+          y: data,
+        });
+      });
+      chart.update();
     });
   }, [chartsData]);
 
@@ -304,7 +304,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
         </Select>
       </Box>
 
-      {Object.keys(chartsData).map((path) => (
+      {chartLabels.map((path) => (
         <Box key={path} sx={{ p: 2, borderRadius: 2, m: 2, border: '1px solid', borderColor: 'grey.300' }}>
           <Box
             sx={{
