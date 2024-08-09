@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Alert, Box, Button, Collapse, Link, MenuItem, Select, Tooltip, Typography, useTheme } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Collapse,
+  Link,
+  MenuItem,
+  Paper,
+  Select,
+  Tooltip,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
@@ -310,18 +322,35 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
 
   return (
     <>
+      <Paper
+        variant="heading"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          p: 1,
+          borderRadius: 0,
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6">Telemetry</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+          }}
+        >
+          <Typography variant="h6">Time Window:</Typography>
+          <Select value={timeWindow} onChange={handleTimeWindowChange} sx={{ minWidth: 120 }}>
+            <MenuItem value={60000}>1 Minute</MenuItem>
+            <MenuItem value={300000}>5 Minutes</MenuItem>
+            <MenuItem value={600000}>10 Minutes</MenuItem>
+          </Select>
+        </Box>
+      </Paper>
       {alerts.map((alert, index) => (
         <AlertComponent key={index} alert={alert} index={index} setAlerts={setAlerts} />
       ))}
-
-      {/* Time window selector */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', m: 2 }}>
-        <Select value={timeWindow} onChange={handleTimeWindowChange} sx={{ minWidth: 120 }}>
-          <MenuItem value={60000}>1 Minute</MenuItem>
-          <MenuItem value={300000}>5 Minutes</MenuItem>
-          <MenuItem value={600000}>10 Minutes</MenuItem>
-        </Select>
-      </Box>
 
       {chartLabels.map((path) => (
         <Box key={path} sx={{ p: 2, borderRadius: 2, m: 2, border: '1px solid', borderColor: 'grey.300' }}>

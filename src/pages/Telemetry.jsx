@@ -20,10 +20,12 @@ const query = `
 // which is crucial for understanding the indexing performance of the collection.
 
 // Reload Interval:
-// The reload_interval is set to 2 seconds in this example.
+// The reload_interval is set to 2 seconds by default.
 // This means that the graphs and data metrics on the page will be updated every 2 seconds,
 // providing near real-time monitoring of the system's performance.
 
+//Time Window:
+// The time window for the graphs is set to 1 min by default.
 
 
 {
