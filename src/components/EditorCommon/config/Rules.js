@@ -2,7 +2,7 @@ import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
 import openapi from '/openapi.json??url&raw';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
-const DOCS_BASE_URL = 'https://qdrant.github.io/qdrant/redoc/index.html#tag/';
+const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/';
 
 const apiDocs = new OpenapiDocs(JSON.parse(openapi));
 
@@ -101,7 +101,8 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
 
         const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
         if (terminal) {
-          const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/operation/' + terminal.operationId;
+          terminal.operationId = terminal.operationId.replace('_', '-');
+          const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/' + terminal.operationId;
           lenses.push({
             range,
             id: 'DOCS',
