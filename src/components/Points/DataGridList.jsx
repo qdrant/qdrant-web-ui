@@ -57,6 +57,7 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                   displayDataTypes={false}
                   defaultInspectDepth={0}
                   rootName={false}
+                  style={theme.palette.mode === 'dark' ? { backgroundColor: theme.palette.background.card } : {}}
                 />
               )}
 

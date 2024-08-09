@@ -26,6 +26,7 @@ export const darkThemeOptions = {
   palette: {
     background: {
       code: '#1e1e1e',
+      card: background.paper,
     },
   },
   components: {
