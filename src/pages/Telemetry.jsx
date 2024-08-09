@@ -29,11 +29,11 @@ const query = `
 {
   "reload_interval": 2,
   "paths": [
+    "requests.rest.responses['OPTIONS /telemetry'][200].avg_duration_micros",
     "app.system.disk_size",
     "app.system.ram_size",
     "collections.collections[0].shards[0].local.segments[0].info.num_indexed_vectors",
-    "requests.rest.responses['GET /telemetry'][200].count",
-    "requests.rest.responses['OPTIONS /collections'][200].count"
+    "requests.rest.responses['GET /telemetry'][200].count"
   ]
 }`;
 const defaultResult = ``;

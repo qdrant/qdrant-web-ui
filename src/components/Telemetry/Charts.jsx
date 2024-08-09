@@ -54,6 +54,7 @@ AlertComponent.propTypes = {
 const Charts = ({ chartSpecsText, setChartSpecsText }) => {
   const [chartsData, setChartsData] = useState({});
   const [chartLabels, setChartLabels] = useState([]);
+  const [telemetryData, setTelemetryData] = useState({});
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
   const [reloadInterval, setReloadInterval] = useState(2);
@@ -82,6 +83,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
       const requestBody = bigIntJSON.parse(chartSpecsText);
       const newPaths = requestBody.paths.filter((p) => p !== path);
       requestBody.paths = newPaths;
+      setChartLabels(newPaths);
       setChartSpecsText(JSON.stringify(requestBody, null, 2));
     } catch (e) {
       console.error('Failed to remove chart', e);
@@ -156,10 +158,21 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
         console.error('Invalid reload interval:', requestBody.reload_interval);
         return;
       } else if (requestBody.paths && requestBody.reload_interval && typeof requestBody.reload_interval === 'number') {
+        const paths = _.union(requestBody.paths, chartLabels);
         const fetchTelemetryData = async () => {
           try {
             const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
-            setChartsData(response.data.result);
+            setTelemetryData(response.data.result);
+            paths?.forEach((path) => {
+              const data = _.get(response.data.result, path, null);
+              setChartsData((prevData) => ({
+                ...prevData,
+                [path]: {
+                  ...prevData[path],
+                  [new Date().toLocaleTimeString()]: data,
+                },
+              }));
+            });
           } catch (error) {
             console.error('Failed to fetch telemetry data', error);
           }
@@ -167,7 +180,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
 
         await fetchTelemetryData();
 
-        setChartLabels(requestBody.paths);
+        setChartLabels(paths);
         setReloadInterval(requestBody.reload_interval);
 
         if (requestBody.reload_interval) {
@@ -197,7 +210,6 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
       if (intervalId) {
         clearInterval(intervalId);
       }
-      setChartsData({});
       setChartLabels([]);
     };
   }, [chartSpecsText]);
@@ -207,60 +219,25 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
       chartInstances[chart].destroy();
     });
     setChartInstances({});
-
-    const createChart = (path) => {
-      const context = document.getElementById(path);
-      const newChart = new Chart(context, {
-        type: 'line',
-        data: {
-          labels: [Date.now()],
-          datasets: [
-            {
-              label: path,
-              data: [
-                {
-                  x: Date.now(),
-                  y: _.get(chartsData, path, 0),
-                },
-              ],
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          scales: {
-            x: {
-              type: 'realtime',
-              realtime: {
-                duration: timeWindow,
-              },
-            },
-          },
-        },
-      });
-
-      syncColors(newChart);
-      setChartInstances((prevInstances) => ({
-        ...prevInstances,
-        [path]: newChart,
-      }));
-    };
-
     chartLabels.forEach(createChart);
-  }, [chartLabels, reloadInterval, timeWindow]);
+  }, [reloadInterval, chartLabels]);
 
   useEffect(() => {
-    if (Object.keys(chartsData).length === 0) {
-      return;
-    }
     Object.keys(chartInstances).forEach((path) => {
       const chart = chartInstances[path];
-      const data = _.get(chartsData, path, 0);
+      chart.options.scales.x.realtime.duration = timeWindow;
+      chart.update();
+    });
+  }, [timeWindow]);
+
+  useEffect(() => {
+    if (Object.keys(telemetryData).length === 0) {
+      return;
+    }
+
+    Object.keys(chartInstances).forEach((path) => {
+      const chart = chartInstances[path];
+      const data = _.get(telemetryData, path, null);
       chart.data.datasets.forEach(function (dataset) {
         dataset.data.push({
           x: Date.now(),
@@ -269,7 +246,49 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
       });
       chart.update();
     });
-  }, [chartsData]);
+  }, [telemetryData]);
+
+  const createChart = (path) => {
+    const context = document.getElementById(path);
+    const newChart = new Chart(context, {
+      type: 'line',
+      data: {
+        labels: Object.keys(chartsData[path] || {}),
+        datasets: [
+          {
+            label: path,
+            data: Object.keys(chartsData[path] || {}).map((key) => ({
+              x: key,
+              y: chartsData[path][key],
+            })),
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            type: 'realtime',
+            realtime: {
+              duration: timeWindow,
+            },
+          },
+        },
+      },
+    });
+
+    syncColors(newChart);
+    newChart.id = path;
+    setChartInstances((prevInstances) => ({
+      ...prevInstances,
+      [path]: newChart,
+    }));
+  };
 
   const syncColors = (chart) => {
     const color = theme.palette.mode === 'dark' ? 'white' : 'black';
