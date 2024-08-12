@@ -17,6 +17,7 @@ function setupAxios({ apiKey }) {
         return data;
       }
       headers['Content-Type'] = 'application/json';
+      headers['x-inference-proxy'] = 'true';
       return bigIntJSON.stringify(data);
     },
   ];

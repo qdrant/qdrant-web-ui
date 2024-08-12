@@ -9,7 +9,7 @@ import { getBaseURL } from './utils';
 export class QdrantClientExtended extends QdrantClient {
   #downloadController;
   constructor({ url, apiKey, port }) {
-    super({ url, apiKey, port });
+    super({ url, apiKey, port, headers: { 'x-inference-proxy': 'true' } });
 
     this.downloadSnapshot = this.downloadSnapshot.bind(this);
     this.getSnapshotUploadUrl = this.getSnapshotUploadUrl.bind(this);
