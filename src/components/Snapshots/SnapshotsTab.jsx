@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
-import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Button, Grid, Link, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
 import { pumpFile, updateProgress } from '../../common/utils';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
@@ -15,6 +16,9 @@ export const SnapshotsTab = ({ collectionName }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
+  const [remoteShardsAlert, setRemoteShardsAlert] = useState(false);
+  const [localShards, setLocalShards] = useState([]);
+  const [remoteShards, setRemoteShards] = useState([]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -31,7 +35,31 @@ export const SnapshotsTab = ({ collectionName }) => {
       });
   }, [qdrantClient, collectionName]);
 
+  const checkRemoteShards = () => {
+    qdrantClient
+      .api('cluster')
+      .collectionClusterInfo({ collection_name: collectionName })
+      .then((res) => {
+        const remoteShards = res.data.result.remote_shards;
+        const localShards = res.data.result.local_shards;
+        if (remoteShards.length > 0) {
+          setRemoteShardsAlert(true);
+          setRemoteShards(remoteShards);
+          setLocalShards(localShards);
+          return;
+        } else {
+          createSnapshot();
+        }
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, errorSnackbarOptions);
+      });
+  };
+
   const createSnapshot = () => {
+    if (remoteShardsAlert) {
+      setRemoteShardsAlert(false);
+    }
     setIsLoading(true);
     qdrantClient
       .createSnapshot(collectionName)
@@ -118,7 +146,7 @@ export const SnapshotsTab = ({ collectionName }) => {
           <h1>Snapshots</h1>
         </Grid>
         <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
-          <Button variant={'contained'} onClick={createSnapshot} startIcon={<PhotoCamera fontSize={'small'} />}>
+          <Button variant={'contained'} onClick={checkRemoteShards} startIcon={<PhotoCamera fontSize={'small'} />}>
             Take snapshot
           </Button>
         </Grid>
@@ -152,6 +180,46 @@ export const SnapshotsTab = ({ collectionName }) => {
           </Grid>
         )}
       </Grid>
+      <ConfirmationDialog
+        open={remoteShardsAlert}
+        onClose={() => setRemoteShardsAlert(false)}
+        title={'Snapshot creation warning'}
+        content={
+          <>
+            <Typography>
+              Snapshot will not contain the full collection. It will only include shards on the current machine.
+            </Typography>
+
+            <Typography>
+              Local shards:
+              <ul>
+                {localShards.map((shard) => (
+                  <li key={shard.shard_id}>Id: {shard.shard_id}</li>
+                ))}
+              </ul>
+            </Typography>
+            <Typography>
+              Remote shards (not included in the snapshot):
+              <ul>
+                {remoteShards.map((shard) => (
+                  <li key={shard.shard_id}>
+                    Id: {shard.shard_id} ({shard.peer_id})
+                  </li>
+                ))}
+              </ul>
+            </Typography>
+            <Typography>
+              For more information, please visit the{' '}
+              <Link href={'https://qdrant.tech/documentation/tutorials/create-snapshot/'} target="_blank">
+                documentation
+              </Link>
+              .
+            </Typography>
+          </>
+        }
+        actionName={'Take snapshot'}
+        actionHandler={createSnapshot}
+      />
     </div>
   );
 };
