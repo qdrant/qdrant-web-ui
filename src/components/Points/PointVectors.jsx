@@ -79,7 +79,6 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 gap: 2,
               }}
             >
-              
               <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Visualize
               </Button>

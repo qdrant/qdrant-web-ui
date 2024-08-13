@@ -12,12 +12,8 @@ import { useClient } from '../context/client-context';
 import { getFirstPoint } from '../lib/graph-visualization-helpers';
 import { useSnackbar } from 'notistack';
 
-const defaultQuery = `
-// Try me!
+const explanation = `
 
-{
-  "limit": 5
-}
 // Parameters for expansion request:
 //
 // Available parameters:
@@ -31,6 +27,16 @@ const defaultQuery = `
 //                  if there are multiple.
 
 `;
+
+const defaultJson = `
+// Try me!
+
+{
+  "limit": 5
+}
+`;
+
+const defaultQuery = defaultJson + explanation;
 
 function Graph() {
   const theme = useTheme();
@@ -67,19 +73,19 @@ function Graph() {
     if (newInitNode) {
       delete newInitNode.vector;
       setInitNode(newInitNode);
-      setCode(JSON.stringify({ limit: 5, using: vectorName }, null, 2));
-      setOptions(
-        vectorName
-          ? {
-              collectionName: params.collectionName,
-              limit: 5,
-              using: vectorName,
-            }
-          : {
-              collectionName: params.collectionName,
-              limit: 5,
-            }
-      );
+
+      const option = vectorName
+        ? {
+            limit: 5,
+            using: vectorName,
+          }
+        : {
+            limit: 5,
+          };
+      setCode(JSON.stringify(option, null, 2) + explanation);
+
+      option.collectionName = params.collectionName;
+      setOptions(option);
     }
   }, [newInitNode, vectorName]);
 
