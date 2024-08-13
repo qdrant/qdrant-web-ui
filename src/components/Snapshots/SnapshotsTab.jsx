@@ -140,7 +140,7 @@ export const SnapshotsTab = ({ collectionName }) => {
             Take snapshot
           </Button>
         </Grid>
-        {remoteShards && (
+        {remoteShards && remoteShards.length !== 0 && (
           <InfoBanner severity={'warning'}>
             <Typography>
               Snapshot will not contain the full collection. It will only include shards on the current machine.
