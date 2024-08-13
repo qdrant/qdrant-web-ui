@@ -1,5 +1,5 @@
 import React, { useContext, createContext, useState, useEffect } from 'react';
-import setupAxios from '../common/axios';
+import { axiosInstance, setupAxios } from '../common/axios';
 import qdrantClient from '../common/client';
 import { bigIntJSON } from '../common/bigIntJSON';
 
@@ -35,7 +35,7 @@ export const ClientProvider = (props) => {
   const client = qdrantClient(settings);
 
   useEffect(() => {
-    setupAxios(settings);
+    setupAxios(axiosInstance, settings);
     persistSettings(settings);
   }, [settings]);
 
