@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CopyButton } from '../Common/CopyButton';
 import { bigIntJSON } from '../../common/bigIntJSON';
+import { useNavigate, useParams } from 'react-router-dom';
 
 /**
  * Component for displaying vectors of a point
@@ -12,6 +13,8 @@ import { bigIntJSON } from '../../common/bigIntJSON';
  * @constructor
  */
 const Vectors = memo(function Vectors({ point, onConditionChange }) {
+  const { collectionName } = useParams();
+  const navigate = useNavigate();
   if (!Object.getOwnPropertyDescriptor(point, 'vector')) {
     return null;
   }
@@ -24,6 +27,11 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
   } else {
     vectors = point.vector;
   }
+
+  const handleNavigate = (key) => {
+    console.log('key', key);
+    navigate(`/collections/${collectionName}/graph`, { state: { newInitNode: point, vectorName: key } });
+  };
 
   return (
     <Box pt={2}>
@@ -61,24 +69,24 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 size="small"
               />
             </Grid>
-            <Grid item xs={4} my={1} display={'flex'}>
-              <Box sx={{ flexGrow: 1 }} />
-
+            <Grid
+              item
+              xs={4}
+              my={1}
+              sx={{
+                display: 'flex',
+                justifyContent: 'end',
+                gap: 2,
+              }}
+            >
+              
+              <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
+                Visualize
+              </Button>
               <Button
-                size="small"
                 variant="outlined"
-                onClick={() => {
-                  onConditionChange(
-                    [
-                      {
-                        key: 'id',
-                        type: 'id',
-                        value: point.id,
-                      },
-                    ],
-                    key === '' ? null : key
-                  );
-                }}
+                size="small"
+                onClick={() => onConditionChange([{ key: 'id', type: 'id', value: point.id }], key === '' ? null : key)}
               >
                 Find Similar
               </Button>

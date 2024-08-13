@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -36,6 +36,8 @@ function Graph() {
   const theme = useTheme();
   const navigate = useNavigate();
   const params = useParams();
+  const location = useLocation();
+  const { newInitNode, vectorName } = location.state || {};
   const [initNode, setInitNode] = useState(null);
   const [options, setOptions] = useState({
     limit: 5,
@@ -60,6 +62,26 @@ function Graph() {
   const handlePointDisplay = useCallback((point) => {
     setActivePoint(point);
   }, []);
+
+  useEffect(() => {
+    if (newInitNode) {
+      delete newInitNode.vector;
+      setInitNode(newInitNode);
+      setCode(JSON.stringify({ limit: 5, using: vectorName }, null, 2));
+      setOptions(
+        vectorName
+          ? {
+              collectionName: params.collectionName,
+              limit: 5,
+              using: vectorName,
+            }
+          : {
+              collectionName: params.collectionName,
+              limit: 5,
+            }
+      );
+    }
+  }, [newInitNode, vectorName]);
 
   const handleRunCode = async (data, collectionName) => {
     // scroll
