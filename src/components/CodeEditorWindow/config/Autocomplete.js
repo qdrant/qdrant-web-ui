@@ -43,7 +43,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
           };
         });
 
-        return { suggestions: suggestions };
+        return { suggestions };
       } else {
         // Autocomplete for request body
         const requestLines = selectedCodeBlock.blockText.split(/\r?\n/);
@@ -71,8 +71,9 @@ export const autocomplete = async (monaco, qdrantClient) => {
           return acc;
         }, []);
 
-        return { suggestions: suggestions };
+        return { suggestions };
       }
     },
+    triggerCharacters: ['/', '"', ': ', ' '],
   };
 };
