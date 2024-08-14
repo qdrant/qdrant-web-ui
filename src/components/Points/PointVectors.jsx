@@ -80,7 +80,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               }}
             >
               <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
-                Visualize
+                Open graph
               </Button>
               <Button
                 variant="outlined"
