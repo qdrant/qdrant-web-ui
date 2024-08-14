@@ -50,6 +50,7 @@
     "unist-util-visit": "^5.0.0",
     "vite": "^4.3.3",
     "vite-plugin-svgr": "^2.4.0",
+    "wasm-dist-bhtsne": "^1.0.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
