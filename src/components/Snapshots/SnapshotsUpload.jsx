@@ -4,12 +4,13 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import UploadFile from '@mui/icons-material/UploadFile';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { SnapshotUploadForm } from './SnapshotUploadForm';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 export const SnapshotsUpload = ({ onComplete, sx }) => {
   const theme = useTheme();
@@ -28,9 +29,9 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
   return (
     <Box sx={{ ...sx }}>
       <Tooltip title={'Upload snapshot'} placement="left">
-        <IconButton variant="contained" onClick={handleUploadClick} color={'primary'}>
-          <UploadFile />
-        </IconButton>
+        <Button variant="outlined" onClick={handleUploadClick} color={'primary'} endIcon={<UploadFile />}>
+          <Typography sx={{ mt: '5px' }}>Upload Snapshot</Typography>
+        </Button>
       </Tooltip>
       <Dialog
         fullScreen={fullScreen}
