@@ -3,11 +3,12 @@ import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
-import { Button, Grid, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Button, Grid, Link, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
 import { pumpFile, updateProgress } from '../../common/utils';
+import InfoBanner from '../InfoBanner';
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
@@ -15,6 +16,8 @@ export const SnapshotsTab = ({ collectionName }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
+  const [localShards, setLocalShards] = useState([]);
+  const [remoteShards, setRemoteShards] = useState([]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -28,6 +31,21 @@ export const SnapshotsTab = ({ collectionName }) => {
       })
       .finally(() => {
         setIsLoading(false);
+      });
+
+    qdrantClient
+      .api('cluster')
+      .collectionClusterInfo({ collection_name: collectionName })
+      .then((res) => {
+        const remoteShards = res.data.result.remote_shards;
+        const localShards = res.data.result.local_shards;
+        if (remoteShards.length > 0) {
+          setRemoteShards(remoteShards);
+          setLocalShards(localShards);
+        }
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, errorSnackbarOptions);
       });
   }, [qdrantClient, collectionName]);
 
@@ -122,6 +140,43 @@ export const SnapshotsTab = ({ collectionName }) => {
             Take snapshot
           </Button>
         </Grid>
+        {remoteShards && remoteShards.length !== 0 && (
+          <InfoBanner severity={'warning'}>
+            <Typography>
+              Snapshot will not contain the full collection. It will only include shards on the current machine.
+            </Typography>
+
+            {localShards.length > 0 && (
+              <>
+                <Typography>Local shards:</Typography>
+                <ul>
+                  {localShards.map((shard) => (
+                    <Typography component={'li'} key={shard.shard_id}>
+                      Id: {shard.shard_id}
+                    </Typography>
+                  ))}
+                </ul>
+              </>
+            )}
+            <>
+              <Typography>Remote shards (not included in the snapshot):</Typography>
+              <ul>
+                {remoteShards.map((shard) => (
+                  <Typography component={'li'} key={shard.shard_id}>
+                    Id: {shard.shard_id} ({shard.peer_id})
+                  </Typography>
+                ))}
+              </ul>
+            </>
+            <Typography>
+              For more information, please visit the{' '}
+              <Link href={'https://qdrant.tech/documentation/tutorials/create-snapshot/'} target="_blank">
+                documentation
+              </Link>
+              .
+            </Typography>
+          </InfoBanner>
+        )}
         {isLoading && <div>Loading...</div>}
         {!isLoading && snapshots?.length > 0 && (
           <Grid item xs={12}>
