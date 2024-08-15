@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
@@ -12,12 +12,8 @@ import { useClient } from '../context/client-context';
 import { getFirstPoint } from '../lib/graph-visualization-helpers';
 import { useSnackbar } from 'notistack';
 
-const defaultQuery = `
-// Try me!
+const explanation = `
 
-{
-  "limit": 5
-}
 // Parameters for expansion request:
 //
 // Available parameters:
@@ -32,10 +28,22 @@ const defaultQuery = `
 
 `;
 
+const defaultJson = `
+// Try me!
+
+{
+  "limit": 5
+}
+`;
+
+const defaultQuery = defaultJson + explanation;
+
 function Graph() {
   const theme = useTheme();
   const navigate = useNavigate();
   const params = useParams();
+  const location = useLocation();
+  const { newInitNode, vectorName } = location.state || {};
   const [initNode, setInitNode] = useState(null);
   const [options, setOptions] = useState({
     limit: 5,
@@ -60,6 +68,26 @@ function Graph() {
   const handlePointDisplay = useCallback((point) => {
     setActivePoint(point);
   }, []);
+
+  useEffect(() => {
+    if (newInitNode) {
+      delete newInitNode.vector;
+      setInitNode(newInitNode);
+
+      const option = vectorName
+        ? {
+            limit: 5,
+            using: vectorName,
+          }
+        : {
+            limit: 5,
+          };
+      setCode(JSON.stringify(option, null, 2) + explanation);
+
+      option.collectionName = params.collectionName;
+      setOptions(option);
+    }
+  }, [newInitNode, vectorName]);
 
   const handleRunCode = async (data, collectionName) => {
     // scroll
