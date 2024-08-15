@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { axiosInstance as axios } from '../../../common/axios';
 import { stripComments } from 'jsonc-parser';
 import { updateHistory } from '../../../lib/update-history';
 import { bigIntJSON } from '../../../common/bigIntJSON';

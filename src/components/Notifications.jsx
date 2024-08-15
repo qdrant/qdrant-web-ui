@@ -10,7 +10,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import List from '@mui/material/List';
 import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
-import axios from 'axios';
+import { axiosInstance as axios } from '../common/axios';
 import { CodeBlock } from './Common/CodeBlock';
 import { Box, Button, Chip, Drawer, useMediaQuery } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
@@ -69,6 +69,10 @@ export default function Notifications() {
   React.useEffect(() => {
     setLoading(true);
     fetchNotifications().then((data) => {
+      if (!data || data.length === 0) {
+        setLoading(false);
+        return;
+      }
       setIssuesCount(data.length);
       setIssues(data);
       setLoading(false);
