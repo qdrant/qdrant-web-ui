@@ -43,7 +43,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
           };
         });
 
-        return { suggestions: suggestions };
+        return { suggestions };
       } else {
         // Autocomplete for request body
         const requestLines = selectedCodeBlock.blockText.split(/\r?\n/);
@@ -60,16 +60,20 @@ export const autocomplete = async (monaco, qdrantClient) => {
 
         let suggestions = autocomplete.completeRequestBody(requestHeader, requestBody);
 
-        suggestions = suggestions.map((s) => {
-          return {
-            label: s,
-            kind: 17,
-            insertText: s,
-          };
-        });
+        suggestions = suggestions.reduce((acc, s) => {
+          if (acc.findIndex((a) => a.label === s) === -1) {
+            acc.push({
+              label: s,
+              kind: 17,
+              insertText: s,
+            });
+          }
+          return acc;
+        }, []);
 
-        return { suggestions: suggestions };
+        return { suggestions };
       }
     },
+    triggerCharacters: ['/', '"', ': ', ' '],
   };
 };
