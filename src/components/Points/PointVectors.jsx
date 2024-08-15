@@ -29,7 +29,6 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
   }
 
   const handleNavigate = (key) => {
-    console.log('key', key);
     navigate(`/collections/${collectionName}/graph`, { state: { newInitNode: point, vectorName: key } });
   };
 
