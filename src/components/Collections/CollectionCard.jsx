@@ -1,17 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, Card, CardContent, Divider, Stack, CardActionArea, Typography, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PolylineIcon from '@mui/icons-material/Polyline';
-import DeleteDialog from './DeleteDialog';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
+import { useClient } from '../../context/client-context';
+import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 
 const CollectionCard = (props) => {
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const { collection, getCollectionsCall } = props;
+  const { client: qdrantClient } = useClient();
+  const { errorMessage, setErrorMessage } = useState(null);
+
+  async function callDelete() {
+    try {
+      await qdrantClient.deleteCollection(collection.name);
+      getCollectionsCall();
+      setOpenDeleteDialog(false);
+    } catch (error) {
+      setErrorMessage(`Deletion Unsuccessful, error: ${error.message}`);
+      setOpenDeleteDialog(false);
+    }
+  }
 
   return (
     <>
+      {errorMessage && <ErrorNotifier message={errorMessage} />}
       <Card
         variant="dual"
         sx={{
@@ -47,11 +63,14 @@ const CollectionCard = (props) => {
           </Button>
         </Stack>
       </Card>
-      <DeleteDialog
+      <ConfirmationDialog
         open={openDeleteDialog}
-        setOpen={setOpenDeleteDialog}
-        collectionName={collection.name}
-        getCollectionsCall={getCollectionsCall}
+        onClose={() => setOpenDeleteDialog(false)}
+        title={`Delete collection ${collection.name}`}
+        content={`Are you sure you want to delete collections with name ${collection.name}?`}
+        warning={`This action cannot be undone.`}
+        actionName={'Delete'}
+        actionHandler={() => callDelete()}
       />
     </>
   );
