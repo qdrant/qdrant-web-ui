@@ -10,7 +10,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 
-const VisualizeChart = ({ scrollResult }) => {
+const VisualizeChart = ({ scrollResult, algorithm = null }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
@@ -180,7 +180,10 @@ const VisualizeChart = ({ scrollResult }) => {
     };
 
     if (scrollResult.data.result?.points?.length > 0) {
-      worker.postMessage(scrollResult.data);
+      worker.postMessage({
+          ...scrollResult.data,
+          algorithm: algorithm,
+      });
     }
 
     return () => {
@@ -199,6 +202,7 @@ const VisualizeChart = ({ scrollResult }) => {
 
 VisualizeChart.propTypes = {
   scrollResult: PropTypes.object.isRequired,
+  algorithm: PropTypes.string,
 };
 
 export default VisualizeChart;

@@ -1,5 +1,6 @@
-import axios from 'axios';
 import { bigIntJSON } from '../../../common/bigIntJSON';
+import { axiosInstance } from '../../../common/axios';
+
 
 function parseDataToRequest(reqBody) {
   // Validate color_by
@@ -62,7 +63,7 @@ export async function requestFromCode(dataRaw, collectionName) {
 
 async function actionFromCode(collectionName, data, action) {
   try {
-    const response = await axios({
+    const response = await axiosInstance({
       method: 'POST',
       url: `collections/${collectionName}/points/${action || 'scroll'}`,
       data: data.reqBody,
