@@ -181,8 +181,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null }) => {
 
     if (scrollResult.data.result?.points?.length > 0) {
       worker.postMessage({
-          ...scrollResult.data,
-          algorithm: algorithm,
+        ...scrollResult.data,
+        algorithm: algorithm,
       });
     }
 

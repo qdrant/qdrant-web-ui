@@ -1,7 +1,6 @@
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import { axiosInstance } from '../../../common/axios';
 
-
 function parseDataToRequest(reqBody) {
   // Validate color_by
   if (reqBody.color_by) {
