@@ -70,7 +70,7 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
         </TableHeadWithGaps>
         <TableBodyWithGaps>
           {collections.map((collection) => (
-            <CollectionTableRow key={collection.name} collection={collection} getCollectionsCall={getCollectionsCall} />
+            <CollectionTableRow key={collection.id} collection={collection} getCollectionsCall={getCollectionsCall} />
           ))}
         </TableBodyWithGaps>
       </TableWithGaps>
