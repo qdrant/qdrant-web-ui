@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import CollectionCard from '../components/Collections/CollectionCard';
 import { Typography, Grid } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
+import CollectionsList from '../components/Collections/CollectionsList';
 
 function Collections() {
+  // todo:
+  // - [ ] pagination (lexicographical order)
+  // - [ ] maybe move processing of absence of collections or error into CollectionsList?
   const [rawCollections, setRawCollections] = useState(null);
   const [collections, setCollections] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,16 +43,16 @@ function Collections() {
     <>
       <CenteredFrame>
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
-        <Grid container maxWidth={'xl'} spacing={3}>
-          <Grid xs={12} item>
-            <Typography variant="h4">Collections</Typography>
+
+        <Grid container alignItems="center">
+          <Grid item xs={12} md={8}>
+            <h1>Snapshots</h1>
+          </Grid>
+          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
+            <SnapshotsUpload onComplete={getCollectionsCall} key={'snapshots'} />
           </Grid>
           <Grid xs={12} item>
-            <SearchBar
-              value={searchQuery}
-              setValue={setSearchQuery}
-              actions={[<SnapshotsUpload onComplete={getCollectionsCall} key={'snapshots'} />]}
-            />
+            <SearchBar value={searchQuery} setValue={setSearchQuery} />
           </Grid>
 
           {errorMessage && (
@@ -67,13 +70,12 @@ function Collections() {
               <Typography> 📪 No collection is present</Typography>
             </Grid>
           )}
-          {collections &&
-            !errorMessage &&
-            collections?.map((collection) => (
-              <Grid xs={12} md={6} lg={4} item key={collection.name}>
-                <CollectionCard collection={collection} getCollectionsCall={getCollectionsCall} />
-              </Grid>
-            ))}
+
+          {collections && !errorMessage && (
+            <Grid xs={12} item>
+              <CollectionsList collections={collections} getCollectionsCall={getCollectionsCall} />
+            </Grid>
+          )}
         </Grid>
       </CenteredFrame>
     </>
