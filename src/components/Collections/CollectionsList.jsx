@@ -50,7 +50,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         <Typography>{collection.config.params.shard_number}</Typography>
       </TableCell>
       <TableCell>
-        <VectorsConfigChip vectorsConfig={collection.config.params.vectors} />
+        <VectorsConfigChip vectorsConfig={collection.config.params.vectors} sx={{ justifyContent: 'center' }} />
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>

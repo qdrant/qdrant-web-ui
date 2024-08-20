@@ -94,7 +94,7 @@ function Collections() {
       <CenteredFrame>
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
-        <Grid container alignItems="center">
+        <Grid container maxWidth={'xl'}>
           <Grid item xs={12} md={8} mb={4}>
             <Typography variant="h4" component={'h1'}>
               Collections
