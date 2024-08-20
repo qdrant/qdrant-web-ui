@@ -1,5 +1,4 @@
 // todo:
-// - [ ] let the user choose the number of collections to display per page ?
 // - [ ] maybe move processing of absence of collections or error into CollectionsList?
 import React, { useState, useEffect } from 'react';
 import { useClient } from '../context/client-context';
@@ -19,6 +18,11 @@ function Collections() {
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
+
+  function getErrorMessageWithApiKey(error) {
+    const apiKey = qdrantClient.getApiKey();
+    return getErrorMessage(error, { withApiKey: { apiKey } });
+  }
 
   async function getCollectionsCall(page = 1) {
     try {
@@ -41,8 +45,30 @@ function Collections() {
       setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
       setErrorMessage(null);
     } catch (error) {
-      const apiKey = qdrantClient.getApiKey();
-      const message = getErrorMessage(error, { withApiKey: { apiKey } });
+      const message = getErrorMessageWithApiKey();
+      message && setErrorMessage(message);
+      setRawCollections(null);
+    }
+  }
+
+  async function getFilteredCollections(query) {
+    try {
+      const filteredCollections = collections.filter((collection) => collection.name.match(query));
+      setCollections(filteredCollections);
+      const nextRawCollections = await Promise.all(
+        filteredCollections.map(async (collection) => {
+          const collectionData = await qdrantClient.getCollection(collection.name);
+          return {
+            name: collection.name,
+            ...collectionData,
+          };
+        })
+      );
+
+      setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
+      setErrorMessage(null);
+    } catch (error) {
+      const message = getErrorMessageWithApiKey();
       message && setErrorMessage(message);
       setRawCollections(null);
     }
@@ -53,9 +79,11 @@ function Collections() {
   }, [currentPage]);
 
   useEffect(() => {
-    // todo: fix
-    if (rawCollections) {
-      setRawCollections(rawCollections.filter((collection) => collection.name.includes(searchQuery)));
+    if (!searchQuery) {
+      getCollectionsCall(currentPage);
+    }
+    if (searchQuery) {
+      getFilteredCollections(searchQuery);
     }
   }, [searchQuery]);
 
@@ -70,7 +98,9 @@ function Collections() {
 
         <Grid container alignItems="center">
           <Grid item xs={12} md={8}>
-            <h1>Snapshots</h1>
+            <Typography variant="h4" component={'h1'}>
+              Collections
+            </Typography>
           </Grid>
           <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
