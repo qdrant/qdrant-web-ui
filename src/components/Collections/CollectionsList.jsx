@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, MenuItem, TableCell, TableContainer, TableRow } from '@mui/material';
-import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import { Link } from 'react-router-dom';
-import DeleteDialog from './DeleteDialog';
-import { styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
+import { Box, MenuItem, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { styled, useTheme } from '@mui/material/styles';
+import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import { Dot } from '../Common/Dot';
+import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
-import { useTheme } from '@mui/material/styles';
 import VectorsConfigChip from '../Common/VectorsConfigChip';
 
 const StyledLink = styled(Link)`
