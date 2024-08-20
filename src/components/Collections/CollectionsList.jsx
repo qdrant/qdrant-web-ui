@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { Dot } from '../Common/Dot';
 import ActionsMenu from '../Common/ActionsMenu';
 import { useTheme } from '@mui/material/styles';
+import VectorsConfigChip from '../Common/VectorsConfigChip';
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -21,7 +22,6 @@ const StyledLink = styled(Link)`
 const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
-  console.log(collection);
 
   return (
     <TableRow>
@@ -50,6 +50,9 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
       </TableCell>
       <TableCell align="center">
         <Typography>{collection.config.params.shard_number}</Typography>
+      </TableCell>
+      <TableCell>
+        <VectorsConfigChip vectorsConfig={collection.config.params.vectors} />
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>
@@ -93,15 +96,24 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
         <TableHeadWithGaps>
           <TableRow>
             <HeaderTableCell width="25%">Name</HeaderTableCell>
-            <HeaderTableCell width="15%">Status</HeaderTableCell>
-            <HeaderTableCell width="20%" align="center">
+            <HeaderTableCell width="12%">Status</HeaderTableCell>
+            <HeaderTableCell width="12%" align="center">
               Points (Approx)
             </HeaderTableCell>
-            <HeaderTableCell width="20%" align="center">
+            <HeaderTableCell width="12%" align="center">
               Segments
             </HeaderTableCell>
-            <HeaderTableCell width="20%" align="center">Shards</HeaderTableCell>
-            <HeaderTableCell align="right">Actions</HeaderTableCell>
+            <HeaderTableCell width="12%" align="center">
+              Shards
+            </HeaderTableCell>
+            <HeaderTableCell width="20%" align="center">
+              Vectors Configuration
+              <br />
+              (Name, Size, Distance)
+            </HeaderTableCell>
+            <HeaderTableCell width="7%" align="right">
+              Actions
+            </HeaderTableCell>
           </TableRow>
         </TableHeadWithGaps>
         <TableBodyWithGaps>

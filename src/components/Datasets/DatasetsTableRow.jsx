@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme } from '@mui/material/styles';
-import { Box, Card, CircularProgress, Grid, IconButton, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { Box, CircularProgress, IconButton, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
 import { Download, FolderZip } from '@mui/icons-material';
 import ImportDatasetDialog from './ImportDatasetDialog';
+import VectorsConfigChip from '../Common/VectorsConfigChip';
 
 export const DatasetsTableRow = ({ dataset, importDataset }) => {
   const theme = useTheme();
@@ -63,39 +64,7 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
       <TableCell align="center">{prettyBytes(dataset.size)}</TableCell>
 
       <TableCell>
-        {dataset.vectors.size && (
-          <Grid container component={Card} variant={'heading'} p={1}>
-            <Grid item align="center" mr={2}>
-              default
-            </Grid>
-            <Grid item align="center" mr={2}>
-              {dataset.vectors.size}
-            </Grid>
-            <Grid item align="center" mr={2}>
-              {dataset.vectors.distance}
-            </Grid>
-            <Grid item align="center">
-              {dataset.vectors.model}
-            </Grid>
-          </Grid>
-        )}
-        {!dataset.vectors.size &&
-          Object.keys(dataset.vectors).map((vector) => (
-            <Grid key={vector} container component={Card} variant={'heading'} p={1}>
-              <Grid item align="center">
-                {vector}
-              </Grid>
-              <Grid item align="center">
-                {dataset.vectors[vector].size}
-              </Grid>
-              <Grid item align="center">
-                {dataset.vectors[vector].distance}
-              </Grid>
-              <Grid item align="center">
-                {dataset.vectors[vector].model}
-              </Grid>
-            </Grid>
-          ))}
+        <VectorsConfigChip vectorsConfig={dataset.vectors} />
       </TableCell>
 
       <TableCell align="center">{dataset.vectorCount}</TableCell>
