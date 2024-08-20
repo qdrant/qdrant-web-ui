@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Grid, TableCell, TableContainer, TableRow } from '@mui/material';
+import { Box, MenuItem, TableCell, TableContainer, TableRow } from '@mui/material';
 import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import { Link } from 'react-router-dom';
 import DeleteDialog from './DeleteDialog';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Tooltip from '@mui/material/Tooltip';
 import { Dot } from '../Common/Dot';
-import { Grain, Polyline } from '@mui/icons-material';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import ActionsMenu from '../Common/ActionsMenu';
+import { useTheme } from '@mui/material/styles';
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -23,7 +20,8 @@ const StyledLink = styled(Link)`
 
 const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  console.log(collection);
+  const theme = useTheme();
+
   return (
     <TableRow>
       <TableCell>
@@ -50,37 +48,20 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         <Typography>{collection.segments_count}</Typography>
       </TableCell>
       <TableCell align="right">
-        {/* todo: this is for multiple buttons, reconsider if there will be only one */}
-        <Grid container spacing={2} justifyContent="right">
-          <Grid item>
-            <Tooltip title={'Take Snapshot'} placement="left">
-              <IconButton component={Link} to={`/collections/${collection.name}#snapshots`}>
-                <PhotoCamera />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title={'Visualize Collection'} placement="left">
-              <IconButton component={Link} to={`/collections/${collection.name}/visualize`}>
-                <Grain />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title={'Collection Graph'} placement="left">
-              <IconButton component={Link} to={`/collections/${collection.name}/graph`}>
-                <Polyline />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            <Tooltip title={'Delete Collection'} placement="left">
-              <IconButton onClick={() => setOpenDeleteDialog(true)}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        </Grid>
+        <ActionsMenu>
+          <MenuItem component={Link} to={`/collections/${collection.name}#snapshots`}>
+            Take Snapshot
+          </MenuItem>
+          <MenuItem component={Link} to={`/collections/${collection.name}/visualize`}>
+            Visualize
+          </MenuItem>
+          <MenuItem component={Link} to={`/collections/${collection.name}/graph`}>
+            Graph
+          </MenuItem>
+          <MenuItem onClick={() => setOpenDeleteDialog(true)} sx={{ color: theme.palette.error.main }}>
+            Delete
+          </MenuItem>
+        </ActionsMenu>
         <DeleteDialog
           open={openDeleteDialog}
           setOpen={setOpenDeleteDialog}
@@ -107,21 +88,26 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
       <TableWithGaps aria-label="simple table">
         <TableHeadWithGaps>
           <TableRow>
-            <HeaderTableCell width="25%">Name</HeaderTableCell>
-            <HeaderTableCell width="10%">Status</HeaderTableCell>
+            <HeaderTableCell width="30%">Name</HeaderTableCell>
+            <HeaderTableCell width="20%">Status</HeaderTableCell>
             <HeaderTableCell width="25%" align="center">
               Approximate Points Number
             </HeaderTableCell>
-            <HeaderTableCell width="20%" align="center">
+            <HeaderTableCell width="25%" align="center">
               Segments Number
             </HeaderTableCell>
             <HeaderTableCell align="right">Actions</HeaderTableCell>
           </TableRow>
         </TableHeadWithGaps>
         <TableBodyWithGaps>
-          {collections.map((collection) => (
-            <CollectionTableRow key={collection.id} collection={collection} getCollectionsCall={getCollectionsCall} />
-          ))}
+          {collections.length > 0 &&
+            collections.map((collection) => (
+              <CollectionTableRow
+                key={collection.name}
+                collection={collection}
+                getCollectionsCall={getCollectionsCall}
+              />
+            ))}
         </TableBodyWithGaps>
       </TableWithGaps>
     </TableContainer>

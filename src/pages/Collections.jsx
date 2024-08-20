@@ -97,12 +97,12 @@ function Collections() {
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
         <Grid container alignItems="center">
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} mb={4}>
             <Typography variant="h4" component={'h1'}>
               Collections
             </Typography>
           </Grid>
-          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
+          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}>
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid xs={12} item>
