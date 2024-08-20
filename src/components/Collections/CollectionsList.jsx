@@ -21,11 +21,12 @@ const StyledLink = styled(Link)`
 const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
+  console.log(collection);
 
   return (
     <TableRow>
       <TableCell>
-        <Typography color="black" component={StyledLink} to={`/collections/${collection.name}`}>
+        <Typography component={StyledLink} to={`/collections/${collection.name}`}>
           {collection.name}
         </Typography>
       </TableCell>
@@ -46,6 +47,9 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
       </TableCell>
       <TableCell align="center">
         <Typography>{collection.segments_count}</Typography>
+      </TableCell>
+      <TableCell align="center">
+        <Typography>{collection.config.params.shard_number}</Typography>
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>
@@ -88,14 +92,15 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
       <TableWithGaps aria-label="simple table">
         <TableHeadWithGaps>
           <TableRow>
-            <HeaderTableCell width="30%">Name</HeaderTableCell>
-            <HeaderTableCell width="20%">Status</HeaderTableCell>
-            <HeaderTableCell width="25%" align="center">
-              Approximate Points Number
+            <HeaderTableCell width="25%">Name</HeaderTableCell>
+            <HeaderTableCell width="15%">Status</HeaderTableCell>
+            <HeaderTableCell width="20%" align="center">
+              Points (Approx)
             </HeaderTableCell>
-            <HeaderTableCell width="25%" align="center">
-              Segments Number
+            <HeaderTableCell width="20%" align="center">
+              Segments
             </HeaderTableCell>
+            <HeaderTableCell width="20%" align="center">Shards</HeaderTableCell>
             <HeaderTableCell align="right">Actions</HeaderTableCell>
           </TableRow>
         </TableHeadWithGaps>
