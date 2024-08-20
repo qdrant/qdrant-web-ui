@@ -6,6 +6,9 @@ const MESSAGE_INTERVAL = 200;
 
 self.onmessage = function (e) {
   let now = new Date().getTime();
+
+  const algorithm = e?.data?.algorithm || 'TSNE';
+
   const data1 = e.data;
   const data = [];
 
@@ -64,7 +67,7 @@ self.onmessage = function (e) {
     return;
   }
   if (data.length) {
-    const D = new druid['TSNE'](data, {}); // ex  params = { perplexity : 50,epsilon :5}
+    const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
     const next = D.generator(); // default = 500 iterations
     let i = {};
     for (i of next) {

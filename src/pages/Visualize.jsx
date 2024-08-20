@@ -44,6 +44,8 @@ const query = `
 // - 'vector_name': specify which vector to use for visualization
 //                  if there are multiple.
 //
+// - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP'.
+//
 // Minimal example:
 
 {
@@ -58,6 +60,7 @@ function Visualize() {
   const theme = useTheme();
   const [code, setCode] = useState(query);
   const [result, setResult] = useState(defaultResult);
+  const [algorithm, setAlgorithm] = useState('TSNE');
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
   const navigate = useNavigate();
   const params = useParams();
@@ -70,6 +73,10 @@ function Visualize() {
   }, [height, VisualizeChartWrapper]);
 
   const onEditorCodeRun = async (data, collectionName) => {
+    if (data?.algorithm) {
+      setAlgorithm(data.algorithm);
+    }
+
     const result = await requestFromCode(data, collectionName);
     setResult(result);
   };
@@ -105,6 +112,12 @@ function Visualize() {
         description: 'Color points by this field',
         type: 'string',
         nullable: true,
+      },
+      algorithm: {
+        description: 'Algorithm to use for visualization',
+        type: 'string',
+        enum: ['TSNE', 'UMAP'],
+        default: 'TSNE',
       },
     },
   });
@@ -146,7 +159,7 @@ function Visualize() {
                     </Paper>
                   </Box>
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} />
+                    <VisualizeChart scrollResult={result} algorithm={algorithm} />
                   </Box>
                 </Box>
               </Panel>
