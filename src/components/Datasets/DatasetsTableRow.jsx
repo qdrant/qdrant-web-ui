@@ -64,7 +64,7 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
       <TableCell align="center">{prettyBytes(dataset.size)}</TableCell>
 
       <TableCell>
-        <VectorsConfigChip vectorsConfig={dataset.vectors} />
+        <VectorsConfigChip collectionConfigParams={dataset} />
       </TableCell>
 
       <TableCell align="center">{dataset.vectorCount}</TableCell>
