@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
 import { Typography, Grid, Pagination, Box, Skeleton } from '@mui/material';
@@ -7,6 +7,7 @@ import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
+import { debounce } from 'lodash';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -17,73 +18,86 @@ function Collections() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
 
-  function getErrorMessageWithApiKey(error) {
-    const apiKey = qdrantClient.getApiKey();
-    return getErrorMessage(error, { withApiKey: { apiKey } });
-  }
+  const getErrorMessageWithApiKey = useCallback(
+    (error) => {
+      const apiKey = qdrantClient.getApiKey();
+      return getErrorMessage(error, { withApiKey: { apiKey } });
+    },
+    [qdrantClient]
+  );
 
-  async function getCollectionsCall(page = 1) {
-    try {
-      const allCollections = await qdrantClient.getCollections();
-      const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
-      setCollections(sortedCollections);
+  const getCollectionsCall = useCallback(
+    async (page = 1) => {
+      try {
+        const allCollections = await qdrantClient.getCollections();
+        const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
+        setCollections(sortedCollections);
 
-      const nextPageCollections = sortedCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+        const nextPageCollections = sortedCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-      const nextRawCollections = await Promise.all(
-        nextPageCollections.map(async (collection) => {
-          const collectionData = await qdrantClient.getCollection(collection.name);
-          return {
-            name: collection.name,
-            ...collectionData,
-          };
-        })
-      );
+        const nextRawCollections = await Promise.all(
+          nextPageCollections.map(async (collection) => {
+            const collectionData = await qdrantClient.getCollection(collection.name);
+            return {
+              name: collection.name,
+              ...collectionData,
+            };
+          })
+        );
 
-      setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
-      setErrorMessage(null);
-    } catch (error) {
-      const message = getErrorMessageWithApiKey();
-      message && setErrorMessage(message);
-      setRawCollections(null);
-    }
-  }
+        setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
+        setErrorMessage(null);
+      } catch (error) {
+        const message = getErrorMessageWithApiKey(error);
+        message && setErrorMessage(message);
+        setRawCollections(null);
+      }
+    },
+    [qdrantClient, getErrorMessageWithApiKey]
+  );
 
-  async function getFilteredCollections(query) {
-    try {
-      const filteredCollections = collections.filter((collection) => collection.name.match(query));
-      setCollections(filteredCollections);
-      const nextRawCollections = await Promise.all(
-        filteredCollections.map(async (collection) => {
-          const collectionData = await qdrantClient.getCollection(collection.name);
-          return {
-            name: collection.name,
-            ...collectionData,
-          };
-        })
-      );
+  const getFilteredCollections = useCallback(
+    async (query) => {
+      try {
+        const filteredCollections = collections.filter((collection) => collection.name.match(query));
+        setCollections(filteredCollections);
+        const nextRawCollections = await Promise.all(
+          filteredCollections.map(async (collection) => {
+            const collectionData = await qdrantClient.getCollection(collection.name);
+            return {
+              name: collection.name,
+              ...collectionData,
+            };
+          })
+        );
 
-      setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
-      setErrorMessage(null);
-    } catch (error) {
-      const message = getErrorMessageWithApiKey();
-      message && setErrorMessage(message);
-      setRawCollections(null);
-    }
-  }
+        setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
+        setErrorMessage(null);
+      } catch (error) {
+        const message = getErrorMessageWithApiKey(error);
+        message && setErrorMessage(message);
+        setRawCollections(null);
+      }
+    },
+    [collections, qdrantClient, getErrorMessageWithApiKey]
+  );
 
   useEffect(() => {
     getCollectionsCall(currentPage);
-  }, [currentPage]);
+  }, [currentPage, getCollectionsCall]);
 
   useEffect(() => {
     if (!searchQuery) {
       getCollectionsCall(currentPage);
+    } else {
+      debouncedGetFilteredCollections(searchQuery);
     }
-    if (searchQuery) {
-      getFilteredCollections(searchQuery);
-    }
-  }, [searchQuery]);
+  }, [searchQuery, currentPage, getCollectionsCall]);
+
+  const debouncedGetFilteredCollections = useMemo(
+    () => debounce(getFilteredCollections, 100),
+    [getFilteredCollections]
+  );
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
