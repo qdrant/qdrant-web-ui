@@ -1,9 +1,7 @@
-// todo:
-// - [ ] maybe move processing of absence of collections or error into CollectionsList?
 import React, { useState, useEffect } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box } from '@mui/material';
+import { Typography, Grid, Pagination, Box, Skeleton } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
@@ -110,36 +108,41 @@ function Collections() {
           </Grid>
 
           {errorMessage && (
-            <Grid xs={12} item textAlign={'center'}>
+            <Grid xs={12} item textAlign={'center'} mt={3}>
               <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
           {!collections && !errorMessage && (
             <Grid xs={12} item textAlign={'center'}>
               <Typography>🔃 Loading...</Typography>
+              <Skeleton variant="rectangular" height={200} />
             </Grid>
           )}
           {collections && !errorMessage && collections.length === 0 && (
-            <Grid xs={12} item textAlign={'center'}>
+            <Grid xs={12} item textAlign={'center'} mt={3}>
               <Typography> 📪 No collection is present</Typography>
             </Grid>
           )}
 
-          {rawCollections && !errorMessage && (
+          {rawCollections?.length && !errorMessage ? (
             <Grid xs={12} item>
               <CollectionsList
                 collections={rawCollections}
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
               />
-              <Box justifyContent="center" display="flex">
-                <Pagination
-                  shape={'rounded'}
-                  count={Math.ceil(collections.length / PAGE_SIZE)}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                />
-              </Box>
+              {collections.length > PAGE_SIZE && (
+                <Box justifyContent="center" display="flex">
+                  <Pagination
+                    shape={'rounded'}
+                    count={Math.ceil(collections.length / PAGE_SIZE)}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                  />
+                </Box>
+              )}
             </Grid>
+          ) : (
+            <></>
           )}
         </Grid>
       </CenteredFrame>

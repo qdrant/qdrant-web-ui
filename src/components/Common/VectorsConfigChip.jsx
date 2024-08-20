@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Card, Grid } from '@mui/material';
 
-const VectorsConfigChip = ({ vectorsConfig }) => {
+const VectorsConfigChip = ({ vectorsConfig, sx = {} }) => {
   return (
     <>
       {vectorsConfig.size && (
-        <Grid container component={Card} variant={'heading'} p={1}>
+        <Grid container component={Card} variant={'heading'} p={1} sx={{ ...sx }}>
           <Grid item align="center" mr={2}>
             default
           </Grid>
@@ -26,7 +26,7 @@ const VectorsConfigChip = ({ vectorsConfig }) => {
       )}
       {!vectorsConfig.size &&
         Object.keys(vectorsConfig).map((vector) => (
-          <Grid key={vector} container component={Card} variant={'heading'} p={1}>
+          <Grid key={vector} container component={Card} variant={'heading'} p={1} sx={{ ...sx }}>
             <Grid item align="center" mr={2}>
               {vector}
             </Grid>
@@ -50,6 +50,7 @@ const VectorsConfigChip = ({ vectorsConfig }) => {
 
 VectorsConfigChip.propTypes = {
   vectorsConfig: PropTypes.object.isRequired,
+  sx: PropTypes.object,
 };
 
 export default VectorsConfigChip;
