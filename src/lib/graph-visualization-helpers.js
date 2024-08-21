@@ -8,7 +8,7 @@ export const initGraph = async (qdrantClient, { collectionName, initNode, limit,
     const uniquePoints = new Set();
 
     for (const link of sampleLinks) {
-      links.push({ source: link.a, target: link.b });
+      links.push({ source: link.a, target: link.b, score: link.score});
       uniquePoints.add(link.a);
       uniquePoints.add(link.b);
     }
@@ -17,7 +17,7 @@ export const initGraph = async (qdrantClient, { collectionName, initNode, limit,
   } else if (initNode) {
     initNode.clicked = true;
     nodes = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
-    links = nodes.map((point) => ({ source: initNode.id, target: point.id }));
+    links = nodes.map((point) => ({ source: initNode.id, target: point.id, score: point.score}));
     nodes = [initNode, ...nodes];
   } else {
     return {
