@@ -8,7 +8,7 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
 import { pumpFile, updateProgress } from '../../common/utils';
-import InfoBanner from '../InfoBanner';
+import InfoBanner from '../Common/InfoBanner';
 
 export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();

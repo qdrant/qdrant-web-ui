@@ -26,6 +26,7 @@ function InputWithIcon({ value, setValue, actions }) {
             </SvgIcon>
           </InputAdornment>
         }
+        size={'small'}
         sx={{ maxWidth: 500 }}
       />
 
