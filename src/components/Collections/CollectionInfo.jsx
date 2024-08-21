@@ -1,6 +1,6 @@
 import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardContent, CardHeader, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, CardHeader, Typography } from '@mui/material';
 import { useClient } from '../../context/client-context';
 import { DataGridList } from '../Points/DataGridList';
 import { CopyButton } from '../Common/CopyButton';
@@ -17,17 +17,7 @@ export const CollectionInfo = ({ collectionName }) => {
   const [clusterInfo, setClusterInfo] = React.useState(null);
 
   useEffect(() => {
-    qdrantClient
-      .getCollection(collectionName)
-      .then((res) => {
-        setCollection(() => {
-          return { ...res };
-        });
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      });
-
+    fetchCollection();
     qdrantClient
       .api('cluster')
       .collectionClusterInfo({ collection_name: collectionName })
@@ -40,6 +30,33 @@ export const CollectionInfo = ({ collectionName }) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       });
   }, [collectionName]);
+
+  const fetchCollection = () => {
+    qdrantClient
+      .getCollection(collectionName)
+      .then((res) => {
+        setCollection(() => {
+          return { ...res };
+        });
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+      });
+  };
+
+  const triggerOptimizers = () => {
+    qdrantClient
+      .updateCollection(collectionName, {
+        optimizers_config: {},
+      })
+      .then(() => {
+        enqueueSnackbar('Optimizers triggered', getSnackbarOptions('success', closeSnackbar));
+        fetchCollection();
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+      });
+  };
 
   return (
     <Box pt={2}>
@@ -57,9 +74,17 @@ export const CollectionInfo = ({ collectionName }) => {
             data={collection}
             specialCases={{
               status: (
-                <Typography variant="subtitle1" color="text.secondary">
-                  {collection.status} <Dot color={collection.status} />
-                </Typography>
+                <Box display="flex" alignItems="center" justifyContent={'space-between'}>
+                  <Typography variant="subtitle1" color="text.secondary">
+                    {collection.status} <Dot color={collection.status} />
+                  </Typography>
+                  {(collection.status === 'grey' ||
+                    collection.optimizer_status?.error === `optimizations pending, awaiting update operation`) && (
+                    <Button variant="outlined" size="small" onClick={triggerOptimizers}>
+                      Trigger optimizers
+                    </Button>
+                  )}
+                </Box>
               ),
             }}
           />
