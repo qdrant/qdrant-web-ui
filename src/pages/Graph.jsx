@@ -9,7 +9,7 @@ import { useWindowResize } from '../hooks/windowHooks';
 import PointPreview from '../components/GraphVisualisation/PointPreview';
 import CodeEditorWindow from '../components/FilterEditorWindow';
 import { useClient } from '../context/client-context';
-import { getFirstPoint } from '../lib/graph-visualization-helpers';
+import { getFirstPoint, getSamplePoints } from '../lib/graph-visualization-helpers';
 import { useSnackbar } from 'notistack';
 
 const explanation = `
@@ -19,6 +19,7 @@ const explanation = `
 // Available parameters:
 //
 // - 'limit': number of records to use on each step.
+// - 'sample': bootstrap graph with sample data from collection.
 //
 // - 'filter': filter expression to select vectors for visualization.
 //             See https://qdrant.tech/documentation/concepts/filtering/
@@ -45,6 +46,8 @@ function Graph() {
   const location = useLocation();
   const { newInitNode, vectorName } = location.state || {};
   const [initNode, setInitNode] = useState(null);
+  const [sampleLinks, setSampleLinks] = useState(null);
+
   const [options, setOptions] = useState({
     limit: 5,
     filter: null,
@@ -92,8 +95,17 @@ function Graph() {
   const handleRunCode = async (data, collectionName) => {
     // scroll
     try {
-      const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
-      setInitNode(firstPoint);
+      if (data.sample) {
+        const sampleLinks = await getSamplePoints({
+          collectionName: collectionName,
+          ...data,
+        });
+        setSampleLinks(sampleLinks);
+        setInitNode(null);
+      } else {
+        const firstPoint = await getFirstPoint(qdrantClient, { collectionName: collectionName, filter: data?.filter });
+        setInitNode(firstPoint);
+      }
       setOptions({
         collectionName: collectionName,
         ...data,
@@ -129,6 +141,11 @@ function Graph() {
         description: 'Vector field name',
         type: 'string',
         enum: vectorNames,
+      },
+      sample: {
+        description: 'Bootstrap graph with sample data from collection',
+        type: 'integer',
+        nullable: true,
       },
     },
   });
@@ -170,6 +187,7 @@ function Graph() {
                       initNode={initNode}
                       onDataDisplay={handlePointDisplay}
                       wrapperRef={VisualizeChartWrapper.current}
+                      sampleLinks={sampleLinks}
                     />
                   </Box>
                 </Box>

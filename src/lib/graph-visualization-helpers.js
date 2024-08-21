@@ -1,17 +1,34 @@
-export const initGraph = async (qdrantClient, { collectionName, initNode, limit, filter, using }) => {
-  if (!initNode) {
+import { axiosInstance } from '../common/axios';
+
+export const initGraph = async (qdrantClient, { collectionName, initNode, limit, filter, using, sampleLinks }) => {
+  let nodes = [];
+  let links = [];
+
+  if (sampleLinks) {
+    const uniquePoints = new Set();
+
+    for (const link of sampleLinks) {
+      links.push({ source: link.a, target: link.b });
+      uniquePoints.add(link.a);
+      uniquePoints.add(link.b);
+    }
+
+    nodes = await getPointsWithPayload(qdrantClient, { collectionName, pointIds: Array.from(uniquePoints) });
+  } else if (initNode) {
+    initNode.clicked = true;
+    nodes = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
+    links = nodes.map((point) => ({ source: initNode.id, target: point.id }));
+    nodes = [initNode, ...nodes];
+  } else {
     return {
       nodes: [],
       links: [],
     };
   }
-  initNode.clicked = true;
-
-  const points = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
 
   const graphData = {
-    nodes: [initNode, ...points],
-    links: points.map((point) => ({ source: initNode.id, target: point.id })),
+    nodes,
+    links,
   };
   return graphData;
 };
@@ -42,6 +59,33 @@ export const getFirstPoint = async (qdrantClient, { collectionName, filter }) =>
   }
 
   return points[0];
+};
+
+const getPointsWithPayload = async (qdrantClient, { collectionName, pointIds }) => {
+  const points = await qdrantClient.retrieve(collectionName, {
+    ids: pointIds,
+    with_payload: true,
+    with_vector: false,
+  });
+
+  return points;
+};
+
+export const getSamplePoints = async ({ collectionName, filter, sample, using, limit }) => {
+  // ToDo: replace it with qdrantClient when it will be implemented
+
+  const response = await axiosInstance({
+    method: 'POST',
+    url: `collections/${collectionName}/points/search/matrix/pairs`,
+    data: {
+      filter,
+      sample,
+      using,
+      limit,
+    },
+  });
+
+  return response.data.result.pairs;
 };
 
 export const deduplicatePoints = (existingPoints, foundPoints) => {

@@ -5,7 +5,7 @@ import ForceGraph from 'force-graph';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 
-const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) => {
+const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, sampleLinks }) => {
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
   const { enqueueSnackbar } = useSnackbar();
@@ -74,6 +74,7 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
       const graphData = await initGraph(qdrantClient, {
         ...options,
         initNode,
+        sampleLinks,
       });
       if (graphRef.current && options) {
         const initialActiveNode = graphData.nodes[0];
@@ -83,9 +84,14 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef }) =>
       }
     };
     initNewGraph().catch((e) => {
-      enqueueSnackbar(JSON.stringify(e.getActualType()), { variant: 'error' });
+      console.error(e);
+      if (e.getActualType) {
+        enqueueSnackbar(JSON.stringify(e.getActualType()), { variant: 'error' });
+      } else {
+        enqueueSnackbar(e.message, { variant: 'error' });
+      }
     });
-  }, [initNode, options]);
+  }, [initNode, options, sampleLinks]);
 
   return <div id="graph"></div>;
 };
@@ -95,6 +101,7 @@ GraphVisualisation.propTypes = {
   options: PropTypes.object.isRequired,
   onDataDisplay: PropTypes.func.isRequired,
   wrapperRef: PropTypes.object,
+  sampleLinks: PropTypes.array,
 };
 
 export default GraphVisualisation;
