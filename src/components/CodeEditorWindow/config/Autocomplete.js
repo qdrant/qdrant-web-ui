@@ -35,13 +35,15 @@ export const autocomplete = async (monaco, qdrantClient) => {
 
         let suggestions = autocomplete.completeRequestHeader(header);
 
-        suggestions = suggestions.map((s) => {
-          return {
-            label: s,
-            kind: 17,
-            insertText: s,
-          };
-        });
+        suggestions = suggestions
+          .filter((s) => s !== '')
+          .map((s) => {
+            return {
+              label: s,
+              kind: 17,
+              insertText: s,
+            };
+          });
 
         return { suggestions };
       } else {
