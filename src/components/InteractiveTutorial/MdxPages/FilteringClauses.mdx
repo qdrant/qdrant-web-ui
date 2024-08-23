@@ -21,11 +21,11 @@ Before we start to practice with filtering conditions, let's create some datapoi
 1. Create a collection:
 
 ``` json withRunButton="true"
-PUT collections/demo
+PUT /collections/demo
 {
   "vectors": {
-  "size": 4,
-  "distance": "Dot"
+    "size": 4,
+    "distance": "Cosine"
   }
 }
 ```
