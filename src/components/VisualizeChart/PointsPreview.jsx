@@ -15,7 +15,7 @@ const PointsPreview = ({ points }) => {
   const conditions = [];
 
   console.log('points', points);
-  if (!points || !points.length ) {
+  if (!points || !points.length) {
     return null;
   }
 
@@ -55,7 +55,7 @@ const PointsPreview = ({ points }) => {
                 mb: 1,
               }}
             >
-              <Typography variant="h6" component="h2" >
+              <Typography variant="h6" component="h2">
                 Point {point.id}
               </Typography>
 

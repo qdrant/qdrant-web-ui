@@ -8,7 +8,6 @@ import ViewPointModal from './ViewPointModal';
 import { imageTooltip } from './ImageTooltip';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
-
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 
 const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => {
@@ -122,16 +121,14 @@ const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => 
                   const id = context.dataset.data[context.dataIndex].point.id;
                   const score = context.dataset.data[context.dataIndex].point.score;
                   const activePoints = context.chart.tooltip._active.map((point) => {
-                    return{
+                    return {
                       id: point.element.$context.raw.point.id,
                       payload: {
                         score: point.element.$context.raw.point.score,
                         ...point.element.$context.raw.point.payload,
-                        
                       },
                       vector: point.element.$context.raw.point.vector,
                     };
-
                   });
                   setActivePoints(activePoints);
                   return [`id: ${id}`, `score: ${score}`];
@@ -146,7 +143,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => 
                   setActivePoints(activePoints);
                   const id = context.dataset.data[context.dataIndex].point.id;
                   return `Point ${id}`;
-                }   
+                }
               },
             },
           },
