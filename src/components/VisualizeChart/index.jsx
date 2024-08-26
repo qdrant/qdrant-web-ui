@@ -8,9 +8,10 @@ import ViewPointModal from './ViewPointModal';
 import { imageTooltip } from './ImageTooltip';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
+
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 
-const VisualizeChart = ({ scrollResult, algorithm = null }) => {
+const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
@@ -117,18 +118,35 @@ const VisualizeChart = ({ scrollResult, algorithm = null }) => {
             usePointStyle: true,
             callbacks: {
               label: (context) => {
-                const payload = bigIntJSON
-                  .stringify(context.dataset.data[context.dataIndex].point.payload, null, 1)
-                  .split('\n');
-
                 if (colorBy?.discover_score) {
                   const id = context.dataset.data[context.dataIndex].point.id;
                   const score = context.dataset.data[context.dataIndex].point.score;
+                  const activePoints = context.chart.tooltip._active.map((point) => {
+                    return{
+                      id: point.element.$context.raw.point.id,
+                      payload: {
+                        score: point.element.$context.raw.point.score,
+                        ...point.element.$context.raw.point.payload,
+                        
+                      },
+                      vector: point.element.$context.raw.point.vector,
+                    };
 
+                  });
+                  setActivePoints(activePoints);
                   return [`id: ${id}`, `score: ${score}`];
                 } else {
-                  return payload;
-                }
+                  const activePoints = context.chart.tooltip._active.map((point) => {
+                    return {
+                      id: point.element.$context.raw.point.id,
+                      payload: point.element.$context.raw.point.payload,
+                      vector: point.element.$context.raw.point.vector,
+                    };
+                  });
+                  setActivePoints(activePoints);
+                  const id = context.dataset.data[context.dataIndex].point.id;
+                  return `Point ${id}`;
+                }   
               },
             },
           },
@@ -203,6 +221,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null }) => {
 VisualizeChart.propTypes = {
   scrollResult: PropTypes.object.isRequired,
   algorithm: PropTypes.string,
+  setActivePoints: PropTypes.func,
 };
 
 export default VisualizeChart;

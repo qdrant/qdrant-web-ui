@@ -8,8 +8,15 @@ import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
 import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
+import PointsPreview from '../components/VisualizeChart/PointsPreview';
 
 const query = `
+
+// Try me!
+
+{
+  "limit": 500
+}
 
 // Specify request parameters to select data for visualization.
 //
@@ -45,12 +52,6 @@ const query = `
 //                  if there are multiple.
 //
 // - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP'.
-//
-// Minimal example:
-
-{
-  "limit": 500
-}
 
 
 `;
@@ -67,6 +68,7 @@ function Visualize() {
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
+  const [activePoints, setActivePoints] = useState(null);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
@@ -159,7 +161,7 @@ function Visualize() {
                     </Paper>
                   </Box>
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} algorithm={algorithm} />
+                    <VisualizeChart scrollResult={result} algorithm={algorithm} setActivePoints={setActivePoints} />
                   </Box>
                 </Box>
               </Panel>
@@ -181,12 +183,41 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <FilterEditorWindow
-                  code={code}
-                  onChange={setCode}
-                  onChangeResult={onEditorCodeRun}
-                  customRequestSchema={filterRequestSchema}
-                />
+                <PanelGroup direction="vertical">
+                  <Panel defaultSize={40}>
+                    <FilterEditorWindow
+                      code={code}
+                      onChange={setCode}
+                      onChangeResult={onEditorCodeRun}
+                      customRequestSchema={filterRequestSchema}
+                    />
+                  </Panel>
+                  <PanelResizeHandle
+                    style={{
+                      height: '10px',
+                      background: alpha(theme.palette.primary.main, 0.05),
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                      }}
+                    >
+                      &#8943;
+                    </Box>
+                  </PanelResizeHandle>
+                  <Panel
+                    defaultSize={60}
+                    style={{
+                      overflowY: 'scroll',
+                    }}
+                  >
+                    {activePoints && <PointsPreview points={activePoints} />}
+                  </Panel>
+                </PanelGroup>
               </Panel>
             </PanelGroup>
           </Grid>
