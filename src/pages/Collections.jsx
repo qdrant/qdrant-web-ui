@@ -8,6 +8,7 @@ import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
+import CreateCollection from '../components/CreateCollection/Index';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -114,8 +115,13 @@ function Collections() {
               Collections
             </Typography>
           </Grid>
-          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}>
+          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end', mb: 4, gap: 2 }}>
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
+            <CreateCollection
+              onComplete={() => getCollectionsCall(currentPage)}
+              key={'create-collection'}
+              collections={collections}
+            />
           </Grid>
           <Grid xs={12} item>
             <SearchBar value={searchQuery} setValue={setSearchQuery} />
