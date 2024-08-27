@@ -297,7 +297,7 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
       )}
 
       {advancedMod && (
-        <CardContent sx={{ p: 0, pt: 1, height: '32vh' }}>
+        <CardContent sx={{ p: 0, pt: 1, height: '32vh' }} data-testid="advanced-mod-editor">
           <CodeEditorWindow
             code={code}
             onChange={setCode}
