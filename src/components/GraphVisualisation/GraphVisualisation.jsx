@@ -4,6 +4,8 @@ import { deduplicatePoints, getSimilarPoints, initGraph } from '../../lib/graph-
 import ForceGraph from 'force-graph';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
+import { debounce } from 'lodash';
+import { resizeObserverWithCallback } from '../../lib/common-helpers';
 
 const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, sampleLinks }) => {
   const graphRef = useRef(null);
@@ -71,7 +73,18 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, samp
   }, [initNode, options]);
 
   useEffect(() => {
+    if (!wrapperRef) return;
+
+    const debouncedResizeCallback = debounce((width, height) => {
+      graphRef.current.width(width).height(height);
+    }, 500);
+
     graphRef.current.width(wrapperRef?.clientWidth).height(wrapperRef?.clientHeight);
+    resizeObserverWithCallback(debouncedResizeCallback).observe(wrapperRef);
+
+    return () => {
+      resizeObserverWithCallback(debouncedResizeCallback).unobserve(wrapperRef);
+    };
   }, [wrapperRef, initNode, options]);
 
   useEffect(() => {
