@@ -26,6 +26,8 @@ const explanation = `
 //
 // - 'using': specify which vector to use for visualization
 //                  if there are multiple.
+//
+// - 'tree': if true, will use show spanning tree instead of full graph.
 
 `;
 

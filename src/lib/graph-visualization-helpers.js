@@ -1,6 +1,8 @@
 import { axiosInstance } from '../common/axios';
 
-export const initGraph = async (qdrantClient, { collectionName, initNode, limit, filter, using, sampleLinks }) => {
+export const initGraph = async (qdrantClient, {
+  collectionName, initNode, limit, filter, using, sampleLinks, tree = false
+}) => {
   let nodes = [];
   let links = [];
 
@@ -11,6 +13,11 @@ export const initGraph = async (qdrantClient, { collectionName, initNode, limit,
       links.push({ source: link.a, target: link.b, score: link.score});
       uniquePoints.add(link.a);
       uniquePoints.add(link.b);
+    }
+
+    if (tree) {
+      // ToDo acs should depend on metric type
+      links = getMinimalSpanningTree(links, true);
     }
 
     nodes = await getPointsWithPayload(qdrantClient, { collectionName, pointIds: Array.from(uniquePoints) });
@@ -30,6 +37,7 @@ export const initGraph = async (qdrantClient, { collectionName, initNode, limit,
     nodes,
     links,
   };
+  // console.log(graphData);
   return graphData;
 };
 
@@ -93,4 +101,62 @@ export const deduplicatePoints = (existingPoints, foundPoints) => {
   // deduplication is done by id
   const existingIds = new Set(existingPoints.map((point) => point.id));
   return foundPoints.filter((point) => !existingIds.has(point.id));
+};
+
+export const getMinimalSpanningTree = (links, acs = true) => {
+  // Sort links by score (assuming each link has a score property)
+
+  let sortedLinks = [];
+  if (acs) {
+    sortedLinks = links.sort((a, b) => b.score - a.score);
+  } else {
+    sortedLinks = links.sort((a, b) => a.score - b.score);
+  }
+  // Helper function to find the root of a node
+  const findRoot = (parent, i) => {
+    if (parent[i] === i) {
+      return i;
+    }
+    return findRoot(parent, parent[i]);
+  };
+
+  // Helper function to perform union of two sets
+  const union = (parent, rank, x, y) => {
+    const rootX = findRoot(parent, x);
+    const rootY = findRoot(parent, y);
+
+    if (rank[rootX] < rank[rootY]) {
+      parent[rootX] = rootY;
+    } else if (rank[rootX] > rank[rootY]) {
+      parent[rootY] = rootX;
+    } else {
+      parent[rootY] = rootX;
+      rank[rootX]++;
+    }
+  };
+
+  const parent = {};
+  const rank = {};
+  const mstLinks = [];
+
+  // Initialize parent and rank arrays
+  links.forEach((link) => {
+    parent[link.source] = link.source;
+    parent[link.target] = link.target;
+    rank[link.source] = 0;
+    rank[link.target] = 0;
+  });
+
+  // Kruskal's algorithm
+  sortedLinks.forEach((link) => {
+    const sourceRoot = findRoot(parent, link.source);
+    const targetRoot = findRoot(parent, link.target);
+
+    if (sourceRoot !== targetRoot) {
+      mstLinks.push(link);
+      union(parent, rank, sourceRoot, targetRoot);
+    }
+  });
+
+  return mstLinks;
 };
