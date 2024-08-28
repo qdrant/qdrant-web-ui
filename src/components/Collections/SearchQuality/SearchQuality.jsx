@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
-import SearchQualityPannel from './SearchQualityPannel';
+import SearchQualityPanel from './SearchQualityPanel';
 import { useSnackbar } from 'notistack';
 import { Box, Card, CardHeader } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
@@ -51,7 +51,7 @@ const SearchQuality = ({ collectionName }) => {
   return (
     <>
       {collection?.config?.params?.vectors && (
-        <SearchQualityPannel
+        <SearchQualityPanel
           collectionName={collectionName}
           vectors={vectors}
           loggingFoo={handleLogUpdate}

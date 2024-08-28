@@ -73,7 +73,7 @@ VectorTableRow.propTypes = {
   isInProgress: PropTypes.bool,
 };
 
-const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
+const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
   const { client } = useClient();
   const vectorsNames = Object.keys(vectors);
   const [precision, setPrecision] = useState(() => {
@@ -110,7 +110,8 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
 //         "value": "field_value"
 //       }
 //     }
-//   }
+//   },
+//  "timeout": 20
 // }
 
   `);
@@ -160,7 +161,7 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
     return <>No vectors</>;
   }
 
-  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null }) => {
+  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }) => {
     setInProgress(true);
 
     clearLogsFoo && clearLogsFoo();
@@ -191,7 +192,8 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
           filter,
           params,
           using,
-          limit
+          limit,
+          timeout
         );
         if (precision) {
           precisions.push(precision);
@@ -311,7 +313,7 @@ const SearchQualityPannel = ({ collectionName, vectors, loggingFoo, clearLogsFoo
   );
 };
 
-SearchQualityPannel.propTypes = {
+SearchQualityPanel.propTypes = {
   collectionName: PropTypes.string,
   vectors: PropTypes.object.isRequired,
   loggingFoo: PropTypes.func,
@@ -319,4 +321,4 @@ SearchQualityPannel.propTypes = {
   other: PropTypes.object,
 };
 
-export default SearchQualityPannel;
+export default SearchQualityPanel;
