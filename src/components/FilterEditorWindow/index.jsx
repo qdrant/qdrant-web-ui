@@ -118,6 +118,6 @@ CodeEditorWindow.propTypes = {
   code: PropTypes.string.isRequired,
   onChangeResult: PropTypes.func.isRequired,
   customRequestSchema: PropTypes.func.isRequired,
-  customHeight: PropTypes.number,
+  customHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
 export default CodeEditorWindow;

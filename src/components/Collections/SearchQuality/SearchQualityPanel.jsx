@@ -154,6 +154,13 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
           },
         ],
       },
+      timeout: {
+        description: 'Timeout for search',
+        type: 'integer',
+        format: 'uint',
+        minimum: 1,
+        nullable: true,
+      },
     },
   });
 
