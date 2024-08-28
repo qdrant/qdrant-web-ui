@@ -1,8 +1,9 @@
 import { axiosInstance } from '../common/axios';
 
-export const initGraph = async (qdrantClient, {
-  collectionName, initNode, limit, filter, using, sampleLinks, tree = false
-}) => {
+export const initGraph = async (
+  qdrantClient,
+  { collectionName, initNode, limit, filter, using, sampleLinks, tree = false }
+) => {
   let nodes = [];
   let links = [];
 
@@ -10,7 +11,7 @@ export const initGraph = async (qdrantClient, {
     const uniquePoints = new Set();
 
     for (const link of sampleLinks) {
-      links.push({ source: link.a, target: link.b, score: link.score});
+      links.push({ source: link.a, target: link.b, score: link.score });
       uniquePoints.add(link.a);
       uniquePoints.add(link.b);
     }
@@ -24,7 +25,7 @@ export const initGraph = async (qdrantClient, {
   } else if (initNode) {
     initNode.clicked = true;
     nodes = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
-    links = nodes.map((point) => ({ source: initNode.id, target: point.id, score: point.score}));
+    links = nodes.map((point) => ({ source: initNode.id, target: point.id, score: point.score }));
     nodes = [initNode, ...nodes];
   } else {
     return {

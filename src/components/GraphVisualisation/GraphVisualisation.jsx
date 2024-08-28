@@ -1,10 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import {
-  deduplicatePoints,
-  getSimilarPoints,
-  initGraph,
-} from "../../lib/graph-visualization-helpers";
+import { deduplicatePoints, getSimilarPoints, initGraph } from '../../lib/graph-visualization-helpers';
 import ForceGraph from 'force-graph';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
@@ -57,7 +53,9 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, samp
         onDataDisplay(node);
       })
       .autoPauseRedraw(false)
-      .nodeCanvasObjectMode((node) => (node?.id === highlightedNode?.id ? 'before' : undefined))
+      .nodeCanvasObjectMode((node) => {
+        return node?.id === highlightedNode?.id ? 'before' : undefined;
+      })
       .nodeCanvasObject((node, ctx) => {
         if (!node) return;
         // add ring for last hovered nodes
@@ -66,8 +64,10 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, samp
         ctx.fillStyle = node.id === highlightedNode?.id ? '#817' : 'transparent';
         ctx.fill();
       })
-    .linkLabel('score')
+      .linkLabel('score')
       .linkColor(() => '#a6a6a6');
+
+    graphRef.current.d3Force('charge').strength(-10);
   }, [initNode, options]);
 
   useEffect(() => {
