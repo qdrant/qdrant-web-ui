@@ -8,10 +8,9 @@ export const checkIndexPrecision = async (
   filter = null,
   params = null,
   vectorName = null,
-  limit = 10
+  limit = 10,
+  timeout = 20
 ) => {
-  const TIMEOUT = 20;
-
   try {
     const exactSearchtartTime = new Date().getTime();
 
@@ -25,7 +24,7 @@ export const checkIndexPrecision = async (
       },
       filter: filter,
       using: vectorName,
-      timeout: TIMEOUT,
+      timeout,
     });
 
     const exactSearchElapsed = new Date().getTime() - exactSearchtartTime;
@@ -33,7 +32,7 @@ export const checkIndexPrecision = async (
     const searchStartTime = new Date().getTime();
 
     const hnsw = await client.query(collectionName, {
-      timeout: TIMEOUT,
+      timeout,
       limit: limit,
       with_payload: false,
       with_vectors: false,

@@ -73,7 +73,7 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
 EditorCommon.propTypes = {
   height: PropTypes.string,
   beforeMount: PropTypes.func,
-  customHeight: PropTypes.number,
+  customHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   ...Editor.propTypes,
 };
 
