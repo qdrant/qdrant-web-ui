@@ -149,6 +149,11 @@ function Graph() {
         type: 'integer',
         nullable: true,
       },
+      tree: {
+        description: 'Show spanning tree instead of full graph',
+        type: 'boolean',
+        nullable: true,
+      },
     },
   });
 
