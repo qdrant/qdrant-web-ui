@@ -8,6 +8,7 @@ import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
 import Graph from './pages/Graph';
+import Telemetry from './pages/Telemetry';
 
 const routes = () => [
   {
@@ -30,6 +31,7 @@ const routes = () => [
       { path: '/tutorial', element: <Tutorial /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },
       { path: '/jwt', element: <Jwt /> },
+      { path: '/telemetry', element: <Telemetry /> },
     ],
   },
 ];

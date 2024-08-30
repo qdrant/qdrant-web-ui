@@ -1,0 +1,15 @@
+.light .blockSelector {
+  background: rgba(163, 161, 161, 0.24);
+}
+
+.light .blockSelectorStrip {
+  background: rgba(255, 252, 88, 0.87);
+}
+
+.dark .blockSelector {
+  background: #2d2d3099;
+}
+
+.dark .blockSelectorStrip {
+  background: #525100cc;
+}
