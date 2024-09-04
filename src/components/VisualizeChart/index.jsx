@@ -367,7 +367,7 @@ const VisualizeChart = ({ distanceMatrixResult }) => {
         datasets: dataset,
       },
       options: {
-        animation: true,
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
         scales: {
@@ -495,6 +495,7 @@ const VisualizeChart = ({ distanceMatrixResult }) => {
           distances: distanceMatrixResult.data.result.scores,
           indices: distanceMatrixResult.data.result.offsets_col,
           nsamples: distanceMatrixResult.data.result.ids.length,
+          distanceType: distanceMatrixResult.data.distance_type,
         },
         sharedArray,
         time: Date.now()
