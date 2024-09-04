@@ -110,6 +110,14 @@ export async function requestFromCode(dataRaw, collectionName) {
 //   }
 // }
 
+async function getDistanceType(collectionName) {
+  const response = await axios({
+    method: 'GET',
+    url: `collections/${collectionName}`,
+  });
+  return response.data.result.config.params.vectors.distance ?? "";
+}
+
 async function actionFromCode(collectionName, data) {
   try {
     const response = await axios({
@@ -126,6 +134,8 @@ async function actionFromCode(collectionName, data) {
         with_payload: true,
       }
     });
+    // get distance type
+    response.data.distance_type = await getDistanceType(collectionName);
 
     response.data.color_by = data.reqBody.color_by;
     response.data.result.points = vecResponse.data.result;
