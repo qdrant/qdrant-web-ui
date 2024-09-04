@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-vars */
 import init, { initThreadPool, DistbhtSNEf64 } from 'wasm-dist-bhtsne';
 import { threads } from 'wasm-feature-detect';
-import exampleData from 'examples/data';
+// import exampleData from 'examples/data';
 import { tsneConfig } from './tsneConfig';
 
 const errorMessage = {
@@ -23,7 +22,16 @@ self.onmessage = e => {
     }
 
     console.log(`Received data in: ${(Date.now() - e.data.time) / 1000}s`);
-    const { distances, indices, nsamples } = e.data.details;
+    const { distances: dist, indices, nsamples, distanceType } = e.data.details;
+    // const { distances: dist, indices, n_samples: nsamples } = exampleData;
+
+    if (distanceType === "") {
+        errorMessage.error = 'No distance type found';
+        self.postMessage(errorMessage);
+        return;
+    }
+
+    const distances = distanceType !== "Euclid" ? dist.map(d => 1 - d) : dist;
     const outputDim = 2;
     const sharedArray = new Float64Array(e.data.sharedArray);
 
