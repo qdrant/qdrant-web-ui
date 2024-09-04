@@ -205,7 +205,6 @@
 
 import { Button } from '@mui/material';
 import Chart from 'chart.js/auto';
-import chroma from 'chroma-js';
 import get from 'lodash/get';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
@@ -214,7 +213,6 @@ import ViewPointModal from './ViewPointModal';
 import { imageTooltip } from './ImageTooltip';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
-const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 const labelIdxDict = {};
 export let myChart = null;
 
@@ -284,7 +282,7 @@ function mutateDataset(actualDataset, resultDataset, reducedPoint, cols) {
   }
 }
 
-const VisualizeChart = ({ scrollResult }) => {
+const VisualizeChart = ({ distanceMatrixResult }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
@@ -301,20 +299,28 @@ const VisualizeChart = ({ scrollResult }) => {
   );
 
   useEffect(() => {
-    if (!scrollResult.data && !scrollResult.error) {
+    if (!distanceMatrixResult.data && !distanceMatrixResult.error) {
       return;
     }
 
-    if (scrollResult.error) {
-      enqueueSnackbar(`Visualization Unsuccessful\nError: ${bigIntJSON.stringify(scrollResult.error)}`, {
+    if (distanceMatrixResult.error) {
+      enqueueSnackbar(`Visualization Unsuccessful\nError: ${bigIntJSON.stringify(distanceMatrixResult.error)}`, {
         variant: 'error',
         style: { whiteSpace: 'pre-line' },
         action,
       });
       return;
     }
-    else if (!scrollResult.data?.result?.points.length) {
+    else if (distanceMatrixResult.data?.result?.points.length === 0) {
       enqueueSnackbar(`Visualization Unsuccessful\nError: No data returned`, {
+        variant: 'error',
+        style: { whiteSpace: 'pre-line' },
+        action,
+      });
+      return;
+    }
+    else if (distanceMatrixResult.data?.result?.ids.length === 1) {
+      enqueueSnackbar(`Visualization Unsuccessful\nError: Cannot perform t-SNE on single point`, {
         variant: 'error',
         style: { whiteSpace: 'pre-line' },
         action,
@@ -323,14 +329,14 @@ const VisualizeChart = ({ scrollResult }) => {
     }
 
     const dataset = [];
-    const colorBy = scrollResult.data.color_by;
+    const colorBy = distanceMatrixResult.data.color_by;
     const channel = new MessageChannel();
 
     let labelby = null;
     if (colorBy?.payload) {
       labelby = colorBy.payload;
       // Color and label by payload field
-      if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
+      if (get(distanceMatrixResult.data.result?.points[0]?.payload, labelby) === undefined) {
         enqueueSnackbar(`Visualization Unsuccessful\nError: Color by field ${labelby} does not exist`, {
           variant: 'error',
           style: { whiteSpace: 'pre-line' },
@@ -338,41 +344,14 @@ const VisualizeChart = ({ scrollResult }) => {
         });
         return;
       }
-      scrollResult.data.labelByArrayUnique = [
-        ...new Set(scrollResult.data.result?.points?.map((point) => get(point.payload, labelby))),
+      distanceMatrixResult.data.labelByArrayUnique = [
+        ...new Set(distanceMatrixResult.data.result?.points?.map((point) => get(point.payload, labelby))),
       ];
-      scrollResult.data.labelByArrayUnique.forEach((label) => {
+      distanceMatrixResult.data.labelByArrayUnique.forEach((label) => {
         dataset.push({
           label: label,
           data: [],
         });
-      });
-    } else if (colorBy?.discover_score) {
-      // Color by discover score
-      const scores = scrollResult.data.result?.points.map((point) => point.score);
-      const minScore = Math.min(...scores);
-      const maxScore = Math.max(...scores);
-
-      const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
-      const scoreColors = scores.map((score) => {
-        const normalizedScore = (score - minScore) / (maxScore - minScore);
-        return colorScale(normalizedScore).hex();
-      });
-
-      const pointRadii = scrollResult.data.result?.points.map((point) => {
-        if (point.from_query) {
-          return 4;
-        } else {
-          return 3;
-        }
-      });
-
-      dataset.push({
-        label: 'Discover scores',
-        pointBackgroundColor: scoreColors,
-        pointBorderColor: scoreColors,
-        pointRadius: pointRadii,
-        data: [],
       });
     } else {
       // No special coloring
@@ -388,7 +367,7 @@ const VisualizeChart = ({ scrollResult }) => {
         datasets: dataset,
       },
       options: {
-        animation: false,
+        animation: true,
         responsive: true,
         maintainAspectRatio: false,
         scales: {
@@ -482,7 +461,7 @@ const VisualizeChart = ({ scrollResult }) => {
         console.error(m.data.error);
       }
       else if (m.data.error === null) {
-        mutateDataset(scrollResult.data, resultDataset, typedArray, outputDim);
+        mutateDataset(distanceMatrixResult.data, resultDataset, typedArray, outputDim);
         resultDataset.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;
         });
@@ -503,16 +482,20 @@ const VisualizeChart = ({ scrollResult }) => {
       myChart.destroy();
     }
 
-    if (scrollResult.data.result?.points?.length > 0) {
+    if (distanceMatrixResult.data.result?.points?.length > 0) {
       sharedArray = new SharedArrayBuffer(
-        Float64Array.BYTES_PER_ELEMENT * scrollResult.data.result.points.length * outputDim
+        Float64Array.BYTES_PER_ELEMENT * distanceMatrixResult.data.result.points.length * outputDim
       );
       typedArray = new Float64Array(sharedArray);
-      resultDataset = prepareDataset(scrollResult.data);
+      resultDataset = prepareDataset(distanceMatrixResult.data);
       worker.postMessage({ command: "CONN" }, [channel.port2]);
       worker.postMessage({
         command: "FWD",
-        details: scrollResult.data,
+        details: {
+          distances: distanceMatrixResult.data.result.scores,
+          indices: distanceMatrixResult.data.result.offsets_col,
+          nsamples: distanceMatrixResult.data.result.ids.length,
+        },
         sharedArray,
         time: Date.now()
       });
@@ -524,7 +507,7 @@ const VisualizeChart = ({ scrollResult }) => {
       channel.port1.close();
       channel.port2.close();
     };
-  }, [scrollResult]);
+  }, [distanceMatrixResult]);
 
   return (
     <>
@@ -539,7 +522,7 @@ const VisualizeChart = ({ scrollResult }) => {
 };
 
 VisualizeChart.propTypes = {
-  scrollResult: PropTypes.object.isRequired,
+  distanceMatrixResult: PropTypes.object.isRequired,
 };
 
 export default VisualizeChart;

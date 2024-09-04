@@ -2,6 +2,7 @@
 import init, { initThreadPool, DistbhtSNEf64 } from 'wasm-dist-bhtsne';
 import { threads } from 'wasm-feature-detect';
 import exampleData from 'examples/data';
+import { tsneConfig } from './tsneConfig';
 
 const errorMessage = {
     data: [],
@@ -22,11 +23,7 @@ self.onmessage = e => {
     }
 
     console.log(`Received data in: ${(Date.now() - e.data.time) / 1000}s`);
-    const data = [];
-    const points = e.data.details.result?.points;
-    // let vector;
-    // let vecName;
-    // let cols = 0;
+    const { distances, indices, nsamples } = e.data.details;
     const outputDim = 2;
     const sharedArray = new Float64Array(e.data.sharedArray);
 
@@ -40,22 +37,15 @@ self.onmessage = e => {
             console.log("Browser does not support threads");
         }
 
-        // set hyperparameters
-        const opt = {
-            learning_rate: 150.0,
-            perplexity: 30.0,
-            theta: 0.5,
-        };
-
         try {
             console.time('Rust Bhtsne - t-SNE Total Time');
             console.time('Rust Bhtsne - t-SNE 1st step');
             const tsneEncoder = new DistbhtSNEf64(
-                exampleData.distances,
-                exampleData.indices,
-                exampleData.n_samples,
-                exampleData.n_neighbors,  // `n_neighbors` must be 3 times of perplexity
-                opt
+                distances,
+                indices,
+                nsamples,
+                3 * tsneConfig.perplexity,
+                tsneConfig
             );
             console.timeEnd('Rust Bhtsne - t-SNE 1st step');
             let resultPtr;
@@ -71,11 +61,11 @@ self.onmessage = e => {
                 if (RENDERING) continue;
 
                 resultPtr = tsneEncoder.get_embedding();
-                sendVisual(self, sharedArray, resultPtr, memory, points, outputDim);
+                sendVisual(self, sharedArray, resultPtr, memory, nsamples, outputDim);
                 RENDERING = true;
             }
             console.timeEnd('Rust Bhtsne - t-SNE 2nd step');
-            sendVisual(self, sharedArray, resultPtr, memory, points, outputDim);
+            sendVisual(self, sharedArray, resultPtr, memory, nsamples, outputDim);
             console.timeEnd('Rust Bhtsne - t-SNE Total Time');
         }
         catch (error) {
@@ -192,8 +182,8 @@ self.onerror = e => {
     console.error(e);
 };
 
-function sendVisual(worker, sharedArray, resultPtr, memory, points, outputDim) {
-    const result = new Float64Array(memory.buffer, resultPtr, points.length * outputDim);
+function sendVisual(worker, sharedArray, resultPtr, memory, nsamples, outputDim) {
+    const result = new Float64Array(memory.buffer, resultPtr, nsamples * outputDim);
     result.forEach((val, idx) => {
         sharedArray[idx] = val;
     });

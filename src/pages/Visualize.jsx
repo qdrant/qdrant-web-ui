@@ -15,7 +15,7 @@ const query = `
 //
 // Available parameters:
 //
-// - 'limit': maximum number of vectors to visualize.
+// - 'sample': maximum number of vectors to visualize.
 //            *Warning*: large values may cause browser to freeze.
 //
 // - 'filter': filter expression to select vectors for visualization.
@@ -32,22 +32,11 @@ const query = `
 //                  "payload": "field_name"
 //                }
 //
-//                or
-//
-//                "color_by": {
-//                  "discover_score": {
-//                    "target": 42,
-//                    "context": [{"positive": 1, "negative": 0}]
-//                  }
-//                }
-//
-// - 'vector_name': specify which vector to use for visualization
-//                  if there are multiple.
 //
 // Minimal example:
 
 {
-  "limit": 500
+  "sample": 500
 }
 
 
@@ -146,7 +135,7 @@ function Visualize() {
                     </Paper>
                   </Box>
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} />
+                    <VisualizeChart distanceMatrixResult={result} />
                   </Box>
                 </Box>
               </Panel>
