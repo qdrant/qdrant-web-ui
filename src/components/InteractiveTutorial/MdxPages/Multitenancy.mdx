@@ -8,50 +8,66 @@ To use multivectors, create a collection with the following configuration:
 PUT collections/multitenant_collection
 {
   "vectors": {
-    "size": 3,
+    "size": 4,
     "distance": "Dot"
   }
 }
 ```
 
 ```json withRunButton=true
-PUT /collections/multitenant_collection/points
+PUT collections/multitenant_collection/points
 {
-    "points": [
-        {
-            "id": 1,
-            "payload": {"group_id": "user_1"},
-            "vector": [0.9, 0.1, 0.1]
-        },
-        {
-            "id": 2,
-            "payload": {"group_id": "user_1"},
-            "vector": [0.1, 0.9, 0.1]
-        },
-        {
-            "id": 3,
-            "payload": {"group_id": "user_2"},
-            "vector": [0.1, 0.1, 0.9]
-        },
-    ]
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.05, 0.61, 0.76, 0.74],
+      "payload": {"city": "Berlin", "group_id": "europe"}
+    },
+    {
+      "id": 2,
+      "vector": [0.19, 0.81, 0.75, 0.11],
+      "payload": {"city": "London", "group_id": "europe"}
+    },
+    {
+      "id": 3,
+      "vector": [0.36, 0.55, 0.47, 0.94],
+      "payload": {"city": "Moscow", "group_id": "europe"}
+    },
+    {
+      "id": 4,
+      "vector": [0.18, 0.01, 0.85, 0.80],
+      "payload": {"city": "New York", "group_id": "america"}
+    },
+    {
+      "id": 5,
+      "vector": [0.24, 0.18, 0.22, 0.44],
+      "payload": {"city": "Beijing", "group_id": "asia"}
+    },
+    {
+      "id": 6,
+      "vector": [0.35, 0.08, 0.11, 0.44],
+      "payload": {"city": "Mumbai", "group_id": "asia"}
+    }
+  ]
 }
 ```
 
 ```json withRunButton=true
 POST /collections/multitenant_collection/points/query
 {
-    "query": [0.1, 0.1, 0.9],
+    "query": [0.2, 0.1, 0.9, 0.7],
     "filter": {
         "must": [
             {
                 "key": "group_id",
                 "match": {
-                    "value": "user_1"
+                    "value": "europe"
                 }
             }
         ]
     },
-    "limit": 10
+    "limit": 2,
+    "with_payload": true
 }
 ```
 
