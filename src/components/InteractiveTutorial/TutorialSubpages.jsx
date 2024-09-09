@@ -1,7 +1,8 @@
 import * as Index from './MdxPages/Index.mdx';
 import * as Quickstart from './MdxPages/Quickstart.mdx';
 import * as FilteringClauses from './MdxPages/FilteringClauses.mdx';
-
+import * as Multivectors from './MdxPages/Multivectors.mdx';
+import * as Multitenancy from './MdxPages/Multitenancy.mdx';
 /**
  * MDX page object (Index etc.) contains:
  *  - default: React component
@@ -13,6 +14,8 @@ export const tutorialIndexPage = Index;
 const tutorialSubPages = [
   ['quickstart', Quickstart],
   ['filtering-clauses', FilteringClauses],
+  ['multivectors', Multivectors],
+  ['multitenancy', Multitenancy]
   // add more pages here
 ];
 

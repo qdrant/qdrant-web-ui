@@ -1,0 +1,72 @@
+export const title = 'Multivectors';
+
+# {title}
+
+To use multivectors, create a collection with the following configuration:
+
+```json withRunButton=true
+PUT collections/multivector_collection
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot",
+        "multivector_config": {
+      "comparator": "max_sim"
+    }
+  }
+}
+```
+To insert a point with multivector:
+
+```json withRunButton=true
+PUT collections/multivector_collection/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [
+        [-0.013,  0.020, -0.007, -0.111],
+        [-0.030, -0.015,  0.021,  0.072],
+        [0.041,  -0.004, 0.032,  0.062]
+      ]
+    },
+    {
+      "id": 2,
+      "vector": [
+        [0.011,  -0.050,  0.007,  0.101],
+        [-0.021,  0.035,  -0.002, -0.072],
+        [0.031,  0.014,  -0.032,  0.012]
+      ]
+    },
+    {
+      "id": 3,
+      "vector": [
+        [0.041,  0.034,  -0.012, -0.022],
+        [-0.030,  0.025,  0.011,  0.082],
+        [0.021,  -0.044,  0.032, -0.032]
+      ]
+    },
+    {
+      "id": 4,
+      "vector": [
+        [-0.015,  0.020,  0.045,  -0.131],
+        [0.030,   -0.005, 0.001,   0.022],
+        [0.041,   -0.024, -0.032,  0.072]
+      ]
+    }
+  ]
+}
+```
+
+To search with multivector (available in query API):
+
+```json withRunButton=true
+POST collections/multivector_collection/points/query
+{
+  "query": [
+    [-0.015,  0.020,  0.045,  -0.131],
+    [0.030,   -0.005, 0.001,   0.022],
+    [0.041,   -0.024, -0.032,  0.072]
+  ]
+}
+```

@@ -1,0 +1,57 @@
+export const title = 'Multitenancy';
+
+# {title}
+
+To use multivectors, create a collection with the following configuration:
+
+```json withRunButton=true
+PUT collections/multitenant_collection
+{
+  "vectors": {
+    "size": 3,
+    "distance": "Dot"
+  }
+}
+```
+
+```json withRunButton=true
+PUT /collections/multitenant_collection/points
+{
+    "points": [
+        {
+            "id": 1,
+            "payload": {"group_id": "user_1"},
+            "vector": [0.9, 0.1, 0.1]
+        },
+        {
+            "id": 2,
+            "payload": {"group_id": "user_1"},
+            "vector": [0.1, 0.9, 0.1]
+        },
+        {
+            "id": 3,
+            "payload": {"group_id": "user_2"},
+            "vector": [0.1, 0.1, 0.9]
+        },
+    ]
+}
+```
+
+```json withRunButton=true
+POST /collections/multitenant_collection/points/query
+{
+    "query": [0.1, 0.1, 0.9],
+    "filter": {
+        "must": [
+            {
+                "key": "group_id",
+                "match": {
+                    "value": "user_1"
+                }
+            }
+        ]
+    },
+    "limit": 10
+}
+```
+
