@@ -28,6 +28,7 @@ export default function MiniDrawer() {
   const [open, setOpen] = React.useState(false);
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
+  const [jwtVisible, setJwtVisible] = useState(true);
   const colorMode = React.useContext(ColorModeContext);
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
@@ -38,6 +39,11 @@ export default function MiniDrawer() {
       const telemetry = await qdrantClient.api('service').telemetry();
       setVersion(telemetry.data.result.app.version);
       setJwtEnabled(telemetry.data.result.app?.jwt_rbac || false);
+
+      if (telemetry.data.result.app?.hide_jwt_dashboard) {
+        setJwtVisible(false);
+      }
+
     } catch (error) {
       if (error.status === 403 || error.status === 401) {
         setApiKeyDialogOpen(true);
@@ -98,7 +104,7 @@ export default function MiniDrawer() {
           </Tooltip>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} />
+      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible}/>
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet />

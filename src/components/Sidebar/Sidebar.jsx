@@ -57,7 +57,7 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-export default function Sidebar({ open, version, jwtEnabled }) {
+export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />
@@ -69,7 +69,8 @@ export default function Sidebar({ open, version, jwtEnabled }) {
           <SidebarTutorialSection isSidebarOpen={open} />
         </ListItem>
         {sidebarItem('Datasets', <Animation />, '/datasets', open)}
-        {sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
+
+        {jwtVisible && sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
       </List>
       <List style={{ marginTop: `auto` }}>
         <ListItem>
@@ -116,4 +117,5 @@ Sidebar.propTypes = {
   open: PropTypes.bool,
   version: PropTypes.string,
   jwtEnabled: PropTypes.bool,
+  jwtVisible: PropTypes.bool,
 };
