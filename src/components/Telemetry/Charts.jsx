@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Alert,
-  Box,
-  Button,
-  Collapse,
-  Link,
-  MenuItem,
-  Paper,
-  Select,
-  Tooltip,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { Alert, Box, Button, Collapse, Grid, Link, Paper, Tooltip, Typography, useTheme } from '@mui/material';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import _ from 'lodash';
 import { Chart } from 'chart.js';
 import StreamingPlugin from '@robloche/chartjs-plugin-streaming';
 import 'chartjs-adapter-luxon';
+import ChartControlBar from './ChartControlBar';
 
 Chart.register(StreamingPlugin);
 
@@ -69,7 +58,6 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
   const [telemetryData, setTelemetryData] = useState({});
   const { client: qdrantClient } = useClient();
   const [chartInstances, setChartInstances] = useState({});
-  const [reloadInterval, setReloadInterval] = useState(2);
   const [intervalId, setIntervalId] = useState(null);
   const theme = useTheme();
   const [timeWindow, setTimeWindow] = useState(60000);
@@ -170,7 +158,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
         console.error('Invalid reload interval:', requestBody.reload_interval);
         return;
       } else if (requestBody.paths && requestBody.reload_interval && typeof requestBody.reload_interval === 'number') {
-        const paths = _.union(requestBody.paths, chartLabels);
+        const paths = requestBody.refresh ? requestBody.paths : _.union(requestBody.paths, chartLabels);
         const fetchTelemetryData = async () => {
           try {
             const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
@@ -193,8 +181,6 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
         await fetchTelemetryData();
 
         setChartLabels(paths);
-        setReloadInterval(requestBody.reload_interval);
-
         if (requestBody.reload_interval) {
           if (intervalId) {
             clearInterval(intervalId);
@@ -232,7 +218,7 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
     });
     setChartInstances({});
     chartLabels.forEach(createChart);
-  }, [reloadInterval, chartLabels]);
+  }, [chartLabels]);
 
   useEffect(() => {
     Object.keys(chartInstances).forEach((path) => {
@@ -328,67 +314,61 @@ const Charts = ({ chartSpecsText, setChartSpecsText }) => {
           display: 'flex',
           alignItems: 'center',
           p: 1,
-          borderRadius: 0,
           justifyContent: 'space-between',
         }}
       >
         <Typography variant="h6">Telemetry</Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-          }}
-        >
-          <Typography variant="h6">Time Window:</Typography>
-          <Select value={timeWindow} onChange={handleTimeWindowChange} sx={{ minWidth: 120 }}>
-            <MenuItem value={60000}>1 Minute</MenuItem>
-            <MenuItem value={300000}>5 Minutes</MenuItem>
-            <MenuItem value={600000}>10 Minutes</MenuItem>
-          </Select>
-        </Box>
+        <ChartControlBar
+          setChartSpecsText={setChartSpecsText}
+          handleTimeWindowChange={handleTimeWindowChange}
+          timeWindow={timeWindow}
+          chartSpecsText={chartSpecsText}
+        />
       </Paper>
       {alerts.map((alert, index) => (
         <AlertComponent key={index} alert={alert} index={index} setAlerts={setAlerts} />
       ))}
-
-      {chartLabels.map((path) => (
-        <Box key={path} sx={{ p: 2, borderRadius: 2, m: 2, border: '1px solid', borderColor: 'grey.300' }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Typography variant="h6">
-              {path.length > 50 ? (
-                <Tooltip title={path} arrow>
-                  <span>{path.substring(0, 50)}...</span>
-                </Tooltip>
-              ) : (
-                <span>{path}</span>
-              )}
-            </Typography>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => {
-                removeChart(path);
-              }}
-            >
-              Remove
-            </Button>
-          </Box>
-          <Box
-            sx={{
-              height: 300,
-            }}
-          >
-            <canvas id={path}></canvas>
-          </Box>
-        </Box>
-      ))}
+      <Grid container spacing={2} p={2}>
+        {chartLabels.map((path) => (
+          <Grid item xs={12} md={6} key={path}>
+            <Box key={path} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'grey.300' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography variant="h6">
+                  {path.length > 50 ? (
+                    <Tooltip title={path} arrow>
+                      <span>{path.substring(0, 50)}...</span>
+                    </Tooltip>
+                  ) : (
+                    <span>{path}</span>
+                  )}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => {
+                    removeChart(path);
+                  }}
+                >
+                  Remove
+                </Button>
+              </Box>
+              <Box
+                sx={{
+                  height: 300,
+                }}
+              >
+                <canvas id={path}></canvas>
+              </Box>
+            </Box>
+          </Grid>
+        ))}
+      </Grid>
     </>
   );
 };

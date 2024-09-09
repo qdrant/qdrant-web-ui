@@ -68,13 +68,26 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult }) => {
           onChangeResult(data);
         });
       }
+
+      editor.onKeyDown(() => {
+        const isInBlockedRange =
+          editor.getSelections()?.findIndex((range) => new monaco.Range(0, 0, 20, 70).intersectRanges(range)) !== -1; // Block lines 1 to 3
+        if (isInBlockedRange) {
+          editor.updateOptions({
+            readOnly: true,
+            readOnlyMessage: { value: 'Cannot Edit the instruction' },
+          });
+        }
+        else {
+          editor.updateOptions({
+            readOnly: false,
+          });
+          
+        }
+      });
     });
   }
-  // function handleEditorWillMount(monaco) {
-  //   autocomplete(monaco, qdrantClient, collectionName).then((autocomplete) => {
-  //     autocompleteRef.current = monaco.languages.registerCompletionItemProvider('custom-language', autocomplete);
-  //   });
-  // }
+
 
   return (
     <EditorCommon
