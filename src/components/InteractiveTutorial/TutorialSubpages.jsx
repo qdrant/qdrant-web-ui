@@ -15,7 +15,7 @@ const tutorialSubPages = [
   ['quickstart', Quickstart],
   ['filtering-clauses', FilteringClauses],
   ['multivectors', Multivectors],
-  ['multitenancy', Multitenancy]
+  ['multitenancy', Multitenancy],
   // add more pages here
 ];
 
