@@ -2,7 +2,16 @@ export const title = 'Multitenancy';
 
 # {title}
 
-To use multivectors, create a collection with the following configuration:
+In this tutorial, we will cover how to implement multitenancy. 
+Multitenancy allows you to host multiple tenants or clients within a single instance of Qdrant.
+This ensures data isolation and access control between tenants.
+
+## Create a collection
+
+Imagine you are running a recommendation service where different departments (tenants) store their data in Qdrant. 
+By using payload-based multitenancy, you can keep all tenants’ data in a single collection but filter the data based on a unique tenant identifier.
+
+Create one collection where all tenant data will be stored.
 
 ```json withRunButton=true
 PUT collections/multitenant_collection
@@ -13,6 +22,27 @@ PUT collections/multitenant_collection
   }
 }
 ```
+## Build a tenant index
+
+Qdrant supports efficient multitenant search by disabling global search and building sub-indexes for each tenant. 
+Enabling tenant indexing for payload fields further optimizes storage by allowing Qdrant to structure data for faster tenant-specific searches. 
+This can reduce disk reads by localizing tenant data on disk.
+
+To enable tenant indexing for a field, use the following index parameters:
+
+```json withRunButton=true
+PUT /collections/multitenant_collection/index
+{
+    "field_name": "group_id",
+    "field_schema": {
+        "type": "keyword",
+        "is_tenant": true
+    }
+}
+```
+## Load vectors 
+
+Now, load data into the shared collection, tagging each point with a tenant-specific identifier in the payload.
 
 ```json withRunButton=true
 PUT collections/multitenant_collection/points
@@ -21,36 +51,40 @@ PUT collections/multitenant_collection/points
     {
       "id": 1,
       "vector": [0.05, 0.61, 0.76, 0.74],
-      "payload": {"city": "Berlin", "group_id": "europe"}
+      "payload": {"department": "legal", "group_id": "user_1"}
     },
     {
       "id": 2,
       "vector": [0.19, 0.81, 0.75, 0.11],
-      "payload": {"city": "London", "group_id": "europe"}
+      "payload": {"department": "legal", "group_id": "user_1"}
     },
     {
       "id": 3,
       "vector": [0.36, 0.55, 0.47, 0.94],
-      "payload": {"city": "Moscow", "group_id": "europe"}
+      "payload": {"department": "legal", "group_id": "user_1"}
     },
     {
       "id": 4,
       "vector": [0.18, 0.01, 0.85, 0.80],
-      "payload": {"city": "New York", "group_id": "america"}
+      "payload": {"department": "humanresources", "group_id": "user_2"}
     },
     {
       "id": 5,
       "vector": [0.24, 0.18, 0.22, 0.44],
-      "payload": {"city": "Beijing", "group_id": "asia"}
+      "payload": {"department": "sales", "group_id": "user_3"}
     },
     {
       "id": 6,
       "vector": [0.35, 0.08, 0.11, 0.44],
-      "payload": {"city": "Mumbai", "group_id": "asia"}
+      "payload": {"department": "sales", "group_id": "user_3"}
     }
   ]
 }
 ```
+## Perform a filtered query
+
+When querying the shared collection, use the `group_id` payload field to ensure that tenants can only access their own data.
+In this example, the filter ensures that only points belonging to `group_id` are returned. 
 
 ```json withRunButton=true
 POST /collections/multitenant_collection/points/query
@@ -61,7 +95,7 @@ POST /collections/multitenant_collection/points/query
             {
                 "key": "group_id",
                 "match": {
-                    "value": "europe"
+                    "value": "user_1"
                 }
             }
         ]
