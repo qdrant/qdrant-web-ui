@@ -43,7 +43,6 @@ export default function MiniDrawer() {
       if (telemetry.data.result.app?.hide_jwt_dashboard) {
         setJwtVisible(false);
       }
-
     } catch (error) {
       if (error.status === 403 || error.status === 401) {
         setApiKeyDialogOpen(true);
@@ -104,7 +103,7 @@ export default function MiniDrawer() {
           </Tooltip>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible}/>
+      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet />
