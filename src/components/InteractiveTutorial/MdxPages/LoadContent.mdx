@@ -2,7 +2,14 @@ export const title = 'Load Content';
 
 # {title}
 
+In this tutorial, you will load data into a Qdrant collection from a remotely hosted snapshot. 
+The dataset is embedded with Cosine distance metric and vector size is 512. 
+
 ## Create a collection
+
+To create a collection, you’ll need to define key properties such as vector size and the distance metric to be used for similarity search.
+We’ll create a collection named midjourney with vectors of size 512, and we’ll use the Cosine distance to measure similarity.
+You can run this request to create the collection. Once the collection is created, it will be ready to accept vector data.
 
 ```json withRunButton=true
 PUT collections/midjourney
@@ -14,7 +21,12 @@ PUT collections/midjourney
 }
 ```
 
-## Add data
+## Add your data
+
+After creating the collection, the next step is to add vector data to it. In this case, we’ll recover data from a snapshot available at a specific location. This allows you to import previously stored data into the newly created collection.
+Running this command will trigger the recovery process, adding the vectors stored in the snapshot to the midjourney collection.
+
+Please wait a moment for the upload to complete. 
 
 ```json withRunButton=true
 PUT /collections/midjourney/snapshots/recover
@@ -23,7 +35,12 @@ PUT /collections/midjourney/snapshots/recover
 }
 ```
 
-## Verify upload
+## Verify data upload
+
+Once you’ve added the data to the collection, it’s important to verify that the data was uploaded successfully. This can be done by counting the number of points (or vectors) in the collection.
+
 ```json withRunButton=true
 POST /collections/midjourney/points/count
 ```
+
+There should be 5417 data points in the collection. 
