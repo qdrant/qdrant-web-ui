@@ -1,0 +1,29 @@
+export const title = 'Load Content';
+
+# {title}
+
+## Create a collection
+
+```json withRunButton=true
+PUT collections/midjourney
+{
+  "vectors": {
+    "size": 512,
+    "distance": "Cosine"
+  }
+}
+```
+
+## Add data
+
+```json withRunButton=true
+PUT /collections/midjourney/snapshots/recover
+{
+  "location": "http://snapshots.qdrant.io/midlib.snapshot"
+}
+```
+
+## Verify upload
+```json withRunButton=true
+POST /collections/midjourney/points/count
+```

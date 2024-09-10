@@ -1,0 +1,75 @@
+export const title = "Filtering Advanced"
+
+# {title}
+
+## Create a collection
+
+``` json withRunButton="true"
+PUT collections/terraforming
+{
+  "vectors": {
+  "size": 4,
+  "distance": "Dot"
+  }
+}
+```
+
+## Add vectors
+
+``` json withRunButton="true"
+PUT collections/terraforming/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": {"land": "forest", "color": "green", "life": true, "gravity": 9.8}
+    },
+    {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": {"land": "lake", "color": "blue", "life": true, "gravity": 9.8}
+    },
+    {
+      "id": 3,
+      "vector": [0.3, 0.4, 0.5, 0.6],
+      "payload": {"land": "steppe", "color": "green", "false": true, "gravity": 9.8}
+    },
+    {
+      "id": 4,
+      "vector": [0.4, 0.5, 0.6, 0.7],
+      "payload": {"land": "desert", "color": "red", "life": false, "gravity": 3.7}
+    },
+    {
+      "id": 5,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": {"land": "marsh", "color": "black", "life": true, "gravity": 9.8}
+    },
+    {
+      "id": 6,
+      "vector": [0.6, 0.7, 0.8, 0.9],
+      "payload": {"land": "cavern", "color": "black", "life": false, "gravity": 12.0}
+    }
+  ]
+}
+```
+
+## Filter - Match
+
+``` json withRunButton="true"
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+          "key": "color",
+          "match": {
+          "value": "black"
+          }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
