@@ -9,11 +9,55 @@ import { imageTooltip } from './ImageTooltip';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
+const BACKGROUND_COLOR = '#9ad0f5';
+const BORDER_COLOR = '#41a7ec';
+const SELECTED_BORDER_COLOR = '#881177';
 
-const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => {
+const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActivePoint }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
+
+  let localSelectedPoint = activePoint;
+
+  const handlePointHover = (chart) => {
+
+    if (!chart.tooltip?._active) return;
+    if (chart.tooltip?._active.length === 0) return;
+
+    const selectedPoint = chart.tooltip?._active[0].element.$context.raw.point;
+
+    if (selectedPoint.id === activePoint?.id) return;
+    if (selectedPoint.id === localSelectedPoint?.id) return;
+    localSelectedPoint = selectedPoint;
+
+    chart.options.elements.point.pointBorderColor = Array.from(
+      { length: chart.data.datasets[0].data.length },
+      () => BORDER_COLOR
+    );
+    chart.options.elements.point.pointBorderColor =
+      chart.options.elements.point.pointBorderColor.map((color, index) => {
+        if (selectedPoint.id === chart.data.datasets[0].data[index].point.id) {
+          return SELECTED_BORDER_COLOR;
+        }
+        return color;
+      });
+    chart.options.elements.point.pointBackgroundColor = Array.from(
+      { length: chart.data.datasets[0].data.length },
+      () => BACKGROUND_COLOR
+    );
+    chart.options.elements.point.pointBackgroundColor = chart.options.elements.point.pointBackgroundColor.map(
+      (color, index) => {
+        if (selectedPoint.id === chart.data.datasets[0].data[index].point.id) {
+          return SELECTED_BORDER_COLOR;
+        }
+        return color;
+      }
+    );
+
+    setActivePoint(selectedPoint);
+    chart.update();
+  }
 
   useEffect(() => {
     if (!scrollResult.data && !scrollResult.error) {
@@ -120,7 +164,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => 
                 if (colorBy?.discover_score) {
                   const id = context.dataset.data[context.dataIndex].point.id;
                   const score = context.dataset.data[context.dataIndex].point.score;
-                  const activePoints = context.chart.tooltip._active.map((point) => {
+                  const activePoint = context.chart.tooltip._active.map((point) => {
                     return {
                       id: point.element.$context.raw.point.id,
                       payload: {
@@ -130,17 +174,10 @@ const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => 
                       vector: point.element.$context.raw.point.vector,
                     };
                   });
-                  setActivePoints(activePoints);
+                  setActivePoint(activePoint);
                   return [`id: ${id}`, `score: ${score}`];
                 } else {
-                  const activePoints = context.chart.tooltip._active.map((point) => {
-                    return {
-                      id: point.element.$context.raw.point.id,
-                      payload: point.element.$context.raw.point.payload,
-                      vector: point.element.$context.raw.point.vector,
-                    };
-                  });
-                  setActivePoints(activePoints);
+                  handlePointHover(context.chart);
                   const id = context.dataset.data[context.dataIndex].point.id;
                   return `Point ${id}`;
                 }
@@ -218,7 +255,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null, setActivePoints }) => 
 VisualizeChart.propTypes = {
   scrollResult: PropTypes.object.isRequired,
   algorithm: PropTypes.string,
-  setActivePoints: PropTypes.func,
+  activePoint: PropTypes.object,
+  setActivePoint: PropTypes.func,
 };
 
 export default VisualizeChart;

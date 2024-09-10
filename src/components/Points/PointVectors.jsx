@@ -34,6 +34,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
 
   return (
     <Box pt={2}>
+      Vectors:
       {Object.keys(vectors).map((key) => {
         return (
           <Grid key={key} container spacing={2}>
@@ -81,6 +82,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
               </Button>
+              {typeof onConditionChange !== 'function' ? null : (
               <Button
                 variant="outlined"
                 size="small"
@@ -88,6 +90,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               >
                 Find Similar
               </Button>
+            )}
             </Grid>
           </Grid>
         );
@@ -98,7 +101,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
 
 Vectors.propTypes = {
   point: PropTypes.object.isRequired,
-  onConditionChange: PropTypes.func.isRequired,
+  onConditionChange: PropTypes.func,
 };
 
 export default Vectors;

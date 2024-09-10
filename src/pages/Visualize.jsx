@@ -8,7 +8,8 @@ import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
 import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
-import PointsPreview from '../components/VisualizeChart/PointsPreview';
+// import PointsPreview from '../components/VisualizeChart/PointsPreview';
+import PointPreview from "../components/Common/PointPreview";
 
 const query = `
 
@@ -68,7 +69,7 @@ function Visualize() {
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
-  const [activePoints, setActivePoints] = useState(null);
+  const [activePoint, setActivePoint] = useState(null);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
@@ -161,7 +162,11 @@ function Visualize() {
                     </Paper>
                   </Box>
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} algorithm={algorithm} setActivePoints={setActivePoints} />
+                    <VisualizeChart
+                      scrollResult={result}
+                      algorithm={algorithm}
+                      activePoint={activePoint}
+                      setActivePoint={setActivePoint} />
                   </Box>
                 </Box>
               </Panel>
@@ -215,7 +220,7 @@ function Visualize() {
                       overflowY: 'scroll',
                     }}
                   >
-                    {activePoints && <PointsPreview points={activePoints} />}
+                    {activePoint && <PointPreview point={activePoint} />}
                   </Panel>
                 </PanelGroup>
               </Panel>

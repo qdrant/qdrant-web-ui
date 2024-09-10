@@ -85,7 +85,9 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                       if (conditions.find((c) => c.key === filter.key && c.value === filter.value)) {
                         return;
                       }
-                      onConditionChange([...conditions, filter]);
+                      if (typeof onConditionChange === 'function') {
+                        onConditionChange([...conditions, filter]);
+                      }
                     }}
                   >
                     <FilterAltIcon />
