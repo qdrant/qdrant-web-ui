@@ -1,22 +1,26 @@
-export const title = "Filtering Beginner"
+export const title = "Basic Filtering - Clauses and Conditions"
 
 # {title}
 
-## Create a collection
+## Step 1: Create a Collection
 
-``` json withRunButton="true"
+First, create a collection called `terraforming`. Each point will have vectors of size 4, and the distance metric is set to `Dot`:
+
+```json withRunButton="true"
 PUT collections/terraforming
 {
   "vectors": {
-  "size": 4,
-  "distance": "Dot"
+    "size": 4,
+    "distance": "Dot"
   }
 }
 ```
 
-## Add vectors
+## Step 2: Add Points with Vectors and Payloads
 
-``` json withRunButton="true"
+Now, add points to the collection. Each point includes a vector and a `payload` with various attributes like `land type`, `color`, `life presence`, and `gravity`:
+
+```json withRunButton="true"
 PUT collections/terraforming/points
 {
   "points": [
@@ -33,7 +37,7 @@ PUT collections/terraforming/points
     {
       "id": 3,
       "vector": [0.3, 0.4, 0.5, 0.6],
-      "payload": {"land": "steppe", "color": "green", "false": true, "gravity": 9.8}
+      "payload": {"land": "steppe", "color": "green", "life": false, "gravity": 9.8}
     },
     {
       "id": 4,
@@ -54,14 +58,19 @@ PUT collections/terraforming/points
 }
 ```
 
-## Filter - Must
+## Step 3: Filtering Examples
+
+### Filter by `must` Clause
+
+In this example, the query returns points where `life` is `true` and `color` is `"green"`. These must conditions both need to be met for a point to be returned.
+
 ```json withRunButton=true
 POST collections/terraforming/points/scroll
 {
   "filter": {
     "must": [
-            { "key": "life", "match": { "value": true } },
-            { "key": "color", "match": { "value": "green" } }
+      { "key": "life", "match": { "value": true } },
+      { "key": "color", "match": { "value": "green" } }
     ]
   },
   "limit": 3,
@@ -69,22 +78,30 @@ POST collections/terraforming/points/scroll
 }
 ```
 
-## Filter - Should
+### Filter by `should` Clause
+
+Here, you are filtering for points where `life` is `false` and `color` is `"black"`. These conditions act as *should* clauses, meaning points meeting either or both criteria will be returned:
+
 ```json withRunButton=true
-POST collections/terraforming/points/scroll
 {
   "filter": {
-    "must": [
-            { "key": "life", "match": { "value": false } },
-            { "key": "color", "match": { "value": "black" } }
+    "should": [
+      {
+        "key": "life",
+        "match": { "value": "false" }
+      }, {
+        "key": "color",
+        "match": { "value": "black" }
+      }
     ]
-  },
-  "limit": 3,
-  "with_payload": true
+  }
 }
 ```
 
-## Filter - Must Not
+### Filter by `must_not` Clause
+
+This query filters out any points where `life` is `false`. Points matching this condition are excluded from the results.
+
 ```json withRunButton=true
 POST collections/terraforming/points/scroll
 {
@@ -92,7 +109,7 @@ POST collections/terraforming/points/scroll
     "must_not": [
       {
        "key": "life",
-       "match": { "value": "false" }
+       "match": { "value": false }
       }
     ]
   },
@@ -101,9 +118,11 @@ POST collections/terraforming/points/scroll
 }
 ```
 
-## Filter - Range
+### Filter by `range` Condition
 
-``` json withRunButton="true"
+This query filters points based on a range of `gravity`. Here, the `gravity` value must be exactly 9.8:
+
+```json withRunButton="true"
 POST collections/terraforming/points/scroll
 {
   "filter": {
@@ -111,11 +130,9 @@ POST collections/terraforming/points/scroll
       {
        "key": "gravity",
        "range": {
-        "gt": null,
-        "gte": 9.8,
-        "lt": null,
-        "lte": 9.8
-        }
+         "gte": 9.8,
+         "lte": 9.8
+       }
       }
     ]
   },
@@ -124,19 +141,20 @@ POST collections/terraforming/points/scroll
 }
 ```
 
+### Filter by Exact Match
 
-## Filter - Match
+Finally, this query retrieves points where the `color` is `"black"`, using a straightforward `match` condition:
 
-``` json withRunButton="true"
+```json withRunButton="true"
 POST collections/terraforming/points/scroll
 {
   "filter": {
     "must": [
       {
-          "key": "color",
-          "match": {
+        "key": "color",
+        "match": {
           "value": "black"
-          }
+        }
       }
     ]
   },
