@@ -1,0 +1,107 @@
+# Full Text Filtering in Qdrant
+
+In this tutorial, we will explore how to use full-text filtering in Qdrant. The following steps demonstrate creating a collection, using full-text filters without a payload index, creating a full-text index, and performing a search on indexed fields.
+
+## 1. Create a Collection
+
+The first step is to create a collection in Qdrant. We define the vector size and distance metric (Cosine) for our collection.
+
+```json withRunButton=true
+PUT /collections/documentation
+{
+  "vectors": {
+    "size": 384,
+    "distance": "Cosine"
+  }
+}
+```
+
+Once the collection is created, you can recover it using a snapshot.
+
+```json withRunButton=true
+PUT /collections/documentation/snapshots/recover
+{
+  "location": "http://snapshots.qdrant.io/qdrant-web-site-docs-2024-04-05.snapshot"
+}
+```
+
+You can check the total number of points in your collection:
+
+```json withRunButton=true
+POST /collections/documentation/points/count
+```
+
+## 2. Use Full-Text Filters Without the Payload Index
+
+This example demonstrates how to use a full-text filter without having an indexed payload field.
+Here, we search for points where the `text` field matches "qdrant," and return a maximum of 3 points with their payloads.
+
+### Measure performance
+Note the time that this request takes. On our machine,`"time": 0.004062916`
+
+```json withRunButton="true"
+POST /collections/documentation/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "text",
+        "match": {
+          "text": "qdrant"
+        }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+
+## 3. Create a Full-Text Index for a Specific Field
+
+To improve search performance, you can create a full-text index on the `text` field.
+
+```json withRunButton="true"
+PUT /collections/documentation/index
+{
+    "field_name": "text",
+    "field_schema": {
+        "type": "text",
+        "tokenizer": "word",
+        "min_token_len": 2,
+        "max_token_len": 20,
+        "lowercase": true
+    }
+}
+```
+
+This request creates an index for the `text` field using word tokenization. The tokenizer will split the text into words, considering only those with a length between 2 and 20 characters. All words will be converted to lowercase to ensure case-insensitive searches.
+
+## 4. Perform Full-Text Search on an Indexed Payload Field
+
+With the full-text index in place, you can now perform more efficient searches on the `text` field.
+This example performs a full-text search on the `text` field and returns points where the text matches "qdrant," with a limit of 3 results.
+
+### Measure performance
+This time, the request came back much faster - `"time": 0.001735375`
+
+```json withRunButton="true"
+POST /collections/documentation/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "text",
+        "match": {
+          "text": "qdrant"
+        }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+
