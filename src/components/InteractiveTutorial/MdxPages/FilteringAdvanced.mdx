@@ -1,75 +1,168 @@
-export const title = "Filtering Advanced"
+export const title = "Advanced Filtering"
 
 # {title}
 
-## Create a collection
+## Step 1: Create a Collection
 
-``` json withRunButton="true"
-PUT collections/terraforming
+Start by creating a collection named `dinosaurs` with a vector size of 4 and a distance metric set to `Dot`:
+
+```json withRunButton="true"
+PUT collections/dinosaurs
 {
   "vectors": {
-  "size": 4,
-  "distance": "Dot"
+    "size": 4,
+    "distance": "Dot"
   }
 }
 ```
 
-## Add vectors
+## Step 2: Add Vectors with Payloads
 
-``` json withRunButton="true"
-PUT collections/terraforming/points
+You can now add points to the collection. Each point contains a `vector` and a `payload` with additional information such as the dinosaur species and diet preferences. For example:
+
+```json withRunButton="true"
+PUT collections/dinosaurs/points
 {
   "points": [
     {
       "id": 1,
       "vector": [0.1, 0.2, 0.3, 0.4],
-      "payload": {"land": "forest", "color": "green", "life": true, "gravity": 9.8}
+      "payload": {
+        "dinosaur": "t-rex",
+        "diet": [
+          { "food": "leaves", "likes": false },
+          { "food": "meat", "likes": true }
+        ]
+      }
     },
     {
       "id": 2,
       "vector": [0.2, 0.3, 0.4, 0.5],
-      "payload": {"land": "lake", "color": "blue", "life": true, "gravity": 9.8}
-    },
-    {
-      "id": 3,
-      "vector": [0.3, 0.4, 0.5, 0.6],
-      "payload": {"land": "steppe", "color": "green", "false": true, "gravity": 9.8}
-    },
-    {
-      "id": 4,
-      "vector": [0.4, 0.5, 0.6, 0.7],
-      "payload": {"land": "desert", "color": "red", "life": false, "gravity": 3.7}
-    },
-    {
-      "id": 5,
-      "vector": [0.5, 0.6, 0.7, 0.8],
-      "payload": {"land": "marsh", "color": "black", "life": true, "gravity": 9.8}
-    },
-    {
-      "id": 6,
-      "vector": [0.6, 0.7, 0.8, 0.9],
-      "payload": {"land": "cavern", "color": "black", "life": false, "gravity": 12.0}
+      "payload": {
+        "dinosaur": "diplodocus",
+        "diet": [
+          { "food": "leaves", "likes": true },
+          { "food": "meat", "likes": false }
+        ]
+      }
     }
   ]
 }
 ```
 
-## Filter - Match
+## Step 3: Basic Filtering with `match`
 
-``` json withRunButton="true"
-POST collections/terraforming/points/scroll
+You can filter points by specific payload values. For instance, the query below matches points where:
+
+- The `diet[].food` contains "meat".
+- The `diet[].likes` is set to `true`.
+
+Both points match these conditions, as:
+- The “t-rex” eats meat and likes it.
+- The “diplodocus” eats meat but doesn't like it.
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
 {
   "filter": {
     "must": [
       {
-          "key": "color",
-          "match": {
-          "value": "black"
-          }
+        "key": "diet[].food",
+        "match": {
+          "value": "meat"
+        }
+      },
+      {
+        "key": "diet[].likes",
+        "match": {
+          "value": true
+        }
       }
     ]
-  },
-  "limit": 3,
-  "with_payload": true
+  }
 }
 ```
+
+However, if you want to retrieve only the points where both conditions are true for the same element within the array (e.g., the "t-rex" with ID 1), you'll need to use a **nested filter**.
+
+## Step 4: Advanced Filtering with Nested Object Filters
+
+To apply the filter at the array element level, you use the `nested` filter condition. This ensures that the `food` and `likes` values are evaluated together within each array element:
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "nested": {
+          "key": "diet",
+          "filter": {
+            "must": [
+              {
+                "key": "food",
+                "match": {
+                  "value": "meat"
+                }
+              },
+              {
+                "key": "likes",
+                "match": {
+                  "value": true
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+With this filter, only the "t-rex" (ID 1) is returned, because its array element satisfies both conditions.
+
+### Explanation
+
+Nested filters treat each array element as a separate object, applying the filter independently to each element. The parent document (in this case, the dinosaur point) matches the filter if any one array element meets all conditions.
+
+## Step 5: Combining `has_id` with Nested Filters
+
+Note that `has_id` cannot be used inside a nested filter. If you need to filter by ID as well, include the `has_id` condition as a separate clause, like this:
+
+You won't get a different answer. You can see that this filter matches the "t-rex" (ID 1) by combining the `nested` diet filter with an explicit ID match.
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "nested": {
+          "key": "diet",
+          "filter": {
+            "must": [
+              {
+                "key": "food",
+                "match": {
+                  "value": "meat"
+                }
+              },
+              {
+                "key": "likes",
+                "match": {
+                  "value": true
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "has_id": [1]
+      }
+    ]
+  }
+}
+```
+
