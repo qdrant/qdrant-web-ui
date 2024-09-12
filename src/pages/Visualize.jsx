@@ -8,7 +8,6 @@ import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
 import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
-// import PointsPreview from '../components/VisualizeChart/PointsPreview';
 import PointPreview from "../components/Common/PointPreview";
 
 const query = `

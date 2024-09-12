@@ -5,7 +5,6 @@ import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
-import { imageTooltip } from './ImageTooltip';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
@@ -31,13 +30,16 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
     if (selectedPoint.id === localSelectedPoint?.id) return;
     localSelectedPoint = selectedPoint;
 
+
+    const data = chart.data.datasets[0].data;
+
     chart.options.elements.point.pointBorderColor = Array.from(
-      { length: chart.data.datasets[0].data.length },
+      { length: data.length },
       () => BORDER_COLOR
     );
     chart.options.elements.point.pointBorderColor =
       chart.options.elements.point.pointBorderColor.map((color, index) => {
-        if (selectedPoint.id === chart.data.datasets[0].data[index].point.id) {
+        if (selectedPoint.id === data[index].point.id) {
           return SELECTED_BORDER_COLOR;
         }
         return color;
@@ -156,31 +158,13 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
         plugins: {
           tooltip: {
             // only use custom tooltip if color by is not discover score
-            enabled: !colorBy?.discover_score,
-            external: (colorBy?.discover_score && imageTooltip) || undefined,
+            enabled: true,
             usePointStyle: true,
             callbacks: {
               label: (context) => {
-                if (colorBy?.discover_score) {
-                  const id = context.dataset.data[context.dataIndex].point.id;
-                  const score = context.dataset.data[context.dataIndex].point.score;
-                  const activePoint = context.chart.tooltip._active.map((point) => {
-                    return {
-                      id: point.element.$context.raw.point.id,
-                      payload: {
-                        score: point.element.$context.raw.point.score,
-                        ...point.element.$context.raw.point.payload,
-                      },
-                      vector: point.element.$context.raw.point.vector,
-                    };
-                  });
-                  setActivePoint(activePoint);
-                  return [`id: ${id}`, `score: ${score}`];
-                } else {
-                  handlePointHover(context.chart);
-                  const id = context.dataset.data[context.dataIndex].point.id;
-                  return `Point ${id}`;
-                }
+                handlePointHover(context.chart);
+                const id = context.dataset.data[context.dataIndex].point.id;
+                return `Point ${id}`;
               },
             },
           },
