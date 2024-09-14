@@ -7,6 +7,7 @@ import {
   Checkbox,
   Drawer,
   IconButton,
+  ListItem,
   MenuItem,
   Select,
   TextField,
@@ -64,7 +65,7 @@ const ChartControlBar = ({ setChartSpecsText, timeWindow, handleTimeWindowChange
     let paths = [];
 
     if (typeof obj === 'number') {
-      paths.push(currentPath);
+      paths.push(`requests.${currentPath}`);
     } else if (typeof obj === 'object' && obj !== null) {
       for (const key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -81,7 +82,7 @@ const ChartControlBar = ({ setChartSpecsText, timeWindow, handleTimeWindowChange
     const fetchTelemetryData = async () => {
       try {
         const response = await qdrantClient.api('service').telemetry({ details_level: 10 });
-        setJsonPaths(extractNumericalPaths(response.data.result));
+        setJsonPaths(extractNumericalPaths(response.data.result.requests));
       } catch (error) {
         console.error('Failed to fetch telemetry data', error);
       }
@@ -150,10 +151,25 @@ const ChartControlBar = ({ setChartSpecsText, timeWindow, handleTimeWindowChange
           setChartSpecsText(generateChartSpecs(value, reloadInterval));
         }}
         renderOption={(props, option, { selected }) => (
-          <li {...props}>
-            <Checkbox style={{ marginRight: 8 }} checked={selected} />
-            {option}
-          </li>
+          <ListItem {...props}>
+            <Box
+              sx={{
+               
+                border: '1px solid #e0e0e0',
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+              }}
+            >
+              <Checkbox style={{ marginRight: 8 }} checked={selected} />
+              <Box>
+                <Typography>Request: {option.split('.')[3]}</Typography>
+                <Typography>Status Code: {option.split('.')[4]}</Typography>
+                <Typography>Metric: {option.split('.')[5]}</Typography>
+              </Box>
+            </Box>
+          </ListItem>
         )}
       />
       <Typography variant="h6">Reload Interval:</Typography>
