@@ -22,7 +22,7 @@ PUT collections/central_library
 
 ## Step 2: Build a tenant index
 
-To optimize multitenant searches, Qdrant supports efficient indexing based on the tenant's identifier. By enabling tenant indexing, you can structure data on disk for faster tenant-specific searches, improving performance and reducing disk reads.
+Qdrant supports efficient indexing based on the tenant's identifier to optimize multitenant searches. By enabling tenant indexing, you can structure data on disk for faster tenant-specific searches, improving performance and reducing disk reads.
 
 Run the following request to enable indexing for the tenant identifier (`group_id`):
 
