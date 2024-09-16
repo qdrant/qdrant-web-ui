@@ -1,9 +1,16 @@
 export const title = 'Hybrid Search';
 
-# Hybrid Search with Sparse and Dense Vectors
+# Hybrid Search with Sparse and Dense Vectors 
+
+In this tutorial, we will continue to explore hybrid search in Qdrant, focusing on both sparse and dense vectors. 
+This time, we will work with a collection related to `terraforming_plans`, and each data point will have a brief description of its content in the `payload`.
+
+## Step 1: Create a collection with sparse vectors
+
+We'll start by creating a collection named `terraforming_plans`. This collection will support both dense vectors for semantic similarity and sparse vectors for keyword-based search.
 
 ```json withRunButton=true
-PUT /collections/hybrid_search
+PUT /collections/terraforming_plans
 {
     "vectors": {
         "size": 4,  
@@ -15,44 +22,112 @@ PUT /collections/hybrid_search
 }
 ```
 
+### Explanation:
+- **`vectors`**: Configures the dense vector space with 4 dimensions, using cosine similarity for distance measurement.
+- **`sparse_vectors`**: Configures the collection to support sparse vectors for keyword-based indexing.
+
+---
+
+## Step 2: Insert data points with descriptions
+
+Now, we'll insert three data points into the `terraforming_plans` collection, each related to a different celestial body (Mars, Jupiter, and Venus). Each point will have both a dense and sparse vector, along with a `description` in the `payload`.
+
 ```json withRunButton=true
-PUT /collections/hybrid_search/points
+PUT /collections/terraforming_plans/points
 {
     "points": [
         {
-            "id": 1,
+            "id": 1,  
             "vector": {
-            	"": [0.02, 0.4, 0.5, 0.9],   // Dense unnamed vector (4D)
+                "": [0.02, 0.4, 0.5, 0.9],   // Dense unnamed vector
                 "keywords": {
-                   "indices": [1, 42],    // <┐
-                   "values": [0.22, 0.8]  // <┴─sparse vector
+                   "indices": [1, 42],    // Sparse for "rocky" and "Mars"
+                   "values": [0.22, 0.8]  // Weights for these keywords
                 }
+            },
+            "payload": {
+                "description": "Plans about Mars colonization."
+            }
+        },
+        {
+            "id": 2,  
+            "vector": {
+                "": [0.3, 0.1, 0.6, 0.4],   
+                "keywords": {
+                   "indices": [2, 35],    // Sparse for "gas giant" and "icy"
+                   "values": [0.15, 0.65]  // Weights for these keywords
+                }
+            },
+            "payload": {
+                "description": "Study on Jupiter gas composition."
+            }
+        },
+        {
+            "id": 3,  
+            "vector": {
+                "": [0.7, 0.5, 0.3, 0.8],   
+                "keywords": {
+                   "indices": [10, 42],    // Sparse for "Venus" and "rocky"
+                   "values": [0.3, 0.5]    // Weights for these keywords
+                }
+            },
+            "payload": {
+                "description": "Venus geological terrain analysis."
             }
         }
     ]
 }
 ```
 
+### Explanation:
+- **Dense vector**: Represents the semantic features of the data point in a numerical form.
+- **Sparse vector (`keywords`)**: Represents the keyword features, with `indices` mapped to specific keywords and `values` representing their relevance.
+- **`payload`**: Provides a short description of the data point's content, making it easier to understand what each vector represents.
+
+---
+
+## Step 3: Perform a hybrid search
+
+Next, perform a hybrid search on the `terraforming_plans` collection, combining both keyword-based (sparse) and semantic (dense) search using Reciprocal Rank Fusion (RRF).
+
 ```json withRunButton=true
-POST /collections/hybrid_search/points/query
+POST /collections/terraforming_plans/points/query
 {
     "prefetch": [
         {
             "query": { 
-                "indices": [1, 42],    // <┐
-                "values": [0.22, 0.8]  // <┴─sparse vector
-             },
+                "indices": [1, 42],   
+                "values": [0.22, 0.8]  
+            },
             "using": "keywords",
             "limit": 20
         },
         {
-            "query": [0.01, 0.45, 0.67, 0.89], // <-- dense vector
+            "query": [0.01, 0.45, 0.67, 0.89],
             "using": "",
             "limit": 20
         }
     ],
-    "query": { "fusion": "rrf" }, // <--- reciprocal rank fusion
-    "limit": 10
+    "query": { "fusion": "rrf" },  // Reciprocal rank fusion
+    "limit": 10,
+    "with_payload": true
 }
-
 ```
+
+### Explanation:
+- **`prefetch`**: Contains two subqueries:
+  - **Keyword-based query**: Uses the sparse vector (keywords) to search by keyword relevance.
+  - **Dense vector query**: Uses the dense vector for semantic similarity search.
+- **`fusion: rrf`**: Combines the results from both queries using Reciprocal Rank Fusion (RRF), giving priority to points ranked highly in both searches.
+- **`limit`**: Limits the number of results to the top 10.
+
+---
+
+## Summary
+
+In this tutorial, we:
+1. Created a Qdrant collection called `terraforming_plans` that supports hybrid search using both dense and sparse vectors.
+2. Inserted data points with both dense and sparse vectors, as well as descriptions in the payload.
+3. Performed a hybrid search combining keyword relevance and dense vector similarity using Reciprocal Rank Fusion.
+
+This approach allows for effective hybrid search, combining textual and semantic search capabilities, which can be highly useful in applications involving complex search requirements.
