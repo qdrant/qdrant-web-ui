@@ -87,7 +87,7 @@ PUT collections/multivector_collection/points
 
 ## Step 3: Query the collection 
 
-To perform a search with multivectors, you can pass multiple query vectors. Qdrant will compare the query vectors against the multivectors stored in each point and return the most similar results based on the comparator defined in the collection (`max_sim`). You can also request the payloads to be returned along with the search results.
+To perform a search with multivectors, you can pass multiple query vectors. Qdrant will compare the query vectors against the multivectors stored in each point and return the most similar results based on the comparator defined for the collection (`max_sim`). You can also request the payloads to be returned along with the search results.
 
 Run the following request to search with multivectors and retrieve the payloads:
 
