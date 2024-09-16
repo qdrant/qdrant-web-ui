@@ -21,8 +21,8 @@ PUT /collections/hybrid_search/points
     "points": [
         {
             "id": 1,
-            "vector": [0.02, 0.4, 0.5, 0.9],   // Dense vector (4D)
-            "sparse_vectors": {
+            "vector": {
+            	"": [0.02, 0.4, 0.5, 0.9],   // Dense unnamed vector (4D)
                 "keywords": {
                    "indices": [1, 42],    // <┐
                    "values": [0.22, 0.8]  // <┴─sparse vector
