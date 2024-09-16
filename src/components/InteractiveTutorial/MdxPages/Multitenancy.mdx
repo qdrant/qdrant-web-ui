@@ -1,20 +1,17 @@
 export const title = 'Multitenancy';
 
-# {title}
+# Separate User Data in Multitenant Setups
 
-In this tutorial, we will cover how to implement multitenancy. 
-Multitenancy allows you to host multiple tenants or clients within a single instance of Qdrant.
-This ensures data isolation and access control between tenants.
+In this tutorial, we will cover how to implement multitenancy in Qdrant. Multitenancy allows you to host multiple tenants or clients within a single instance of Qdrant, ensuring data isolation and access control between tenants. This feature is essential for use cases where you need to serve different clients while maintaining separation of their data.
 
-## Create a collection
+## Step 1: Create a collection
 
-Imagine you are running a recommendation service where different departments (tenants) store their data in Qdrant. 
-By using payload-based multitenancy, you can keep all tenants’ data in a single collection but filter the data based on a unique tenant identifier.
+Imagine you are running a recommendation service where different departments (tenants) store their data in Qdrant. By using **payload-based multitenancy**, you can keep all tenants’ data in a single collection but filter the data based on a unique tenant identifier.
 
-Create one collection where all tenant data will be stored.
+Run the following request to create a shared collection for all tenants:
 
 ```json withRunButton=true
-PUT collections/multitenant_collection
+PUT collections/central_library
 {
   "vectors": {
     "size": 4,
@@ -22,16 +19,15 @@ PUT collections/multitenant_collection
   }
 }
 ```
-## Build a tenant index
 
-Qdrant supports efficient multitenant search by disabling global search and building sub-indexes for each tenant. 
-Enabling tenant indexing for payload fields further optimizes storage by allowing Qdrant to structure data for faster tenant-specific searches. 
-This can reduce disk reads by localizing tenant data on disk.
+## Step 2: Build a tenant index
 
-To enable tenant indexing for a field, use the following index parameters:
+To optimize multitenant searches, Qdrant supports efficient indexing based on the tenant's identifier. By enabling tenant indexing, you can structure data on disk for faster tenant-specific searches, improving performance and reducing disk reads.
+
+Run the following request to enable indexing for the tenant identifier (`group_id`):
 
 ```json withRunButton=true
-PUT /collections/multitenant_collection/index
+PUT /collections/central_library/index
 {
     "field_name": "group_id",
     "field_schema": {
@@ -40,54 +36,56 @@ PUT /collections/multitenant_collection/index
     }
 }
 ```
-## Load vectors 
 
-Now, load data into the shared collection, tagging each point with a tenant-specific identifier in the payload.
+## Step 3: Load vectors for tenants
+
+Next, you will load data into the shared collection. Each data point is tagged with a tenant-specific identifier in the payload. This identifier (`group_id`) ensures that tenants' data remains isolated even when stored in the same collection.
+
+Run the following request to insert data points:
 
 ```json withRunButton=true
-PUT collections/multitenant_collection/points
+PUT /collections/central_library/points
 {
   "points": [
     {
       "id": 1,
-      "vector": [0.05, 0.61, 0.76, 0.74],
-      "payload": {"department": "legal", "group_id": "user_1"}
+      "vector": [0.1, 0.2, 0.3, 0.4],    
+      "payload": {
+        "group_id": "user_1",
+        "station": "Communications",
+        "message_log": "Contact with colony headquarters."
+      }
     },
     {
       "id": 2,
-      "vector": [0.19, 0.81, 0.75, 0.11],
-      "payload": {"department": "legal", "group_id": "user_1"}
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": {
+        "group_id": "user_2",
+        "station": "Security",
+        "message_log": "Monitor intruder alert system."
+      }
     },
     {
       "id": 3,
-      "vector": [0.36, 0.55, 0.47, 0.94],
-      "payload": {"department": "legal", "group_id": "user_1"}
-    },
-    {
-      "id": 4,
-      "vector": [0.18, 0.01, 0.85, 0.80],
-      "payload": {"department": "humanresources", "group_id": "user_2"}
-    },
-    {
-      "id": 5,
-      "vector": [0.24, 0.18, 0.22, 0.44],
-      "payload": {"department": "sales", "group_id": "user_3"}
-    },
-    {
-      "id": 6,
-      "vector": [0.35, 0.08, 0.11, 0.44],
-      "payload": {"department": "sales", "group_id": "user_3"}
+      "vector": [0.9, 1.0, 1.1, 1.2],
+      "payload": {
+        "group_id": "user_3",
+        "station": "Engineering",
+        "message_log": "Repair warp core malfunction."
+      }
     }
   ]
 }
 ```
-## Perform a filtered query
 
-When querying the shared collection, use the `group_id` payload field to ensure that tenants can only access their own data.
-In this example, the filter ensures that only points belonging to `group_id` are returned. 
+## Step 4: Perform a filtered query
+
+When querying the shared collection, use the `group_id` payload field to ensure that tenants can only access their own data. The filter in this query ensures that only points belonging to the specified `group_id` are returned.
+
+Run the following request to search for data specific to `user_1`:
 
 ```json withRunButton=true
-POST /collections/multitenant_collection/points/query
+POST /collections/central_library/points/query
 {
     "query": [0.2, 0.1, 0.9, 0.7],
     "filter": {
@@ -102,6 +100,84 @@ POST /collections/multitenant_collection/points/query
     },
     "limit": 2,
     "with_payload": true
+}
+```
+
+## Step 5: Add more data
+
+If needed, you can add more data points for multiple tenants. This example shows how to expand the collection with new points tagged with different `group_id` values:
+
+<details open={true}>
+<summary>Add more data</summary>
+
+```json withRunButton=true
+PUT /collections/central_library/points
+{
+  "points": [
+    {
+      "id": 4,
+      "vector": [0.89, 0.95, 1.03, 0.99],
+      "payload": {
+        "group_id": "user_4",
+        "station": "Medical",
+        "message_log": "Prepare medical supplies."
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.82, 0.87, 0.83, 0.88],
+      "payload": {
+        "group_id": "user_5",
+        "station": "Operations",
+        "message_log": "Schedule maintenance for the day."
+      }
+    },
+    {
+      "id": 6,
+      "vector": [0.91, 1.05, 0.96, 0.90],
+      "payload": {
+        "group_id": "user_1",
+        "station": "Communications",
+        "message_log": "Dispatch signal to rescue team."
+      }
+    },
+    {
+      "id": 7,
+      "vector": [0.78, 0.86, 0.84, 0.81],
+      "payload": {
+        "group_id": "user_2",
+        "station": "Security",
+        "message_log": "Check perimeter for breaches."
+      }
+    },
+    {
+      "id": 8,
+      "vector": [1.04, 0.97, 1.01, 0.93],
+      "payload": {
+        "group_id": "user_3",
+        "station": "Engineering",
+        "message_log": "Run diagnostics on the shield generator."
+      }
+    }
+  ]
+}
+```
+</details>
+
+## Step 6: Group query results
+
+You can group query results by specific fields, such as `station`, to get an overview of each tenant's data. This query groups results by `station` and limits the number of groups and the number of points per group.
+
+Run the following request to group the results by `station`:
+
+```json withRunButton=true
+POST /collections/central_library/points/query/groups
+{
+    "query": [0.01, 0.45, 0.6, 0.88],
+    "group_by": "station",  
+    "limit": 5,  
+    "group_size": 5,
+    "with_payload": true  
 }
 ```
 

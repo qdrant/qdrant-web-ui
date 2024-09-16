@@ -1,15 +1,14 @@
 export const title = 'Load Content';
 
-# {title}
+# Load Data into a Collection from a Remote Snapshot
 
-In this tutorial, you will load data into a Qdrant collection from a remotely hosted snapshot. 
-The dataset is embedded with Cosine distance metric and vector size is 512. 
+In this tutorial, we will guide you through loading data into a Qdrant collection from a remote snapshot. The dataset is configured to use the Cosine distance metric, and the vectors have a size of 512.
 
-## Create a collection
+## Step 1: Create a collection
 
-To create a collection, you’ll need to define key properties such as vector size and the distance metric to be used for similarity search.
-We’ll create a collection named midjourney with vectors of size 512, and we’ll use the Cosine distance to measure similarity.
-You can run this request to create the collection. Once the collection is created, it will be ready to accept vector data.
+To start, you'll need to create a collection by specifying its key properties, such as the vector size and the distance metric for similarity search. In this example, we will create a collection called `midjourney`, where each vector has a size of 512, and similarity is measured using the Cosine distance.
+
+Run the following request to create the collection:
 
 ```json withRunButton=true
 PUT collections/midjourney
@@ -21,12 +20,13 @@ PUT collections/midjourney
 }
 ```
 
-## Add your data
+Once the collection is successfully created, it will be ready to accept vector data.
 
-After creating the collection, the next step is to add vector data to it. In this case, we’ll recover data from a snapshot available at a specific location. This allows you to import previously stored data into the newly created collection.
-Running this command will trigger the recovery process, adding the vectors stored in the snapshot to the midjourney collection.
+## Step 2: Import data from a snapshot
 
-Please wait a moment for the upload to complete. 
+With the collection in place, the next step is to import vector data. We will restore data from a remote snapshot hosted at a specific URL. This allows you to bring in pre-embedded data from a backup or previous setup.
+
+Run the following command to initiate the data import:
 
 ```json withRunButton=true
 PUT /collections/midjourney/snapshots/recover
@@ -35,14 +35,19 @@ PUT /collections/midjourney/snapshots/recover
 }
 ```
 
-## Verify data upload
+Wait a few moments while the vectors from the snapshot are added to the `midjourney` collection.
 
-Once you’ve added the data to the collection, it’s important to verify that the data was uploaded successfully. This can be done by counting the number of points (or vectors) in the collection.
+## Step 3: Verify the data upload
+
+After the data has been imported, it's important to verify that it has been successfully uploaded. You can do this by checking the number of vectors (or points) in the collection.
+
+Run the following request to get the vector count:
 
 ```json withRunButton=true
 POST /collections/midjourney/points/count
 ```
 
-There should be 5417 data points in the collection. 
+The collection should contain 5,417 data points. 
 
-You can [inspect your collection](/#/collections/midjourney/) and see all the data inside of it.
+### Step 4: Open the collection UI
+You can also [inspect your collection](/#/collections/midjourney/) to review the uploaded data.

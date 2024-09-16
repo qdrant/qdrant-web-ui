@@ -1,8 +1,14 @@
-export const title = 'Multivectors';
+export const title = 'Multivector Search';
 
-# {title}
+# Search with ColBERT Multivectors
 
-To use multivectors, create a collection with the following configuration:
+In Qdrant, multivectors allow you to store and search multiple vectors for each point in your collection. Additionally, you can store payloads, which are key-value pairs containing metadata about each point. This tutorial will show you how to create a collection, insert points with multivectors and payloads, and perform a search.
+
+## Step 1: Create a collection with multivectors
+
+To use multivectors, you need to configure your collection to store multiple vectors per point. The collection’s configuration specifies the vector size, distance metric, and multivector settings, such as the comparator function.
+
+Run the following request to create a collection with multivectors:
 
 ```json withRunButton=true
 PUT collections/multivector_collection
@@ -10,13 +16,18 @@ PUT collections/multivector_collection
   "vectors": {
     "size": 4,
     "distance": "Dot",
-        "multivector_config": {
+    "multivector_config": {
       "comparator": "max_sim"
     }
   }
 }
 ```
-To insert a point with multivector:
+
+## Step 2: Insert points with multivectors and payloads
+
+Now that the collection is set up, you can insert points where each point contains multiple vectors and a payload. Payloads store additional metadata, such as the planet name and its type.
+
+Run the following request to insert points with multivectors and payloads:
 
 ```json withRunButton=true
 PUT collections/multivector_collection/points
@@ -28,7 +39,11 @@ PUT collections/multivector_collection/points
         [-0.013,  0.020, -0.007, -0.111],
         [-0.030, -0.015,  0.021,  0.072],
         [0.041,  -0.004, 0.032,  0.062]
-      ]
+      ],
+      "payload": {
+        "name": "Mars",
+        "type": "terrestrial"
+      }
     },
     {
       "id": 2,
@@ -36,7 +51,11 @@ PUT collections/multivector_collection/points
         [0.011,  -0.050,  0.007,  0.101],
         [-0.021,  0.035,  -0.002, -0.072],
         [0.031,  0.014,  -0.032,  0.012]
-      ]
+      ],
+      "payload": {
+        "name": "Jupiter",
+        "type": "gas giant"
+      }
     },
     {
       "id": 3,
@@ -44,7 +63,11 @@ PUT collections/multivector_collection/points
         [0.041,  0.034,  -0.012, -0.022],
         [-0.030,  0.025,  0.011,  0.082],
         [0.021,  -0.044,  0.032, -0.032]
-      ]
+      ],
+      "payload": {
+        "name": "Venus",
+        "type": "terrestrial"
+      }
     },
     {
       "id": 4,
@@ -52,13 +75,21 @@ PUT collections/multivector_collection/points
         [-0.015,  0.020,  0.045,  -0.131],
         [0.030,   -0.005, 0.001,   0.022],
         [0.041,   -0.024, -0.032,  0.072]
-      ]
+      ],
+      "payload": {
+        "name": "Neptune",
+        "type": "ice giant"
+      }
     }
   ]
 }
 ```
 
-To search with multivector (available in query API):
+## Step 3: Query the collection 
+
+To perform a search with multivectors, you can pass multiple query vectors. Qdrant will compare the query vectors against the multivectors stored in each point and return the most similar results based on the comparator defined in the collection (`max_sim`). You can also request the payloads to be returned along with the search results.
+
+Run the following request to search with multivectors and retrieve the payloads:
 
 ```json withRunButton=true
 POST collections/multivector_collection/points/query
@@ -67,6 +98,7 @@ POST collections/multivector_collection/points/query
     [-0.015,  0.020,  0.045,  -0.131],
     [0.030,   -0.005, 0.001,   0.022],
     [0.041,   -0.024, -0.032,  0.072]
-  ]
+  ],
+  "with_payload": true
 }
 ```

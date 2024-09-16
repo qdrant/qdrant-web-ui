@@ -1,107 +1,140 @@
-# Full Text Filtering in Qdrant
+export const title = 'Full Text Filtering';
 
-In this tutorial, we will explore how to use full-text filtering in Qdrant. The following steps demonstrate creating a collection, using full-text filters without a payload index, creating a full-text index, and performing a search on indexed fields.
+# Full Text Filtering
 
-## 1. Create a Collection
+Here's a step-by-step tutorial on **Full Text Filtering in Qdrant** using a collection of planetary data with description fields:
 
-The first step is to create a collection in Qdrant. We define the vector size and distance metric (Cosine) for our collection.
+## Step 1: Create a collection
 
-```json withRunButton=true
-PUT /collections/documentation
+We first create a collection named `star_charts` with vectors of size 4 and dot product distance for similarity.
+
+```json withRunButton="true"
+PUT /collections/star_charts
 {
   "vectors": {
-    "size": 384,
-    "distance": "Cosine"
+    "size": 4,
+    "distance": "Dot"
   }
 }
 ```
 
-Once the collection is created, you can recover it using a snapshot.
+## Step 2: Add data with descriptions in payload
 
-```json withRunButton=true
-PUT /collections/documentation/snapshots/recover
+Next, we add data to the collection. Each entry includes a vector and a payload containing details about various celestial bodies, such as colony information, whether the body supports life, and a description.
+
+```json withRunButton="true"
+PUT collections/star_charts/points
 {
-  "location": "http://snapshots.qdrant.io/qdrant-web-site-docs-2024-04-05.snapshot"
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.05, 0.61, 0.76, 0.74],
+      "payload": {
+        "colony": "Mars",
+        "supports_life": true,
+        "description": "The red planet, Mars, has a cold desert climate and may have once had conditions suitable for life."
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.19, 0.81, 0.75, 0.11],
+      "payload": {
+        "colony": "Jupiter",
+        "supports_life": false,
+        "description": "Jupiter is the largest planet in the solar system, known for its Great Red Spot and hostile gas environment."
+      }
+    },
+    {
+      "id": 3,
+      "vector": [0.36, 0.55, 0.47, 0.94],
+      "payload": {
+        "colony": "Venus",
+        "supports_life": false,
+        "description": "Venus, Earth’s twin in size, has an extremely thick atmosphere and surface temperatures hot enough to melt lead."
+      }
+    },
+    {
+      "id": 4,
+      "vector": [0.18, 0.01, 0.85, 0.80],
+      "payload": {
+        "colony": "Moon",
+        "supports_life": true,
+        "description": "Earth’s Moon, long visited by astronauts, is a barren, airless world but could host colonies in its underground caves."
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.24, 0.18, 0.22, 0.44],
+      "payload": {
+        "colony": "Pluto",
+        "supports_life": false,
+        "description": "Once considered the ninth planet, Pluto is a small icy world at the edge of the solar system."
+      }
+    }
+  ]
 }
 ```
 
-You can check the total number of points in your collection:
+### Step 3: Try filtering with exact phrase (substring match)
 
-```json withRunButton=true
-POST /collections/documentation/points/count
-```
-
-## 2. Use Full-Text Filters Without the Payload Index
-
-This example demonstrates how to use a full-text filter without having an indexed payload field.
-Here, we search for points where the `text` field matches "qdrant," and return a maximum of 3 points with their payloads.
-
-### Measure performance
-Note the time that this request takes. On our machine,`"time": 0.004062916`
+Now, let's try to filter the descriptions to find entries that contain the exact phrase "host colonies." Qdrant supports text filtering by default using exact matches, but note that this will not tokenize the text.
 
 ```json withRunButton="true"
-POST /collections/documentation/points/scroll
+POST /collections/star_charts/points/scroll
 {
   "filter": {
     "must": [
       {
-        "key": "text",
+        "key": "description",
         "match": {
-          "text": "qdrant"
+          "text": "host colonies"
         }
       }
     ]
   },
-  "limit": 3,
+  "limit": 2,
   "with_payload": true
 }
 ```
 
+You’ll notice this filter works, but if you change the phrase slightly, it won’t return results, since substring matching in unindexed text isn’t flexible enough for variations.
 
-## 3. Create a Full-Text Index for a Specific Field
+### Step 4: Index the description field
 
-To improve search performance, you can create a full-text index on the `text` field.
+To make filtering more powerful and flexible, we’ll index the `description` field. This will tokenize the text, allowing for more complex queries such as filtering for phrases like "cave colonies." We use a `word` tokenizer, and only tokens that are between 5 and 20 characters will be indexed.
 
 ```json withRunButton="true"
-PUT /collections/documentation/index
+PUT /collections/star_charts/index
 {
-    "field_name": "text",
+    "field_name": "description",
     "field_schema": {
         "type": "text",
         "tokenizer": "word",
-        "min_token_len": 2,
+        "min_token_len": 5,
         "max_token_len": 20,
         "lowercase": true
     }
 }
 ```
 
-This request creates an index for the `text` field using word tokenization. The tokenizer will split the text into words, considering only those with a length between 2 and 20 characters. All words will be converted to lowercase to ensure case-insensitive searches.
+### Step 5: Try the filter again
 
-## 4. Perform Full-Text Search on an Indexed Payload Field
-
-With the full-text index in place, you can now perform more efficient searches on the `text` field.
-This example performs a full-text search on the `text` field and returns points where the text matches "qdrant," with a limit of 3 results.
-
-### Measure performance
-This time, the request came back much faster - `"time": 0.001735375`
+After indexing, you can now run the filter again, this time searching for "cave colonies" in the descriptions. This query should now return results.
 
 ```json withRunButton="true"
-POST /collections/documentation/points/scroll
+POST /collections/star_charts/points/scroll
 {
   "filter": {
     "must": [
       {
-        "key": "text",
+        "key": "description",
         "match": {
-          "text": "qdrant"
+          "text": "cave colonies"
         }
       }
     ]
   },
-  "limit": 3,
+  "limit": 2,
   "with_payload": true
 }
 ```
-
-

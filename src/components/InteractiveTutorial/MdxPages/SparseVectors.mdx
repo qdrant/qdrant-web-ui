@@ -1,0 +1,148 @@
+export const title = 'Sparse Vectors';
+
+# Sparse Vector Search
+
+In this tutorial, you'll learn how to create a collection with sparse vectors in Qdrant, insert points with sparse vectors, and query them based on specific indices and values. Sparse vectors allow you to store and query vectors where only certain dimensions have non-zero values, making them efficient for applications like text embeddings or sparse data.
+
+## Step 1: Create a collection with sparse vectors
+
+The first step is to create a collection that can handle sparse vectors. In this example, we’ll create a collection called `sparse_charts` with a vector size of 4 and the Cosine distance metric for similarity calculation. The sparse vectors will be indexed in memory (no on-disk storage).
+
+Run the following request to create the collection:
+
+```json withRunButton=true
+PUT /collections/sparse_charts
+{
+    "vectors": {
+        "size": 4,  
+        "distance": "Cosine"  
+    },
+    "sparse_vectors": {
+        "text": {  
+            "index": {
+                "on_disk": false  
+            }
+        }
+    }
+}
+```
+
+## Step 2: Insert data points 
+
+Once the collection is ready, you can insert points with sparse vectors. Each point will have a `text` vector, represented by two arrays: `indices` (the positions of non-zero values) and `values` (the corresponding values at those positions).
+
+Run the following request to insert points:
+
+```json withRunButton=true
+PUT /collections/sparse_charts/points
+{
+    "points": [
+        {
+            "id": 1,
+            "vector": {
+                "text": {
+                    "indices": [1, 3, 5, 7],
+                    "values": [0.1, 0.2, 0.3, 0.4]
+                }
+            }
+        },
+        {
+            "id": 2,
+            "vector": {
+                "text": {
+                    "indices": [0, 2, 4, 6],
+                    "values": [0.5, 0.6, 0.7, 0.8]
+                }
+            }
+        },
+        {
+            "id": 3,
+            "vector": {
+                "text": {
+                    "indices": [1, 2, 3, 4],
+                    "values": [0.15, 0.25, 0.35, 0.45]
+                }
+            }
+        },
+        {
+            "id": 4,
+            "vector": {
+                "text": {
+                    "indices": [0, 3, 5, 6],
+                    "values": [0.4, 0.3, 0.2, 0.1]
+                }
+            }
+        },
+        {
+            "id": 5,
+            "vector": {
+                "text": {
+                    "indices": [2, 4, 6, 8],
+                    "values": [0.9, 0.8, 0.7, 0.6]
+                }
+            }
+        }
+    ]
+}
+```
+
+## Step 3: Test three different queries
+
+### Query 1: Narrow search with specific indices
+
+This query is very specific, targeting points that have non-zero values at the positions `[1, 3, 5, 7]` with values `[0.1, 0.2, 0.3, 0.4]`. This query expects an exact or near-exact match with sparse vectors.
+
+```json withRunButton=true
+POST /collections/sparse_charts/points/query
+{
+    "query": {
+        "indices": [1, 3, 5, 7],
+        "values": [0.1, 0.2, 0.3, 0.4]
+    },
+    "using": "text"
+}
+```
+
+**Expected result:** Point 1 would be the best match since its sparse vector includes these indices with nearly identical values.
+
+### Query 2: Broader search with different indices
+
+This query looks for points with non-zero values in the positions `[0, 2, 4, 6]` with the values `[0.5, 0.6, 0.7, 0.1]`. This is a broader query targeting different indices and might return more matches.
+
+```json withRunButton=true
+POST /collections/sparse_charts/points/query
+{
+    "query": {
+        "indices": [0, 2, 4, 6],
+        "values": [0.5, 0.6, 0.7, 0.1]
+    },
+    "using": "text"
+}
+```
+
+**Expected result:** Point 2 would match well, with values `[0.5, 0.6, 0.7, 0.8]`. Point 5 could also match, though its values differ slightly.
+
+### Query 3: Expanded range of indices and values
+
+This query searches for points with non-zero values at positions `[1, 2, 3, 4]` with corresponding values `[0.15, 0.25, 0.35, 0.45]`. Since this query involves more indices and values, it's more comprehensive and looks for broader overlap.
+
+```json withRunButton=true
+POST /collections/sparse_charts/points/query
+{
+    "query": {
+        "indices": [1, 2, 3, 4],
+        "values": [0.15, 0.25, 0.35, 0.45]
+    },
+    "using": "text"
+}
+```
+
+**Expected result:** Point 3 would match the closest, as it has similar indices and values. Other points are unlikely to match as well.
+
+## Summary of query differences
+
+- **Query 1:** A narrow search, highly specific to certain indices and values. It is expected to return very few matches.
+- **Query 2:** A broader query targeting different indices, possibly returning more matches depending on the overlap.
+- **Query 3:** A more comprehensive query covering more indices and values, aiming for higher specificity across multiple dimensions.
+
+In summary, the choice of indices and values in the query directly affects the precision and breadth of the search. The more indices you specify, the more focused your query becomes.

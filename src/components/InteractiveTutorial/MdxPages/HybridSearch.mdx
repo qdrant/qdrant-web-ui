@@ -1,0 +1,60 @@
+export const title = 'Hybrid Search';
+
+# Hybrid Search with Sparse and Dense Vectors
+
+```json withRunButton=true
+PUT /collections/hybrid_search
+{
+    "vectors": {
+        "size": 4,  
+        "distance": "Cosine"  
+    },
+    "sparse_vectors": {
+        "keywords": {
+            "distance": "Cosine"  // Distance metric for sparse vectors
+        }
+    }
+}
+```
+
+```json withRunButton=true
+PUT /collections/hybrid_search/points
+{
+    "points": [
+        {
+            "id": 1,
+            "vector": [0.02, 0.4, 0.5, 0.9],   // Dense vector (4D)
+            "sparse_vectors": {
+                "keywords": {
+                   "indices": [1, 42],    // <┐
+                   "values": [0.22, 0.8]  // <┴─sparse vector
+                }
+            }
+        }
+    ]
+}
+```
+
+```json withRunButton=true
+POST /collections/{collection_name}/points/query
+{
+    "prefetch": [
+        {
+            "query": { 
+                "indices": [1, 42],    // <┐
+                "values": [0.22, 0.8]  // <┴─sparse vector
+             },
+            "using": "sparse",
+            "limit": 20
+        },
+        {
+            "query": [0.01, 0.45, 0.67, 0.89], // <-- dense vector
+            "using": "dense",
+            "limit": 20
+        }
+    ],
+    "query": { "fusion": "rrf" }, // <--- reciprocal rank fusion
+    "limit": 10
+}
+
+```

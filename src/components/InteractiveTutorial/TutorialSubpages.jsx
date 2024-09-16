@@ -4,6 +4,8 @@ import * as FilteringBeginner from './MdxPages/FilteringBeginner.mdx';
 import * as FilteringAdvanced from './MdxPages/FilteringAdvanced.mdx';
 import * as FilteringFullText from './MdxPages/FilteringFullText.mdx';
 import * as Multivectors from './MdxPages/Multivectors.mdx';
+import * as SparseVectors from './MdxPages/SparseVectors.mdx';
+import * as HybridSearch from './MdxPages/HybridSearch.mdx';
 import * as Multitenancy from './MdxPages/Multitenancy.mdx';
 import * as LoadContent from './MdxPages/LoadContent.mdx';
 /**
@@ -20,6 +22,8 @@ const tutorialSubPages = [
   ['filteringadvanced', FilteringAdvanced],
   ['filteringfulltext', FilteringFullText],
   ['multivectors', Multivectors],
+  ['sparsevectors', SparseVectors],
+  ['hybridsearch', HybridSearch],
   ['multitenancy', Multitenancy],
   ['loadcontent', LoadContent],
   // add more pages here
