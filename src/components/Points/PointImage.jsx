@@ -15,7 +15,7 @@ function PointImage({ data, sx }) {
         return false;
       }
       if (url) {
-        return /\.(jpg|jpeg|png)$/.test(url.pathname);
+        return /\.(jpg|jpeg|png|webp|gif|svg)$/.test(url.pathname);
       }
       return false;
     }
