@@ -34,7 +34,7 @@ PUT /collections/hybrid_search/points
 ```
 
 ```json withRunButton=true
-POST /collections/{collection_name}/points/query
+POST /collections/hybrid_search/points/query
 {
     "prefetch": [
         {
@@ -42,12 +42,12 @@ POST /collections/{collection_name}/points/query
                 "indices": [1, 42],    // <┐
                 "values": [0.22, 0.8]  // <┴─sparse vector
              },
-            "using": "sparse",
+            "using": "keywords",
             "limit": 20
         },
         {
             "query": [0.01, 0.45, 0.67, 0.89], // <-- dense vector
-            "using": "dense",
+            "using": "",
             "limit": 20
         }
     ],
