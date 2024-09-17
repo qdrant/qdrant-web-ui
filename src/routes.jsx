@@ -1,5 +1,6 @@
 import React from 'react';
 import Home from './pages/Home';
+import Homepage from './pages/Homepage';
 import Console from './pages/Console';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
@@ -14,7 +15,7 @@ const routes = () => [
     path: '/',
     element: <Home />,
     children: [
-      { path: '/', element: <Collections /> },
+      { path: '/', element: <Homepage /> },
       { path: '/console', element: <Console /> },
       { path: '/datasets', element: <Datasets /> },
       { path: '/collections', element: <Collections /> },
