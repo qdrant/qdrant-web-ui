@@ -91,9 +91,7 @@ PUT /collections/sparse_charts/points
 
 ---
 
-## Step 3: Test different queries
-
-### Query 1: Search with specific indices and values
+## Run a query with specific indices and values
 
 This query searches for points that have non-zero values at the positions `[1, 42]` and specific values `[0.22, 0.8]`. This is a targeted query and expects a close match to these indices and values.
 
@@ -108,11 +106,11 @@ POST /collections/sparse_charts/points/query
 }
 ```
 
-**Expected result:** **Point 1** would be the best match since its sparse vector includes these indices with identical values.
+**Expected result:** **Point 1** would be the best match since its sparse vector includes these indices that maximize the measure of similarity. In this case, this is the dot product calculation.
 
 ---
 
-### Query 2: Broader search across different indices
+## Breaking down the scoring mechanism
 
 This query searches for points with non-zero values at positions `[0, 2, 4]` and values `[0.4, 0.9, 0.8]`. It’s a broader search that might return multiple matches with overlapping indices and similar values.
 
@@ -126,14 +124,23 @@ POST /collections/sparse_charts/points/query
     "using": "keywords"
 }
 ```
-
-**Expected result:** **Point 4** and **Point 5** would be the best matches. **Point 4** matches index `0` and value `0.4`, while **Point 5** matches indices `2` and `4` with values `0.9` and `0.8`.
-
 ---
 
-## Summary of queries
+## How we got this result:
 
-- **Query 1**: Highly specific search targeting indices `[1, 42]` and values `[0.22, 0.8]`. It focuses on finding close or exact matches and is likely to return fewer results.
-- **Query 2**: A broader search targeting more indices with values `[0.4, 0.9, 0.8]`. It’s likely to return multiple results with overlapping indices.
+Let's assume the sparse vectors of **Point 4** and **Point 5** are as follows:
+- **Point 4**: `[0.4, 0, 0, 0, 0]`  (Matches query at index 0 with value 0.4)
+- **Point 5**: `[0, 0, 0.9, 0, 0.8]`  (Matches query at indices 2 and 4 with values 0.9 and 0.8)
 
-In summary, the precision of your query depends on the indices and values you provide. Specific queries like Query 1 will give you more precise matches, while broader queries like Query 2 might return a wider set of results.
+The dot product would look something like:
+- **Dot product for Point 4**: 
+   - Query: `[0.4, 0, 0.9, 0, 0.8]`
+   - Point 4: `[0.4, 0, 0, 0, 0]`
+   - Dot product: ( 0.4 * 0.4 = 0.16 \)
+
+- **Dot product for Point 5**:
+   - Query: `[0.4, 0, 0.9, 0, 0.8]`
+   - Point 5: `[0, 0, 0.9, 0, 0.8]`
+   - Dot product: ( 0.9 * 0.9 + 0.8 * 0.8 = 0.81 + 0.64 = 1.45 )
+
+Since **Point 5** has a higher dot product score, it would be considered a better match than **Point 4**.

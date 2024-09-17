@@ -2,31 +2,12 @@ export const title = 'Load Content';
 
 # Load Data into a Collection from a Remote Snapshot
 
-In this tutorial, we will guide you through loading data into a Qdrant collection from a remote snapshot. The dataset is configured to use the Cosine distance metric, and the vectors have a size of 512.
+In this tutorial, we will guide you through loading data into a Qdrant collection from a remote snapshot.
 
-## Step 1: Create a collection
+## Step 1: Import a snapshot to a collection
 
-To start, you'll need to create a collection by specifying its key properties, such as the vector size and the distance metric for similarity search. In this example, we will create a collection called `midjourney`, where each vector has a size of 512, and similarity is measured using the Cosine distance.
-
-Run the following request to create the collection:
-
-```json withRunButton=true
-PUT collections/midjourney
-{
-  "vectors": {
-    "size": 512,
-    "distance": "Cosine"
-  }
-}
-```
-
-Once the collection is successfully created, it will be ready to accept vector data.
-
-## Step 2: Import data from a snapshot
-
-With the collection in place, the next step is to import vector data. We will restore data from a remote snapshot hosted at a specific URL. This allows you to bring in pre-embedded data from a backup or previous setup.
-
-Run the following command to initiate the data import:
+To start, create the collection `midjourney` and load vector data into it.
+The collection will take on the parameters of the snapshot, with vector size of 512, and similarity measured using the Cosine distance.
 
 ```json withRunButton=true
 PUT /collections/midjourney/snapshots/recover
@@ -37,7 +18,7 @@ PUT /collections/midjourney/snapshots/recover
 
 Wait a few moments while the vectors from the snapshot are added to the `midjourney` collection.
 
-## Step 3: Verify the data upload
+## Step 2: Verify the data upload
 
 After the data has been imported, it's important to verify that it has been successfully uploaded. You can do this by checking the number of vectors (or points) in the collection.
 

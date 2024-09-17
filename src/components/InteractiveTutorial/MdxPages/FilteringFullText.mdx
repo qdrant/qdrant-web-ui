@@ -77,7 +77,8 @@ PUT collections/star_charts/points
 
 ### Step 3: Try filtering with exact phrase (substring match)
 
-Now, let's try to filter the descriptions to find entries that contain the exact phrase "host colonies." Qdrant supports text filtering by default using exact matches, but note that this will not tokenize the text.
+Now, let's try to filter the descriptions to find entries that contain the exact phrase "host colonies." 
+Qdrant supports text filtering by default using exact matches, but note that this will not tokenize the text.
 
 ```json withRunButton="true"
 POST /collections/star_charts/points/scroll
@@ -103,6 +104,8 @@ You’ll notice this filter works, but if you change the phrase slightly, it won
 
 To make filtering more powerful and flexible, we’ll index the `description` field. This will tokenize the text, allowing for more complex queries such as filtering for phrases like "cave colonies." We use a `word` tokenizer, and only tokens that are between 5 and 20 characters will be indexed.
 
+**Note:** You should always index a fielf before filtering. If you use filtering before you create an index (like in Step 3), Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
 ```json withRunButton="true"
 PUT /collections/star_charts/index
 {
@@ -110,8 +113,6 @@ PUT /collections/star_charts/index
     "field_schema": {
         "type": "text",
         "tokenizer": "word",
-        "min_token_len": 5,
-        "max_token_len": 20,
         "lowercase": true
     }
 }
@@ -119,7 +120,8 @@ PUT /collections/star_charts/index
 
 ### Step 5: Try the filter again
 
-After indexing, you can now run the filter again, this time searching for "cave colonies" in the descriptions. This query should now return results.
+After indexing, you can now run the filter again, but this time not searching for a phrase. 
+Now you will filter for all tokens "cave" AND "colonies" from the descriptions. 
 
 ```json withRunButton="true"
 POST /collections/star_charts/points/scroll
@@ -138,3 +140,6 @@ POST /collections/star_charts/points/scroll
   "with_payload": true
 }
 ```
+## Summary
+
+Phrase search requires tokens to come in and exact sequence, and by indexing all words we are ignoring the sequence completely and filtering for relevant keywords.
