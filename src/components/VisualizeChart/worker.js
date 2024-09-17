@@ -4,113 +4,100 @@ import get from 'lodash/get';
 
 const MESSAGE_INTERVAL = 200;
 
+function getVectorType(vector) {
+  if (Array.isArray(vector)) {
+    if (Array.isArray(vector[0])) {
+      return 'multivector';
+    }
+    return 'vector';
+  }
+  if (typeof vector === 'object') {
+    if (vector.indices) {
+      return 'sparse';
+    }
+    return 'named';
+  }
+  return 'unknown';
+}
+
+
 self.onmessage = function (e) {
   let now = new Date().getTime();
 
   const algorithm = e?.data?.algorithm || 'TSNE';
 
-  const data1 = e.data;
   const data = [];
 
-  if (data1?.result?.points?.length === 0) {
+  const points = e.data?.result?.points;
+  const vectorName = e.data?.vector_name;
+
+  if (!points || points.length === 0) {
     self.postMessage({
       data: [],
       error: 'No data found',
     });
-    return;
-  } else if (data1?.result?.points?.length === 1) {
+    return
+  }
+
+  if (points.length === 1) {
     self.postMessage({
       data: [],
       error: 'cannot perform tsne on single point',
     });
-    return;
-  } else if (typeof data1?.result?.points[0].vector.length === 'number') {
-    data1?.result?.points?.forEach((point) => {
-      data.push(point.vector);
-    });
-  } else if (typeof data1?.result?.points[0].vector === 'object') {
-    if (data1.vector_name === undefined) {
-      self.postMessage({
-        data: [],
-        error: 'No vector name found, select a valid vector_name',
-      });
-      return;
-    } else if (data1?.result?.points[0].vector[data1?.vector_name] === undefined) {
-      self.postMessage({
-        data: [],
-        error: 'No vector found with name ' + data1?.vector_name,
-      });
-      return;
-    } else if (data1?.result?.points[0].vector[data1?.vector_name]) {
-      if (!Array.isArray(data1?.result?.points[0].vector[data1?.vector_name])) {
-        self.postMessage({
-          data: [],
-          error: 'Vector visualization is not supported for sparse vector',
-        });
-        return;
-      }
-      data1?.result?.points?.forEach((point) => {
-        data.push(point.vector[data1?.vector_name]);
-      });
+    return
+  }
+
+  for (let i = 0; i < points.length; i++) {
+    if (!vectorName) {
+      // Work with default vector
+      data.push(points[i]?.vector);
     } else {
+      // Work with named vector
+      data.push(get(points[i]?.vector, vectorName));
+    }
+  }
+
+  // Validate data
+
+  for (let i = 0; i < data.length; i++) {
+    const vector = data[i];
+    const vectorType = getVectorType(vector);
+
+    if (vectorType === 'vector') {
+      continue;
+    }
+
+    if (vectorType === 'named') {
       self.postMessage({
         data: [],
-        error: 'Unexpected Error Occurred',
+        error: 'Please select a valid vector name, default vector is not defined',
       });
       return;
     }
-  } else {
+
     self.postMessage({
       data: [],
-      error: 'Unexpected Error Occurred',
+      error: 'Vector visualization is not supported for vector type: ' + vectorType,
     });
     return;
   }
+
   if (data.length) {
     const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
     const next = D.generator(); // default = 500 iterations
-    let i = {};
-    for (i of next) {
+
+    let reducedPoints = [];
+    for (reducedPoints of next) {
       if (Date.now() - now > MESSAGE_INTERVAL) {
         now = Date.now();
-        self.postMessage({ result: getDataset(data1, i), error: null });
+        self.postMessage({ result: getDataset(reducedPoints), error: null });
       }
     }
-    self.postMessage({ result: getDataset(data1, i), error: null });
+    self.postMessage({ result: getDataset(reducedPoints), error: null });
   }
 };
 
-function getDataset(data, reducedPoint) {
-  const dataset = [];
-  const labelby = data.color_by?.payload;
-  if (labelby) {
-    data.labelByArrayUnique.forEach((label) => {
-      dataset.push({
-        label: label,
-        data: [],
-      });
-    });
-
-    data.result?.points?.forEach((point, index) => {
-      const label = get(point.payload, labelby);
-      dataset[data.labelByArrayUnique.indexOf(label)].data.push({
-        x: reducedPoint[index][0],
-        y: reducedPoint[index][1],
-        point: point,
-      });
-    });
-  } else {
-    dataset.push({
-      label: 'data',
-      data: [],
-    });
-    data.result?.points?.forEach((point, index) => {
-      dataset[0].data.push({
-        x: reducedPoint[index][0],
-        y: reducedPoint[index][1],
-        point: point,
-      });
-    });
-  }
-  return dataset;
+function getDataset(reducedPoints) {
+  // Convert [[x1, y1], [x2, y2] ] to [ { x: x1, y: y1 }, { x: x2, y: y2 } ]
+  return reducedPoints.map((point) => ({ x: point[0], y: point[1] }));
 }

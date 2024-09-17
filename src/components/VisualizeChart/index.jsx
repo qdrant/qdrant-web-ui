@@ -1,65 +1,85 @@
 import Chart from 'chart.js/auto';
-import chroma from 'chroma-js';
 import get from 'lodash/get';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import ViewPointModal from './ViewPointModal';
 import { bigIntJSON } from '../../common/bigIntJSON';
+import { generateColorBy, generateSizeBy } from './renderBy';
 
-const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
-const BACKGROUND_COLOR = '#9ad0f5';
-const BORDER_COLOR = '#41a7ec';
-const SELECTED_BORDER_COLOR = '#881177';
+
+const SELECTED_BORDER_COLOR = '#817';
+const DEFAULT_BORDER_COLOR = 'rgba(0, 0, 0, 0)';
+
+function intoDatasets(
+  points, // array of original points, which contain payloads
+  data,   // list of compressed coordinates
+  colors, // list of colors for each point to be displayed
+  sizes,  // list of sizes for each point to be displayed
+  groupBy = null, // payload field to group by
+) {
+
+  const defaultConfig = {
+    pointHitRadius: 1,
+    hoverRadius: 7,
+  }
+
+  if (!groupBy) {
+    // No grouping
+    return [{
+      label: 'Data',
+      data,
+      offsets: Array.from({ length: data.length }, (_, i) => i),
+      pointBackgroundColor: [...colors],
+      // Use transparent border color for points
+      pointBorderColor: Array.from({ length: colors.length }, () => DEFAULT_BORDER_COLOR),
+      ...defaultConfig,
+    }];
+  }
+
+  const groups = {};
+
+  points.forEach((point, index) => {
+    let group = get(point.payload, groupBy);
+
+    if (!group) {
+      // If specified field is not present in the payload, fallback to 'Unknown'
+      group = 'Unknown';
+    }
+
+    if (!groups[group]) {
+      groups[group] = {
+        label: group,
+        data: [],
+        offsets: [],
+        pointBackgroundColor: [],
+        pointBorderColor: [],
+        pointRadius: [],
+        ...defaultConfig,
+      };
+    }
+
+    groups[group].data.push(data[index]);
+    groups[group].offset.push(index);
+    groups[group].pointBackgroundColor.push(colors[index]);
+    groups[group].pointBorderColor.push(DEFAULT_BORDER_COLOR);
+    groups[group].pointRadius.push(sizes[index]);
+  });
+
+  // Convert groups object to array, and sort by label
+  return Object.values(groups).sort((a, b) => a.label.localeCompare(b.label));
+}
+
 
 const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActivePoint }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [openViewPoints, setOpenViewPoints] = useState(false);
   const [viewPoints, setViewPoint] = useState([]);
 
-  let localSelectedPoint = activePoint;
-
-  const handlePointHover = (chart) => {
-
-    if (!chart.tooltip?._active) return;
-    if (chart.tooltip?._active.length === 0) return;
-
-    const selectedPoint = chart.tooltip?._active[0].element.$context.raw.point;
-
-    if (selectedPoint.id === activePoint?.id) return;
-    if (selectedPoint.id === localSelectedPoint?.id) return;
-    localSelectedPoint = selectedPoint;
-
-
-    const data = chart.data.datasets[0].data;
-
-    chart.options.elements.point.pointBorderColor = Array.from(
-      { length: data.length },
-      () => BORDER_COLOR
-    );
-    chart.options.elements.point.pointBorderColor =
-      chart.options.elements.point.pointBorderColor.map((color, index) => {
-        if (selectedPoint.id === data[index].point.id) {
-          return SELECTED_BORDER_COLOR;
-        }
-        return color;
-      });
-    chart.options.elements.point.pointBackgroundColor = Array.from(
-      { length: chart.data.datasets[0].data.length },
-      () => BACKGROUND_COLOR
-    );
-    chart.options.elements.point.pointBackgroundColor = chart.options.elements.point.pointBackgroundColor.map(
-      (color, index) => {
-        if (selectedPoint.id === chart.data.datasets[0].data[index].point.id) {
-          return SELECTED_BORDER_COLOR;
-        }
-        return color;
-      }
-    );
-
-    setActivePoint(selectedPoint);
-    chart.update();
-  }
+  // Id of the currently selected point
+  // Used to prevent multiple updates of the chart on hover
+  // And for switching colors of the selected point
+  let selectedPointLocation = null;
 
   useEffect(() => {
     if (!scrollResult.data && !scrollResult.error) {
@@ -79,67 +99,78 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
       return;
     }
 
-    const dataset = [];
-    const colorBy = scrollResult.data.color_by;
+    const points = scrollResult.data.result.points;
+    const colorBy = scrollResult.data?.color_by;
+    const useLegend = !!colorBy?.payload;
 
-    let labelby = null;
-    if (colorBy?.payload) {
-      labelby = colorBy.payload;
-      // Color and label by payload field
-      if (get(scrollResult.data.result?.points[0]?.payload, labelby) === undefined) {
-        enqueueSnackbar(`Visualization Unsuccessful, error: Color by field ${labelby} does not exist`, {
-          variant: 'error',
-        });
-        return;
+
+    // Initialize data with random points in range [0, 1]
+    const data = points.map(() => ({
+      x: Math.random(),
+      y: Math.random(),
+    }));
+    const pointColors = generateColorBy(points, colorBy);
+    const sizes = generateSizeBy(points);
+
+    const datasets = intoDatasets(
+      points,
+      data,
+      pointColors,
+      sizes,
+      colorBy?.payload
+    );
+
+
+    const handlePointHover = (chart) => {
+
+      if (!chart.tooltip?._active) return;
+      if (chart.tooltip?._active.length === 0) return;
+
+      const lastActive = chart.tooltip._active.length - 1;
+
+      const datasetIndex = chart.tooltip._active[lastActive].datasetIndex;
+      const pointIndex = chart.tooltip._active[lastActive].index;
+
+      const offsets = chart.data.datasets[datasetIndex].offsets;
+      const pointOffset = offsets[pointIndex];
+      const selectedPoint = points[pointOffset];
+
+      if (selectedPoint.id === activePoint?.id) return selectedPoint;
+      if (pointOffset === selectedPointLocation?.offset) return selectedPoint;
+
+      const oldPointLocation = selectedPointLocation;
+
+      selectedPointLocation = {
+        offset: pointOffset,
+        datasetIndex,
+        pointIndex,
+      };
+
+
+      // Reset color of the previously selected point
+      if (oldPointLocation) {
+        const targetColor = pointColors[oldPointLocation.offset];
+        chart.data.datasets[oldPointLocation.datasetIndex]
+          .pointBackgroundColor[oldPointLocation.pointIndex] = targetColor;
+
+        chart.data.datasets[oldPointLocation.datasetIndex]
+          .pointBorderColor[oldPointLocation.pointIndex] = DEFAULT_BORDER_COLOR;
       }
-      scrollResult.data.labelByArrayUnique = [
-        ...new Set(scrollResult.data.result?.points?.map((point) => get(point.payload, labelby))),
-      ];
-      scrollResult.data.labelByArrayUnique.forEach((label) => {
-        dataset.push({
-          label: label,
-          data: [],
-        });
-      });
-    } else if (colorBy?.discover_score) {
-      // Color by discover score
-      const scores = scrollResult.data.result?.points.map((point) => point.score);
-      const minScore = Math.min(...scores);
-      const maxScore = Math.max(...scores);
 
-      const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
-      const scoreColors = scores.map((score) => {
-        const normalizedScore = (score - minScore) / (maxScore - minScore);
-        return colorScale(normalizedScore).hex();
-      });
+      chart.data.datasets[datasetIndex].pointBackgroundColor[pointIndex] = SELECTED_BORDER_COLOR;
+      chart.data.datasets[datasetIndex].pointBorderColor[pointIndex] = SELECTED_BORDER_COLOR;
 
-      const pointRadii = scrollResult.data.result?.points.map((point) => {
-        if (point.from_query) {
-          return 4;
-        } else {
-          return 3;
-        }
-      });
+      setActivePoint(selectedPoint);
 
-      dataset.push({
-        label: 'Discover scores',
-        pointBackgroundColor: scoreColors,
-        pointBorderColor: scoreColors,
-        pointRadius: pointRadii,
-        data: [],
-      });
-    } else {
-      // No special coloring
-      dataset.push({
-        label: 'Data',
-        data: [],
-      });
+      chart.update();
+      return selectedPoint;
     }
+
     const ctx = document.getElementById('myChart');
     const myChart = new Chart(ctx, {
       type: 'scatter',
       data: {
-        datasets: dataset,
+        datasets: datasets,
       },
       options: {
         responsive: true,
@@ -155,21 +186,28 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
             display: false,
           },
         },
+        interaction: {
+          mode: 'nearest',  // Show tooltip for the nearest point
+          intersect: false  // Show even if not directly hovering over a point
+        },
         plugins: {
           tooltip: {
             // only use custom tooltip if color by is not discover score
             enabled: true,
             usePointStyle: true,
+            position: 'nearest',
+            intersect: true,
             callbacks: {
               label: (context) => {
-                handlePointHover(context.chart);
-                const id = context.dataset.data[context.dataIndex].point.id;
+                const selectedPoint = handlePointHover(context.chart);
+                if (!selectedPoint) return "";
+                const id = selectedPoint.id;
                 return `Point ${id}`;
               },
             },
           },
           legend: {
-            display: !!labelby,
+            display: useLegend,
           },
         },
       },
@@ -206,9 +244,21 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           variant: 'error',
         });
       } else if (m.data.result && m.data.result.length > 0) {
-        m.data.result.forEach((dataset, index) => {
+
+        const reducedPonts = m.data.result;
+
+        const datasets = intoDatasets(
+          points,
+          reducedPonts,
+          pointColors,
+          sizes,
+          colorBy?.payload
+        );
+
+        datasets.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;
         });
+
         myChart.update();
       } else {
         enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
