@@ -2,8 +2,7 @@ import Chart from 'chart.js/auto';
 import get from 'lodash/get';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
-import ViewPointModal from './ViewPointModal';
+import React, { useEffect } from 'react';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { generateColorBy, generateSizeBy } from './renderBy';
 
@@ -73,8 +72,6 @@ function intoDatasets(
 
 const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActivePoint }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const [openViewPoints, setOpenViewPoints] = useState(false);
-  const [viewPoints, setViewPoint] = useState([]);
 
   // Id of the currently selected point
   // Used to prevent multiple updates of the chart on hover
@@ -211,27 +208,6 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           },
         },
       },
-      plugins: [
-        {
-          id: 'myEventCatcher',
-          beforeEvent(chart, args) {
-            const event = args.event;
-            if (event.type === 'click') {
-              if (chart.tooltip._active.length > 0) {
-                const activePoints = chart.tooltip._active.map((point) => {
-                  return {
-                    id: point.element.$context.raw.point.id,
-                    payload: point.element.$context.raw.point.payload,
-                    vector: point.element.$context.raw.point.vector,
-                  };
-                });
-                setViewPoint(activePoints);
-                setOpenViewPoints(true);
-              }
-            }
-          },
-        },
-      ],
     });
 
     const worker = new Worker(new URL('./worker.js', import.meta.url), {
@@ -281,7 +257,6 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
   return (
     <>
       <canvas id="myChart"></canvas>
-      <ViewPointModal openViewPoints={openViewPoints} setOpenViewPoints={setOpenViewPoints} viewPoints={viewPoints} />
     </>
   );
 };
