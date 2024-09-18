@@ -3,12 +3,11 @@ import get from 'lodash/get';
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
-import { bigIntJSON } from '../../common/bigIntJSON';
 import { generateColorBy, generateSizeBy } from './renderBy';
 import { useTheme } from '@mui/material/styles';
 
 // Dark red
-const LIGHT_SELECTOR_COLOR = 'rgba(255, 0, 0, 0.5)'; 
+const LIGHT_SELECTOR_COLOR = 'rgba(255, 0, 0, 0.5)';
 // White
 const DARK_SELECTOR_COLOR = 'rgba(245, 245, 245, 0.8)';
 
@@ -17,34 +16,35 @@ const DEFAULT_BORDER_COLOR = 'rgba(0, 0, 0, 0)';
 
 function intoDatasets(
   points, // array of original points, which contain payloads
-  data,   // list of compressed coordinates
+  data, // list of compressed coordinates
   colors, // list of colors for each point to be displayed
-  sizes,  // list of sizes for each point to be displayed
-  groupBy = null, // payload field to group by
+  sizes, // list of sizes for each point to be displayed
+  groupBy = null // payload field to group by
 ) {
-
   const defaultConfig = {
     pointHitRadius: 1,
     hoverRadius: 7,
-  }
+  };
 
   if (!groupBy) {
     // No grouping
-    return [{
-      label: 'Data',
-      data,
-      offsets: Array.from({ length: data.length }, (_, i) => i),
-      pointBackgroundColor: [...colors],
-      // Use transparent border color for points
-      pointBorderColor: Array.from({ length: colors.length }, () => DEFAULT_BORDER_COLOR),
-      ...defaultConfig,
-    }];
+    return [
+      {
+        label: 'Data',
+        data,
+        offsets: Array.from({ length: data.length }, (_, i) => i),
+        pointBackgroundColor: [...colors],
+        // Use transparent border color for points
+        pointBorderColor: Array.from({ length: colors.length }, () => DEFAULT_BORDER_COLOR),
+        ...defaultConfig,
+      },
+    ];
   }
 
   const groups = {};
 
   points.forEach((point, index) => {
-    let group = get(point.payload, groupBy) + ""; // Convert to string, even if it's an o
+    let group = get(point.payload, groupBy) + ''; // Convert to string, even if it's an o
 
     if (!group) {
       // If specified field is not present in the payload, fallback to 'Unknown'
@@ -74,8 +74,12 @@ function intoDatasets(
   return Object.values(groups).sort((a, b) => a.label.localeCompare(b.label));
 }
 
-
-const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActivePoint }) => {
+const VisualizeChart = ({
+  requestResult, // Raw output of the request from qdrant client
+  visualizationParams, // Parameters, as specified by the user in the input editor
+  activePoint,
+  setActivePoint,
+}) => {
   const { enqueueSnackbar } = useSnackbar();
 
   // Id of the currently selected point
@@ -89,29 +93,13 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
     return theme.palette.mode === 'light' ? LIGHT_SELECTOR_COLOR : DARK_SELECTOR_COLOR;
   }
 
-
   useEffect(() => {
-    if (!scrollResult.data && !scrollResult.error) {
+    if (!requestResult.points) {
       return;
     }
 
-    if (scrollResult.error) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: ${bigIntJSON.stringify(scrollResult.error)}`, {
-        variant: 'error',
-      });
-
-      return;
-    } else if (!scrollResult.data?.result?.points.length) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: No data returned`, {
-        variant: 'error',
-      });
-      return;
-    }
-
-    const points = scrollResult.data.result.points;
-    const colorBy = scrollResult.data?.color_by;
-    const useLegend = !!colorBy?.payload;
-
+    const points = requestResult.points;
+    const colorBy = visualizationParams?.color_by;
 
     // Initialize data with random points in range [0, 1]
     const data = points.map(() => ({
@@ -123,17 +111,12 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
     const pointColors = generateColorBy(points, colorBy);
     const sizes = generateSizeBy(points);
 
-    const datasets = intoDatasets(
-      points,
-      data,
-      pointColors,
-      sizes,
-      colorBy?.payload
-    );
+    const payloadField = typeof colorBy === 'string' ? colorBy : colorBy?.payload;
+    const useLegend = !!payloadField;
 
+    const datasets = intoDatasets(points, data, pointColors, sizes, payloadField);
 
     const handlePointHover = (chart) => {
-
       if (!chart.tooltip?._active) return;
       if (chart.tooltip?._active.length === 0) return;
 
@@ -155,9 +138,9 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           offset: pointOffset,
           datasetIndex,
           pointIndex,
-        };  
+        };
         return selectedPoint;
-      } 
+      }
       if (pointOffset === selectedPointLocation?.offset) {
         return selectedPoint;
       }
@@ -170,15 +153,14 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
         pointIndex,
       };
 
-
       // Reset color of the previously selected point
       if (oldPointLocation) {
         const targetColor = pointColors[oldPointLocation.offset];
-        chart.data.datasets[oldPointLocation.datasetIndex]
-          .pointBackgroundColor[oldPointLocation.pointIndex] = targetColor;
+        chart.data.datasets[oldPointLocation.datasetIndex].pointBackgroundColor[oldPointLocation.pointIndex] =
+          targetColor;
 
-        chart.data.datasets[oldPointLocation.datasetIndex]
-          .pointBorderColor[oldPointLocation.pointIndex] = DEFAULT_BORDER_COLOR;
+        chart.data.datasets[oldPointLocation.datasetIndex].pointBorderColor[oldPointLocation.pointIndex] =
+          DEFAULT_BORDER_COLOR;
       }
 
       chart.data.datasets[datasetIndex].pointBackgroundColor[pointIndex] = getSelectionColor();
@@ -188,7 +170,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
 
       chart.update();
       return selectedPoint;
-    }
+    };
 
     const ctx = document.getElementById('myChart');
     const myChart = new Chart(ctx, {
@@ -211,8 +193,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           },
         },
         interaction: {
-          mode: 'nearest',  // Show tooltip for the nearest point
-          intersect: false  // Show even if not directly hovering over a point
+          mode: 'nearest', // Show tooltip for the nearest point
+          intersect: false, // Show even if not directly hovering over a point
         },
         plugins: {
           tooltip: {
@@ -224,7 +206,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
             callbacks: {
               label: (context) => {
                 const selectedPoint = handlePointHover(context.chart);
-                if (!selectedPoint) return "";
+                if (!selectedPoint) return '';
                 const id = selectedPoint.id;
                 return `Point ${id}`;
               },
@@ -247,16 +229,9 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           variant: 'error',
         });
       } else if (m.data.result && m.data.result.length > 0) {
-
         const reducedPonts = m.data.result;
 
-        const datasets = intoDatasets(
-          points,
-          reducedPonts,
-          pointColors,
-          sizes,
-          colorBy?.payload
-        );
+        const datasets = intoDatasets(points, reducedPonts, pointColors, sizes, payloadField);
 
         datasets.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;
@@ -268,10 +243,10 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
       }
     };
 
-    if (scrollResult.data.result?.points?.length > 0) {
+    if (requestResult.points?.length > 0) {
       worker.postMessage({
-        ...scrollResult.data,
-        algorithm: algorithm,
+        result: requestResult,
+        params: visualizationParams,
       });
     }
 
@@ -279,7 +254,7 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
       myChart.destroy();
       worker.terminate();
     };
-  }, [scrollResult]);
+  }, [requestResult]);
 
   return (
     <>
@@ -289,8 +264,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
 };
 
 VisualizeChart.propTypes = {
-  scrollResult: PropTypes.object.isRequired,
-  algorithm: PropTypes.string,
+  requestResult: PropTypes.object.isRequired,
+  visualizationParams: PropTypes.object.isRequired,
   activePoint: PropTypes.object,
   setActivePoint: PropTypes.func,
 };

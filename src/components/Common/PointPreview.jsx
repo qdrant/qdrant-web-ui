@@ -65,7 +65,7 @@ const PointPreview = ({ point }) => {
               }}
             />
             <CardContent>
-              <Vectors point={point}/>
+              <Vectors point={point} />
             </CardContent>
           </>
         )}

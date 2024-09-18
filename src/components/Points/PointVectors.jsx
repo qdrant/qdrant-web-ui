@@ -83,14 +83,16 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 Open graph
               </Button>
               {typeof onConditionChange !== 'function' ? null : (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => onConditionChange([{ key: 'id', type: 'id', value: point.id }], key === '' ? null : key)}
-              >
-                Find Similar
-              </Button>
-            )}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() =>
+                    onConditionChange([{ key: 'id', type: 'id', value: point.id }], key === '' ? null : key)
+                  }
+                >
+                  Find Similar
+                </Button>
+              )}
             </Grid>
           </Grid>
         );

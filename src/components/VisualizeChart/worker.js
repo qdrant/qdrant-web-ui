@@ -20,23 +20,24 @@ function getVectorType(vector) {
   return 'unknown';
 }
 
-
 self.onmessage = function (e) {
   let now = new Date().getTime();
 
-  const algorithm = e?.data?.algorithm || 'TSNE';
+  const params = e?.data?.params || {};
+
+  const algorithm = params.algorithm || 'TSNE';
 
   const data = [];
 
   const points = e.data?.result?.points;
-  const vectorName = e.data?.vector_name;
+  const vectorName = params.vector_name;
 
   if (!points || points.length === 0) {
     self.postMessage({
       data: [],
       error: 'No data found',
     });
-    return
+    return;
   }
 
   if (points.length === 1) {
@@ -44,7 +45,7 @@ self.onmessage = function (e) {
       data: [],
       error: 'cannot perform tsne on single point',
     });
-    return
+    return;
   }
 
   for (let i = 0; i < points.length; i++) {
