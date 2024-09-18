@@ -5,16 +5,9 @@ const BACKGROUND_COLOR = '#36A2EB';
 
 
 const PALLETE = [
-    "#a35",
-    "#4d8",
-    "#0bc",
-    "#36b",
-    "#ed0",
-    "#e94",
-    "#9d5",
-    "#2cb",
-    "#c66",
-    "#09c",
+    "#3366CC", "#DC3912", "#FF9900", "#109618", "#990099", "#3B3EAC", "#0099C6",
+    "#DD4477", "#66AA00", "#B82E2E", "#316395", "#994499", "#22AA99", "#AAAA11",
+    "#6633CC", "#E67300", "#8B0707", "#329262", "#5574A6", "#651067"
 ]
 
 // const SELECTED_BORDER_COLOR = '#881177';
@@ -52,7 +45,7 @@ export function generateColorBy(points, colorBy = null) {
     // ]
 
     if (!colorBy) {
-        return Array.from({ length: points.length }, () => BACKGROUND_COLOR ); // Default color
+        return Array.from({ length: points.length }, () => BACKGROUND_COLOR); // Default color
     }
 
     if (colorBy.payload) {

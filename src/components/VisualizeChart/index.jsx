@@ -5,9 +5,14 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { generateColorBy, generateSizeBy } from './renderBy';
+import { useTheme } from '@mui/material/styles';
 
+// Dark red
+const LIGHT_SELECTOR_COLOR = 'rgba(255, 0, 0, 0.5)'; 
+// White
+const DARK_SELECTOR_COLOR = 'rgba(245, 245, 245, 0.8)';
 
-const SELECTED_BORDER_COLOR = '#817';
+// Transparent color for points
 const DEFAULT_BORDER_COLOR = 'rgba(0, 0, 0, 0)';
 
 function intoDatasets(
@@ -39,7 +44,7 @@ function intoDatasets(
   const groups = {};
 
   points.forEach((point, index) => {
-    let group = get(point.payload, groupBy);
+    let group = get(point.payload, groupBy) + ""; // Convert to string, even if it's an o
 
     if (!group) {
       // If specified field is not present in the payload, fallback to 'Unknown'
@@ -59,7 +64,7 @@ function intoDatasets(
     }
 
     groups[group].data.push(data[index]);
-    groups[group].offset.push(index);
+    groups[group].offsets.push(index);
     groups[group].pointBackgroundColor.push(colors[index]);
     groups[group].pointBorderColor.push(DEFAULT_BORDER_COLOR);
     groups[group].pointRadius.push(sizes[index]);
@@ -77,6 +82,13 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
   // Used to prevent multiple updates of the chart on hover
   // And for switching colors of the selected point
   let selectedPointLocation = null;
+
+  const theme = useTheme();
+
+  function getSelectionColor() {
+    return theme.palette.mode === 'light' ? LIGHT_SELECTOR_COLOR : DARK_SELECTOR_COLOR;
+  }
+
 
   useEffect(() => {
     if (!scrollResult.data && !scrollResult.error) {
@@ -106,6 +118,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
       x: Math.random(),
       y: Math.random(),
     }));
+
+    // This reference values should be used to rollback the color of the previously selected point
     const pointColors = generateColorBy(points, colorBy);
     const sizes = generateSizeBy(points);
 
@@ -125,15 +139,28 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
 
       const lastActive = chart.tooltip._active.length - 1;
 
-      const datasetIndex = chart.tooltip._active[lastActive].datasetIndex;
-      const pointIndex = chart.tooltip._active[lastActive].index;
+      const selectedElement = chart.tooltip._active[lastActive];
+
+      const datasetIndex = selectedElement.datasetIndex;
+      const pointIndex = selectedElement.index;
 
       const offsets = chart.data.datasets[datasetIndex].offsets;
       const pointOffset = offsets[pointIndex];
       const selectedPoint = points[pointOffset];
 
-      if (selectedPoint.id === activePoint?.id) return selectedPoint;
-      if (pointOffset === selectedPointLocation?.offset) return selectedPoint;
+      // Check if the same point is already selected
+      // To prevent recurrant updates of the chart
+      if (selectedPoint.id === activePoint?.id) {
+        selectedPointLocation = {
+          offset: pointOffset,
+          datasetIndex,
+          pointIndex,
+        };  
+        return selectedPoint;
+      } 
+      if (pointOffset === selectedPointLocation?.offset) {
+        return selectedPoint;
+      }
 
       const oldPointLocation = selectedPointLocation;
 
@@ -154,8 +181,8 @@ const VisualizeChart = ({ scrollResult, algorithm = null, activePoint, setActive
           .pointBorderColor[oldPointLocation.pointIndex] = DEFAULT_BORDER_COLOR;
       }
 
-      chart.data.datasets[datasetIndex].pointBackgroundColor[pointIndex] = SELECTED_BORDER_COLOR;
-      chart.data.datasets[datasetIndex].pointBorderColor[pointIndex] = SELECTED_BORDER_COLOR;
+      chart.data.datasets[datasetIndex].pointBackgroundColor[pointIndex] = getSelectionColor();
+      chart.data.datasets[datasetIndex].pointBorderColor[pointIndex] = getSelectionColor();
 
       setActivePoint(selectedPoint);
 
