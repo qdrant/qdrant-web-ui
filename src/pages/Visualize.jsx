@@ -112,8 +112,33 @@ function Visualize() {
       },
       color_by: {
         description: 'Color points by this field',
-        type: 'string',
-        nullable: true,
+        anyOf: [
+          {
+            type: 'string', // Name of the field to use for coloring
+          },
+          {
+            description: "field name",
+            type: "object",
+            properties: {
+              payload: {
+                description: 'Name of the field to use for coloring',
+                type: 'string',
+              }
+            }
+          },
+          {
+            description: "query",
+            type: "object",
+            properties: {
+              query: {
+                $ref: '#/components/schemas/Query',
+              }
+            }
+          },
+          {
+            nullable: true,
+          }
+        ]
       },
       algorithm: {
         description: 'Algorithm to use for visualization',

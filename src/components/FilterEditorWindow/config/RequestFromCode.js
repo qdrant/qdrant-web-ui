@@ -47,6 +47,7 @@ function parseDataToRequest(reqBody) {
     };
   }
 }
+
 export async function requestFromCode(dataRaw, collectionName) {
   const data = parseDataToRequest(dataRaw);
   // Sending request
