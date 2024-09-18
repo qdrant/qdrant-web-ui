@@ -77,8 +77,8 @@ function intoDatasets(
 const VisualizeChart = ({
   requestResult, // Raw output of the request from qdrant client
   visualizationParams, // Parameters, as specified by the user in the input editor
-  activePoint,
-  setActivePoint,
+  activePoint, // currently selected point (with hover)
+  setActivePoint, // callback to set new active point
 }) => {
   const { enqueueSnackbar } = useSnackbar();
 
