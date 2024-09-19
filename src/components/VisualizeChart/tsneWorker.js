@@ -56,7 +56,7 @@ self.onmessage = e => {
                 distances,
                 indices,
                 nsamples,
-                3 * tsneConfig.perplexity,
+                tsneConfig.number_of_neighbors,
                 tsneConfig
             );
             console.timeEnd('Rust Bhtsne - t-SNE 1st step');

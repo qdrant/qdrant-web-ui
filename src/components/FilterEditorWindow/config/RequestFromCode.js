@@ -62,7 +62,7 @@ function parseDataToRequest(reqBody) {
     }
   }
 
-  reqBody.limit = 3 * tsneConfig.perplexity;
+  reqBody.limit = tsneConfig.number_of_neighbors;
   return {
     reqBody: reqBody,
     error: null,
