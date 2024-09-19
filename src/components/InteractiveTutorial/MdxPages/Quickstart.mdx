@@ -8,14 +8,14 @@ In this tutorial, you will create a collection, load data into it and run a basi
 
 ## Create a collection
 
-First, create a collection to store vector data. Let’s name it `test_collection`. This collection will use the dot product distance metric to determine similarity between vectors. Added vectors will have 4 dimensions.
+First, create a collection to store vector data. Let’s name it `test_collection`. This collection will use cosine similarity to determine the distance between vectors. Added vectors will have 4 dimensions.
 
 ```json withRunButton=true
-PUT collections/test_collection
+PUT /collections/test_collection
 {
   "vectors": {
     "size": 4,
-    "distance": "Dot"
+    "distance": "Cosine"
   }
 }
 ```
@@ -25,7 +25,7 @@ PUT collections/test_collection
 Now, you need to add a few vectors. For each vector, you will specify a JSON payload. A payload is metadata that describes each vector, such as `city`.
 
 ```json withRunButton=true
-PUT collections/test_collection/points
+PUT /collections/test_collection/points
 {
   "points": [
     {
@@ -71,7 +71,7 @@ We need to ask a question in vector form:
 `[0.2, 0.1, 0.9, 0.7]`
 
 ```json withRunButton=true
-POST collections/test_collection/points/search
+POST /collections/test_collection/points/search
 {
   "vector": [0.2, 0.1, 0.9, 0.7],
   "limit": 3,
@@ -87,7 +87,7 @@ See [payload and vector in the result](https://qdrant.tech/documentation/concept
 You can narrow down the results further by setting conditions on the payload. Let's filter the closest results that include the city of "London".
 
 ```json withRunButton=true
-POST collections/test_collection/points/search
+POST /collections/test_collection/points/search
 {
   "vector": [0.2, 0.1, 0.9, 0.7],
   "filter": {
