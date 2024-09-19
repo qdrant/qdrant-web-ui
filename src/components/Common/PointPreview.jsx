@@ -11,7 +11,6 @@ const PointPreview = ({ point }) => {
   const [loading] = React.useState(false);
   const conditions = [];
   const payloadSchema = {};
-  const onConditionChange = () => {};
 
   if (!point) {
     return null;
@@ -48,7 +47,6 @@ const PointPreview = ({ point }) => {
                 <Grid item xs={12} my={1}>
                   <DataGridList
                     data={{ id: point.id, ...point.payload }}
-                    onConditionChange={onConditionChange}
                     conditions={conditions}
                     payloadSchema={payloadSchema}
                   />
@@ -67,7 +65,7 @@ const PointPreview = ({ point }) => {
               }}
             />
             <CardContent>
-              <Vectors point={point} onConditionChange={onConditionChange} />
+              <Vectors point={point} />
             </CardContent>
           </>
         )}
