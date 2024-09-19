@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import GraphVisualisation from '../components/GraphVisualisation/GraphVisualisation';
 import { useWindowResize } from '../hooks/windowHooks';
-import PointPreview from '../components/GraphVisualisation/PointPreview';
+import PointPreview from '../components/Common/PointPreview';
 import CodeEditorWindow from '../components/FilterEditorWindow';
 import { useClient } from '../context/client-context';
 import { getFirstPoint } from '../lib/graph-visualization-helpers';

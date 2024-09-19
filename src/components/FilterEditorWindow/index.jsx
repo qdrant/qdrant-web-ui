@@ -6,7 +6,7 @@ import { useClient } from '../../context/client-context';
 import { useTheme } from '@mui/material/styles';
 import { autocomplete } from './config/Autocomplete';
 import { useSnackbar } from 'notistack';
-import { codeParse } from './config/RequestFromCode';
+import { bigIntJSON } from '../../common/bigIntJSON';
 import './editor.css';
 import EditorCommon from '../EditorCommon';
 
@@ -29,6 +29,20 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema,
     },
     []
   );
+
+  function codeParse(codeText) {
+    // Parse JSON
+    if (codeText) {
+      try {
+        return bigIntJSON.parse(codeText);
+      } catch (e) {
+        return {
+          reqBody: codeText,
+          error: 'Fix the position brackets to run & check the json',
+        };
+      }
+    }
+  }
 
   function onRun(codeText) {
     const data = codeParse(codeText);

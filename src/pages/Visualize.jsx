@@ -7,9 +7,18 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
-import { requestFromCode } from '../components/FilterEditorWindow/config/RequestFromCode';
+import PointPreview from '../components/Common/PointPreview';
+import { useClient } from '../context/client-context';
+import { requestData } from '../components/VisualizeChart/requestData';
+import { useSnackbar } from 'notistack';
 
 const query = `
+
+// Try me!
+
+{
+  "limit": 500
+}
 
 // Specify request parameters to select data for visualization.
 //
@@ -24,33 +33,14 @@ const query = `
 // - 'color_by': specify score or payload field to use for coloring points.
 //               How to use:
 //
-//                "color_by": "field_name"
-//
-//                or
-//
 //                "color_by": {
 //                  "payload": "field_name"
-//                }
-//
-//                or
-//
-//                "color_by": {
-//                  "discover_score": {
-//                    "target": 42,
-//                    "context": [{"positive": 1, "negative": 0}]
-//                  }
 //                }
 //
 // - 'vector_name': specify which vector to use for visualization
 //                  if there are multiple.
 //
 // - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP'.
-//
-// Minimal example:
-
-{
-  "limit": 500
-}
 
 
 `;
@@ -58,27 +48,34 @@ const defaultResult = {};
 
 function Visualize() {
   const theme = useTheme();
+  const { client: qdrantClient } = useClient();
   const [code, setCode] = useState(query);
+
+  // Contains the raw output of the request of QdrantClient
   const [result, setResult] = useState(defaultResult);
-  const [algorithm, setAlgorithm] = useState('TSNE');
+  const [visualizationParams, setVisualizationParams] = useState({});
+  const { enqueueSnackbar } = useSnackbar();
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
   const navigate = useNavigate();
   const params = useParams();
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
+  const [activePoint, setActivePoint] = useState(null);
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
   const onEditorCodeRun = async (data, collectionName) => {
-    if (data?.algorithm) {
-      setAlgorithm(data.algorithm);
-    }
+    setVisualizationParams(data);
 
-    const result = await requestFromCode(data, collectionName);
-    setResult(result);
+    try {
+      const result = await requestData(qdrantClient, collectionName, data);
+      setResult(result);
+    } catch (e) {
+      enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
+    }
   };
 
   const filterRequestSchema = (vectorNames) => ({
@@ -110,8 +107,33 @@ function Visualize() {
       },
       color_by: {
         description: 'Color points by this field',
-        type: 'string',
-        nullable: true,
+        anyOf: [
+          {
+            type: 'string', // Name of the field to use for coloring
+          },
+          {
+            description: 'field name',
+            type: 'object',
+            properties: {
+              payload: {
+                description: 'Name of the field to use for coloring',
+                type: 'string',
+              },
+            },
+          },
+          {
+            description: 'query',
+            type: 'object',
+            properties: {
+              query: {
+                $ref: '#/components/schemas/QueryInterface',
+              },
+            },
+          },
+          {
+            nullable: true,
+          },
+        ],
       },
       algorithm: {
         description: 'Algorithm to use for visualization',
@@ -159,7 +181,12 @@ function Visualize() {
                     </Paper>
                   </Box>
                   <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart scrollResult={result} algorithm={algorithm} />
+                    <VisualizeChart
+                      requestResult={result}
+                      visualizationParams={visualizationParams}
+                      activePoint={activePoint}
+                      setActivePoint={setActivePoint}
+                    />
                   </Box>
                 </Box>
               </Panel>
@@ -181,12 +208,41 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <FilterEditorWindow
-                  code={code}
-                  onChange={setCode}
-                  onChangeResult={onEditorCodeRun}
-                  customRequestSchema={filterRequestSchema}
-                />
+                <PanelGroup direction="vertical">
+                  <Panel defaultSize={40}>
+                    <FilterEditorWindow
+                      code={code}
+                      onChange={setCode}
+                      onChangeResult={onEditorCodeRun}
+                      customRequestSchema={filterRequestSchema}
+                    />
+                  </Panel>
+                  <PanelResizeHandle
+                    style={{
+                      height: '10px',
+                      background: alpha(theme.palette.primary.main, 0.05),
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                      }}
+                    >
+                      &#8943;
+                    </Box>
+                  </PanelResizeHandle>
+                  <Panel
+                    defaultSize={60}
+                    style={{
+                      overflowY: 'scroll',
+                    }}
+                  >
+                    {activePoint && <PointPreview point={activePoint} />}
+                  </Panel>
+                </PanelGroup>
               </Panel>
             </PanelGroup>
           </Grid>
