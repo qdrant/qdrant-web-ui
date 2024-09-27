@@ -8,7 +8,9 @@ const CreateCollectionForm = ({ collections, onComplete, sx, handleCreated }) =>
   const { client: qdrantClient } = useClient();
   const [activeStep, setActiveStep] = useState(0);
   const [collectionName, setCollectionName] = useState('');
-  const [vectors, setVectors] = useState([{ dimension: '', distance: '', name: '' }]);
+  const [vectors, setVectors] = useState([
+    { dimension: '', distance: '', name: '', multivector_config: null, sparse_vectors: false },
+  ]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,20 +25,35 @@ const CreateCollectionForm = ({ collections, onComplete, sx, handleCreated }) =>
   useEffect(() => {
     if (activeStep === 2) {
       setLoading(true);
-      const VectorConfig =
-        vectors.length === 1
+      const sparseVectors = vectors.filter((vector) => vector.sparse_vectors);
+      const denseVectors = vectors.filter((vector) => !vector.sparse_vectors);
+
+      const vectorConfig =
+        denseVectors.length === 1
           ? {
-              vectors: { size: parseInt(vectors[0].dimension), distance: vectors[0].distance },
+              vectors: {
+                size: parseInt(denseVectors[0].dimension),
+                distance: denseVectors[0].distance,
+                multivector_config: denseVectors[0].multivector_config,
+              },
             }
           : {
-              vectors: vectors.reduce((acc, vector) => {
-                acc[vector.name] = { size: parseInt(vector.dimension), distance: vector.distance };
-                return acc;
+              vectors: denseVectors.reduce((config, vector) => {
+                config[vector.name] = {
+                  size: parseInt(vector.dimension),
+                  distance: vector.distance,
+                  multivector_config: vector.multivector_config,
+                };
+                return config;
               }, {}),
             };
+      vectorConfig.sparse_vectors = sparseVectors.reduce((sparseConfig, vector) => {
+        sparseConfig[vector.name] = {};
+        return sparseConfig;
+      }, {});
 
       qdrantClient
-        .createCollection(collectionName, VectorConfig)
+        .createCollection(collectionName, vectorConfig)
         .then(() => {
           setLoading(false);
           setError(null);
@@ -53,7 +70,6 @@ const CreateCollectionForm = ({ collections, onComplete, sx, handleCreated }) =>
   return (
     <Box sx={{ ...sx }}>
       <Stepper activeStep={activeStep} orientation="vertical">
-        {/* Step 1 start - enter a collection name*/}
         <Step key={'Step 1 - enter a collection name'}>
           <StepLabel>{activeStep === 0 ? 'Enter a collection name' : `Collection name: ${collectionName}`}</StepLabel>
           <CollectionNameTextBox
@@ -64,13 +80,10 @@ const CreateCollectionForm = ({ collections, onComplete, sx, handleCreated }) =>
             activeStep={activeStep}
           />
         </Step>
-        {/* Step 1 end - enter a collection name*/}
-        {/* Step 2 start - vector config */}
         <Step key={'Step 2 - vector config'}>
           <StepLabel>Step 2 - Vector config</StepLabel>
           <VectorConfig handleNext={handleNext} handleBack={handleBack} vectors={vectors} setVectors={setVectors} />
         </Step>
-        {/* Step 2 end - vector config */}
       </Stepper>
       {activeStep === 2 && (
         <Paper square elevation={0} sx={{ p: 3 }}>

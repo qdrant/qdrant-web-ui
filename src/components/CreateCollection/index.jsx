@@ -37,7 +37,7 @@ const CreateCollection = ({ onComplete, collections, sx }) => {
       <Dialog
         fullScreen={fullScreen}
         fullWidth={true}
-        maxWidth={'md'}
+        maxWidth={'lg'}
         open={open}
         onClose={() => setOpen(false)}
         aria-labelledby="Create collection dialog"
