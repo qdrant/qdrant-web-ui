@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Highlight, Prism, themes } from 'prism-react-renderer';
 import Editor from 'react-simple-code-editor';
-import { alpha, Box, Button } from '@mui/material';
+import { alpha, Box, Button, CircularProgress } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from './CopyButton';
@@ -25,10 +25,16 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
  * @return {JSX.Element}
  * @constructor
  */
-export const RunButton = ({ code, onRun }) => {
+export const RunButton = ({ code, onRun, loading }) => {
   return (
-    <Button variant="outlined" endIcon={<PlayArrowOutlined />} onClick={() => onRun(code)} data-testid="code-block-run">
-      Run
+    <Button
+      variant="outlined"
+      endIcon={loading ? <CircularProgress size={24} color="inherit" /> : <PlayArrowOutlined />}
+      onClick={() => onRun(code)}
+      disabled={loading}
+      data-testid="code-block-run"
+    >
+      {loading ? 'Running...' : 'Run'}
     </Button>
   );
 };
@@ -36,6 +42,7 @@ export const RunButton = ({ code, onRun }) => {
 RunButton.propTypes = {
   code: PropTypes.string.isRequired,
   onRun: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
 };
 
 /**
@@ -43,7 +50,7 @@ RunButton.propTypes = {
  * @return {JSX.Element}
  * @constructor
  */
-export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true }) => {
+export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true, loading }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
   const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
@@ -102,7 +109,7 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
       >
         {withRunButton && onRun && (
           <Box sx={{ flexGrow: '1' }}>
-            <RunButton code={code} onRun={onRun} />
+            <RunButton code={code} onRun={onRun} loading={loading} />
           </Box>
         )}
         {title && <Box>{title}</Box>}
@@ -131,4 +138,5 @@ CodeBlock.propTypes = {
   onRun: PropTypes.func,
   title: PropTypes.string,
   editable: PropTypes.bool, // by default code block is editable
+  loading: PropTypes.bool,
 };
