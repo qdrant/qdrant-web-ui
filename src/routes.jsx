@@ -1,5 +1,6 @@
 import React from 'react';
 import Home from './pages/Home';
+import Homepage from './pages/Homepage';
 import Console from './pages/Console';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
@@ -8,13 +9,15 @@ import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
 import Graph from './pages/Graph';
+import Welcome from './pages/Welcome';
 
 const routes = () => [
   {
     path: '/',
     element: <Home />,
     children: [
-      { path: '/', element: <Collections /> },
+      { path: '/', element: <Homepage /> },
+      { path: '/welcome', element: <Welcome /> },
       { path: '/console', element: <Console /> },
       { path: '/datasets', element: <Datasets /> },
       { path: '/collections', element: <Collections /> },
