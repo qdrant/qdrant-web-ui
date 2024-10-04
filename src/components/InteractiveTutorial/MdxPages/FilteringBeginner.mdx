@@ -1,0 +1,165 @@
+export const title = "Basic Filtering"
+
+# Basic Filtering - Clauses and Conditions
+
+## Step 1: Create a Collection
+
+First, create a collection called `terraforming`. Each point will have vectors of size 4, and the distance metric is set to `Dot`:
+
+```json withRunButton="true"
+PUT collections/terraforming
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## Step 2: Add Points with Vectors and Payloads
+
+Now, add points to the collection. Each point includes an `id`,  `vector` and a `payload` with various attributes like `land type`, `color`, `life presence`, and `humidity`:
+
+```json withRunButton="true"
+PUT collections/terraforming/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": {"land": "forest", "color": "green", "life": true, "humidity": 40}
+    },
+    {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": {"land": "lake", "color": "blue", "life": true, "humidity": 100}
+    },
+    {
+      "id": 3,
+      "vector": [0.3, 0.4, 0.5, 0.6],
+      "payload": {"land": "steppe", "color": "green", "life": false, "humidity": 25}
+    },
+    {
+      "id": 4,
+      "vector": [0.4, 0.5, 0.6, 0.7],
+      "payload": {"land": "desert", "color": "red", "life": false, "humidity": 5}
+    },
+    {
+      "id": 5,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": {"land": "marsh", "color": "black", "life": true, "humidity": 90}
+    },
+    {
+      "id": 6,
+      "vector": [0.6, 0.7, 0.8, 0.9],
+      "payload": {"land": "cavern", "color": "black", "life": false, "humidity": 15}
+    }
+  ]
+}
+```
+
+## Step 3: Filtering examples
+
+### Filter by exact match
+
+Finally, this query retrieves points where the `color` is `"black"`, using a straightforward `match` condition:
+
+```json withRunButton="true"
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "color",
+        "match": {
+          "value": "black"
+        }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### Combined filter by `must` clause
+
+In this example, the query returns points where `life` is `true` and `color` is `"green"`. These must conditions both need to be met for a point to be returned.
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      { "key": "life", "match": { "value": true } },
+      { "key": "color", "match": { "value": "green" } }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### Filter by `should` clause
+
+Here, you are filtering for points where `life` is `false` and `color` is `"black"`. These conditions act as *should* clauses, meaning points meeting either or both criteria will be returned:
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "should": [
+      {
+        "key": "life",
+        "match": { "value": false }
+      }, {
+        "key": "color",
+        "match": { "value": "black" }
+      }
+    ]
+  }
+}
+```
+
+### Filter by `must_not` clause
+
+This query filters out any points where `life` is `false`. Points matching this condition are excluded from the results.
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must_not": [
+      {
+       "key": "life",
+       "match": { "value": false }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### Filter by `range` condition
+
+This query filters points based on a range of `humidity`. Here, the `humidity` value must be exactly 40:
+
+```json withRunButton="true"
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+       "key": "humidity",
+       "range": {
+         "gte": 40,
+         "lte": 40
+       }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```

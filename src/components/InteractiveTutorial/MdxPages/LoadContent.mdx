@@ -1,0 +1,34 @@
+export const title = 'Load Content';
+
+# Load Data into a Collection from a Remote Snapshot
+
+In this tutorial, we will guide you through loading data into a Qdrant collection from a remote snapshot.
+
+## Step 1: Import a snapshot to a collection
+
+To start, create the collection `midjourney` and load vector data into it.
+The collection will take on the parameters of the snapshot, with vector size of 512, and similarity measured using the Cosine distance.
+
+```json withRunButton=true
+PUT /collections/midjourney/snapshots/recover
+{
+  "location": "http://snapshots.qdrant.io/midlib.snapshot"
+}
+```
+
+Wait a few moments while the vectors from the snapshot are added to the `midjourney` collection.
+
+## Step 2: Verify the data upload
+
+After the data has been imported, it's important to verify that it has been successfully uploaded. You can do this by checking the number of vectors (or points) in the collection.
+
+Run the following request to get the vector count:
+
+```json withRunButton=true
+POST /collections/midjourney/points/count
+```
+
+The collection should contain 5,417 data points. 
+
+### Step 4: Open the collection UI
+You can also [inspect your collection](/#/collections/midjourney/) to review the uploaded data.

@@ -1,18 +1,18 @@
-# Interactive Tutorial
+# Interactive Tutorials
+## Set up your cluster, add data, and start searching!
 
-The quickest way to see how Qdrant works is to access its API from this live instance.
+**Setup Guide**
+- [Quickstart](#/tutorial/quickstart) - Create a collection, upsert vectors, and run a search.
+- [Load Data](#/tutorial/loadcontent) - Load a prepared dataset snapshot into your collection.
 
-You will use the [Qdrant REST API](https://api.qdrant.tech) to interact with sample data. Here you can perform various operations such as inserting vectors, searching, and applying filters.
+**Vector Search**
+- [Filtering - Beginner](#/tutorial/filteringbeginner) - Filter search results using basic payload conditions.
+- [Filtering - Advanced](#/tutorial/filteringadvanced) - Try advanced filtering based on nested payload conditions.
+- [Filtering - Full Text](#/tutorial/filteringfulltext) - Search for substrings, tokens, or phrases within text fields.
+- [Multivector Search](#/tutorial/multivectors) - Work with data represented by ColBERT multivectors.
+- [Sparse Vector Search](#/tutorial/sparsevectors) - Use sparse vectors to get specific search results.
+- [Hybrid Search](#/tutorial/hybridsearch) - Combine dense and sparse vectors for more accurate search results.
 
-**Note:** All created collections and vectors will remain in the cluster until you delete them. You can always return to the tutorial and edit code blocks to get different results.
+**Manage Data**
+- [Multitenancy](#/tutorial/multitenancy) - Manage multiple users within a single collection.
 
-
-- [Quickstart](#/tutorial/quickstart) - Create a collection, upsert vectors & run a search.
-- [Payload Filtering](#/tutorial/filtering-clauses) - Refine search results based on payload conditions.
-
-
-## Next steps:
-
-Once you are ready to leave this sandbox tutorial, you can try the complete [REST API](https://api.qdrant.tech) from the **Console**. All your resources will be persisted. 
-
-To begin building a prototype application, you should [setup Qdrant on Docker](https://qdrant.tech/documentation/quick-start/) and start using one of our [language-specific Clients](https://qdrant.tech/documentation/interfaces/).

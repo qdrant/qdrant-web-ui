@@ -1,17 +1,19 @@
 export const title = 'Quickstart';
 
-# {title}
+# Quickstart: Vector Search for Beginners
 
-In this tutorial, you will create a collection, load data into it and run a basic search query.
+Qdrant is designed to find the approximate nearest data points in your dataset. In this quickstart guide, you'll create a simple database to track space colonies and perform a search for the nearest colony based on its vector representation.
 
-<Alert severity="info">Click **RUN** to send the API request. Your response will be on the right. <br/>You may edit any code block and rerun the request.</Alert>
+<Alert severity="info">Click **RUN** to send the API request. The response will appear on the right.<br/>You can also edit any code block and rerun the request to see different results.</Alert>
 
-## Create a collection
+## Step 1: Create a collection
 
-First, create a collection to store vector data. Let’s name it `test_collection`. This collection will use the dot product distance metric to determine similarity between vectors. Added vectors will have 4 dimensions.
+First, we’ll create a collection called `star_charts` to store the colony data. Each location will be represented by a vector of four dimensions, and we'll use the Dot product as the distance metric for similarity search.
+
+Run this command to create the collection:
 
 ```json withRunButton=true
-PUT collections/test_collection
+PUT collections/star_charts
 {
   "vectors": {
     "size": 4,
@@ -20,58 +22,63 @@ PUT collections/test_collection
 }
 ```
 
-## Add vectors
+## Step 2: Load data into the collection
 
-Now, you need to add a few vectors. For each vector, you will specify a JSON payload. A payload is metadata that describes each vector, such as `city`.
+Now that the collection is set up, let’s add some data. Each location will have a vector and additional information (payload), such as its name.
+
+Run this request to add the data:
 
 ```json withRunButton=true
-PUT collections/test_collection/points
+PUT collections/star_charts/points
 {
   "points": [
     {
       "id": 1,
       "vector": [0.05, 0.61, 0.76, 0.74],
-      "payload": {"city": "Berlin"}
+      "payload": {
+        "colony": "Mars"
+      }
     },
     {
       "id": 2,
       "vector": [0.19, 0.81, 0.75, 0.11],
-      "payload": {"city": "London"}
+      "payload": {
+        "colony": "Jupiter"
+      }
     },
     {
       "id": 3,
       "vector": [0.36, 0.55, 0.47, 0.94],
-      "payload": {"city": "Moscow"}
+      "payload": {
+        "colony": "Venus"
+      }
     },
     {
       "id": 4,
       "vector": [0.18, 0.01, 0.85, 0.80],
-      "payload": {"city": "New York"}
+      "payload": {
+        "colony": "Moon"
+      }
     },
     {
       "id": 5,
       "vector": [0.24, 0.18, 0.22, 0.44],
-      "payload": {"city": "Beijing"}
-    },
-    {
-      "id": 6,
-      "vector": [0.35, 0.08, 0.11, 0.44],
-      "payload": {"city": "Mumbai"}
+      "payload": {
+        "colony": "Pluto"
+      }
     }
   ]
 }
 ```
 
-## Run a query
+## Step 3: Run a search query
 
-We need to ask a question in vector form: 
+Now, let’s search for the three nearest colonies to a specific vector representing a spatial location. This query will return the colonies along with their payload information.
 
-*Which of our stored vectors are most similar to the query vector ?* 
-
-`[0.2, 0.1, 0.9, 0.7]`
+Run the query below to find the nearest colonies:
 
 ```json withRunButton=true
-POST collections/test_collection/points/search
+POST collections/star_charts/points/search
 {
   "vector": [0.2, 0.1, 0.9, 0.7],
   "limit": 3,
@@ -79,32 +86,11 @@ POST collections/test_collection/points/search
 }
 ```
 
-Qdrant will go through all available data and return results in order of decreasing similarity. Note that payload and vector data is missing in these results by default.
-See [payload and vector in the result](https://qdrant.tech/documentation/concepts/search#payload-and-vector-in-the-result) on how to enable it.
+## Conclusion
 
-## Add a filter
-
-You can narrow down the results further by setting conditions on the payload. Let's filter the closest results that include the city of "London".
-
-```json withRunButton=true
-POST collections/test_collection/points/search
-{
-  "vector": [0.2, 0.1, 0.9, 0.7],
-  "filter": {
-    "must": [
-      {
-       "key": "city",
-       "match": { "value": "London" }
-      }
-    ]
-  },
-  "limit": 3,
-  "with_payload": true
-}
-```
-
-That’s it! You have just performed a vector search. You loaded vectors into a database and queried the database with your own vector. Qdrant found the closest results and presented you with a similarity score.
+Congratulations! 🎉 You’ve just completed a vector search across galactic coordinates! You've successfully added spatial data into a collection and performed searches to find the nearest locations based on their vector representation.
 
 ## Next steps
 
-In the next section, you will learn how to create complex filter conditions and how to use them in your queries.
+In the next section, you’ll explore creating complex filter conditions to refine your searches further for interstellar exploration!
+

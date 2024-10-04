@@ -1,0 +1,145 @@
+export const title = 'Full Text Filtering';
+
+# Full Text Filtering
+
+Here's a step-by-step tutorial on **Full Text Filtering in Qdrant** using a collection of planetary data with description fields:
+
+## Step 1: Create a collection
+
+We first create a collection named `star_charts` with vectors of size 4 and dot product distance for similarity.
+
+```json withRunButton="true"
+PUT /collections/star_charts
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## Step 2: Add data with descriptions in payload
+
+Next, we add data to the collection. Each entry includes an id, vector and a payload containing details about various celestial bodies, such as colony information, whether the body supports life and a description.
+
+```json withRunButton="true"
+PUT collections/star_charts/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.05, 0.61, 0.76, 0.74],
+      "payload": {
+        "colony": "Mars",
+        "supports_life": true,
+        "description": "The red planet, Mars, has a cold desert climate and may have once had conditions suitable for life."
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.19, 0.81, 0.75, 0.11],
+      "payload": {
+        "colony": "Jupiter",
+        "supports_life": false,
+        "description": "Jupiter is the largest planet in the solar system, known for its Great Red Spot and hostile gas environment."
+      }
+    },
+    {
+      "id": 3,
+      "vector": [0.36, 0.55, 0.47, 0.94],
+      "payload": {
+        "colony": "Venus",
+        "supports_life": false,
+        "description": "Venus, Earth’s twin in size, has an extremely thick atmosphere and surface temperatures hot enough to melt lead."
+      }
+    },
+    {
+      "id": 4,
+      "vector": [0.18, 0.01, 0.85, 0.80],
+      "payload": {
+        "colony": "Moon",
+        "supports_life": true,
+        "description": "Earth’s Moon, long visited by astronauts, is a barren, airless world but could host colonies in its underground caves."
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.24, 0.18, 0.22, 0.44],
+      "payload": {
+        "colony": "Pluto",
+        "supports_life": false,
+        "description": "Once considered the ninth planet, Pluto is a small icy world at the edge of the solar system."
+      }
+    }
+  ]
+}
+```
+
+### Step 3: Try filtering with exact phrase (substring match)
+
+Now, let's try to filter the descriptions to find entries that contain the exact phrase "host colonies." 
+Qdrant supports text filtering by default using exact matches, but note that this will not tokenize the text.
+
+```json withRunButton="true"
+POST /collections/star_charts/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "description",
+        "match": {
+          "text": "host colonies"
+        }
+      }
+    ]
+  },
+  "limit": 2,
+  "with_payload": true
+}
+```
+
+You’ll notice this filter works, but if you change the phrase slightly, it won’t return results, since substring matching in unindexed text isn’t flexible enough for variations.
+
+### Step 4: Index the description field
+
+To make filtering more powerful and flexible, we’ll index the `description` field. This will tokenize the text, allowing for more complex queries such as filtering for phrases like "cave colonies." We use a `word` tokenizer, and only tokens that are between 5 and 20 characters will be indexed.
+
+**Note:** You should always index a fielf before filtering. If you use filtering before you create an index (like in Step 3), Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
+```json withRunButton="true"
+PUT /collections/star_charts/index
+{
+    "field_name": "description",
+    "field_schema": {
+        "type": "text",
+        "tokenizer": "word",
+        "lowercase": true
+    }
+}
+```
+
+### Step 5: Try the filter again
+
+After indexing, you can now run the filter again, but this time not searching for a phrase. 
+Now you will filter for all tokens "cave" AND "colonies" from the descriptions. 
+
+```json withRunButton="true"
+POST /collections/star_charts/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "description",
+        "match": {
+          "text": "cave colonies"
+        }
+      }
+    ]
+  },
+  "limit": 2,
+  "with_payload": true
+}
+```
+## Summary
+
+Phrase search requires tokens to come in and exact sequence, and by indexing all words we are ignoring the sequence completely and filtering for relevant keywords.

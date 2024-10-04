@@ -1,0 +1,146 @@
+export const title = 'Sparse Vectors';
+
+# Sparse Vector Search
+
+In this tutorial, you'll learn how to create a collection with sparse vectors in Qdrant, insert points with sparse vectors, and query them based on specific indices and values. Sparse vectors allow you to efficiently store and search data with only certain dimensions being non-zero, which is particularly useful in applications like text embeddings or handling sparse data.
+
+## Step 1: Create a collection with sparse vectors
+
+The first step is to create a collection that can handle sparse vectors. Unlike dense vectors that represent full feature spaces, sparse vectors only store non-zero values in select positions, making them more efficient. We’ll create a collection called `sparse_charts` where each point will have sparse vectors to represent keywords or other features.
+
+Run the following request to create the collection:
+
+```json withRunButton=true
+PUT /collections/sparse_charts
+{
+    "sparse_vectors": {
+        "keywords": {}
+    }
+}
+```
+
+### Explanation:
+- **`sparse_vectors`**: Defines that the collection supports sparse vectors, in this case, indexed by "keywords." This can represent keyword-based features where only certain indices (positions) have non-zero values.
+
+---
+
+## Step 2: Insert data points with sparse vectors
+
+Once the collection is ready, you can insert points with sparse vectors. Each point will include:
+- `indices`: The positions of non-zero values in the vector space.
+- `values`: The corresponding values at those positions, representing the importance or weight of each keyword or feature.
+
+Run the following request to insert the points:
+
+```json withRunButton=true
+PUT /collections/sparse_charts/points
+{
+    "points": [
+        {
+            "id": 1,
+            "vector": {
+                "keywords": {
+                    "indices": [1, 42],
+                    "values": [0.22, 0.8]
+                }
+            }
+        },
+        {
+            "id": 2,
+            "vector": {
+                "keywords": {
+                    "indices": [2, 35],
+                    "values": [0.15, 0.65]
+                }
+            }
+        },
+        {
+            "id": 3,
+            "vector": {
+                "keywords": {
+                    "indices": [10, 42],
+                    "values": [0.3, 0.5]
+                }
+            }
+        },
+        {
+            "id": 4,
+            "vector": {
+                "keywords": {
+                    "indices": [0, 3],
+                    "values": [0.4, 0.3]
+                }
+            }
+        },
+        {
+            "id": 5,
+            "vector": {
+                "keywords": {
+                    "indices": [2, 4],
+                    "values": [0.9, 0.8]
+                }
+            }
+        }
+    ]
+}
+```
+
+### Explanation:
+- Each point is represented by its sparse vector, defined with specific keyword indices and values.
+- For example, **Point 1** has sparse vector values of `0.22` and `0.8` at positions `1` and `42`, respectively. These could represent the relative importance of keywords associated with those positions.
+
+---
+
+## Run a query with specific indices and values
+
+This query searches for points that have non-zero values at the positions `[1, 42]` and specific values `[0.22, 0.8]`. This is a targeted query and expects a close match to these indices and values.
+
+```json withRunButton=true
+POST /collections/sparse_charts/points/query
+{
+    "query": {
+        "indices": [1, 42],
+        "values": [0.22, 0.8]
+    },
+    "using": "keywords"
+}
+```
+
+**Expected result:** **Point 1** would be the best match since its sparse vector includes these indices that maximize the measure of similarity. In this case, this is the dot product calculation.
+
+---
+
+## Breaking down the scoring mechanism
+
+This query searches for points with non-zero values at positions `[0, 2, 4]` and values `[0.4, 0.9, 0.8]`. It’s a broader search that might return multiple matches with overlapping indices and similar values.
+
+```json withRunButton=true
+POST /collections/sparse_charts/points/query
+{
+    "query": {
+        "indices": [0, 2, 4],
+        "values": [0.4, 0.9, 0.8]
+    },
+    "using": "keywords"
+}
+```
+---
+
+## How we got this result:
+
+Let's assume the sparse vectors of **Point 4** and **Point 5** are as follows:
+- **Point 4**: `[0.4, 0, 0, 0, 0]`  (Matches query at index 0 with value 0.4)
+- **Point 5**: `[0, 0, 0.9, 0, 0.8]`  (Matches query at indices 2 and 4 with values 0.9 and 0.8)
+
+The dot product would look something like:
+- **Dot product for Point 4**: 
+   - Query: `[0.4, 0, 0.9, 0, 0.8]`
+   - Point 4: `[0.4, 0, 0, 0, 0]`
+   - Dot product: ( 0.4 * 0.4 = 0.16 \)
+
+- **Dot product for Point 5**:
+   - Query: `[0.4, 0, 0.9, 0, 0.8]`
+   - Point 5: `[0, 0, 0.9, 0, 0.8]`
+   - Dot product: ( 0.9 * 0.9 + 0.8 * 0.8 = 0.81 + 0.64 = 1.45 )
+
+Since **Point 5** has a higher dot product score, it would be considered a better match than **Point 4**.
