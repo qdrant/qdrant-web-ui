@@ -1,17 +1,42 @@
-export const initGraph = async (qdrantClient, { collectionName, initNode, limit, filter, using }) => {
-  if (!initNode) {
+import { axiosInstance } from '../common/axios';
+
+export const initGraph = async (
+  qdrantClient,
+  { collectionName, initNode, limit, filter, using, sampleLinks, tree = false }
+) => {
+  let nodes = [];
+  let links = [];
+
+  if (sampleLinks) {
+    const uniquePoints = new Set();
+
+    for (const link of sampleLinks) {
+      links.push({ source: link.a, target: link.b, score: link.score });
+      uniquePoints.add(link.a);
+      uniquePoints.add(link.b);
+    }
+
+    if (tree) {
+      // ToDo acs should depend on metric type
+      links = getMinimalSpanningTree(links, true);
+    }
+
+    nodes = await getPointsWithPayload(qdrantClient, { collectionName, pointIds: Array.from(uniquePoints) });
+  } else if (initNode) {
+    initNode.clicked = true;
+    nodes = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
+    links = nodes.map((point) => ({ source: initNode.id, target: point.id, score: point.score }));
+    nodes = [initNode, ...nodes];
+  } else {
     return {
       nodes: [],
       links: [],
     };
   }
-  initNode.clicked = true;
-
-  const points = await getSimilarPoints(qdrantClient, { collectionName, pointId: initNode.id, limit, filter, using });
 
   const graphData = {
-    nodes: [initNode, ...points],
-    links: points.map((point) => ({ source: initNode.id, target: point.id })),
+    nodes,
+    links,
   };
   return graphData;
 };
@@ -44,9 +69,94 @@ export const getFirstPoint = async (qdrantClient, { collectionName, filter }) =>
   return points[0];
 };
 
+const getPointsWithPayload = async (qdrantClient, { collectionName, pointIds }) => {
+  const points = await qdrantClient.retrieve(collectionName, {
+    ids: pointIds,
+    with_payload: true,
+    with_vector: false,
+  });
+
+  return points;
+};
+
+export const getSamplePoints = async ({ collectionName, filter, sample, using, limit }) => {
+  // ToDo: replace it with qdrantClient when it will be implemented
+
+  const response = await axiosInstance({
+    method: 'POST',
+    url: `collections/${collectionName}/points/search/matrix/pairs`,
+    data: {
+      filter,
+      sample,
+      using,
+      limit,
+    },
+  });
+
+  return response.data.result.pairs;
+};
+
 export const deduplicatePoints = (existingPoints, foundPoints) => {
   // Returns array of found points that are not in existing points
   // deduplication is done by id
   const existingIds = new Set(existingPoints.map((point) => point.id));
   return foundPoints.filter((point) => !existingIds.has(point.id));
+};
+
+export const getMinimalSpanningTree = (links, acs = true) => {
+  // Sort links by score (assuming each link has a score property)
+
+  let sortedLinks = [];
+  if (acs) {
+    sortedLinks = links.sort((a, b) => b.score - a.score);
+  } else {
+    sortedLinks = links.sort((a, b) => a.score - b.score);
+  }
+  // Helper function to find the root of a node
+  const findRoot = (parent, i) => {
+    if (parent[i] === i) {
+      return i;
+    }
+    return findRoot(parent, parent[i]);
+  };
+
+  // Helper function to perform union of two sets
+  const union = (parent, rank, x, y) => {
+    const rootX = findRoot(parent, x);
+    const rootY = findRoot(parent, y);
+
+    if (rank[rootX] < rank[rootY]) {
+      parent[rootX] = rootY;
+    } else if (rank[rootX] > rank[rootY]) {
+      parent[rootY] = rootX;
+    } else {
+      parent[rootY] = rootX;
+      rank[rootX]++;
+    }
+  };
+
+  const parent = {};
+  const rank = {};
+  const mstLinks = [];
+
+  // Initialize parent and rank arrays
+  links.forEach((link) => {
+    parent[link.source] = link.source;
+    parent[link.target] = link.target;
+    rank[link.source] = 0;
+    rank[link.target] = 0;
+  });
+
+  // Kruskal's algorithm
+  sortedLinks.forEach((link) => {
+    const sourceRoot = findRoot(parent, link.source);
+    const targetRoot = findRoot(parent, link.target);
+
+    if (sourceRoot !== targetRoot) {
+      mstLinks.push(link);
+      union(parent, rank, sourceRoot, targetRoot);
+    }
+  });
+
+  return mstLinks;
 };
