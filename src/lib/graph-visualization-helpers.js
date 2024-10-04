@@ -38,7 +38,6 @@ export const initGraph = async (
     nodes,
     links,
   };
-  // console.log(graphData);
   return graphData;
 };
 
