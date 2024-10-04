@@ -17,19 +17,25 @@ export const MdxCodeBlock = ({ children }) => {
   const language = className.replace(/language-/, '');
   const withRunButton = children.props.withRunButton && bigIntJSON.parse(children.props.withRunButton);
   const { setResult } = useTutorial();
+  const [loading, setLoading] = React.useState(false);
 
   const handleRun = (code) => {
+    setLoading(true);
     setResult('{}');
     requestFromCode(code, false)
       .then((res) => {
         setResult(() => bigIntJSON.stringify(res));
+        setLoading(false);
       })
       .catch((err) => {
         setResult(() => bigIntJSON.stringify(err));
+        setLoading(false);
       });
   };
 
-  return <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} />;
+  return (
+    <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
+  );
 };
 
 MdxCodeBlock.propTypes = {
