@@ -247,7 +247,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
               control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="small" />}
               label={
                 <Typography component={'span'} variant={'caption'}>
-                  Advanced Mod
+                  Advanced Mode
                 </Typography>
               }
             />
