@@ -8,13 +8,16 @@ import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
 import Graph from './pages/Graph';
+import Welcome from './pages/Welcome';
+import Homepage from './pages/Homepage';
 
 const routes = () => [
   {
     path: '/',
     element: <Home />,
     children: [
-      { path: '/', element: <Collections /> },
+      { path: '/', element: <Homepage /> },
+      { path: '/welcome', element: <Welcome /> },
       { path: '/console', element: <Console /> },
       { path: '/datasets', element: <Datasets /> },
       { path: '/collections', element: <Collections /> },
