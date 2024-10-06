@@ -18,6 +18,7 @@ import * as LoadContent from './MdxPages/LoadContent.mdx';
 export const tutorialIndexPage = Index;
 const tutorialSubPages = [
   ['quickstart', Quickstart],
+  ['loadcontent', LoadContent],
   ['filteringbeginner', FilteringBeginner],
   ['filteringadvanced', FilteringAdvanced],
   ['filteringfulltext', FilteringFullText],
@@ -25,7 +26,6 @@ const tutorialSubPages = [
   ['sparsevectors', SparseVectors],
   ['hybridsearch', HybridSearch],
   ['multitenancy', Multitenancy],
-  ['loadcontent', LoadContent],
   // add more pages here
 ];
 

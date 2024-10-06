@@ -4,7 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal, Animation, Key } from '@mui/icons-material';
+import { LibraryBooks, Terminal, Animation, Key, RocketLaunch } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
 
@@ -63,6 +63,7 @@ export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
       <DrawerHeader />
       <Divider />
       <List>
+        {sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
         {sidebarItem('Console', <Terminal />, '/console', open)}
         {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>

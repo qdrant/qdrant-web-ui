@@ -49,6 +49,9 @@ const Welcome = () => {
           <StyledButton variant="contained" component={Link} to="/tutorial/loadcontent">
             Load Sample Data
           </StyledButton>
+          <StyledButton variant="contained" component={Link} to="/tutorial/">
+            Vector Search Tutorials
+          </StyledButton>
         </ButtonsContainer>
       </Box>
 
