@@ -32,12 +32,19 @@ describe('CodeBlock', () => {
       </TutorialProvider>
     );
 
-    expect(screen.getByTestId('code-block')).toBeInTheDocument();
+    const codeBlock = screen.getByTestId('code-block');
+
+    expect(codeBlock).toBeInTheDocument();
     expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-run')).toBeInTheDocument();
+
+    const textContent = codeBlock.textContent;
+    const occurrences = (textContent.match(/"name": "test"/g) || []).length;
+
     expect(screen.getAllByText(/{/).length).toBe(2);
-    expect(screen.getAllByText(/"name": "test"/).length).toBe(2);
+    expect(occurrences).toBe(2);
     expect(screen.getAllByText(/}/).length).toBe(2);
+
     expect(screen.getByText(/Run/)).toBeInTheDocument();
   });
 
