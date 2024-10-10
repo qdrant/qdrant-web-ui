@@ -5,7 +5,12 @@ import { CopyAll } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from './utils/snackbarOptions';
 
-export const CopyButton = ({ text, tooltip, tooltipPlacement, successMessage }) => {
+export const CopyButton = ({
+  text,
+  tooltip = 'Copy to clipboard',
+  tooltipPlacement = 'left',
+  successMessage = 'Copied to clipboard',
+}) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
@@ -29,12 +34,6 @@ export const CopyButton = ({ text, tooltip, tooltipPlacement, successMessage }) 
       </IconButton>
     </Tooltip>
   );
-};
-
-CopyButton.defaultProps = {
-  tooltip: 'Copy to clipboard',
-  tooltipPlacement: 'left',
-  successMessage: 'Copied to clipboard',
 };
 
 CopyButton.propTypes = {

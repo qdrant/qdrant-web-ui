@@ -1,5 +1,3 @@
-import { axiosInstance } from '../common/axios';
-
 export const initGraph = async (
   qdrantClient,
   { collectionName, initNode, limit, filter, using, sampleLinks, tree = false }
@@ -79,21 +77,15 @@ const getPointsWithPayload = async (qdrantClient, { collectionName, pointIds }) 
   return points;
 };
 
-export const getSamplePoints = async ({ collectionName, filter, sample, using, limit }) => {
-  // ToDo: replace it with qdrantClient when it will be implemented
-
-  const response = await axiosInstance({
-    method: 'POST',
-    url: `collections/${collectionName}/points/search/matrix/pairs`,
-    data: {
-      filter,
-      sample,
-      using,
-      limit,
-    },
+export const getSamplePoints = async (qdrantClient, { collectionName, filter, sample, using, limit }) => {
+  const response = await qdrantClient.searchMatrixPairs(collectionName, {
+    filter,
+    sample,
+    using,
+    limit,
   });
 
-  return response.data.result.pairs;
+  return response.pairs;
 };
 
 export const deduplicatePoints = (existingPoints, foundPoints) => {
