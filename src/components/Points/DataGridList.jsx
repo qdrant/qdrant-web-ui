@@ -102,11 +102,6 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
   });
 };
 
-DataGridList.defaultProps = {
-  data: {},
-  specialCases: {},
-};
-
 DataGridList.propTypes = {
   data: PropTypes.object.isRequired,
   specialCases: PropTypes.shape({

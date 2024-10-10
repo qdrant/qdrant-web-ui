@@ -6,7 +6,7 @@ import ClusterInfoHead from './ClusterInfoHead';
 import ClusterShardRow from './ClusterShardRow';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 
-const ClusterInfo = ({ collectionCluster, ...other }) => {
+const ClusterInfo = ({ collectionCluster = { result: {} }, ...other }) => {
   const shards = [
     ...(collectionCluster.result?.local_shards || []),
     ...(collectionCluster.result?.remote_shards || []),
@@ -36,12 +36,6 @@ const ClusterInfo = ({ collectionCluster, ...other }) => {
       </Table>
     </Card>
   );
-};
-
-ClusterInfo.defaultProps = {
-  collectionCluster: {
-    result: {},
-  },
 };
 
 ClusterInfo.propTypes = {
