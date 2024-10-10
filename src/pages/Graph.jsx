@@ -98,7 +98,7 @@ function Graph() {
     // scroll
     try {
       if (data.sample) {
-        const sampleLinks = await getSamplePoints({
+        const sampleLinks = await getSamplePoints(qdrantClient, {
           collectionName: collectionName,
           ...data,
         });
