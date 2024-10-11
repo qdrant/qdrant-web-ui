@@ -14,7 +14,7 @@ export const resizeObserverWithCallback = (callback) => {
  * @param {string} version2 - The second version string.
  * @return {number} - Returns 0 if the versions are equal, 1 if version1 is greater, and -1 if version2 is greater.
  */
-export const compareSemver = function(version1, version2) {
+export const compareSemver = function (version1, version2) {
   const parseVersion = (version) => version.split('.').map(Number);
 
   const [major1, minor1, patch1] = parseVersion(version1);
@@ -30,4 +30,4 @@ export const compareSemver = function(version1, version2) {
     return patch1 > patch2 ? 1 : -1;
   }
   return 0;
-}
+};
