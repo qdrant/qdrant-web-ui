@@ -7,6 +7,7 @@ import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
 import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
+import { compareSemver } from "../lib/common-helpers";
 
 function Datasets() {
   const [datasets, setDatasets] = useState([]);
@@ -14,14 +15,23 @@ function Datasets() {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
+  const {client} = useClient();
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        const telemetry = await client.api('service').telemetry();
         const response = await fetch('https://snapshots.qdrant.io/manifest.json');
         const responseJson = await response.json();
-        const datasets = responseJson.map((dataset) => {
+        const datasets = responseJson
+        .filter((dataset) => {
+          if (dataset.version === undefined) {
+            return true;
+          }
+          return compareSemver(telemetry.data.result.app.version, dataset.version) >= 0
+        })
+        .map((dataset) => {
           return {
             name: dataset.name,
             fileName: dataset.file_name,
