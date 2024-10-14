@@ -8,6 +8,7 @@ import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
 import { compareSemver } from '../lib/common-helpers';
+import { useOutletContext } from 'react-router-dom';
 
 function Datasets() {
   const [datasets, setDatasets] = useState([]);
@@ -15,13 +16,12 @@ function Datasets() {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
-  const { client } = useClient();
+  const { version } = useOutletContext();
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const telemetry = await client.api('service').telemetry();
         const response = await fetch('https://snapshots.qdrant.io/manifest.json');
         const responseJson = await response.json();
         const datasets = responseJson
@@ -29,7 +29,7 @@ function Datasets() {
             if (dataset.version === undefined) {
               return true;
             }
-            return compareSemver(telemetry.data.result.app.version, dataset.version) >= 0;
+            return compareSemver(version, dataset.version) >= 0;
           })
           .map((dataset) => {
             return {
@@ -62,10 +62,9 @@ function Datasets() {
       setImporting(true);
 
       try {
-        const response = await qdrantClient.recoverSnapshot(collectionName, {
+        await qdrantClient.recoverSnapshot(collectionName, {
           location: `https://snapshots.qdrant.io/${fileName}`,
         });
-        console.log(response);
         enqueueSnackbar('Snapshot successfully imported', getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (e) {
         enqueueSnackbar(e.message, errorSnackbarOptions);
