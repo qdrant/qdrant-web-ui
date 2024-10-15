@@ -7,6 +7,8 @@ import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
 import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
+import { compareSemver } from '../lib/common-helpers';
+import { useOutletContext } from 'react-router-dom';
 
 function Datasets() {
   const [datasets, setDatasets] = useState([]);
@@ -14,6 +16,7 @@ function Datasets() {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
+  const { version } = useOutletContext();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,16 +24,35 @@ function Datasets() {
       try {
         const response = await fetch('https://snapshots.qdrant.io/manifest.json');
         const responseJson = await response.json();
-        const datasets = responseJson.map((dataset) => {
-          return {
-            name: dataset.name,
-            fileName: dataset.file_name,
-            size: dataset.size,
-            vectors: dataset.vectors,
-            vectorCount: dataset.vector_count,
-            description: dataset.description,
-          };
-        });
+        const datasets = responseJson
+          .filter((dataset) => {
+            if (dataset.version === undefined) {
+              return true;
+            }
+            // There are a few exceptions:
+            // - dev version is always allowed, it includes `dev` as a substring
+            // - `???` means we can't display the version, so we only allow unversioned datasets
+            // - empty or underfined means the same as `???`
+
+            if (version || version === '???') {
+              return false;
+            }
+
+            if (version.includes('dev')) {
+              return true;
+            }
+            return compareSemver(version, dataset.version) >= 0;
+          })
+          .map((dataset) => {
+            return {
+              name: dataset.name,
+              fileName: dataset.file_name,
+              size: dataset.size,
+              vectors: dataset.vectors,
+              vectorCount: dataset.vector_count,
+              description: dataset.description,
+            };
+          });
         setDatasets(datasets);
       } catch (error) {
         enqueueSnackbar(error.message, errorSnackbarOptions);
@@ -52,10 +74,9 @@ function Datasets() {
       setImporting(true);
 
       try {
-        const response = await qdrantClient.recoverSnapshot(collectionName, {
+        await qdrantClient.recoverSnapshot(collectionName, {
           location: `https://snapshots.qdrant.io/${fileName}`,
         });
-        console.log(response);
         enqueueSnackbar('Snapshot successfully imported', getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (e) {
         enqueueSnackbar(e.message, errorSnackbarOptions);

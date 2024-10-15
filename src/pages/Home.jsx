@@ -106,7 +106,7 @@ export default function MiniDrawer() {
       <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
-        <Outlet />
+        <Outlet context={{ version }} />
       </Box>
       <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
     </Box>
