@@ -29,6 +29,18 @@ function Datasets() {
             if (dataset.version === undefined) {
               return true;
             }
+            // There are a few exceptions:
+            // - dev version is always allowed, it includes `dev` as a substring
+            // - `???` means we can't display the version, so we only allow unversioned datasets
+            // - empty or underfined means the same as `???`
+
+            if (version || version === '???') {
+              return false;
+            }
+
+            if (version.includes('dev')) {
+              return true;
+            }
             return compareSemver(version, dataset.version) >= 0;
           })
           .map((dataset) => {
