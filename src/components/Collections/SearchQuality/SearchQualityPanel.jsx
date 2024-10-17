@@ -47,7 +47,7 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
         {isInProgress && <LinearProgress />}
         {!isInProgress && (
           <Box display="flex" alignItems="center">
-            <Typography variant="subtitle1" component={'span'} color="text.secondary" >
+            <Typography variant="subtitle1" component={'span'} color="text.secondary">
               {precision ? `${precision * 100}%` : null}
             </Typography>
             <Tooltip title="Check index quality">

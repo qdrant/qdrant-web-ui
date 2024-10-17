@@ -24,7 +24,7 @@ Tuning the HNSW Algorithm (Advanced mode):
 Practical Use:
 - The ANN search (with HNSW) is significantly faster (5ms compared to 30ms) but slightly less accurate (precision@10: 0.8). You can adjust parameters like "hnsw_ef" in advanced mode to find the right balance between speed and accuracy.
 
-Additional Tuning Parameters (need to be set during collection configuration):
+Additional Tuning Parameters (need to be set in collection configuration):
 1. "m" Parameter : Defines the number of edges per node in the graph. A higher "m" value improves accuracy but uses more memory.
 2. "ef_construct" Parameter: Sets the number of neighbors to consider during index creation. A higher value increases precision but requires more time during indexing.`;
 
