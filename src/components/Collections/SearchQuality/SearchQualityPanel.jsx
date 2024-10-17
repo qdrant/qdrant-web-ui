@@ -9,11 +9,13 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  IconButton,
+  Button,
   FormControlLabel,
   Switch,
   CardContent,
   LinearProgress,
+  Box,
+  IconButton,
 } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
@@ -44,21 +46,33 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
       <TableCell>
         {isInProgress && <LinearProgress />}
         {!isInProgress && (
-          <>
-            <Typography variant="subtitle1" component={'span'} color="text.secondary">
-              {precision ? `${precision * 100}%` : '—'}
+          <Box display="flex" alignItems="center">
+            <Typography variant="subtitle1" component={'span'} color="text.secondary" >
+              {precision ? `${precision * 100}%` : null}
             </Typography>
             <Tooltip title="Check index quality">
-              <IconButton
-                aria-label="Check index quality"
-                data-testid="index-quality-check-button"
-                onClick={onCheckIndexQuality}
-                sx={{ p: 0, ml: 1 }}
-              >
-                <PublishedWithChanges color={'primary'} />
-              </IconButton>
+              {precision ? (
+                <IconButton
+                  aria-label="Check index quality"
+                  data-testid="index-quality-check-button"
+                  onClick={onCheckIndexQuality}
+                  sx={{ p: 0, ml: 3 }}
+                >
+                  <PublishedWithChanges color={'primary'} />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<PublishedWithChanges />}
+                  onClick={onCheckIndexQuality}
+                  data-testid="index-quality-check-button"
+                >
+                  Check Quality
+                </Button>
+              )}
             </Tooltip>
-          </>
+          </Box>
         )}
       </TableCell>
     </TableRow>
@@ -240,8 +254,10 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
     <Card variant="dual" data-testid="vectors-info" {...other}>
       <CardHeader
         title={
-          <>
-            Search Quality
+          <Box display="flex" alignItems="center">
+            <Typography variant="h6" component="div">
+              Search Quality
+            </Typography>
             <FormControlLabel
               sx={{ ml: 2 }}
               control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="small" />}
@@ -251,17 +267,13 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
                 </Typography>
               }
             />
-          </>
+          </Box>
         }
         variant="heading"
         sx={{
           flexGrow: 1,
         }}
-        action={
-          <>
-            <CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />
-          </>
-        }
+        action={<CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />}
       />
       {!advancedMod && (
         <Table>
