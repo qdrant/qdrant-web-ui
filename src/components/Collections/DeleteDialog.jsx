@@ -41,7 +41,7 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
         <DialogTitle id="Delete-collection-confirmation">
           Do you want to{' '}
           <Box component="span" display={'inline'} sx={{ color: 'error.main' }}>
-            Delete {collectionName}
+            delete {collectionName}
           </Box>
           ?
         </DialogTitle>
@@ -50,9 +50,7 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
             <Box display={'inline'} component="span" sx={{ color: 'error.main' }}>
               Warning:
             </Box>{' '}
-            Deleting this database can result in irreversible data loss. Please proceed with caution and ensure that you
-            have a backup of all the necessary data before proceeding. It is recommended to seek professional guidance
-            to avoid any accidental loss of critical data.
+            Deleting a collection cannot be undone. Make sure you have backed up all important data before proceeding.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
