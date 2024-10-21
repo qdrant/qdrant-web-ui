@@ -30,7 +30,7 @@ self.onmessage = function (e) {
   const data = [];
 
   const points = e.data?.result?.points;
-  const vectorName = params.vector_name;
+  const vectorName = params.using;
 
   if (!points || points.length === 0) {
     self.postMessage({
@@ -71,7 +71,7 @@ self.onmessage = function (e) {
     if (vectorType === 'named') {
       self.postMessage({
         data: [],
-        error: 'Please select a valid vector name, default vector is not defined',
+        error: 'Please select a valid vector name (by `using`), default vector is not defined',
       });
       return;
     }
