@@ -78,7 +78,7 @@ export function generateColorBy(points, colorBy = null) {
     });
   }
 
-  if (colorBy.discover_score || colorBy.query) {
+  if (colorBy.query) {
     const scores = points.map((point) => point.score);
     const minScore = Math.min(...scores);
     const maxScore = Math.max(...scores);
