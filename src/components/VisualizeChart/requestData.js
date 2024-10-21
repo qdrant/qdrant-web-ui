@@ -11,6 +11,7 @@ export function requestData(qdrantClient, collectionName, { limit, filter = null
       filter: filter,
       with_vector: using ? [using] : true,
       with_payload: true,
+      using: using ?? null,
     };
 
     return qdrantClient.query(collectionName, query);
