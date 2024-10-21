@@ -2,7 +2,7 @@
 export function requestData(
   qdrantClient,
   collectionName,
-  { limit, filter = null, vector_name = null, color_by = null }
+  { limit, filter = null, using = null, color_by = null }
 ) {
   // Based on the input parameters, we need to decide what kind of request we need to send
   // By default we should do scroll request
@@ -13,7 +13,7 @@ export function requestData(
       query: color_by.query,
       limit: limit,
       filter: filter,
-      with_vector: vector_name ? [vector_name] : true,
+      with_vector: using ? [using] : true,
       with_payload: true,
     };
 
@@ -25,7 +25,7 @@ export function requestData(
   const scrollQuery = {
     limit: limit,
     filter: filter,
-    with_vector: vector_name ? [vector_name] : true,
+    with_vector: using ? [using] : true,
     with_payload: true,
   };
 
