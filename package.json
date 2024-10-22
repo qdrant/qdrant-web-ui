@@ -52,7 +52,7 @@
     "vite-plugin-svgr": "^2.4.0",
     "vite-plugin-top-level-await": "^1.4.4",
     "vite-plugin-wasm": "^3.3.0",
-    "wasm-dist-bhtsne": "^1.0.3",
+    "wasm-dist-bhtsne": "^1.1.0",
     "wasm-feature-detect": "^1.6.2",
     "web-vitals": "^2.1.4"
   },
