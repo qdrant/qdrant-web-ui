@@ -229,7 +229,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         Math.sqrt(precisions.reduce((x, val) => x + (val - avgPrecision) ** 2, 0) / precisions.length)
       );
 
-      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
+      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev + '\n');
 
       setPrecision((prev) => {
         return {
@@ -275,46 +275,49 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         }}
         action={<CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />}
       />
-      {!advancedMod && (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Vector Name
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Size
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Distance
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Precision
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
 
-          <TableBody>
-            {Object.keys(vectors).map((vectorName) => (
-              <VectorTableRow
-                vectorObj={vectors[vectorName]}
-                name={vectorName}
-                onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
-                precision={precision ? precision[vectorName] : null}
-                key={vectorName}
-                isInProgress={inProgress}
-              />
-            ))}
-          </TableBody>
-        </Table>
+      {!advancedMod && (
+        <CardContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Vector Name
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Size
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Distance
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Precision
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {Object.keys(vectors).map((vectorName) => (
+                <VectorTableRow
+                  vectorObj={vectors[vectorName]}
+                  name={vectorName}
+                  onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
+                  precision={precision ? precision[vectorName] : null}
+                  key={vectorName}
+                  isInProgress={inProgress}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       )}
 
       {advancedMod && (
