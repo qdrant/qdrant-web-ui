@@ -9,7 +9,7 @@ import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import EditorCommon from '../../EditorCommon';
 import _ from 'lodash';
-import * as ExplainLog from './ExplainLog.mdx';
+import * as Instruction from './Instruction.mdx';
 import { mdxComponents } from '../../InteractiveTutorial/MdxComponents/MdxComponents';
 
 const SearchQuality = ({ collectionName }) => {
@@ -90,7 +90,7 @@ const SearchQuality = ({ collectionName }) => {
               overflowY: 'auto',
             }}
           >
-            <ExplainLog.default components={mdxComponents} />
+            <Instruction.default components={mdxComponents} />
           </CardContent>
         </Card>
       </Grid>
