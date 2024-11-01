@@ -1,54 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box, CardMedia, Modal, Typography } from '@mui/material';
 
 function PointImage({ data, sx }) {
   const [fullScreenImg, setFullScreenImg] = useState(null);
-  const renderImages = () => {
-    const images = [];
+  const [imageUrls, setImageUrls] = useState([]);
 
-    function isImgUrl(string) {
-      let url;
-      try {
-        url = new URL(string);
-      } catch (_) {
-        return false;
-      }
-      if (url) {
-        return /\.(jpg|jpeg|png|webp|gif|svg)$/.test(url.pathname);
-      }
-      return false;
-    }
-
-    // Loop through the object's properties
-    for (const key in data) {
-      if (typeof data[key] == 'string') {
-        // Check if the value is an image URL
-        if (isImgUrl(data[key])) {
-          images.push(
-            <CardMedia
-              component="img"
-              sx={{
-                width: 150,
-                margin: 'auto',
-                padding: 1,
-                wordWrap: 'break-word',
-                p: 1,
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                ...sx,
-              }}
-              key={key}
-              image={data[key]}
-              alt={data[key]}
-              onClick={() => setFullScreenImg(data[key])}
-            />
-          );
+  useEffect(() => {
+    const fetchImageUrls = async () => {
+      const urls = [];
+      for (const key in data) {
+        if (typeof data[key] === 'string') {
+          try {
+            const url = new URL(data[key]);
+            if (/\.(jpg|jpeg|png|webp|gif|svg)$/.test(url.pathname)) {
+              urls.push({ key, url: data[key] });
+              continue;
+            }
+            const response = await fetch(url, { method: 'HEAD' });
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.startsWith('image/')) {
+              urls.push({ key, url: data[key] });
+            }
+          } catch (_) {
+            // Ignore invalid URLs
+          }
         }
       }
-    }
+      setImageUrls(urls);
+    };
 
-    return images;
+    fetchImageUrls();
+  }, [data]);
+
+  const renderImages = () => {
+    return imageUrls.map(({ key, url }) => (
+      <CardMedia
+        component="img"
+        sx={{
+          width: 150,
+          margin: 'auto',
+          padding: 1,
+          wordWrap: 'break-word',
+          p: 1,
+          border: '1px solid #ccc',
+          borderRadius: '5px',
+          ...sx,
+        }}
+        key={key}
+        image={url}
+        alt={url}
+        onClick={() => setFullScreenImg(url)}
+      />
+    ));
   };
 
   const images = renderImages();
