@@ -8,25 +8,26 @@ function PointImage({ data, sx }) {
 
   useEffect(() => {
     const fetchImageUrls = async () => {
-      const urls = [];
-      for (const key in data) {
+      const urlChecks = Object.keys(data).map(async (key) => {
         if (typeof data[key] === 'string') {
           try {
             const url = new URL(data[key]);
             if (/\.(jpg|jpeg|png|webp|gif|svg)$/.test(url.pathname)) {
-              urls.push({ key, url: data[key] });
-              continue;
+              return { key, url: data[key] };
             }
             const response = await fetch(url, { method: 'HEAD' });
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.startsWith('image/')) {
-              urls.push({ key, url: data[key] });
+              return { key, url: data[key] };
             }
           } catch (_) {
             // Ignore invalid URLs
           }
         }
-      }
+        return null;
+      });
+
+      const urls = (await Promise.all(urlChecks)).filter(Boolean);
       setImageUrls(urls);
     };
 
