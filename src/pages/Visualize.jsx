@@ -37,12 +37,6 @@ const query = `
 //                  "payload": "field_name"
 //                }
 //
-//                or
-//                "color_by": {
-//                  "query": 17
-//                }
-//                see https://qdrant.tech/documentation/concepts/search/#query-api
-//
 // - 'using': specify which vector to use for visualization
 //                  if there are multiple.
 //
