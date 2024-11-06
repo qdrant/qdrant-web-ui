@@ -63,13 +63,15 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
           width: matchesMdMedia ? '100vw' : '55vw',
           padding: '1rem',
           pt: '6rem',
+          display: 'flex',
+          flexDirection: 'column',
         },
         '& .MuiBackdrop-root.MuiModal-backdrop': {
           opacity: '0 !important',
         },
       }}
     >
-      <div>
+      <Box sx={{ position: 'sticky', top: 0, zIndex: 1, pb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, mr: 2 }}>
           <Typography variant={'h5'}>Commands</Typography>
           <Box sx={{ flexGrow: 1 }} />
@@ -81,8 +83,10 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
           This is a list of commands that can be used in the editor.
         </Typography>
         <CommandSearch commands={allCommands} setCommands={setCommands} />
+      </Box>
+      <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand} />
-      </div>
+      </Box>
     </Drawer>
   );
 };
