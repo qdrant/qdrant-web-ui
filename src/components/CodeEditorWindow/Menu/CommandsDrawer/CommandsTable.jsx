@@ -1,7 +1,7 @@
-import React, { forwardRef, useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { TableBodyWithGaps, TableWithGaps } from '../../../Common/TableWithGaps';
-import { alpha, Box, Chip, TableCell, TableRow, Typography } from '@mui/material';
+import { alpha, Box, Chip, TableCell, TableRow, Typography, Modal, TextField, Button } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { ArrowBack } from '@mui/icons-material';
@@ -124,25 +124,61 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
   const listRefs = useRef([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({ bodyParams: [], pathParams: [] });
+  const [currentCommand, setCurrentCommand] = useState(null);
 
   useEffect(() => {
     setActive(null);
     listRefs.current = listRefs.current.slice(0, commands.length);
   }, [commands, commands.length]);
 
-  const handleClick = (command) => {
-    const commandText = `${command.method} ${command.command.substring(1)}${
-      command.hasRequestBody
-        ? ` \n{\n  ${
-            command.requiredBodyParameters
-              ? command.requiredBodyParameters.map((param) => `"${param}": `).join(',\n  ')
-              : ''
-          }\n}`
-        : ''
+  const handleModalOpen = (command) => {
+    setCurrentCommand(command);
+    setModalData({
+      bodyParams: command.requiredBodyParameters || [],
+      pathParams: command.requiredPathParameters || [],
+    });
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setCurrentCommand(null);
+  };
+
+  const handleModalSubmit = () => {
+    const bodyParams = modalData.bodyParams
+      .map((param, index) => `"${param}": "${document.getElementById(`body-param-${index}`).value}"`)
+      .join(',\n  ');
+    const pathParams = modalData.pathParams.reduce((acc, param, index) => {
+      acc[param] = document.getElementById(`path-param-${index}`).value;
+      return acc;
+    }, {});
+
+    let commandText = currentCommand.command;
+    Object.keys(pathParams).forEach((param) => {
+      commandText = commandText.replace(`<${param}>`, pathParams[param]);
+    });
+
+    commandText = `${currentCommand.method} ${commandText.substring(1)}${
+      currentCommand.hasRequestBody ? ` \n{\n  ${bodyParams}\n}` : ''
     }`;
 
     handleInsertCommand(commandText);
     enqueueSnackbar('Command inserted', successSnackbarOptions);
+    handleModalClose();
+  };
+
+  const handleClick = (command) => {
+    if ((command.requiredBodyParameters && command.requiredBodyParameters) || command.requiredPathParameters.length) {
+      handleModalOpen(command);
+    } else {
+      const commandText = `${command.method} ${command.command.substring(1)}`;
+
+      handleInsertCommand(commandText);
+      enqueueSnackbar('Command inserted', successSnackbarOptions);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -199,9 +235,38 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
   ));
 
   return (
-    <TableWithGaps data-testid="commands-table">
-      <TableBodyWithGaps>{rows}</TableBodyWithGaps>
-    </TableWithGaps>
+    <>
+      <TableWithGaps data-testid="commands-table">
+        <TableBodyWithGaps>{rows}</TableBodyWithGaps>
+      </TableWithGaps>
+      <Modal open={modalOpen} onClose={handleModalClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography variant="h6" component="h2">
+            Enter required parameters
+          </Typography>
+          {modalData.bodyParams.map((param, index) => (
+            <TextField key={param} id={`body-param-${index}`} label={param} fullWidth margin="normal" />
+          ))}
+          {modalData.pathParams.map((param, index) => (
+            <TextField key={param} id={`path-param-${index}`} label={param} fullWidth margin="normal" />
+          ))}
+          <Button onClick={handleModalSubmit} variant="contained" color="primary" sx={{ mt: 2 }}>
+            Submit
+          </Button>
+        </Box>
+      </Modal>
+    </>
   );
 };
 

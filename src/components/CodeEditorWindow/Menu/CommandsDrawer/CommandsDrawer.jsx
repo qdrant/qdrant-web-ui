@@ -7,7 +7,7 @@ import Close from '@mui/icons-material/Close';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
-import { resolveRequiredBodyParams } from '../../config/CommandsDrawerUtils';
+import { resolveRequiredBodyParams, resolveRequiredPathParams } from '../../config/CommandsDrawerUtils';
 
 const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
   const [allCommands, setAllCommands] = useState([]);
@@ -28,6 +28,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
               const tags = data.paths[path][method].tags;
               const hasRequestBody = !!data.paths[path][method].requestBody;
               let requiredBodyParameters = null;
+              const requiredPathParameters = resolveRequiredPathParams(data, method, path);
               if (hasRequestBody) {
                 requiredBodyParameters = resolveRequiredBodyParams(data, data.paths[path][method].requestBody.content);
               }
@@ -39,6 +40,7 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
                 hasRequestBody,
                 tags,
                 requiredBodyParameters,
+                requiredPathParameters,
               };
             });
           })

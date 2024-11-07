@@ -10,3 +10,12 @@ export const resolveRequiredBodyParams = function (openapi, requestBodyContent) 
     return requestBodyContent[contentType].schema.required;
   }
 };
+
+export const resolveRequiredPathParams = function (openapi, method, path) {
+  const pathItem = openapi.paths[path];
+  if (!pathItem || !pathItem[method]) {
+    return [];
+  }
+  const parameters = pathItem[method].parameters || [];
+  return parameters.filter((param) => param.in === 'path' && param.required).map((param) => param.name);
+};
