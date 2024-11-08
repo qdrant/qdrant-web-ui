@@ -1,7 +1,21 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { TableBodyWithGaps, TableWithGaps } from '../../../Common/TableWithGaps';
-import { alpha, Box, Chip, TableCell, TableRow, Typography, Modal, TextField, Button } from '@mui/material';
+import {
+  alpha,
+  Box,
+  Chip,
+  TableCell,
+  TableRow,
+  Typography,
+  Modal,
+  TextField,
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Link,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import IconButton from '@mui/material/IconButton';
 import { ArrowBack } from '@mui/icons-material';
@@ -9,9 +23,13 @@ import Tooltip from '@mui/material/Tooltip';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../../Common/utils/snackbarOptions';
 import { debounce } from 'lodash';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import _ from 'lodash';
+
+const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/';
 
 const CommandsTableRow = forwardRef((props, ref) => {
-  const { method, command, description, tags, onClick, tabIndex, isActive } = props;
+  const { method, command, description, tags, onClick, tabIndex, isActive, searchTerms, operationId } = props;
   const theme = useTheme();
 
   const getColor = (method) => {
@@ -38,6 +56,23 @@ const CommandsTableRow = forwardRef((props, ref) => {
     borderColor: `${color} !important`,
   };
 
+  const highlightText = (text, searchTerms) => {
+    if (searchTerms.length === 0) {
+      return text;
+    }
+    const escapedSearchTerms = searchTerms.map(_.escapeRegExp);
+    const regex = new RegExp(`(${escapedSearchTerms.join('|')})`, 'gi');
+    return text.split(regex).map((part, index) =>
+      regex.test(part) ? (
+        <span key={index} style={{ color: 'yellow' }}>
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
   const tagList = tags.map((tag) => (
     <React.Fragment key={tag}>
       <Typography
@@ -59,6 +94,8 @@ const CommandsTableRow = forwardRef((props, ref) => {
       <br />
     </React.Fragment>
   ));
+
+  const docsURL = `${DOCS_BASE_URL}${tags[0].toLowerCase()}/${operationId.replace(/_/g, '-')}`;
 
   return (
     <TableRow
@@ -87,7 +124,7 @@ const CommandsTableRow = forwardRef((props, ref) => {
           <Chip color={colorName} label={method} size="small" />
           <Box>
             <Typography component={'code'} ml={2}>
-              {command}
+              {highlightText(command, searchTerms)}
             </Typography>
             <br />
             <Typography
@@ -95,13 +132,18 @@ const CommandsTableRow = forwardRef((props, ref) => {
               ml={2}
               color={theme.palette.mode === 'light' ? theme.palette.grey[700] : theme.palette.grey[400]}
             >
-              {description}
+              {highlightText(description, searchTerms)}
             </Typography>
           </Box>
         </Box>
       </TableCell>
       <TableCell sx={rowStyle} align="right">
         {tagList}
+        <Typography variant="caption">
+          <Link href={docsURL} target="_blank" rel="noopener noreferrer">
+            Documentation
+          </Link>
+        </Typography>
       </TableCell>
     </TableRow>
   );
@@ -117,9 +159,11 @@ CommandsTableRow.propTypes = {
   onClick: PropTypes.func.isRequired,
   isActive: PropTypes.bool.isRequired,
   tabIndex: PropTypes.number.isRequired,
+  searchTerms: PropTypes.array,
+  operationId: PropTypes.string.isRequired,
 };
 
-const CommandsTable = ({ commands, handleInsertCommand }) => {
+const CommandsTable = ({ commands, handleInsertCommand, searchTerms }) => {
   const [active, setActive] = React.useState(null);
   const listRefs = useRef([]);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -132,6 +176,10 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
     setActive(null);
     listRefs.current = listRefs.current.slice(0, commands.length);
   }, [commands, commands.length]);
+
+  useEffect(() => {
+    console.log('commands', searchTerms);
+  }, [searchTerms]);
 
   const handleModalOpen = (command) => {
     setCurrentCommand(command);
@@ -215,6 +263,49 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
     };
   }, [active]);
 
+  const groupedCommands = commands.reduce((acc, command) => {
+    command.tags.forEach((tag) => {
+      if (!acc[tag]) {
+        acc[tag] = [];
+      }
+      acc[tag].push(command);
+    });
+    return acc;
+  }, {});
+
+  const accordions = Object.keys(groupedCommands).map((tag) => (
+    <Accordion key={tag}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${tag}-content`} id={`${tag}-header`}>
+        <Typography>{tag}</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <TableWithGaps>
+          <TableBodyWithGaps>
+            {groupedCommands[tag].map((command, index) => (
+              <CommandsTableRow
+                tabIndex={0}
+                ref={(el) => (listRefs.current[index] = el)}
+                key={command.method + '_' + command.command}
+                method={command.method}
+                command={command.command}
+                description={command.description}
+                searchTerms={searchTerms}
+                tags={command.tags}
+                isActive={active === index}
+                onClick={(e) => {
+                  if (e.target.classList.contains('insert-button') || e.target.closest('.insert-button')) {
+                    handleClick(command);
+                  }
+                }}
+                operationId={command.operationId}
+              />
+            ))}
+          </TableBodyWithGaps>
+        </TableWithGaps>
+      </AccordionDetails>
+    </Accordion>
+  ));
+
   const rows = commands.map((command, index) => (
     <CommandsTableRow
       tabIndex={0} // Make the list item focusable
@@ -225,20 +316,27 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
       description={command.description}
       tags={command.tags}
       isActive={active === index}
+      searchTerms={searchTerms}
       onClick={(e) => {
         // we want insert command only if user clicks on the button with the class 'insert-button'
         if (e.target.classList.contains('insert-button') || e.target.closest('.insert-button')) {
           handleClick(command);
         }
       }}
+      operationId={command.operationId}
     />
   ));
 
   return (
     <>
-      <TableWithGaps data-testid="commands-table">
-        <TableBodyWithGaps>{rows}</TableBodyWithGaps>
-      </TableWithGaps>
+      {searchTerms.length === 0 ? (
+        accordions
+      ) : (
+        <TableWithGaps>
+          <TableBodyWithGaps>{rows}</TableBodyWithGaps>
+        </TableWithGaps>
+      )}
+
       <Modal open={modalOpen} onClose={handleModalClose}>
         <Box
           sx={{
@@ -280,6 +378,7 @@ CommandsTable.propTypes = {
     })
   ).isRequired,
   handleInsertCommand: PropTypes.func.isRequired,
+  searchTerms: PropTypes.array.isRequired,
 };
 
 export default CommandsTable;

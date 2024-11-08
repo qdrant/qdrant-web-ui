@@ -4,16 +4,18 @@ import _ from 'lodash';
 import { InputAdornment, TextField } from '@mui/material';
 import { Search } from '@mui/icons-material';
 
-const CommandSearch = ({ commands, setCommands }) => {
-  const ref = React.useRef(null);
-
+const CommandSearch = ({ commands, setCommands, setSearchTerms }) => {
+  
+    const ref = React.useRef(null);
   const handleSearch = (event) => {
-    const value = event.target.value;
+    const { value } = event.target;
 
     if (value === '') {
       setCommands(commands);
+      setSearchTerms([]);
     } else {
       const searchTerms = value.split(' ');
+      setSearchTerms(searchTerms);
       const nextCommands = commands
         .reduce((acc, command) => {
           const commandTerms = [command.method, command.command, command.description];
@@ -63,6 +65,7 @@ const CommandSearch = ({ commands, setCommands }) => {
 CommandSearch.propTypes = {
   commands: PropTypes.array.isRequired,
   setCommands: PropTypes.func.isRequired,
+  setSearchTerms: PropTypes.func.isRequired,
 };
 
 export default CommandSearch;
