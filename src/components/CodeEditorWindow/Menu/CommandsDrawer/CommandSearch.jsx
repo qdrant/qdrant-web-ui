@@ -5,8 +5,7 @@ import { InputAdornment, TextField } from '@mui/material';
 import { Search } from '@mui/icons-material';
 
 const CommandSearch = ({ commands, setCommands, setSearchTerms }) => {
-  
-    const ref = React.useRef(null);
+  const ref = React.useRef(null);
   const handleSearch = (event) => {
     const { value } = event.target;
 

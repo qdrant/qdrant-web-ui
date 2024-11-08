@@ -87,14 +87,10 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
         <Typography variant={'body1'} mb={4}>
           This is a list of commands that can be used in the editor.
         </Typography>
-        <CommandSearch commands={allCommands} setCommands={setCommands}
-                        setSearchTerms={setSearchTerms}
-        />
+        <CommandSearch commands={allCommands} setCommands={setCommands} setSearchTerms={setSearchTerms} />
       </Box>
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-        <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand}
-          searchTerms={searchTerms}
-        />
+        <CommandsTable commands={commands} handleInsertCommand={handleInsertCommand} searchTerms={searchTerms} />
       </Box>
     </Drawer>
   );
