@@ -104,7 +104,7 @@ You’ll notice this filter works, but if you change the phrase slightly, it won
 
 To make filtering more powerful and flexible, we’ll index the `description` field. This will tokenize the text, allowing for more complex queries such as filtering for phrases like "cave colonies." We use a `word` tokenizer, and only tokens that are between 5 and 20 characters will be indexed.
 
-**Note:** You should always index a fielf before filtering. If you use filtering before you create an index (like in Step 3), Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+**Note:** You should always index a field before filtering. If you use filtering before you create an index (like in Step 3), Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
 
 ```json withRunButton="true"
 PUT /collections/star_charts/index
