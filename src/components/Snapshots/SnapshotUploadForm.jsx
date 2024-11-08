@@ -11,7 +11,6 @@ import { StyledStatusBar } from '../Uploader/StyledStatusBar';
 import '@uppy/core/dist/style.min.css';
 import '@uppy/drag-drop/dist/style.min.css';
 import '@uppy/status-bar/dist/style.min.css';
-import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
@@ -58,27 +57,29 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     headers: getHeaders(),
     formData: true,
     fieldName: 'snapshot',
-    getResponseError: (responseText) => {
-      enqueueSnackbar(bigIntJSON.parse(responseText)?.status?.error, {
-        variant: 'error',
-        autoHideDuration: null,
-        action: (key) => (
-          <Button
-            variant="outlined"
-            color="inherit"
-            onClick={() => {
-              closeSnackbar(key);
-            }}
-          >
-            Dismiss
-          </Button>
-        ),
-        anchorOrigin: {
-          vertical: 'bottom',
-          horizontal: 'center',
-        },
-      });
-    },
+  });
+
+  uppy.on('upload-error', (_, error, response) => {
+    const errorMessage = response?.body?.status?.error || error.message || 'Unknown error';
+    enqueueSnackbar(`Upload failed: ${errorMessage}`, {
+      variant: 'error',
+      autoHideDuration: null,
+      action: (key) => (
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={() => {
+            closeSnackbar(key);
+          }}
+        >
+          Dismiss
+        </Button>
+      ),
+      anchorOrigin: {
+        vertical: 'bottom',
+        horizontal: 'center',
+      },
+    });
   });
 
   uppy.on('upload-success', () => {
