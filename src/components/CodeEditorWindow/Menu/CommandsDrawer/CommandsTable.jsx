@@ -168,12 +168,10 @@ const CommandsTable = ({ commands, handleInsertCommand, searchTerms }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
 
-
   useEffect(() => {
     setActive(null);
     listRefs.current = listRefs.current.slice(0, commands.length);
   }, [commands, commands.length]);
-
 
   const handleClick = (command) => {
     const commandText = `${command.method} ${command.command.substring(1)}${
