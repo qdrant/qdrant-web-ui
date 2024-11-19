@@ -25,7 +25,7 @@ const PointsTabs = ({ collectionName, client }) => {
     }
     setOffset(null);
     setConditions(conditions);
-    setPoints({ points: [] });
+    setPoints(null);
   };
 
   const deletePoint = (collectionName, pointIds) => {
