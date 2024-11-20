@@ -4,19 +4,21 @@ import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import SearchQualityPanel from './SearchQualityPanel';
 import { useSnackbar } from 'notistack';
-import { Box, Card, CardContent, CardHeader, Grid } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Dialog, Grid, IconButton, Tooltip } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import EditorCommon from '../../EditorCommon';
 import _ from 'lodash';
 import * as Instruction from './Instruction.mdx';
 import { mdxComponents } from '../../InteractiveTutorial/MdxComponents/MdxComponents';
+import { Close, OpenInFull } from '@mui/icons-material';
 
 const SearchQuality = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client } = useClient();
   const [collection, setCollection] = React.useState(null);
   const [log, setLog] = React.useState('');
+  const [open, setOpen] = React.useState(false);
 
   const handleLogUpdate = (newLog) => {
     const date = new Date().toLocaleString();
@@ -82,7 +84,22 @@ const SearchQuality = ({ collectionName }) => {
             overflow: 'hidden',
           }}
         >
-          <CardHeader title="What is search quality?" variant="heading" />
+          <CardHeader
+            title="What is search quality?"
+            variant="heading"
+            action={
+              <Tooltip title={'Expand'} placement={'left'}>
+                <IconButton
+                  aria-label={'Expand'}
+                  onClick={() => {
+                    setOpen(true);
+                  }}
+                >
+                  <OpenInFull />
+                </IconButton>
+              </Tooltip>
+            }
+          />
           <CardContent
             sx={{
               pl: 2,
@@ -129,6 +146,41 @@ const SearchQuality = ({ collectionName }) => {
           </Box>
         </Card>
       </Grid>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md">
+        <Card
+          variant="dual"
+          sx={{
+            flex: '1 1 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
+          <CardHeader
+            title="What is search quality?"
+            variant="heading"
+            action={
+              <IconButton
+                aria-label={'Close'}
+                onClick={() => {
+                  setOpen(false);
+                }}
+              >
+                <Close />
+              </IconButton>
+            }
+          />
+          <CardContent
+            sx={{
+              pl: 2,
+              flex: '1 1 auto',
+              overflowY: 'auto',
+            }}
+          >
+            <Instruction.default components={mdxComponents} />
+          </CardContent>
+        </Card>
+      </Dialog>
     </Grid>
   );
 };
