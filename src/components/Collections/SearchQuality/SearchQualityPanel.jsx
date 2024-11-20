@@ -44,8 +44,8 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
         </Typography>
       </TableCell>
       <TableCell>
-        {isInProgress && <LinearProgress />}
-        {!isInProgress && (
+        {isInProgress === name && <LinearProgress />}
+        {isInProgress !== name && (
           <Box display="flex" alignItems="center">
             <Typography variant="subtitle1" component={'span'} color="text.secondary">
               {precision ? `${precision * 100}%` : null}
@@ -84,7 +84,7 @@ VectorTableRow.propTypes = {
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
   precision: PropTypes.number,
-  isInProgress: PropTypes.bool,
+  isInProgress: PropTypes.string,
 };
 
 const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
@@ -101,7 +101,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   });
 
   const [advancedMod, setAdvancedMod] = useState(false);
-  const [inProgress, setInProgress] = useState(false);
+  const [inProgress, setInProgress] = useState(null);
 
   const [code, setCode] = useState(`
 // Run this code to estimate search quality versus exact search
@@ -182,10 +182,14 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
     return <>No vectors</>;
   }
 
-  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }) => {
-    setInProgress(true);
-
+  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }, controller) => {
+    setInProgress(using);
     clearLogsFoo && clearLogsFoo();
+    if (vectorsNames && !vectorsNames.includes(using)) {
+      loggingFoo && loggingFoo('Vector field name not found\n');
+      setInProgress(null);
+      return;
+    }
     const precisions = [];
     try {
       const scrollResult = await client.scroll(collectionName, {
@@ -202,6 +206,10 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + using || '---');
 
       for (let idx = 0; idx < total; idx++) {
+        if (controller.signal.aborted) {
+          loggingFoo && loggingFoo('Previous operation cancelled \n');
+          break;
+        }
         const pointId = pointIds[idx];
         const precision = await checkIndexPrecision(
           client,
@@ -238,16 +246,22 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         };
       });
 
-      setInProgress(false);
+      setInProgress(null);
     } catch (e) {
-      setInProgress(false);
+      setInProgress(null);
       console.error(e);
       loggingFoo && loggingFoo(JSON.stringify(e));
     }
   };
 
   const handleRunCode = async (qulityCheckParams) => {
-    onCheckIndexQuality(qulityCheckParams);
+    if (window.currentController) {
+      window.currentController.abort();
+    }
+    const controller = new AbortController();
+    window.currentController = controller;
+
+    onCheckIndexQuality(qulityCheckParams, controller);
   };
 
   return (
@@ -309,7 +323,14 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
                 <VectorTableRow
                   vectorObj={vectors[vectorName]}
                   name={vectorName}
-                  onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
+                  onCheckIndexQuality={() => {
+                    if (window.currentController) {
+                      window.currentController.abort();
+                    }
+                    const controller = new AbortController();
+                    window.currentController = controller;
+                    onCheckIndexQuality({ using: vectorName }, controller);
+                  }}
                   precision={precision ? precision[vectorName] : null}
                   key={vectorName}
                   isInProgress={inProgress}
