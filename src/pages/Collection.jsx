@@ -56,12 +56,7 @@ function Collection() {
                 <Tab label="Info" value={'info'} />
                 <Tab label="Search Quality" value={'quality'} />
                 <Tab label="Snapshots" value={'snapshots'} />
-                <Tab
-                  label="Visualize"
-                  component={Link}
-                  to={`${location.pathname}/visualize`}
-                  disabled={!isDense}
-                />
+                <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} disabled={!isDense} />
                 <Tab label="Graph" component={Link} to={`${location.pathname}/graph`} />
               </Tabs>
             </Box>
