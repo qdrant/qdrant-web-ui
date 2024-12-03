@@ -75,9 +75,6 @@ export function generateColorBy(points, colorBy = null) {
 
     return points.map((point) => {
       const payloadValue = getNestedValue(point.payload, colorBy.payload);
-      if (payloadValue === undefined || payloadValue === null) {
-        return BACKGROUND_COLOR;
-      }
       return colorByPayload(payloadValue, valuesToColor);
     });
   }
