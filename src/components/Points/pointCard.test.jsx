@@ -60,5 +60,6 @@ describe('PointCard', () => {
     );
     expect(screen.getByText('Point 11')).toBeInTheDocument();
     expect(screen.queryByText('Score') === null);
+    expect(screen.queryByText('Score: undefined') === null);
   });
 });
