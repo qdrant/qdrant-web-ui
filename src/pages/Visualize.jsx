@@ -37,7 +37,7 @@ const query = `
 //                  "payload": "field_name"
 //                }
 //
-// - 'vector_name': specify which vector to use for visualization
+// - 'using': specify which vector to use for visualization
 //                  if there are multiple.
 //
 // - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP'.
@@ -100,8 +100,8 @@ function Visualize() {
           },
         ],
       },
-      vector_name: {
-        description: 'Vector field name',
+      using: {
+        description: 'Specify which vector to use for visualization',
         type: 'string',
         enum: vectorNames,
       },
