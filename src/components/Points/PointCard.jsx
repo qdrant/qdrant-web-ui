@@ -65,6 +65,7 @@ const PointCard = (props) => {
         )}
         <CardHeader
           title={'Point ' + point.id}
+          subheader={point.score && `Score: ${point.score}`}
           action={
             <>
               {Object.keys(point.payload).length === 0 && (
