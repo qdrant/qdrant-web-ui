@@ -66,19 +66,20 @@ export function generateColorBy(points, colorBy = null) {
     colorBy = { payload: colorBy };
   }
 
+  function getNestedValue(obj, path) {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  }
+
   if (colorBy.payload) {
     const valuesToColor = {};
 
     return points.map((point) => {
-      const payloadValue = point.payload[colorBy.payload];
-      if (!payloadValue) {
-        return BACKGROUND_COLOR;
-      }
+      const payloadValue = getNestedValue(point.payload, colorBy.payload);
       return colorByPayload(payloadValue, valuesToColor);
     });
   }
 
-  if (colorBy.discover_score || colorBy.query) {
+  if (colorBy.query) {
     const scores = points.map((point) => point.score);
     const minScore = Math.min(...scores);
     const maxScore = Math.max(...scores);
