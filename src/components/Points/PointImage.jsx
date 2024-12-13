@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardMedia, Modal, Typography } from '@mui/material';
+import { Box, CardMedia, Grid, Modal, Typography } from '@mui/material';
 
 function PointImage({ data, sx }) {
   const [fullScreenImg, setFullScreenImg] = useState(null);
@@ -58,7 +58,7 @@ function PointImage({ data, sx }) {
   }
 
   return (
-    <>
+    <Grid item xs={3} display="grid" justifyContent={'center'}>
       {images}
       <Modal
         open={!!fullScreenImg}
@@ -108,7 +108,7 @@ function PointImage({ data, sx }) {
           />
         </Box>
       </Modal>
-    </>
+    </Grid>
   );
 }
 PointImage.propTypes = {
