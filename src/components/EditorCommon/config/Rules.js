@@ -101,7 +101,8 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
 
         const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
         if (terminal) {
-          terminal.operationId = terminal.operationId.replace('_', '-');
+          terminal.operationId = terminal.operationId.replace(/_/g, '-');
+          terminal.tags[0] = terminal.tags[0].toLowerCase();
           const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/' + terminal.operationId;
           lenses.push({
             range,
