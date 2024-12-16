@@ -152,3 +152,22 @@ export const getMinimalSpanningTree = (links, acs = true) => {
 
   return mstLinks;
 };
+
+//  the function which returns metric for given collection and name of the vector
+
+export const getMetrics = async (qdrantClient, { collectionName }) => {
+  const metricConfig = {};
+  try {
+    const collectionInfo = await qdrantClient.getCollection(collectionName);
+    Object.keys(collectionInfo.config.params.vectors).map((key) => {
+      if (typeof collectionInfo.config.params.vectors[key] === 'object') {
+        metricConfig[key] = collectionInfo.config.params.vectors[key].distance;
+      } else {
+        metricConfig[''] = collectionInfo.config.params.vectors.distance;
+      }
+    });
+    return metricConfig;
+  } catch (e) {
+    console.error(e);
+  }
+};
