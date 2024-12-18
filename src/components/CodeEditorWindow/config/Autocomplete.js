@@ -45,6 +45,12 @@ export const autocomplete = async (monaco, qdrantClient) => {
             };
           });
 
+        autocomplete.getSnippets().forEach((snippet) => {
+          if (snippet.label.startsWith(header)) {
+            suggestions.push(snippet);
+          }
+        });
+
         return { suggestions };
       } else {
         // Autocomplete for request body
