@@ -43,7 +43,7 @@ self.onmessage = function (e) {
   if (points.length === 1) {
     self.postMessage({
       data: [],
-      error: 'cannot perform tsne on single point',
+      error: `cannot perform ${params.algorithm || 'TSNE'} on single point`,
     });
     return;
   }
