@@ -43,7 +43,7 @@ const PointPreview = ({ point }) => {
           <>
             <CardContent>
               <Grid container display={'flex'}>
-                {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} />}
+                {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} gridxs={12} />}
                 <Grid item xs={12} my={1}>
                   <DataGridList
                     data={{ id: point.id, ...point.payload }}
