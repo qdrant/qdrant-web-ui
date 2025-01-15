@@ -34,6 +34,8 @@ export const ClientProvider = (props) => {
 
   const client = qdrantClient(settings);
 
+  setupAxios(axiosInstance, settings);
+
   useEffect(() => {
     setupAxios(axiosInstance, settings);
     persistSettings(settings);
