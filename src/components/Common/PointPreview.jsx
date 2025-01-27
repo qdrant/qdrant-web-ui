@@ -16,6 +16,13 @@ const PointPreview = ({ point }) => {
     return null;
   }
 
+  const sortedPayload = Object.keys(point.payload)
+    .sort() // Sort the keys alphabetically
+    .reduce((obj, key) => {
+      obj[key] = point.payload[key]; // Rebuild the object with sorted keys
+      return obj;
+    }, {});
+
   return (
     <>
       <Card
@@ -43,10 +50,10 @@ const PointPreview = ({ point }) => {
           <>
             <CardContent>
               <Grid container display={'flex'}>
-                {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} />}
+                {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} xs={12} />}
                 <Grid item xs={12} my={1}>
                   <DataGridList
-                    data={{ id: point.id, ...point.payload }}
+                    data={{ id: point.id, ...sortedPayload }}
                     conditions={conditions}
                     payloadSchema={payloadSchema}
                   />
