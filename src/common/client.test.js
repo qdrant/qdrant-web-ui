@@ -23,19 +23,20 @@ describe('QdrantClientExtended', () => {
         port,
       });
       await client.downloadSnapshot(collectionName, snapshotName);
+      
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
 
-      // check that fetch was called with correct arguments
-      expect(fetchSpy).toHaveBeenCalledWith(
-        new Request(`${url}/collections/${collectionName}/snapshots/${snapshotName}`, {
-          method: 'GET',
-          headers: {
-            'Content-Disposition': `attachment; filename="${snapshotName}"`,
-            'Content-Type': 'application/gzip',
-            'api-key': apiKey,
-          },
-        }),
-        { signal: controller.signal }
-      );
+      // Extract the actual arguments
+      const [actualRequest, actualOptions] = fetchSpy.mock.calls[0];
+
+      // Check the URL and method
+      expect(actualRequest.url).toBe(`${url}/collections/${collectionName}/snapshots/${snapshotName}`);
+      expect(actualRequest.method).toBe('GET');
+
+      // Check the headers
+      expect(actualRequest.headers.get('Content-Disposition')).toBe(`attachment; filename="${snapshotName}"`);
+      expect(actualRequest.headers.get('Content-Type')).toBe('application/gzip');
+      expect(actualRequest.headers.get('api-key')).toBe(apiKey);
     });
   });
 

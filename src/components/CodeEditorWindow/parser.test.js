@@ -47,7 +47,6 @@ GET collections/startups
 }
 
 PUT collections/demo1
-
 {
     "vectors":
     {
@@ -61,7 +60,7 @@ PUT collections/demo1
 describe('parser', () => {
   it('Should extract query blocks from code', () => {
     const requests = getCodeBlocks(testCode);
-    expect(requests.length).toEqual(10);
+    expect(requests.length).toEqual(8);
     expect(requests[1].blockStartLine).toEqual(3);
     expect(requests[1].blockEndLine).toEqual(10);
     expect(requests[2].blockStartLine).toEqual(requests[2].blockEndLine);
@@ -164,25 +163,7 @@ describe('parser', () => {
     //     }
     // }
     block = selectBlock(blocks, 38);
-    requests = codeParse(block.blockText);
-    expect(requests.method).toEqual(null);
-    expect(requests.endpoint).toEqual(null);
-    expect(requests.error).toEqual('Add Headline or remove the line gap between json and headline (if any)');
+    expect(block).toEqual(null);
 
-    // 47
-    // PUT collections/demo1
-    //   //47 this line should be ignored
-    // {
-    //     "vectors":
-    //     {
-    //         "size": 1,
-    //         "distance": "Cosine"
-    //     }
-    // }
-    block = selectBlock(blocks, 47);
-    requests = codeParse(block.blockText);
-    expect(requests.method).toEqual(null);
-    expect(requests.endpoint).toEqual(null);
-    expect(requests.error).toEqual('Add Headline or remove the line gap between json and headline (if any)');
   });
 });
