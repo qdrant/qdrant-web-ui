@@ -164,6 +164,5 @@ describe('parser', () => {
     // }
     block = selectBlock(blocks, 38);
     expect(block).toEqual(null);
-
   });
 });

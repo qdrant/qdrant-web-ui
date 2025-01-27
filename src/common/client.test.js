@@ -23,7 +23,7 @@ describe('QdrantClientExtended', () => {
         port,
       });
       await client.downloadSnapshot(collectionName, snapshotName);
-      
+
       expect(fetchSpy).toHaveBeenCalledTimes(1);
 
       // Extract the actual arguments
