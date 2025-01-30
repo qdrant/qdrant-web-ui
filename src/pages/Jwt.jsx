@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Alert, Box, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
@@ -39,7 +39,7 @@ function generateToken(globalAccess, manageAccess, expirationDays, configuredCol
 
 function Jwt() {
   const headerHeight = 64;
-  const { client: qdrantClient } = useClient();
+  const { client: qdrantClient, isRestricted } = useClient();
   const [errorMessage, setErrorMessage] = useState(null);
 
   const [globalAccess, setGlobalAccess] = useState(true);
@@ -84,35 +84,48 @@ function Jwt() {
     >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
 
-      <Box
-        sx={{
-          px: 2,
-          pt: 4,
-          pb: 20,
-          width: '50%',
-          overflowY: 'scroll',
-          maxWidth: '1200px',
-          mx: 'auto',
-        }}
-      >
-        <Typography variant="h4" gutterBottom>
-          Generate new Access Token
-        </Typography>
+      {isRestricted ? (
+        <Box sx={{ p: 5, width: '100%' }}>
+          <Grid xs={12} item>
+            <Alert severity="warning">
+              Access Denied: You do not have permission to generate new tokens. Please contact your administrator.
+            </Alert>
+          </Grid>
+          <JwtTokenViewer jwt={jwt} token={token} />
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            px: 2,
+            pt: 4,
+            pb: 20,
+            width: '50%',
+            overflowY: 'scroll',
+            maxWidth: '1200px',
+            mx: 'auto',
+          }}
+        >
+          <Typography variant="h4" gutterBottom>
+            Generate new Access Token
+          </Typography>
 
-        <JwtForm
-          expiration={expirationDays}
-          setExpiration={setExpirationDays}
-          globalAccess={globalAccess}
-          setGlobalAccess={setGlobalAccess}
-          manageAccess={manageAccess}
-          setManageAccess={setManageAccess}
-          collections={configuredCollections}
-          setCollections={setConfiguredCollections}
-          setTokenValidatior={setTokenValidatior}
-        />
+          <JwtForm
+            expiration={expirationDays}
+            setExpiration={setExpirationDays}
+            globalAccess={globalAccess}
+            setGlobalAccess={setGlobalAccess}
+            manageAccess={manageAccess}
+            setManageAccess={setManageAccess}
+            collections={configuredCollections}
+            setCollections={setConfiguredCollections}
+            setTokenValidatior={setTokenValidatior}
+          />
 
-        <JwtTokenViewer jwt={jwt} token={token} />
-      </Box>
+          <JwtTokenViewer jwt={jwt} token={token} />
+        </Box>
+      )}
+
+
       {collections.length > 0 && (
         <JwtResultForm
           allCollecitons={collections}

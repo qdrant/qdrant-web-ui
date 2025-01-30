@@ -1,4 +1,5 @@
-import * as Index from './MdxPages/Index.mdx';
+import * as Unrestricted from './MdxPages/Index.mdx';
+import * as Restricted from './MdxPages/Index-serverless.mdx';
 import * as Quickstart from './MdxPages/Quickstart.mdx';
 import * as FilteringBeginner from './MdxPages/FilteringBeginner.mdx';
 import * as FilteringAdvanced from './MdxPages/FilteringAdvanced.mdx';
@@ -15,8 +16,11 @@ import * as LoadContent from './MdxPages/LoadContent.mdx';
  *  check out the MDX files in src/components/InteractiveTutorial/MdxPages
  */
 
-export const tutorialIndexPage = Index;
-const tutorialSubPages = [
+export const getTutorialIndexPage = (isRestricted) => {
+  return isRestricted ? Restricted : Unrestricted;
+};
+
+const allTutorialPages = [
   ['quickstart', Quickstart],
   ['loadcontent', LoadContent],
   ['filteringbeginner', FilteringBeginner],
@@ -26,9 +30,18 @@ const tutorialSubPages = [
   ['sparsevectors', SparseVectors],
   ['hybridsearch', HybridSearch],
   ['multitenancy', Multitenancy],
-  // add more pages here
 ];
 
-export { tutorialSubPages };
+const restrictedTutorialPages = [
+  ['filteringbeginner', FilteringBeginner],
+  ['filteringadvanced', FilteringAdvanced],
+  ['filteringfulltext', FilteringFullText]
+];
+
+export const getTutorialSubPages = (isRestricted) => {
+  return isRestricted ? restrictedTutorialPages : allTutorialPages;
+};
+
+export const tutorialSubPages = allTutorialPages;
 
 export default tutorialSubPages;

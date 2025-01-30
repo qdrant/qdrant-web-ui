@@ -3,6 +3,14 @@ import '@testing-library/jest-dom';
 import ClusterInfo from './ClusterInfo';
 import ClusterShardRow from './ClusterShardRow';
 
+// Mock client context
+vi.mock('../../../context/client-context', () => ({
+  useClient: () => ({
+    client: {},
+    isRestricted: false
+  })
+}));
+
 const CLUSTER_INFO = {
   result: {
     peer_id: 5644950770669488,

@@ -12,23 +12,25 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { client: qdrantClient } = useClient();
+  const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
 
   useEffect(() => {
     fetchCollection();
-    qdrantClient
-      .api('cluster')
-      .collectionClusterInfo({ collection_name: collectionName })
-      .then((res) => {
-        setClusterInfo(() => {
-          return { ...res.data };
+    if (!isRestricted) {
+      qdrantClient
+        .api('cluster')
+        .collectionClusterInfo({ collection_name: collectionName })
+        .then((res) => {
+          setClusterInfo(() => {
+            return { ...res.data };
+          });
+        })
+        .catch((err) => {
+          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
         });
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      });
+    }
   }, [collectionName]);
 
   const fetchCollection = () => {
@@ -47,7 +49,7 @@ export const CollectionInfo = ({ collectionName }) => {
   const triggerOptimizers = () => {
     qdrantClient
       .updateCollection(collectionName, {
-        optimizers_config: {},
+        optimizers_config: {}
       })
       .then(() => {
         enqueueSnackbar('Optimizers triggered', getSnackbarOptions('success', closeSnackbar));
@@ -65,7 +67,7 @@ export const CollectionInfo = ({ collectionName }) => {
           title={'Collection Info'}
           variant="heading"
           sx={{
-            flexGrow: 1,
+            flexGrow: 1
           }}
           action={<CopyButton text={bigIntJSON.stringify(collection)} />}
         />
@@ -85,7 +87,7 @@ export const CollectionInfo = ({ collectionName }) => {
                     </Button>
                   )}
                 </Box>
-              ),
+              )
             }}
           />
         </CardContent>
@@ -99,7 +101,7 @@ export const CollectionInfo = ({ collectionName }) => {
 CollectionInfo.displayName = 'CollectionInfo';
 
 CollectionInfo.propTypes = {
-  collectionName: PropTypes.string.isRequired,
+  collectionName: PropTypes.string.isRequired
 };
 
 export default memo(CollectionInfo);

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { LibraryBooks, Terminal, Animation, Key, RocketLaunch } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
+import { useClient } from '../../context/client-context';
 
 const drawerWidth = 240;
 
@@ -58,6 +59,8 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
+  const { isRestricted } = useClient();
+
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />
@@ -69,14 +72,16 @@ export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
         <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
           <SidebarTutorialSection isSidebarOpen={open} />
         </ListItem>
-        {sidebarItem('Datasets', <Animation />, '/datasets', open)}
+
+        {!isRestricted && sidebarItem('Datasets', <Animation />, '/datasets', open)}
 
         {jwtVisible && sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
       </List>
-      <List style={{ marginTop: `auto` }}>
+
+      <List style={{ marginTop: 'auto' }}>
         <ListItem>
           <Typography variant="caption">
-            {open ? `Qdrant ` : ``}v{version}
+            {open ? 'Qdrant ' : ''}Q{version}
           </Typography>
         </ListItem>
       </List>

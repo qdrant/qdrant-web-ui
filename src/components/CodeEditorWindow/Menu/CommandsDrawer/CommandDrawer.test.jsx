@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CommandsDrawer from './CommandsDrawer';
 
@@ -37,15 +37,18 @@ vi.stubGlobal('fetch', fetch);
 describe('CommandsDrawer', () => {
   it('should render CommandsDrawer with fetched data', async () => {
     const commands = [];
-    render(
-      <CommandsDrawer
-        open={true}
-        toggleDrawer={() => {}}
-        handleInsertCommand={(command) => {
-          commands.push(command);
-        }}
-      />
-    );
+
+    await act(async () => {
+      render(
+        <CommandsDrawer
+          open={true}
+          toggleDrawer={() => {}}
+          handleInsertCommand={(command) => {
+            commands.push(command);
+          }}
+        />
+      );
+    });
 
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toHaveFocus();
@@ -63,7 +66,7 @@ describe('CommandsDrawer', () => {
       return {
         method: row.children[1].children[0].children[0].children[0].textContent,
         command: row.children[1].children[0].children[1].children[0].textContent,
-        description: row.children[1].children[0].children[1].children[2].textContent,
+        description: row.children[1].children[0].children[1].children[2].textContent
       };
     }
 
