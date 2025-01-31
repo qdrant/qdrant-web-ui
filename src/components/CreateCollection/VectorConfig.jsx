@@ -11,8 +11,6 @@ import {
   FormHelperText,
   IconButton,
   Tooltip,
-  FormControlLabel,
-  Checkbox,
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { AddCircleOutline, DeleteOutline } from '@mui/icons-material';
@@ -53,23 +51,19 @@ const VectorRow = ({ vectors, index, setVectors, errors, length, setErrors }) =>
     validate(index, field, value);
   };
 
-  const handleVectorConfigChange = (index, field, value) => {
-    if (value) {
-      const newVectors = [...vectors];
-
-      field === 'multivector_config'
-        ? (newVectors[index][field] = { comparator: 'max_sim' })
-        : (newVectors[index][field] = true);
-      field === 'multivector_config'
-        ? (newVectors[index].sparse_vectors = false)
-        : (newVectors[index].multivector_config = null);
-
-      setVectors(newVectors);
+  const handleVectorTypeChange = (index, value) => {
+    const newVectors = [...vectors];
+    if (value === 'Multivector') {
+      newVectors[index].multivector_config = { comparator: 'max_sim' };
+      newVectors[index].sparse_vectors = false;
+    } else if (value === 'Sparse') {
+      newVectors[index].multivector_config = null;
+      newVectors[index].sparse_vectors = true;
     } else {
-      const newVectors = [...vectors];
-      newVectors[index][field] = null;
-      setVectors(newVectors);
+      newVectors[index].multivector_config = null;
+      newVectors[index].sparse_vectors = false;
     }
+    setVectors(newVectors);
   };
 
   useEffect(() => {
@@ -121,32 +115,24 @@ const VectorRow = ({ vectors, index, setVectors, errors, length, setErrors }) =>
           sx={{ mr: 2 }}
         />
       )}
-      <FormControlLabel
-        control={
-          <Checkbox
-            color="primary"
-            onChange={(e) => {
-              handleVectorConfigChange(index, 'multivector_config', e.target.checked);
-            }}
-            checked={!!vectors[index].multivector_config}
-          />
-        }
-        label="Mutivector"
-        labelPlacement="start"
-      />
-      <FormControlLabel
-        control={
-          <Checkbox
-            color="primary"
-            onChange={(e) => {
-              handleVectorConfigChange(index, 'sparse_vectors', e.target.checked);
-            }}
-            checked={!!vectors[index].sparse_vectors}
-          />
-        }
-        label="Sparse Vectors"
-        labelPlacement="start"
-      />
+      <FormControl sx={{ mr: 2, width: '150px' }}>
+        <InputLabel>Vector Type</InputLabel>
+        <Select
+          value={
+            vectors[index].multivector_config
+              ? 'Multivector'
+              : vectors[index].sparse_vectors
+              ? 'Sparse'
+              : 'Dense'
+          }
+          onChange={(e) => handleVectorTypeChange(index, e.target.value)}
+          label="Vector Type"
+        >
+          <MenuItem value="Dense">Dense</MenuItem>
+          <MenuItem value="Sparse">Sparse</MenuItem>
+          <MenuItem value="Multivector">Multivector</MenuItem>
+        </Select>
+      </FormControl>
 
       {length > 1 && (
         <Tooltip title="Remove vector" placement="top">
