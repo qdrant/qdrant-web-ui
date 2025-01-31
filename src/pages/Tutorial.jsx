@@ -14,11 +14,7 @@ export const Tutorial = () => {
 
   return (
     <TutorialProvider>
-      <InteractiveTutorial
-        pageSlug={pageSlug}
-        tutorialPages={tutorialPages}
-        indexPage={indexPage}
-      />
+      <InteractiveTutorial pageSlug={pageSlug} tutorialPages={tutorialPages} indexPage={indexPage} />
     </TutorialProvider>
   );
 };

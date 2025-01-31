@@ -125,7 +125,6 @@ function Jwt() {
         </Box>
       )}
 
-
       {collections.length > 0 && (
         <JwtResultForm
           allCollecitons={collections}

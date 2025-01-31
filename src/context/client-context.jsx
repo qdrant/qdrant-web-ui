@@ -35,7 +35,7 @@ export const useClient = () => {
 
   return {
     ...context,
-    isRestricted: isTokenRestricted(context.settings.apiKey)
+    isRestricted: isTokenRestricted(context.settings.apiKey),
   };
 };
 

@@ -35,7 +35,7 @@ const allTutorialPages = [
 const restrictedTutorialPages = [
   ['filteringbeginner', FilteringBeginner],
   ['filteringadvanced', FilteringAdvanced],
-  ['filteringfulltext', FilteringFullText]
+  ['filteringfulltext', FilteringFullText],
 ];
 
 export const getTutorialSubPages = (isRestricted) => {

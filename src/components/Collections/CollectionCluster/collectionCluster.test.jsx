@@ -7,8 +7,8 @@ import ClusterShardRow from './ClusterShardRow';
 vi.mock('../../../context/client-context', () => ({
   useClient: () => ({
     client: {},
-    isRestricted: false
-  })
+    isRestricted: false,
+  }),
 }));
 
 const CLUSTER_INFO = {

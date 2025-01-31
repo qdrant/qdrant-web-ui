@@ -6,8 +6,8 @@ import { TutorialFooter } from './TutorialFooter';
 // Mock client context
 vi.mock('../../context/client-context', () => ({
   useClient: () => ({
-    isRestricted: false
-  })
+    isRestricted: false,
+  }),
 }));
 
 describe('TutorialFooter', () => {

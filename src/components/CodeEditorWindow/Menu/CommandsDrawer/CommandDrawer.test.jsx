@@ -66,7 +66,7 @@ describe('CommandsDrawer', () => {
       return {
         method: row.children[1].children[0].children[0].children[0].textContent,
         command: row.children[1].children[0].children[1].children[0].textContent,
-        description: row.children[1].children[0].children[1].children[2].textContent
+        description: row.children[1].children[0].children[1].children[2].textContent,
       };
     }
 

@@ -9,9 +9,8 @@ export const useRouteAccess = () => {
   // Extract path from hash route
   const path = location.pathname;
 
-
   return {
     // use this to show restricted message on unavailable routes
-    isAccessDenied: isRestricted && isPathRestricted(path)
+    isAccessDenied: isRestricted && isPathRestricted(path),
   };
 };

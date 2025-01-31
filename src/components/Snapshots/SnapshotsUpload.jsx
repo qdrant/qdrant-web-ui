@@ -33,8 +33,11 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
   return (
     <Box sx={{ ...sx }}>
       <Tooltip
-        title={isRestricted ? 'Access Denied: You do not have permission to upload snapshot. ' +
-          'Please contact your administrator.' : 'Upload snapshot'}
+        title={
+          isRestricted
+            ? 'Access Denied: You do not have permission to upload snapshot. ' + 'Please contact your administrator.'
+            : 'Upload snapshot'
+        }
         placement="left"
       >
         <span>
@@ -70,5 +73,5 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
 // props validation
 SnapshotsUpload.propTypes = {
   onComplete: PropTypes.func,
-  sx: PropTypes.object
+  sx: PropTypes.object,
 };

@@ -94,12 +94,7 @@ function Datasets() {
   };
 
   const tableRows = datasets.map((dataset) => (
-    <DatasetsTableRow
-      key={dataset.name}
-      dataset={dataset}
-      importDataset={importDataset}
-      disabled={isAccessDenied}
-    />
+    <DatasetsTableRow key={dataset.name} dataset={dataset} importDataset={importDataset} disabled={isAccessDenied} />
   ));
 
   return (

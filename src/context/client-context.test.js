@@ -6,11 +6,11 @@ import { bigIntJSON } from '../common/bigIntJSON';
 // Mock localStorage
 const mockLocalStorage = {
   getItem: vi.fn(),
-  setItem: vi.fn()
+  setItem: vi.fn(),
 };
 
 Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage
+  value: mockLocalStorage,
 });
 
 // Mock JWT token
