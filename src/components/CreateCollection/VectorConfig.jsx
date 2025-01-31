@@ -118,13 +118,7 @@ const VectorRow = ({ vectors, index, setVectors, errors, length, setErrors }) =>
       <FormControl sx={{ mr: 2, width: '150px' }}>
         <InputLabel>Vector Type</InputLabel>
         <Select
-          value={
-            vectors[index].multivector_config
-              ? 'Multivector'
-              : vectors[index].sparse_vectors
-              ? 'Sparse'
-              : 'Dense'
-          }
+          value={vectors[index].multivector_config ? 'Multivector' : vectors[index].sparse_vectors ? 'Sparse' : 'Dense'}
           onChange={(e) => handleVectorTypeChange(index, e.target.value)}
           label="Vector Type"
         >
