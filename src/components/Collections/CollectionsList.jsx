@@ -20,6 +20,15 @@ const StyledLink = styled(Link)`
 const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
+  const isDenseView = (vectors) => {
+    if (vectors && vectors.size && vectors.distance && !vectors.multivector_config) {
+      return true;
+    }
+    const vectorNames = Object.keys(vectors);
+    return vectorNames.some((vectorName) => {
+      return vectors[vectorName].size && vectors[vectorName].distance && !vectors[vectorName].multivector_config;
+    });
+  };
 
   return (
     <TableRow>
@@ -57,9 +66,11 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
           <MenuItem component={Link} to={`/collections/${collection.name}#snapshots`}>
             Take Snapshot
           </MenuItem>
-          <MenuItem component={Link} to={`/collections/${collection.name}/visualize`}>
-            Visualize
-          </MenuItem>
+          {isDenseView(collection.config.params.vectors) ? (
+            <MenuItem component={Link} to={`/collections/${collection.name}/visualize`}>
+              Visualize
+            </MenuItem>
+          ) : null}
           <MenuItem component={Link} to={`/collections/${collection.name}/graph`}>
             Graph
           </MenuItem>
