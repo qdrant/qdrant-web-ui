@@ -83,7 +83,7 @@ export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
       <List style={{ marginTop: 'auto' }}>
         <ListItem>
           <Typography variant="caption">
-            {open ? 'Qdrant ' : ''}Q{version}
+            {open ? 'Qdrant ' : ''}v{version}
           </Typography>
         </ListItem>
       </List>
