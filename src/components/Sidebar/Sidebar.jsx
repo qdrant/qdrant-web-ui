@@ -66,7 +66,7 @@ export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
       <DrawerHeader />
       <Divider />
       <List>
-        {sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
+        {!isRestricted && sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
         {sidebarItem('Console', <Terminal />, '/console', open)}
         {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
         {!isRestricted && (
