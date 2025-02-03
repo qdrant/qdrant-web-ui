@@ -12,12 +12,17 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { client: qdrantClient } = useClient();
+  const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
 
   useEffect(() => {
     fetchCollection();
+
+    if (isRestricted) {
+      return;
+    }
+
     qdrantClient
       .api('cluster')
       .collectionClusterInfo({ collection_name: collectionName })

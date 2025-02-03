@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { LibraryBooks, Terminal, Animation, Key, RocketLaunch } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import SidebarTutorialSection from './SidebarTutorialSection';
+import { useClient } from '../../context/client-context';
 
 const drawerWidth = 240;
 
@@ -58,25 +59,31 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
+  const { isRestricted } = useClient();
+
   return (
     <Drawer variant="permanent" open={open}>
       <DrawerHeader />
       <Divider />
       <List>
-        {sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
+        {!isRestricted && sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
         {sidebarItem('Console', <Terminal />, '/console', open)}
         {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
-        <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
-          <SidebarTutorialSection isSidebarOpen={open} />
-        </ListItem>
-        {sidebarItem('Datasets', <Animation />, '/datasets', open)}
+        {!isRestricted && (
+          <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
+            <SidebarTutorialSection isSidebarOpen={open} />
+          </ListItem>
+        )}
 
-        {jwtVisible && sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
+        {!isRestricted && sidebarItem('Datasets', <Animation />, '/datasets', open)}
+
+        {!isRestricted && jwtVisible && sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
       </List>
-      <List style={{ marginTop: `auto` }}>
+
+      <List style={{ marginTop: 'auto' }}>
         <ListItem>
           <Typography variant="caption">
-            {open ? `Qdrant ` : ``}v{version}
+            {open ? 'Qdrant ' : ''}v{version}
           </Typography>
         </ListItem>
       </List>

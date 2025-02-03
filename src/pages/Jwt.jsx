@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Alert, Box, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
@@ -39,7 +39,7 @@ function generateToken(globalAccess, manageAccess, expirationDays, configuredCol
 
 function Jwt() {
   const headerHeight = 64;
-  const { client: qdrantClient } = useClient();
+  const { client: qdrantClient, isRestricted } = useClient();
   const [errorMessage, setErrorMessage] = useState(null);
 
   const [globalAccess, setGlobalAccess] = useState(true);
@@ -72,6 +72,19 @@ function Jwt() {
     }
     setApiKey(apiKey);
   }, []);
+
+  if (isRestricted) {
+    return (
+      <Box sx={{ p: 5, width: '100%' }}>
+        <Grid xs={12} item>
+          <Alert severity="warning">
+            Access Denied: Because of the serverless mode, jwt tools will not work correctly. Please contact your
+            administrator.
+          </Alert>
+        </Grid>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -113,6 +126,7 @@ function Jwt() {
 
         <JwtTokenViewer jwt={jwt} token={token} />
       </Box>
+
       {collections.length > 0 && (
         <JwtResultForm
           allCollecitons={collections}
