@@ -1,42 +1,54 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Box, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { getTutorialSubPages } from './TutorialSubpages';
-import { useClient } from '../../context/client-context';
+import { Box, Button, Divider, Grid } from '@mui/material';
+import { useNavigate, useParams } from 'react-router-dom';
+import tutorialSubPages from './TutorialSubpages';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
-export const TutorialFooter = ({ pageSlug }) => {
-  const { isRestricted } = useClient();
-  const tutorialPages = getTutorialSubPages(isRestricted);
+export const TutorialFooter = () => {
+  const { pageSlug } = useParams();
+  const pageKeys = [...tutorialSubPages.map((p) => p[0])];
+  let currentPageIndex = pageKeys.indexOf(pageSlug);
+  const navigate = useNavigate();
 
-  let currentIndex = -1;
-  if (pageSlug) {
-    currentIndex = tutorialPages.findIndex(([slug]) => slug === pageSlug);
-  }
+  const handlePrev = () => {
+    if (currentPageIndex > 0) {
+      currentPageIndex = currentPageIndex - 1;
+      navigate(`/tutorial/${pageKeys[currentPageIndex]}`);
+    } else {
+      currentPageIndex = 0;
+      navigate('/tutorial');
+    }
+  };
 
-  const prevPage = currentIndex > 0 ? tutorialPages[currentIndex - 1][0] : null;
-  const nextPage = currentIndex < tutorialPages.length - 1 ? tutorialPages[currentIndex + 1][0] : null;
+  const handleNext = () => {
+    if (currentPageIndex < pageKeys.length - 1) {
+      currentPageIndex = currentPageIndex + 1;
+      navigate(`/tutorial/${pageKeys[currentPageIndex]}`);
+    }
+  };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 8 }}>
-      {prevPage ? (
-        <Button component={Link} to={`/tutorial/${prevPage}`} variant="outlined">
-          Previous
-        </Button>
-      ) : (
-        <div />
-      )}
-      {nextPage ? (
-        <Button component={Link} to={`/tutorial/${nextPage}`} variant="outlined">
-          Next
-        </Button>
-      ) : (
-        <div />
-      )}
+    <Box mt={10}>
+      <Divider />
+      <Grid container mt={4} spacing={1} justifyContent={'space-between'}>
+        <Grid item>
+          {currentPageIndex >= 0 && (
+            <Button sx={{ alignItems: 'flex-start' }} onClick={handlePrev} startIcon={<ArrowBack />}>
+              Previous
+            </Button>
+          )}
+        </Grid>
+
+        <Grid item>{currentPageIndex >= 0 && <Button onClick={() => navigate('/tutorial')}>Home</Button>}</Grid>
+
+        <Grid item>
+          {currentPageIndex < pageKeys.length - 1 && (
+            <Button sx={{ alignItems: 'flex-start' }} onClick={handleNext} endIcon={<ArrowForward />}>
+              Next
+            </Button>
+          )}
+        </Grid>
+      </Grid>
     </Box>
   );
-};
-
-TutorialFooter.propTypes = {
-  pageSlug: PropTypes.string,
 };

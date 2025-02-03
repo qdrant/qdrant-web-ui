@@ -8,17 +8,15 @@ import { useTheme } from '@mui/material/styles';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { useTutorial } from '../../context/tutorial-context';
 import { TutorialFooter } from './TutorialFooter';
-import { getTutorialSubPages, getTutorialIndexPage } from './TutorialSubpages';
+import { tutorialSubPages, tutorialIndexPage } from './TutorialSubpages';
 import { useLocation } from 'react-router-dom';
 import { Prism } from 'prism-react-renderer';
-import { useClient } from '../../context/client-context';
 
 const InteractiveTutorial = ({ pageSlug }) => {
   const theme = useTheme();
   const { result } = useTutorial();
   const location = useLocation();
   const tutorialPanelRef = React.useRef(null);
-  const { isRestricted } = useClient();
 
   useEffect(() => {
     // we need this to use prismjs support for json highlighting
@@ -33,14 +31,11 @@ const InteractiveTutorial = ({ pageSlug }) => {
     }
   }, [location]);
 
-  const tutorialPages = getTutorialSubPages(isRestricted);
-  const indexPage = getTutorialIndexPage(isRestricted);
-
   let TagName;
   try {
-    TagName = tutorialPages.find((p) => p[0] === pageSlug)[1].default;
+    TagName = tutorialSubPages.find((p) => p[0] === pageSlug)[1].default;
   } catch (e) {
-    TagName = indexPage.default;
+    TagName = tutorialIndexPage.default;
   }
 
   return (

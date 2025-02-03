@@ -73,57 +73,60 @@ function Jwt() {
     setApiKey(apiKey);
   }, []);
 
+  if (isRestricted) {
+    return (
+      <Box sx={{ p: 5, width: '100%' }}>
+        <Grid xs={12} item>
+          <Alert severity="warning">
+            Access Denied: Because of the serverless mode, jwt tools will not work correctly.
+            Please contact your administrator.
+          </Alert>
+        </Grid>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
         display: 'flex',
         alignContent: 'stretch',
         height: `calc(100vh - ${headerHeight}px)`,
-        overflowY: 'scroll',
+        overflowY: 'scroll'
       }}
     >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
 
-      {isRestricted ? (
-        <Box sx={{ p: 5, width: '100%' }}>
-          <Grid xs={12} item>
-            <Alert severity="warning">
-              Access Denied: You do not have permission to generate new tokens. Please contact your administrator.
-            </Alert>
-          </Grid>
-          <JwtTokenViewer jwt={jwt} token={token} />
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            px: 2,
-            pt: 4,
-            pb: 20,
-            width: '50%',
-            overflowY: 'scroll',
-            maxWidth: '1200px',
-            mx: 'auto',
-          }}
-        >
-          <Typography variant="h4" gutterBottom>
-            Generate new Access Token
-          </Typography>
+      <Box
+        sx={{
+          px: 2,
+          pt: 4,
+          pb: 20,
+          width: '50%',
+          overflowY: 'scroll',
+          maxWidth: '1200px',
+          mx: 'auto'
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Generate new Access Token
+        </Typography>
 
-          <JwtForm
-            expiration={expirationDays}
-            setExpiration={setExpirationDays}
-            globalAccess={globalAccess}
-            setGlobalAccess={setGlobalAccess}
-            manageAccess={manageAccess}
-            setManageAccess={setManageAccess}
-            collections={configuredCollections}
-            setCollections={setConfiguredCollections}
-            setTokenValidatior={setTokenValidatior}
-          />
+        <JwtForm
+          expiration={expirationDays}
+          setExpiration={setExpirationDays}
+          globalAccess={globalAccess}
+          setGlobalAccess={setGlobalAccess}
+          manageAccess={manageAccess}
+          setManageAccess={setManageAccess}
+          collections={configuredCollections}
+          setCollections={setConfiguredCollections}
+          setTokenValidatior={setTokenValidatior}
+        />
 
-          <JwtTokenViewer jwt={jwt} token={token} />
-        </Box>
-      )}
+        <JwtTokenViewer jwt={jwt} token={token} />
+      </Box>
+
 
       {collections.length > 0 && (
         <JwtResultForm

@@ -18,19 +18,22 @@ export const CollectionInfo = ({ collectionName }) => {
 
   useEffect(() => {
     fetchCollection();
-    if (!isRestricted) {
-      qdrantClient
-        .api('cluster')
-        .collectionClusterInfo({ collection_name: collectionName })
-        .then((res) => {
-          setClusterInfo(() => {
-            return { ...res.data };
-          });
-        })
-        .catch((err) => {
-          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-        });
+
+    if (isRestricted) {
+      return;
     }
+
+    qdrantClient
+      .api('cluster')
+      .collectionClusterInfo({ collection_name: collectionName })
+      .then((res) => {
+        setClusterInfo(() => {
+          return { ...res.data };
+        });
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+      });
   }, [collectionName]);
 
   const fetchCollection = () => {

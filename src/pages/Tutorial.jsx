@@ -2,19 +2,28 @@ import React from 'react';
 import InteractiveTutorial from '../components/InteractiveTutorial/InteractiveTutorial';
 import { TutorialProvider } from '../context/tutorial-context';
 import { useParams } from 'react-router-dom';
+import { Alert, Box, Grid } from '@mui/material';
 import { useClient } from '../context/client-context';
-import { getTutorialIndexPage, getTutorialSubPages } from '../components/InteractiveTutorial/TutorialSubpages';
 
 export const Tutorial = () => {
   const { pageSlug } = useParams();
   const { isRestricted } = useClient();
 
-  const tutorialPages = getTutorialSubPages(isRestricted);
-  const indexPage = getTutorialIndexPage(isRestricted);
-
+  if (isRestricted) {
+    return (
+      <Box sx={{ p: 5, width: '100%' }}>
+        <Grid xs={12} item>
+          <Alert severity="warning">
+            Access Denied: Because of the serverless mode, tutorial will not work here properly.
+            Please contact your administrator.
+          </Alert>
+        </Grid>
+      </Box>
+    );
+  }
   return (
     <TutorialProvider>
-      <InteractiveTutorial pageSlug={pageSlug} tutorialPages={tutorialPages} indexPage={indexPage} />
+      <InteractiveTutorial pageSlug={pageSlug} />
     </TutorialProvider>
   );
 };
