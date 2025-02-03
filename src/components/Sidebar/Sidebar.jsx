@@ -69,9 +69,11 @@ export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
         {sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
         {sidebarItem('Console', <Terminal />, '/console', open)}
         {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
-        {!isRestricted && (<ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
-          <SidebarTutorialSection isSidebarOpen={open} />
-        </ListItem>)}
+        {!isRestricted && (
+          <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
+            <SidebarTutorialSection isSidebarOpen={open} />
+          </ListItem>
+        )}
 
         {!isRestricted && sidebarItem('Datasets', <Animation />, '/datasets', open)}
 

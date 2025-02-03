@@ -1,10 +1,6 @@
 // add unavailable routes to show message on these pages
 // useful if used bookmarked or shared link
-export const restrictedRoutes = [
-  '/datasets',
-  '/jwt',
-  '/tutorial',
-];
+export const restrictedRoutes = ['/datasets', '/jwt', '/tutorial'];
 
 export const isPathRestricted = (path) => {
   return restrictedRoutes.some((restrictedPath) => {

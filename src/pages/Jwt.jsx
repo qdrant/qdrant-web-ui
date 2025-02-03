@@ -78,8 +78,8 @@ function Jwt() {
       <Box sx={{ p: 5, width: '100%' }}>
         <Grid xs={12} item>
           <Alert severity="warning">
-            Access Denied: Because of the serverless mode, jwt tools will not work correctly.
-            Please contact your administrator.
+            Access Denied: Because of the serverless mode, jwt tools will not work correctly. Please contact your
+            administrator.
           </Alert>
         </Grid>
       </Box>
@@ -92,7 +92,7 @@ function Jwt() {
         display: 'flex',
         alignContent: 'stretch',
         height: `calc(100vh - ${headerHeight}px)`,
-        overflowY: 'scroll'
+        overflowY: 'scroll',
       }}
     >
       {errorMessage && <ErrorNotifier message={errorMessage} />}
@@ -105,7 +105,7 @@ function Jwt() {
           width: '50%',
           overflowY: 'scroll',
           maxWidth: '1200px',
-          mx: 'auto'
+          mx: 'auto',
         }}
       >
         <Typography variant="h4" gutterBottom>
@@ -126,7 +126,6 @@ function Jwt() {
 
         <JwtTokenViewer jwt={jwt} token={token} />
       </Box>
-
 
       {collections.length > 0 && (
         <JwtResultForm
