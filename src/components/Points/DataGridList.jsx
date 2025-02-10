@@ -4,6 +4,7 @@ import { JsonViewer } from '@textea/json-viewer';
 import { useTheme } from '@mui/material/styles';
 import { Divider, Grid, IconButton, Typography } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import MarkdownViewer from '../Common/MarkdownViewer';
 
 /**
  * A list of key-value pairs, where the value is either a string or an object.
@@ -61,8 +62,12 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
                 />
               )}
 
+              {typeof data[key] === 'string' && !specialKeys.includes(key) && (
+                <MarkdownViewer>{data[key]}</MarkdownViewer>
+              )}
+
               {/* other types of values */}
-              {typeof data[key] !== 'object' && !specialKeys.includes(key) && (
+              {typeof data[key] !== 'object' && typeof data[key] !== 'string' && !specialKeys.includes(key) && (
                 <span>
                   {'\t'} {data[key].toString()}
                 </span>
