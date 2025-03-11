@@ -24,6 +24,10 @@ describe('QdrantClientExtended', () => {
       });
       await client.downloadSnapshot(collectionName, snapshotName);
 
+      // Print all the calls to fetch
+
+      console.log(fetchSpy.mock.calls);
+
       expect(fetchSpy).toHaveBeenCalledTimes(1);
 
       // Extract the actual arguments
