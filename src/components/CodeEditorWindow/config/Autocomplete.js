@@ -55,7 +55,6 @@ export const autocomplete = async (monaco, qdrantClient) => {
 
         const word = model.getWordUntilPosition(position);
         snippets.forEach((snippet) => {
-          // todo: replace collection
             suggestions.push({
               label: snippet.documentation,
               kind: 1,
