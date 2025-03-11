@@ -12,6 +12,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
   }
 
   const autocomplete = new OpenapiAutocomplete(openapi, collections);
+  const snippets = autocomplete.getSnippets();
 
   return {
     provideCompletionItems: (model, position) => {
@@ -45,10 +46,22 @@ export const autocomplete = async (monaco, qdrantClient) => {
             };
           });
 
-        autocomplete.getSnippets().forEach((snippet) => {
-          if (snippet.label.startsWith(header)) {
-            suggestions.push(snippet);
-          }
+        const word = model.getWordUntilPosition(position);
+        snippets.forEach((snippet) => {
+          // todo: replace collection
+            suggestions.push({
+              label: snippet.documentation,
+              kind: 1,
+              documentation: snippet.documentation,
+              insertText: snippet.insertText,
+              insertTextRules: 4,
+              range: {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: 0,
+                endColumn: word.endColumn,
+              }
+            });
         });
 
         return { suggestions };
