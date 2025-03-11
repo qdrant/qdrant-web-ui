@@ -1,4 +1,5 @@
 import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
+import { enhanceSnippet } from "./snippetEnhancer";
 
 export const autocomplete = async (monaco, qdrantClient) => {
   const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
@@ -12,7 +13,11 @@ export const autocomplete = async (monaco, qdrantClient) => {
   }
 
   const autocomplete = new OpenapiAutocomplete(openapi, collections);
-  const snippets = autocomplete.getSnippets();
+  let snippets = autocomplete.getSnippets();
+  snippets = snippets.map(snippet => {
+    snippet.insertText = enhanceSnippet(snippet.insertText, collections);
+    return snippet;
+  });
 
   return {
     provideCompletionItems: (model, position) => {

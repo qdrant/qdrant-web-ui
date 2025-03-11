@@ -15,7 +15,7 @@
  * @param {Array} collections - the collections to use for autocompletion
  * @return {string} - the enhanced snippet
  */
-export const snippetEnhancer = (snippet, collections) => {
+export const enhanceSnippet = (snippet, collections) => {
     let enhancedSnippet = snippet;
     const collectionPlaceholders = enhancedSnippet.match(/\$\{(\d+):collection_name\}/g);
     if (collectionPlaceholders) {
