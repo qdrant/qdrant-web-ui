@@ -16,16 +16,16 @@
  * @return {string} - the enhanced snippet
  */
 export const enhanceSnippet = (snippet, collections) => {
-    let enhancedSnippet = snippet;
-    const collectionPlaceholders = enhancedSnippet.match(/\$\{(\d+):collection_name\}/g);
-    if (collectionPlaceholders) {
-        for (const collectionPlaceholder of collectionPlaceholders) {
-            const placeholderId = collectionPlaceholder.match(/\d+/)[0];
-            if (collections.length > 0) {
-                const collectionAutocomplete = `\${${placeholderId}|${collections.join(",")}|}`;
-                enhancedSnippet = enhancedSnippet.replace(collectionPlaceholder, collectionAutocomplete);
-            }
-        }
+  let enhancedSnippet = snippet;
+  const collectionPlaceholders = enhancedSnippet.match(/\$\{(\d+):collection_name\}/g);
+  if (collectionPlaceholders) {
+    for (const collectionPlaceholder of collectionPlaceholders) {
+      const placeholderId = collectionPlaceholder.match(/\d+/)[0];
+      if (collections.length > 0) {
+        const collectionAutocomplete = `\${${placeholderId}|${collections.join(',')}|}`;
+        enhancedSnippet = enhancedSnippet.replace(collectionPlaceholder, collectionAutocomplete);
+      }
     }
-    return enhancedSnippet;
-}
+  }
+  return enhancedSnippet;
+};
