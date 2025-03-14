@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import SearchQualityPannel from './SearchQualityPannel';
+import SearchQualityPanel from './SearchQualityPanel';
 import { useClient } from '../../../context/client-context';
 
 const mockFilterEditorWindow = vi.fn();
@@ -48,7 +48,7 @@ describe('SearchQualityPannel', () => {
   it('should render SearchQualityPannel with given data', () => {
     render(
       <MemoryRouter>
-        <SearchQualityPannel collectionName={COLLECTION_NAME} vectors={VECTORS} />
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
       </MemoryRouter>
     );
     expect(screen.getByText('Search Quality')).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe('SearchQualityPannel', () => {
   it('should render SearchQualityPannel with named vectors', () => {
     render(
       <MemoryRouter>
-        <SearchQualityPannel collectionName={COLLECTION_NAME} vectors={VECTORS_NAMED} />
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS_NAMED} />
       </MemoryRouter>
     );
     expect(screen.getByText('Search Quality')).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('SearchQualityPannel', () => {
   it('should call onCheckIndexQuality when "Check index quality" button is clicked', async () => {
     render(
       <MemoryRouter>
-        <SearchQualityPannel collectionName={COLLECTION_NAME} vectors={VECTORS} />
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
       </MemoryRouter>
     );
     const button = screen.getAllByTestId('index-quality-check-button')[0];
@@ -86,7 +86,7 @@ describe('SearchQualityPannel', () => {
   it('should toggle advanced mode', () => {
     render(
       <MemoryRouter>
-        <SearchQualityPannel collectionName={COLLECTION_NAME} vectors={VECTORS} />
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
       </MemoryRouter>
     );
     const switchButton = screen.getByRole('checkbox');
