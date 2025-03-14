@@ -13,6 +13,7 @@ import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Notifications from '../components/Notifications';
+import AutoModeIcon from '@mui/icons-material/BrightnessAuto';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -93,7 +94,17 @@ export default function MiniDrawer() {
           <Notifications />
           <Tooltip title="Color Mode">
             <IconButton size="large" onClick={colorMode.toggleColorMode}>
-              {theme.palette.mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+              <ColorModeContext.Consumer>
+                {(colorMode) => {
+                  if (colorMode.mode === 'light') {
+                    return <DarkModeIcon />;
+                  } else if (colorMode.mode === 'dark') {
+                    return <LightModeIcon />;
+                  } else {
+                    return <AutoModeIcon />;
+                  }
+                }}
+              </ColorModeContext.Consumer>
             </IconButton>
           </Tooltip>
           <Tooltip title="API Key">
