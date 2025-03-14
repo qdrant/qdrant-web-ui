@@ -52,6 +52,29 @@ PUT collections/dinosaurs/points
 
 ## Step 3: Basic Filtering with `match`
 
+<details open="true">
+<summary><b>Index the fields before filtering</b></summary>
+
+**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].food",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].likes",
+    "field_schema": "bool"
+}
+```
+
+</details>
+
 You can filter points by specific payload values. For instance, the query below matches points where:
 
 - The `diet[].food` contains "meat".
@@ -86,6 +109,29 @@ POST /collections/dinosaurs/points/scroll
 However, if you want to retrieve only the points where both conditions are true for the same element within the array (e.g., the "t-rex" with ID 1), you'll need to use a **nested filter**.
 
 ## Step 4: Advanced Filtering with Nested Object Filters
+
+<details open="true">
+  <summary><b>Index the fields before filtering</b></summary>
+
+**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].food",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].likes",
+    "field_schema": "bool"
+}
+```
+
+</details>
 
 To apply the filter at the array element level, you use the `nested` filter condition. This ensures that the `food` and `likes` values are evaluated together within each array element:
 
@@ -127,6 +173,37 @@ With this filter, only the "t-rex" (ID 1) is returned, because its array element
 Nested filters treat each array element as a separate object, applying the filter independently to each element. The parent document (in this case, the dinosaur point) matches the filter if any one array element meets all conditions.
 
 ## Step 5: Combining `has_id` with Nested Filters
+
+<details open="true">
+<summary><b>Index the fields before filtering</b></summary>
+
+**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+  "field_name": "diet",
+  "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+  "field_name": "diet[].food",
+  "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+  "field_name": "diet[].likes",
+  "field_schema": "bool"
+}
+```
+
+</details>
 
 Note that `has_id` cannot be used inside a nested filter. If you need to filter by ID as well, include the `has_id` condition as a separate clause, like this:
 
