@@ -58,22 +58,40 @@ PUT collections/terraforming/points
 }
 ```
 
-## Step 3: Filtering examples
-
-### Filter by exact match
+## Step 3: Index the fields before filtering
 
 **Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
 
 ```json withRunButton="true"
 PUT /collections/terraforming/index
 {
+    "field_name": "life",
+    "field_schema": "bool"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
     "field_name": "color",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "humidity",
     "field_schema": {
-        "type": "keyword",
-        "on_disk": true
+       "type": "integer",
+        "range": true
     }
 }
 ```
+
+## Step 4: Filtering examples
+
+### Filter by exact match
 
 Finally, this query retrieves points where the `color` is `"black"`, using a straightforward `match` condition:
 
@@ -97,16 +115,6 @@ POST collections/terraforming/points/scroll
 
 ### Combined filter by `must` clause
 
-**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
-
-```json withRunButton="true"
-PUT /collections/terraforming/index
-{
-    "field_name": "color",
-    "field_schema": "keyword"
-}
-```
-
 In this example, the query returns points where `life` is `true` and `color` is `"green"`. These must conditions both need to be met for a point to be returned.
 
 ```json withRunButton=true
@@ -124,24 +132,6 @@ POST collections/terraforming/points/scroll
 ```
 
 ### Filter by `should` clause
-
-**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
-
-```json withRunButton="true"
-PUT /collections/terraforming/index
-{
-    "field_name": "life",
-    "field_schema": "bool"
-}
-```
-
-```json withRunButton="true"
-PUT /collections/terraforming/index
-{
-    "field_name": "color",
-    "field_schema": "keyword"
-}
-```
 
 Here, you are filtering for points where `life` is `false` and `color` is `"black"`. These conditions act as *should* clauses, meaning points meeting either or both criteria will be returned:
 
@@ -164,16 +154,6 @@ POST collections/terraforming/points/scroll
 
 ### Filter by `must_not` clause
 
-**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
-
-```json withRunButton="true"
-PUT /collections/terraforming/index
-{
-    "field_name": "life",
-    "field_schema": "bool"
-}
-```
-
 This query filters out any points where `life` is `false`. Points matching this condition are excluded from the results.
 
 ```json withRunButton=true
@@ -193,19 +173,6 @@ POST collections/terraforming/points/scroll
 ```
 
 ### Filter by `range` condition
-
-**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
-
-```json withRunButton="true"
-PUT /collections/terraforming/index
-{
-    "field_name": "humidity",
-    "field_schema": {
-       "type": "integer",
-        "range": true
-    }
-}
-```
 
 This query filters points based on a range of `humidity`. Here, the `humidity` value must be exactly 40:
 
