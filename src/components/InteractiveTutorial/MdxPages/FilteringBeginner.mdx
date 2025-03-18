@@ -58,7 +58,38 @@ PUT collections/terraforming/points
 }
 ```
 
-## Step 3: Filtering examples
+## Step 3: Index the fields before filtering
+
+**Note:** You should always index a field before filtering. If you use filtering before you create an index, Qdrant will search through the entire dataset in an unstructured way. Your search performance will be very slow.
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "life",
+    "field_schema": "bool"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "color",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "humidity",
+    "field_schema": {
+       "type": "integer",
+        "range": true
+    }
+}
+```
+
+## Step 4: Filtering examples
 
 ### Filter by exact match
 
