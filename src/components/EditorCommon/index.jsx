@@ -22,7 +22,7 @@ window.MonacoEnvironment = {
 
 loader.config({ monaco });
 
-const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
+const EditorCommon = ({ beforeMount, customHeight, paddingBottom = 0, ...props }) => {
   const monacoRef = useRef(null);
   const editorWrapper = useRef(null);
   const theme = useTheme();
@@ -55,7 +55,7 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
     if (customHeight) {
       return;
     }
-    setEditorHeight(height - editorWrapper.current?.offsetTop);
+    setEditorHeight(height - editorWrapper.current?.offsetTop - paddingBottom);
   }, [height, editorWrapper]);
 
   return (
@@ -74,6 +74,7 @@ EditorCommon.propTypes = {
   height: PropTypes.string,
   beforeMount: PropTypes.func,
   customHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  paddingBottom: PropTypes.number,
   ...Editor.propTypes,
 };
 
