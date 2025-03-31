@@ -84,7 +84,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           id: 'RUN',
           command: {
             id: commandId,
-            title: 'RUN',
+            title: '▶ RUN',
             arguments: [codeBlocks[i].blockText],
           },
         });
@@ -94,7 +94,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           id: 'BEAUTIFY',
           command: {
             id: beutifyCommandId,
-            title: 'BEAUTIFY',
+            title: '★ BEAUTIFY',
             arguments: [codeBlocks[i]],
           },
         });
@@ -109,7 +109,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
             id: 'DOCS',
             command: {
               id: docsCommandId,
-              title: 'DOCS',
+              title: '§ DOCS',
               arguments: [docsURL],
             },
           });
