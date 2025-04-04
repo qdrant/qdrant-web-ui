@@ -2,6 +2,7 @@ import React, { useContext, createContext, useState, useEffect } from 'react';
 import { axiosInstance, setupAxios } from '../common/axios';
 import qdrantClient from '../common/client';
 import { bigIntJSON } from '../common/bigIntJSON';
+import { isTokenRestricted } from '../config/restricted-routes';
 
 const DEFAULT_SETTINGS = {
   apiKey: '',
@@ -25,7 +26,18 @@ const getPersistedSettings = () => {
 const ClientContext = createContext();
 
 // React hook to access and modify the settings
-export const useClient = () => useContext(ClientContext);
+export const useClient = () => {
+  const context = useContext(ClientContext);
+
+  if (!context) {
+    throw new Error('useClient must be used within ClientProvider');
+  }
+
+  return {
+    ...context,
+    isRestricted: isTokenRestricted(context.settings.apiKey),
+  };
+};
 
 // Client Context Provider
 export const ClientProvider = (props) => {
@@ -33,6 +45,8 @@ export const ClientProvider = (props) => {
   const [settings, setSettings] = useState(getPersistedSettings());
 
   const client = qdrantClient(settings);
+
+  setupAxios(axiosInstance, settings);
 
   useEffect(() => {
     setupAxios(axiosInstance, settings);

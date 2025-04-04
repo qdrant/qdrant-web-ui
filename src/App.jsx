@@ -11,20 +11,29 @@ import StyledMain from './components/Common/StyledMain';
 
 function NewApp() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(
+  const [customMode, setCustomMode] = React.useState(
     localStorage.getItem('qdrant-web-ui-theme') || (prefersDarkMode ? 'dark' : 'light')
   );
-  localStorage.setItem('qdrant-web-ui-theme', mode);
-
+  const [mode, setMode] = React.useState(customMode === 'auto' ? (prefersDarkMode ? 'dark' : 'light') : customMode);
+  localStorage.setItem('qdrant-web-ui-theme', customMode);
   const colorMode = React.useMemo(
     () => ({
       // The dark mode switch would invoke this method
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        setCustomMode((prevMode) => (prevMode === 'light' ? 'dark' : prevMode === 'dark' ? 'auto' : 'light'));
       },
+      mode: customMode,
     }),
-    []
+    [customMode]
   );
+
+  React.useEffect(() => {
+    if (customMode === 'auto') {
+      setMode(prefersDarkMode ? 'dark' : 'light');
+    } else {
+      setMode(customMode);
+    }
+  }, [customMode, prefersDarkMode]);
 
   const theme = React.useMemo(
     () =>

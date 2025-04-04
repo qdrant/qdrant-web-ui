@@ -7,12 +7,14 @@ import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
 import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
+import { useClient } from '../context/client-context';
 
 function Collection() {
   const { collectionName } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState(location.hash.slice(1) || 'points');
+  const { isRestricted } = useClient();
 
   const handleTabChange = (event, newValue) => {
     if (typeof newValue !== 'string') {
@@ -34,8 +36,8 @@ function Collection() {
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
                 <Tab label="Info" value={'info'} />
-                <Tab label="Search Quality" value={'quality'} />
-                <Tab label="Snapshots" value={'snapshots'} />
+                {!isRestricted && <Tab label="Search Quality" value={'quality'} />}
+                {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
                 <Tab label="Graph" component={Link} to={`${location.pathname}/graph`} />
               </Tabs>
@@ -44,9 +46,9 @@ function Collection() {
 
           <Grid xs={12} item>
             {currentTab === 'info' && <CollectionInfo collectionName={collectionName} />}
-            {currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
+            {!isRestricted && currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
             {currentTab === 'points' && <PointsTabs collectionName={collectionName} />}
-            {currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
+            {!isRestricted && currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
           </Grid>
         </Grid>
       </CenteredFrame>

@@ -14,6 +14,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSnapshotLoading, setIsSnapshotLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
   const [localShards, setLocalShards] = useState([]);
@@ -50,7 +51,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   }, [qdrantClient, collectionName]);
 
   const createSnapshot = () => {
-    setIsLoading(true);
+    setIsSnapshotLoading(true);
     qdrantClient
       .createSnapshot(collectionName)
       .then((res) => {
@@ -60,7 +61,7 @@ export const SnapshotsTab = ({ collectionName }) => {
         enqueueSnackbar(err.message, errorSnackbarOptions);
       })
       .finally(() => {
-        setIsLoading(false);
+        setIsSnapshotLoading(false);
       });
   };
 
@@ -136,7 +137,12 @@ export const SnapshotsTab = ({ collectionName }) => {
           <h1>Snapshots</h1>
         </Grid>
         <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
-          <Button variant={'contained'} onClick={createSnapshot} startIcon={<PhotoCamera fontSize={'small'} />}>
+          <Button
+            variant={'contained'}
+            onClick={createSnapshot}
+            startIcon={<PhotoCamera fontSize={'small'} />}
+            disabled={isSnapshotLoading}
+          >
             Take snapshot
           </Button>
         </Grid>
@@ -178,7 +184,7 @@ export const SnapshotsTab = ({ collectionName }) => {
           </InfoBanner>
         )}
         {isLoading && <div>Loading...</div>}
-        {!isLoading && snapshots?.length > 0 && (
+        {(snapshots?.length > 0 || isSnapshotLoading) && (
           <Grid item xs={12}>
             <TableContainer>
               <TableWithGaps aria-label="simple table">
@@ -196,12 +202,22 @@ export const SnapshotsTab = ({ collectionName }) => {
                     </TableCell>
                   </TableRow>
                 </TableHeadWithGaps>
-                <TableBodyWithGaps>{tableRows}</TableBodyWithGaps>
+                <TableBodyWithGaps>
+                  {tableRows}
+
+                  {isSnapshotLoading && (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center">
+                        Loading...
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBodyWithGaps>
               </TableWithGaps>
             </TableContainer>
           </Grid>
         )}
-        {!isLoading && !snapshots?.length && (
+        {!isLoading && !snapshots?.length && !isSnapshotLoading && (
           <Grid item xs={12} textAlign={'center'}>
             <Typography>No snapshots yet, take one! 📸</Typography>
           </Grid>

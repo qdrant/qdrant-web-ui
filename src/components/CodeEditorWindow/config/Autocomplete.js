@@ -1,4 +1,6 @@
 import { OpenapiAutocomplete } from 'autocomplete-openapi/src/autocomplete';
+import { enhanceSnippet } from './snippetEnhancer';
+import { customSnippets } from './customSnippets';
 
 export const autocomplete = async (monaco, qdrantClient) => {
   const response = await fetch(import.meta.env.BASE_URL + './openapi.json');
@@ -12,14 +14,66 @@ export const autocomplete = async (monaco, qdrantClient) => {
   }
 
   const autocomplete = new OpenapiAutocomplete(openapi, collections);
+  let snippets = autocomplete.getSnippets();
+  snippets = [...snippets, ...customSnippets];
+  snippets = snippets.map((snippet) => {
+    snippet.insertText = enhanceSnippet(snippet.insertText, collections);
+    return snippet;
+  });
 
   return {
     provideCompletionItems: (model, position) => {
+      let suggestions = [];
       // Reuse parsed code blocks to avoid parsing the same code block multiple times
       const selectedCodeBlock = monaco.editor.selectedCodeBlock;
 
       if (!selectedCodeBlock) {
-        return { suggestions: [] };
+        suggestions = [
+          ...suggestions,
+          {
+            label: 'POST',
+            kind: 17,
+            insertText: 'POST',
+          },
+          {
+            label: 'GET',
+            kind: 17,
+            insertText: 'GET',
+          },
+          {
+            label: 'PUT',
+            kind: 17,
+            insertText: 'PUT',
+          },
+          {
+            label: 'DELETE',
+            kind: 17,
+            insertText: 'DELETE',
+          },
+          {
+            label: 'PATCH',
+            kind: 17,
+            insertText: 'PATCH',
+          },
+        ];
+        const word = model.getWordUntilPosition(position);
+        snippets.forEach((snippet) => {
+          suggestions.push({
+            label: snippet.documentation,
+            kind: 1,
+            documentation: snippet.documentation,
+            insertText: snippet.insertText,
+            insertTextRules: 4,
+            range: {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: 0,
+              endColumn: word.endColumn,
+            },
+          });
+        });
+
+        return { suggestions };
       }
 
       const relativeLine = position.lineNumber - selectedCodeBlock.blockStartLine;
@@ -33,7 +87,7 @@ export const autocomplete = async (monaco, qdrantClient) => {
         // Autocomplete for request headers
         const header = selectedCodeBlock.blockText.slice(0, position.column - 1);
 
-        let suggestions = autocomplete.completeRequestHeader(header);
+        suggestions = autocomplete.completeRequestHeader(header);
 
         suggestions = suggestions
           .filter((s) => s !== '')

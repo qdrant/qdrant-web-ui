@@ -84,7 +84,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           id: 'RUN',
           command: {
             id: commandId,
-            title: 'RUN',
+            title: '▶ RUN',
             arguments: [codeBlocks[i].blockText],
           },
         });
@@ -94,21 +94,22 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           id: 'BEAUTIFY',
           command: {
             id: beutifyCommandId,
-            title: 'BEAUTIFY',
+            title: '★ BEAUTIFY',
             arguments: [codeBlocks[i]],
           },
         });
 
         const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
         if (terminal) {
-          terminal.operationId = terminal.operationId.replace('_', '-');
-          const docsURL = DOCS_BASE_URL + terminal.tags[0] + '/' + terminal.operationId;
+          const operationId = terminal.operationId.replace('_', '-').toLowerCase();
+          const tag = terminal.tags[0].toLowerCase();
+          const docsURL = DOCS_BASE_URL + tag + '/' + operationId;
           lenses.push({
             range,
             id: 'DOCS',
             command: {
               id: docsCommandId,
-              title: 'DOCS',
+              title: '§ DOCS',
               arguments: [docsURL],
             },
           });
@@ -136,53 +137,150 @@ export function selectBlock(blocks, location) {
   return null;
 }
 
-export function getCodeBlocks(codeText) {
-  const codeArray = codeText.split(/\r?\n/);
-  const blocksArray = [];
-  let block = { blockText: '', blockStartLine: null, blockEndLine: null };
-  let backetcount = 0;
-  let codeStarLine = 0;
-  let codeEndline = 0;
-  for (let i = 0; i < codeArray.length; ++i) {
-    // dealing for request which have JSON Body
-    if (codeArray[i].includes('{')) {
-      if (backetcount === 0) {
-        codeStarLine = i;
-        block.blockText = codeArray[i - 1] + ' \n ';
-      }
-      backetcount = backetcount + codeArray[i].match(/{/gi).length;
-    }
-    if (codeArray[i].includes('}')) {
-      backetcount = backetcount - codeArray[i].match(/}/gi).length;
-      if (backetcount === 0) {
-        codeEndline = i + 1;
-      }
-    }
-    if (codeStarLine) {
-      block.blockStartLine = codeStarLine;
-      block.blockText = block.blockText + codeArray[i] + '\n';
-      if (codeEndline) {
-        block.blockEndLine = codeEndline;
-        blocksArray.push(block);
-        codeEndline = 0;
-        codeStarLine = 0;
-        block = { blockText: '', blockStartLine: null, blockEndLine: null };
-      }
-    }
+/*
+A function which parses text into blocks of code.
 
-    // dealing for request which don't have JSON Body
-    if (
-      codeArray[i].replace(/\s/g, '').length &&
-      backetcount === 0 &&
-      !codeArray[i].includes('}') &&
-      !codeArray[i + 1]?.includes('{')
-    ) {
-      block.blockText = codeArray[i];
-      block.blockStartLine = i + 1;
-      block.blockEndLine = i + 1;
-      blocksArray.push(block);
-      block = { blockText: '', blockStartLine: null, blockEndLine: null };
+Each block is an HTTP request, which starts with a method (GET, POST, etc) and optionally has a JSON body.
+
+Example of code block:
+
+```
+POST collections/collection_name/points/scroll
+{
+  "limit": 10,
+  "filter": {
+    "must":{
+      "key": "city",
+      "match": {
+        "value": "Berlin"
+      }
     }
   }
-  return blocksArray;
+}
+```
+
+Function should find all such blocks in the text and return them as an array of objects.
+Example of return value:
+
+```
+[
+  {
+    blockText: '<here full text of the block>',
+    blockStartLine: 7,
+    blockEndLine: 16
+  }
+]
+```
+
+All other lines should be ignored.
+
+Example of input text:
+
+```
+// List all collections
+GET collections
+
+// Get collection info
+GET collections/collection_name
+
+// List points in a collection, using filter
+POST collections/collection_name/points/scroll
+{
+  "limit": 10
+}
+
+unrelated text
+```
+
+Example of return value:
+
+```
+[
+  {
+    blockText: 'GET collections',
+    blockStartLine: 1,
+    blockEndLine: 1
+  },
+  {
+    blockText: 'GET collections/collection_name',
+    blockStartLine: 3,
+    blockEndLine: 3
+  },
+  {
+    blockText: 'POST collections/collection_name/points/scroll\n{\n  "limit": 10\n}',
+    blockStartLine: 7,
+    blockEndLine: 10
+  }
+]
+
+*/
+export function getCodeBlocks(text) {
+  // Define HTTP methods
+  const HTTP_METHODS = new Set(Method);
+
+  const lines = text.split(/\r?\n/);
+  const blocks = [];
+  const totalLines = lines.length;
+  let i = 0;
+
+  while (i < totalLines) {
+    const line = lines[i].trim();
+    if (line === '') {
+      i++;
+      continue; // Ignore empty lines
+    }
+
+    // Split the line by whitespace to get the first word
+    const firstWord = line.split(/\s+/)[0].toUpperCase();
+
+    if (HTTP_METHODS.has(firstWord)) {
+      const blockStartLine = i + 1; // 1-based indexing
+      let blockText = lines[i];
+      let blockEndLine = blockStartLine;
+
+      // Check if next line exists and starts with '{'
+      let j = i + 1;
+      if (j < totalLines && lines[j].trim().startsWith('{')) {
+        // Start of JSON body
+        const jsonLines = [];
+        let braceCount = 0;
+        while (j < totalLines) {
+          const currentLine = lines[j];
+          jsonLines.push(currentLine);
+          // Count braces to find the matching closing brace
+          for (const char of currentLine) {
+            if (char === '{') braceCount++;
+            else if (char === '}') braceCount--;
+          }
+          if (braceCount === 0) {
+            break; // Found the closing brace
+          }
+          j++;
+        }
+
+        if (braceCount !== 0) {
+          // JSON body is not closed
+          i++;
+          continue;
+        }
+        blockText += '\n' + jsonLines.join('\n');
+        blockEndLine = j + 1;
+        i = j + 1;
+      } else {
+        // No JSON body
+        i++;
+      }
+
+      blocks.push({
+        blockText: blockText,
+        blockStartLine: blockStartLine,
+        blockEndLine: blockEndLine,
+      });
+    } else {
+      // Not a code block start
+      i++;
+    }
+  }
+
+  return blocks;
 }

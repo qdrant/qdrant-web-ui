@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardMedia, Modal, Typography } from '@mui/material';
+import { Box, CardMedia, Grid, Modal, Typography } from '@mui/material';
 
-function PointImage({ data, sx }) {
+function PointImage({ data, sx, xs = 3 }) {
   const [fullScreenImg, setFullScreenImg] = useState(null);
   const renderImages = () => {
     const images = [];
@@ -31,9 +31,7 @@ function PointImage({ data, sx }) {
               sx={{
                 width: 150,
                 margin: 'auto',
-                padding: 1,
                 wordWrap: 'break-word',
-                p: 1,
                 border: '1px solid #ccc',
                 borderRadius: '5px',
                 ...sx,
@@ -58,7 +56,7 @@ function PointImage({ data, sx }) {
   }
 
   return (
-    <>
+    <Grid item xs={xs} display="grid" justifyContent={'center'}>
       {images}
       <Modal
         open={!!fullScreenImg}
@@ -108,12 +106,13 @@ function PointImage({ data, sx }) {
           />
         </Box>
       </Modal>
-    </>
+    </Grid>
   );
 }
 PointImage.propTypes = {
   data: PropTypes.object.isRequired,
   sx: PropTypes.object,
+  xs: PropTypes.number, // Size of the image grid item. Default is 3.
 };
 
 export default PointImage;

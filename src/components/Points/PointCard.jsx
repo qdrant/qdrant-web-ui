@@ -126,9 +126,7 @@ const PointCard = (props) => {
                     payloadSchema={props.payloadSchema}
                   />
                 </Grid>
-                <Grid item xs={3} display="grid" justifyContent={'center'}>
-                  {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
-                </Grid>
+                {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
               </Grid>
             </CardContent>
           </>

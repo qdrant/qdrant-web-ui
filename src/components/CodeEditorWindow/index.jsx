@@ -119,6 +119,11 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
           onChangeResult('code', bigIntJSON.stringify(result));
           setRequestCount((prev) => prev - 1);
         });
+      } else {
+        // Remove the decoration
+        decorations = editor.deltaDecorations([decorations[0]], []);
+        // Remove the command
+        editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.Enter, () => {});
       }
     });
   }

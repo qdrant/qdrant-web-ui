@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
-import { Grid, TableContainer, Typography } from '@mui/material';
+import { Grid, TableContainer, Typography, Alert } from '@mui/material';
 import { TableBodyWithGaps, TableWithGaps } from '../components/Common/TableWithGaps';
 import { DatasetsHeader } from '../components/Datasets/DatasetsTableHeader';
 import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
@@ -9,6 +9,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
 import { compareSemver } from '../lib/common-helpers';
 import { useOutletContext } from 'react-router-dom';
+import { useRouteAccess } from '../hooks/useRouteAccess';
 
 function Datasets() {
   const [datasets, setDatasets] = useState([]);
@@ -17,6 +18,7 @@ function Datasets() {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
   const { version } = useOutletContext();
+  const { isAccessDenied } = useRouteAccess();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +66,11 @@ function Datasets() {
   }, []);
 
   const importDataset = async (fileName, collectionName, setImporting, importing) => {
+    if (isAccessDenied) {
+      enqueueSnackbar('Access denied: You do not have permission to import datasets', errorSnackbarOptions);
+      return;
+    }
+
     if (importing) {
       enqueueSnackbar('Importing in progress', errorSnackbarOptions);
       return;
@@ -87,7 +94,7 @@ function Datasets() {
   };
 
   const tableRows = datasets.map((dataset) => (
-    <DatasetsTableRow key={dataset.name} dataset={dataset} importDataset={importDataset} />
+    <DatasetsTableRow key={dataset.name} dataset={dataset} importDataset={importDataset} disabled={isAccessDenied} />
   ));
 
   return (
@@ -97,6 +104,13 @@ function Datasets() {
           <Grid xs={12} item>
             <Typography variant="h4">Datasets</Typography>
           </Grid>
+          {isAccessDenied && (
+            <Grid xs={12} item>
+              <Alert severity="warning">
+                You do not have permission to import datasets. Please contact your administrator.
+              </Alert>
+            </Grid>
+          )}
           {isLoading && <div>Loading...</div>}
           {!isLoading && datasets?.length === 0 && <div>No datasets found</div>}
           {!isLoading && datasets?.length > 0 && (
