@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -10,238 +10,185 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  DialogContentText,
+  Divider,
   Grid,
   TextField,
   Typography,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { CopyButton } from '../Common/CopyButton';
-import { bigIntJSON } from '../../common/bigIntJSON';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useClient } from '../../context/client-context';
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { CopyButton } from '../Common/CopyButton';
 
 const CollectionAliases = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
-  const [openCreateModal, setOpenCreateModal] = React.useState(false);
-  const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
-  const [aliases, setAliases] = React.useState([]);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [aliasToDelete, setAliasToDelete] = useState('');
+  const [aliases, setAliases] = useState([]);
 
+  // Fetch aliases on mount
   useEffect(() => {
-    qdrantClient
-      .getCollectionAliases(collectionName)
-      .then((res) => {
-        setAliases(() => {
-          return res.aliases;
-        });
-      })
-      .catch((err) => {
+    const fetchAliases = async () => {
+      try {
+        const res = await qdrantClient.getCollectionAliases(collectionName);
+        setAliases(res.aliases || []);
+      } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      });
-  }, []);
+      }
+    };
+    fetchAliases();
+  }, [collectionName, qdrantClient]);
 
-  const deleteAlias = (aliasName) => {
-    qdrantClient
-      .updateCollectionAliases({
-        actions: [
-          {
-            delete_alias: {
-              alias_name: aliasName,
-            },
-          },
-        ],
-      })
-
-      .then(() => {
-        setAliases((prev) => {
-          return prev.filter((alias) => alias.alias_name !== aliasName);
+  // Delete alias handler
+  const deleteAlias = useCallback(
+    async (aliasName) => {
+      try {
+        await qdrantClient.updateCollectionAliases({
+          actions: [{ delete_alias: { alias_name: aliasName } }],
         });
+        setAliases((prev) => prev.filter((alias) => alias.alias_name !== aliasName));
         enqueueSnackbar('Alias deleted successfully', getSnackbarOptions('success', closeSnackbar, 2000));
-      })
-      .catch((err) => {
+      } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      });
-  };
+      }
+    },
+    [qdrantClient]
+  );
 
-  const handleCreateAlias = (newAliasName) => {
-    if (newAliasName.trim() === '') {
-      enqueueSnackbar('Alias name cannot be empty', getSnackbarOptions('error', closeSnackbar, 2000));
-      return;
-    }
-
-    qdrantClient
-      .updateCollectionAliases({
-        actions: [
-          {
-            create_alias: {
-              collection_name: collectionName,
-              alias_name: newAliasName,
-            },
-          },
-        ],
-      })
-      .then(() => {
-        setAliases((prev) => {
-          return [...prev, { alias_name: newAliasName }];
+  // Create alias handler
+  const handleCreateAlias = useCallback(
+    async (newAliasName) => {
+      if (!newAliasName.trim()) {
+        enqueueSnackbar('Alias name cannot be empty', getSnackbarOptions('error', closeSnackbar, 2000));
+        return;
+      }
+      try {
+        await qdrantClient.updateCollectionAliases({
+          actions: [{ create_alias: { collection_name: collectionName, alias_name: newAliasName } }],
         });
+        setAliases((prev) => [...prev, { alias_name: newAliasName }]);
         setOpenCreateModal(false);
         enqueueSnackbar('Alias created successfully', getSnackbarOptions('success', closeSnackbar, 2000));
-      })
-      .catch((err) => {
+      } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      });
-  };
+      }
+    },
+    [collectionName, qdrantClient]
+  );
 
-  if (aliases.length === 0) {
-    return (
-      <React.Fragment>
-        <Card variant="dual" sx={{ mb: 5 }}>
-          <CardHeader
-            title={'Aliases'}
-            variant="heading"
-            sx={{
-              flexGrow: 1,
-            }}
-            action={
-              <Box>
-                <Button variant="outlined" size="small" onClick={() => setOpenCreateModal(true)}>
-                  Create alias
-                </Button>
-              </Box>
-            }
-          />
-          <CardContent>
-            <Typography variant="subtitle1" color="text.secondary">
-              No aliases found
-            </Typography>
-          </CardContent>
-        </Card>
-        <CreateAliasModal
-          open={openCreateModal}
-          onClose={() => setOpenCreateModal(false)}
-          onCreate={handleCreateAlias}
-        />
-      </React.Fragment>
-    );
-  }
+  const aliasList = useMemo(
+    () =>
+      aliases.map((alias) => (
+        <React.Fragment key={alias.alias_name}>
+          <AliasRow aliasName={alias.alias_name} onDelete={() => setAliasToDelete(alias.alias_name)} />
+          {alias.alias_name !== aliases[aliases.length - 1].alias_name && (
+            <Divider sx={{ ml: '0.5rem', width: 'calc(100% - 0.5rem)' }} />
+          )}
+        </React.Fragment>
+      )),
+    [aliases]
+  );
 
   return (
     <Card variant="dual" sx={{ mb: 5 }}>
       <CardHeader
-        title={'Aliases'}
+        title="Aliases"
         variant="heading"
-        sx={{
-          flexGrow: 1,
-        }}
         action={
           <Box>
             <Button variant="outlined" size="small" onClick={() => setOpenCreateModal(true)}>
               Create alias
             </Button>
-            <CopyButton text={bigIntJSON.stringify(aliases)} />
           </Box>
         }
       />
-      <CardContent>
-        <Grid container spacing={2}>
-          {aliases.map((alias) => (
-            <React.Fragment key={alias.alias_name}>
-              <Grid item xs={10}>
-                <Typography variant="subtitle1" color="text.secondary">
-                  {alias.alias_name}
-                </Typography>
-              </Grid>
-              <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <IconButton onClick={() => setOpenDeleteModal(true)} aria-label="delete" color="error">
-                  <DeleteIcon />
-                </IconButton>
-                <Dialog
-                  open={openDeleteModal}
-                  onClose={() => setOpenDeleteModal(false)}
-                  aria-labelledby="delete-dialog-title"
-                  aria-describedby="delete-dialog-description"
-                >
-                  <DialogTitle id="delete-dialog-title">Delete Alias</DialogTitle>
-                  <DialogContent>
-                    <DialogContentText id="delete-dialog-description">
-                      Are you sure you want to delete this alias?
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => {
-                        deleteAlias(alias.alias_name);
-                        setOpenDeleteModal(false);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                    <Button variant="outlined" size="small" onClick={() => setOpenDeleteModal(false)}>
-                      Cancel
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Grid>
-            </React.Fragment>
-          ))}
-        </Grid>
+      <CardContent sx={{ '&:last-child': { pb: 1 } }}>
+        {aliases.length === 0 ? (
+          <Typography variant="subtitle1" color="text.secondary">
+            No aliases found
+          </Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {aliasList}
+          </Grid>
+        )}
       </CardContent>
-
       <CreateAliasModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onCreate={handleCreateAlias} />
+
+      <ConfirmationDialog
+        open={!!aliasToDelete}
+        onClose={() => setAliasToDelete('')}
+        title={'Delete Alias'}
+        content={`Are you sure you want to delete the alias ${aliasToDelete}?`}
+        warning={`This action cannot be undone.`}
+        actionName={'Delete'}
+        actionHandler={() => {
+          deleteAlias(aliasToDelete);
+          setAliasToDelete('');
+        }}
+      />
     </Card>
   );
 };
 
-CollectionAliases.propTypes = {
-  collectionName: PropTypes.string.isRequired,
+const AliasRow = ({ aliasName, onDelete }) => (
+  <React.Fragment>
+    <Grid item xs={10} display="flex" alignItems="center" sx={{ pb: 1 }}>
+      <Typography variant="subtitle1" color="text.secondary">
+        {aliasName}
+      </Typography>
+      <CopyButton text={aliasName} tooltipPlacement={'right'} />
+    </Grid>
+    <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end', pr: 2 }}>
+      <Tooltip title={'Delete alias'} placement={'left'}>
+        <IconButton onClick={onDelete} aria-label="delete" color="error">
+          <DeleteIcon />
+        </IconButton>
+      </Tooltip>
+    </Grid>
+  </React.Fragment>
+);
+
+AliasRow.propTypes = {
+  aliasName: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };
 
-export default CollectionAliases;
-
 const CreateAliasModal = ({ open, onClose, onCreate }) => {
-  const [aliasName, setAliasName] = React.useState('');
+  const [aliasName, setAliasName] = useState('');
 
   const handleCreate = () => {
-    if (aliasName.trim() === '') {
-      enqueueSnackbar('Alias name cannot be empty', getSnackbarOptions('error', closeSnackbar, 2000));
-      return;
-    }
-
     onCreate(aliasName);
     setAliasName('');
   };
 
   return (
-    <Dialog fullWidth={true} open={open} onClose={onClose} aria-labelledby="create-alias-title">
-      <Box sx={{ display: 'flex', flexDirection: 'column', padding: 2 }}>
-        <DialogTitle id="create-alias-title">Create Collection Alias</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            <TextField
-              label="Alias Name"
-              value={aliasName}
-              onChange={(e) => setAliasName(e.target.value)}
-              autoFocus
-              required
-              margin="dense"
-              fullWidth
-              variant="standard"
-            />
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button variant="outlined" size="small" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="contained" size="small" onClick={handleCreate}>
-            Create
-          </Button>
-        </DialogActions>
-      </Box>
+    <Dialog fullWidth open={open} onClose={onClose} aria-labelledby="create-alias-title">
+      <DialogTitle id="create-alias-title">Create Collection Alias</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="Alias Name"
+          value={aliasName}
+          onChange={(e) => setAliasName(e.target.value)}
+          autoFocus
+          required
+          margin="dense"
+          fullWidth
+          variant="standard"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={handleCreate}>
+          Create
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };
@@ -251,3 +198,9 @@ CreateAliasModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onCreate: PropTypes.func.isRequired,
 };
+
+CollectionAliases.propTypes = {
+  collectionName: PropTypes.string.isRequired,
+};
+
+export default CollectionAliases;
