@@ -26,6 +26,7 @@ const COLLECTIONS = [
         },
       },
     },
+    aliases: ['alias1', 'alias2'],
   },
   {
     name: 'Collection 2',
@@ -47,6 +48,7 @@ const COLLECTIONS = [
         },
       },
     },
+    aliases: [],
   },
 ];
 
@@ -77,5 +79,6 @@ describe('CollectionsList', () => {
     expect(screen.getByText('euclidean')).toBeInTheDocument();
     expect(screen.getByText('32')).toBeInTheDocument();
     expect(screen.getByText('manhattan')).toBeInTheDocument();
+    expect(screen.getByText('Aliases: alias1, alias2')).toBeInTheDocument();
   });
 });
