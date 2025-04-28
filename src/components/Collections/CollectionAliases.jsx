@@ -40,7 +40,7 @@ const CollectionAliases = ({ collectionName }) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
     };
-    fetchAliases();
+    fetchAliases().catch((e) => console.error(e));
   }, [collectionName, qdrantClient]);
 
   // Delete alias handler
@@ -66,7 +66,6 @@ const CollectionAliases = ({ collectionName }) => {
 
       // if alias name already exists
       if (aliases.some((alias) => alias.alias_name === newAliasNameNormalized)) {
-        console.log('Alias name already exists');
         enqueueSnackbar('Alias name already exists', getSnackbarOptions('error', closeSnackbar, 2000));
         setOpenCreateModal(false);
         return;
@@ -138,7 +137,7 @@ const CollectionAliases = ({ collectionName }) => {
         warning={`This action cannot be undone.`}
         actionName={'Delete'}
         actionHandler={() => {
-          deleteAlias(aliasToDelete);
+          deleteAlias(aliasToDelete).catch((e) => console.error(e));
           setAliasToDelete('');
         }}
       />
@@ -156,7 +155,7 @@ const AliasRow = ({ aliasName, onDelete }) => (
     </Grid>
     <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end', pr: 2 }}>
       <Tooltip title={'Delete alias'} placement={'left'}>
-        <IconButton onClick={onDelete} aria-label="delete" color="error">
+        <IconButton onClick={onDelete} aria-label="delete" color="error" data-testid={`delete-alias-${aliasName}`}>
           <DeleteIcon />
         </IconButton>
       </Tooltip>
@@ -178,10 +177,19 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
   };
 
   return (
-    <Dialog fullWidth open={open} onClose={onClose} aria-labelledby="create-alias-title">
+    <Dialog
+      fullWidth
+      open={open}
+      onClose={onClose}
+      aria-labelledby="create-alias-title"
+      data-testid="create-alias-dialog"
+      role="dialog"
+    >
       <DialogTitle id="create-alias-title">Create Collection Alias</DialogTitle>
       <DialogContent>
         <TextField
+          id="alias-name-input"
+          data-testid="alias-name-input"
           label="Alias Name"
           value={aliasName}
           onChange={(e) => setAliasName(e.target.value)}
@@ -196,7 +204,7 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
         <Button variant="outlined" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleCreate}>
+        <Button variant="contained" onClick={handleCreate} data-testid="create-alias-button">
           Create
         </Button>
       </DialogActions>
