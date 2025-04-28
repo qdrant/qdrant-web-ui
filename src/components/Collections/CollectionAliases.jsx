@@ -62,22 +62,33 @@ const CollectionAliases = ({ collectionName }) => {
   // Create alias handler
   const handleCreateAlias = useCallback(
     async (newAliasName) => {
-      if (!newAliasName.trim()) {
+      const newAliasNameNormalized = newAliasName.trim();
+
+      // if alias name already exists
+      if (aliases.some((alias) => alias.alias_name === newAliasNameNormalized)) {
+        console.log('Alias name already exists');
+        enqueueSnackbar('Alias name already exists', getSnackbarOptions('error', closeSnackbar, 2000));
+        setOpenCreateModal(false);
+        return;
+      }
+      // if alias name is empty
+      if (!newAliasNameNormalized) {
         enqueueSnackbar('Alias name cannot be empty', getSnackbarOptions('error', closeSnackbar, 2000));
         return;
       }
+
       try {
         await qdrantClient.updateCollectionAliases({
-          actions: [{ create_alias: { collection_name: collectionName, alias_name: newAliasName } }],
+          actions: [{ create_alias: { collection_name: collectionName, alias_name: newAliasNameNormalized } }],
         });
-        setAliases((prev) => [...prev, { alias_name: newAliasName }]);
+        setAliases((prev) => [...prev, { alias_name: newAliasNameNormalized }]);
         setOpenCreateModal(false);
         enqueueSnackbar('Alias created successfully', getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
     },
-    [collectionName, qdrantClient]
+    [collectionName, qdrantClient, aliases]
   );
 
   const aliasList = useMemo(
