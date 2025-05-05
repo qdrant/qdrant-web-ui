@@ -133,10 +133,19 @@ export const SnapshotsTab = ({ collectionName }) => {
   return (
     <div>
       <Grid container alignItems="center">
-        <Grid item xs={12} md={8}>
+        <Grid
+          size={{
+            xs: 12,
+            md: 8
+          }}>
           <h1>Snapshots</h1>
         </Grid>
-        <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end' }}>
+        <Grid
+          sx={{ display: 'flex', justifyContent: 'end' }}
+          size={{
+            xs: 12,
+            md: 4
+          }}>
           <Button
             variant={'contained'}
             onClick={createSnapshot}
@@ -185,7 +194,7 @@ export const SnapshotsTab = ({ collectionName }) => {
         )}
         {isLoading && <div>Loading...</div>}
         {(snapshots?.length > 0 || isSnapshotLoading) && (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TableContainer>
               <TableWithGaps aria-label="simple table">
                 <TableHeadWithGaps>
@@ -218,7 +227,7 @@ export const SnapshotsTab = ({ collectionName }) => {
           </Grid>
         )}
         {!isLoading && !snapshots?.length && !isSnapshotLoading && (
-          <Grid item xs={12} textAlign={'center'}>
+          <Grid textAlign={'center'} size={12}>
             <Typography>No snapshots yet, take one! 📸</Typography>
           </Grid>
         )}

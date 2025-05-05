@@ -39,7 +39,7 @@ const CallScrollRequest = (props) => {
   }, []);
 
   return (
-    <Grid item xs={12}>
+    <Grid size={12}>
       <Card variant="dual">
         <CardActionArea>
           <CardContent>

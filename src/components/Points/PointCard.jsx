@@ -117,7 +117,7 @@ const PointCard = (props) => {
             />
             <CardContent>
               <Grid container display={'flex'}>
-                <Grid item xs my={1}>
+                <Grid my={1} size="grow">
                   <DataGridList
                     data={point.payload}
                     onConditionChange={onConditionChange}

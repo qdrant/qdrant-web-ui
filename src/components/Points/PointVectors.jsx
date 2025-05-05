@@ -38,7 +38,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
       {Object.keys(vectors).map((key) => {
         return (
           <Grid key={key} container spacing={2}>
-            <Grid item xs={4} my={1}>
+            <Grid my={1} size={4}>
               {key === '' ? (
                 <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
                   Default vector
@@ -58,8 +58,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
               />
             </Grid>
-
-            <Grid item xs={4} my={1}>
+            <Grid my={1} size={4}>
               <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
                 Length:
               </Typography>
@@ -70,15 +69,13 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               />
             </Grid>
             <Grid
-              item
-              xs={4}
               my={1}
               sx={{
                 display: 'flex',
                 justifyContent: 'end',
                 gap: 2,
               }}
-            >
+              size={4}>
               <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
               </Button>

@@ -41,20 +41,20 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       field: 'name',
       headerName: 'Name',
       minWidth: 100,
-      valueGetter: (params) => params.row.name,
+      valueGetter: (r, v) => v.name,
       flex: 1,
     },
     {
       field: 'time',
       headerName: 'Time',
       width: 100,
-      valueGetter: (params) => params.row.time,
+      valueGetter: (r, v) => v.time,
     },
     {
       field: 'date',
       headerName: 'Date',
       width: 100,
-      valueGetter: (params) => params.row.date,
+      valueGetter: (r, v) => v.date,
     },
     {
       field: 'delete',
@@ -62,7 +62,7 @@ function SavedCode({ state, code, handleEditorChange, toggleDrawer }) {
       width: 100,
       align: 'center',
       headerAlign: 'center',
-      renderCell: (params) => deleteIcon(params.row),
+      renderCell: (r) => deleteIcon(r.row),
     },
   ];
   function deleteIcon(data) {

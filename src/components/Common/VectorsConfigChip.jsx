@@ -7,18 +7,18 @@ const VectorsConfigChip = ({ collectionConfigParams, sx = {} }) => {
     <>
       {collectionConfigParams.vectors.size && (
         <Grid container component={Card} variant={'heading'} p={1} sx={{ ...sx }}>
-          <Grid item align="center" mr={2}>
+          <Grid align="center" mr={2}>
             default
           </Grid>
-          <Grid item align="center" mr={2}>
+          <Grid align="center" mr={2}>
             {collectionConfigParams.vectors.size}
           </Grid>
-          <Grid item align="center" mr={2}>
+          <Grid align="center" mr={2}>
             {collectionConfigParams.vectors.distance}
           </Grid>
           {/* model is not always present */}
           {collectionConfigParams.vectors.model && (
-            <Grid item align="center">
+            <Grid align="center">
               {collectionConfigParams.vectors.model}
             </Grid>
           )}
@@ -27,18 +27,18 @@ const VectorsConfigChip = ({ collectionConfigParams, sx = {} }) => {
       {!collectionConfigParams.vectors.size &&
         Object.keys(collectionConfigParams.vectors).map((vector) => (
           <Grid key={vector} container component={Card} variant={'heading'} p={1} sx={{ ...sx }}>
-            <Grid item align="center" mr={2}>
+            <Grid align="center" mr={2}>
               {vector}
             </Grid>
-            <Grid item align="center" mr={2}>
+            <Grid align="center" mr={2}>
               {collectionConfigParams.vectors[vector].size}
             </Grid>
-            <Grid item align="center" mr={2}>
+            <Grid align="center" mr={2}>
               {collectionConfigParams.vectors[vector].distance}
             </Grid>
             {/* model is not always present */}
             {collectionConfigParams.vectors[vector].model && (
-              <Grid item align="center">
+              <Grid align="center">
                 {collectionConfigParams.vectors[vector].model}
               </Grid>
             )}
@@ -47,13 +47,13 @@ const VectorsConfigChip = ({ collectionConfigParams, sx = {} }) => {
       {collectionConfigParams.sparse_vectors &&
         Object.keys(collectionConfigParams.sparse_vectors).map((vector) => (
           <Grid key={vector} container component={Card} variant={'heading'} p={1} sx={{ ...sx }}>
-            <Grid item align="center" mr={2}>
+            <Grid align="center" mr={2}>
               {vector}
             </Grid>
-            <Grid item align="center" mr={2}>
+            <Grid align="center" mr={2}>
               Sparse
             </Grid>
-            <Grid item align="center" mr={2}></Grid>
+            <Grid align="center" mr={2}></Grid>
           </Grid>
         ))}
     </>

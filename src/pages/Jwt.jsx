@@ -76,7 +76,7 @@ function Jwt() {
   if (isRestricted) {
     return (
       <Box sx={{ p: 5, width: '100%' }}>
-        <Grid xs={12} item>
+        <Grid size={12}>
           <Alert severity="warning">
             Access Denied: Because of the serverless mode, jwt tools will not work correctly. Please contact your
             administrator.

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material';
@@ -36,26 +37,26 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       field: 'method',
       headerName: 'Method',
       width: 100,
-      valueGetter: (params) => params.row.code.method,
+      valueGetter: (r, v) => v.code.method
     },
     {
       field: 'endpoint',
       headerName: 'Endpoint',
       minWidth: 100,
-      valueGetter: (params) => params.row.code.endpoint,
+      valueGetter: (r, v) => v.code.endpoint,
       flex: 1,
     },
     {
       field: 'time',
       headerName: 'Time',
       width: 100,
-      valueGetter: (params) => params.row.time,
+      valueGetter: (r, v) => v.time,
     },
     {
       field: 'date',
       headerName: 'Date',
       width: 100,
-      valueGetter: (params) => params.row.date,
+      valueGetter: (r, v) => v.date,
     },
     {
       field: 'delete',
@@ -63,7 +64,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       width: 100,
       align: 'center',
       headerAlign: 'center',
-      renderCell: (params) => deleteIcon(params.row),
+      renderCell: (r) => deleteIcon(r.row),
     },
   ];
   function deleteIcon(data) {

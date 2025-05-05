@@ -140,7 +140,7 @@ const PointsTabs = ({ collectionName, client }) => {
   return (
     <Grid container spacing={3}>
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
-      <Grid xs={12} item>
+      <Grid size={12}>
         <SimilarSerachfield
           conditions={conditions}
           onConditionChange={onConditionChange}
@@ -148,26 +148,25 @@ const PointsTabs = ({ collectionName, client }) => {
           usingVector={usingVector}
         />
       </Grid>
-
       {errorMessage && (
-        <Grid xs={12} item textAlign={'center'}>
+        <Grid textAlign={'center'} size={12}>
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
       {!points && !errorMessage && (
-        <Grid xs={12} item textAlign={'center'}>
+        <Grid textAlign={'center'} size={12}>
           <Typography> 🔃 Loading...</Typography>
         </Grid>
       )}
       {points && !errorMessage && points.points?.length === 0 && (
-        <Grid xs={12} item textAlign={'center'}>
+        <Grid textAlign={'center'} size={12}>
           <Typography>📪 No Points are present, {collectionName} is empty</Typography>
         </Grid>
       )}
       {points &&
         !errorMessage &&
         points.points?.map((point) => (
-          <Grid xs={12} item key={point.id}>
+          <Grid key={point.id} size={12}>
             <PointCard
               point={point}
               onConditionChange={onConditionChange}
@@ -179,7 +178,7 @@ const PointsTabs = ({ collectionName, client }) => {
             />
           </Grid>
         ))}
-      <Grid xs={12} item textAlign={'center'}>
+      <Grid textAlign={'center'} size={12}>
         <Button
           variant="outlined"
           disabled={!points || !nextPageOffset}

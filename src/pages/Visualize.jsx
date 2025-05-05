@@ -154,7 +154,7 @@ function Visualize() {
           {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
           {/*    </Grid>*/}
           {/*  )}*/}
-          <Grid xs={12} item>
+          <Grid size={12}>
             <PanelGroup direction="horizontal">
               <Panel style={{ display: 'flex' }}>
                 <Box width={'100%'}>

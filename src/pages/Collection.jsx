@@ -27,11 +27,11 @@ function Collection() {
     <>
       <CenteredFrame>
         <Grid container maxWidth={'xl'} spacing={3}>
-          <Grid xs={12} item>
+          <Grid size={12}>
             <Typography variant="h4">{collectionName}</Typography>
           </Grid>
 
-          <Grid xs={12} item>
+          <Grid size={12}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
               <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
                 <Tab label="Points" value={'points'} />
@@ -44,7 +44,7 @@ function Collection() {
             </Box>
           </Grid>
 
-          <Grid xs={12} item>
+          <Grid size={12}>
             {currentTab === 'info' && <CollectionInfo collectionName={collectionName} />}
             {!isRestricted && currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
             {currentTab === 'points' && <PointsTabs collectionName={collectionName} />}

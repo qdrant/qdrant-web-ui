@@ -114,37 +114,47 @@ function Collections() {
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
         <Grid container maxWidth={'xl'}>
-          <Grid item xs={12} md={8} mb={4}>
+          <Grid
+            mb={4}
+            size={{
+              xs: 12,
+              md: 8
+            }}>
             <Typography variant="h4" component={'h1'}>
               Collections
             </Typography>
           </Grid>
-          <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}>
+          <Grid
+            sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}
+            size={{
+              xs: 12,
+              md: 4
+            }}>
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
-          <Grid xs={12} item>
+          <Grid size={12}>
             <SearchBar value={searchQuery} setValue={setSearchQuery} />
           </Grid>
 
           {errorMessage && (
-            <Grid xs={12} item textAlign={'center'} mt={3}>
+            <Grid textAlign={'center'} mt={3} size={12}>
               <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
           {!collections && !errorMessage && (
-            <Grid xs={12} item textAlign={'center'}>
+            <Grid textAlign={'center'} size={12}>
               <Typography>🔃 Loading...</Typography>
               <Skeleton variant="rectangular" height={200} />
             </Grid>
           )}
           {collections && !errorMessage && collections.length === 0 && (
-            <Grid xs={12} item textAlign={'center'} mt={3}>
+            <Grid textAlign={'center'} mt={3} size={12}>
               <Typography> 📪 No collection is present</Typography>
             </Grid>
           )}
 
           {rawCollections?.length && !errorMessage ? (
-            <Grid xs={12} item>
+            <Grid size={12}>
               <CollectionsList
                 collections={rawCollections}
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
