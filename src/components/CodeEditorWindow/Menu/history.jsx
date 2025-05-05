@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { SwipeableDrawer, Button, Box, Stack, Typography } from '@mui/material';
@@ -37,7 +36,7 @@ function History({ state, code, handleEditorChange, toggleDrawer }) {
       field: 'method',
       headerName: 'Method',
       width: 100,
-      valueGetter: (r, v) => v.code.method
+      valueGetter: (r, v) => v.code.method,
     },
     {
       field: 'endpoint',

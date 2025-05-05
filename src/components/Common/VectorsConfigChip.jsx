@@ -17,11 +17,7 @@ const VectorsConfigChip = ({ collectionConfigParams, sx = {} }) => {
             {collectionConfigParams.vectors.distance}
           </Grid>
           {/* model is not always present */}
-          {collectionConfigParams.vectors.model && (
-            <Grid align="center">
-              {collectionConfigParams.vectors.model}
-            </Grid>
-          )}
+          {collectionConfigParams.vectors.model && <Grid align="center">{collectionConfigParams.vectors.model}</Grid>}
         </Grid>
       )}
       {!collectionConfigParams.vectors.size &&
@@ -38,9 +34,7 @@ const VectorsConfigChip = ({ collectionConfigParams, sx = {} }) => {
             </Grid>
             {/* model is not always present */}
             {collectionConfigParams.vectors[vector].model && (
-              <Grid align="center">
-                {collectionConfigParams.vectors[vector].model}
-              </Grid>
+              <Grid align="center">{collectionConfigParams.vectors[vector].model}</Grid>
             )}
           </Grid>
         ))}

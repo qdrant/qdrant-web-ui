@@ -118,8 +118,9 @@ function Collections() {
             mb={4}
             size={{
               xs: 12,
-              md: 8
-            }}>
+              md: 8,
+            }}
+          >
             <Typography variant="h4" component={'h1'}>
               Collections
             </Typography>
@@ -128,8 +129,9 @@ function Collections() {
             sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}
             size={{
               xs: 12,
-              md: 4
-            }}>
+              md: 4,
+            }}
+          >
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid size={12}>

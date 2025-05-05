@@ -136,16 +136,18 @@ export const SnapshotsTab = ({ collectionName }) => {
         <Grid
           size={{
             xs: 12,
-            md: 8
-          }}>
+            md: 8,
+          }}
+        >
           <h1>Snapshots</h1>
         </Grid>
         <Grid
           sx={{ display: 'flex', justifyContent: 'end' }}
           size={{
             xs: 12,
-            md: 4
-          }}>
+            md: 4,
+          }}
+        >
           <Button
             variant={'contained'}
             onClick={createSnapshot}

@@ -75,7 +75,8 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 justifyContent: 'end',
                 gap: 2,
               }}
-              size={4}>
+              size={4}
+            >
               <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
               </Button>
