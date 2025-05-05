@@ -26,7 +26,7 @@ function Collection() {
   return (
     <>
       <CenteredFrame>
-        <Grid container maxWidth={'xl'} spacing={3}>
+        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
           <Grid size={12}>
             <Typography variant="h4">{collectionName}</Typography>
           </Grid>
