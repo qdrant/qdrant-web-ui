@@ -113,7 +113,7 @@ function Collections() {
       <CenteredFrame>
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
-        <Grid container maxWidth={'xl'}>
+        <Grid container maxWidth={'xl'} width={'100%'}>
           <Grid
             mb={4}
             size={{
