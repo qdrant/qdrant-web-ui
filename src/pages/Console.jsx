@@ -89,7 +89,7 @@ function Console() {
           {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
           {/*    </Grid>*/}
           {/*  )}*/}
-          <Grid xs={12} item>
+          <Grid size={12}>
             <Box sx={{ width: '100%', height: '4px' }}>
               <LinearProgress sx={requestCount ? {} : { display: 'none' }} />
             </Box>

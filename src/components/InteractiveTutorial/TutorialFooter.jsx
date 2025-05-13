@@ -31,7 +31,7 @@ export const TutorialFooter = () => {
     <Box mt={10}>
       <Divider />
       <Grid container mt={4} spacing={1} justifyContent={'space-between'}>
-        <Grid item>
+        <Grid>
           {currentPageIndex >= 0 && (
             <Button sx={{ alignItems: 'flex-start' }} onClick={handlePrev} startIcon={<ArrowBack />}>
               Previous
@@ -39,9 +39,9 @@ export const TutorialFooter = () => {
           )}
         </Grid>
 
-        <Grid item>{currentPageIndex >= 0 && <Button onClick={() => navigate('/tutorial')}>Home</Button>}</Grid>
+        <Grid>{currentPageIndex >= 0 && <Button onClick={() => navigate('/tutorial')}>Home</Button>}</Grid>
 
-        <Grid item>
+        <Grid>
           {currentPageIndex < pageKeys.length - 1 && (
             <Button sx={{ alignItems: 'flex-start' }} onClick={handleNext} endIcon={<ArrowForward />}>
               Next

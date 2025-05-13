@@ -56,7 +56,7 @@ function PointImage({ data, sx, xs = 3 }) {
   }
 
   return (
-    <Grid item xs={xs} display="grid" justifyContent={'center'}>
+    <Grid display="grid" justifyContent={'center'} size={xs}>
       {images}
       <Modal
         open={!!fullScreenImg}

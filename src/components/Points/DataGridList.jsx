@@ -22,7 +22,7 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
     return (
       <div key={key}>
         <Grid container spacing={2}>
-          <Grid item xs={3} my={1}>
+          <Grid my={1} size={3}>
             <Typography
               variant="subtitle1"
               sx={{
@@ -35,7 +35,7 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
             </Typography>
           </Grid>
 
-          <Grid item xs={9} my={1}>
+          <Grid my={1} size={9}>
             {/* special cases */}
             {specialKeys?.includes(key) && specialCases[key]}
 

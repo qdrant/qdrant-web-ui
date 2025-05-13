@@ -12,7 +12,7 @@ export const Tutorial = () => {
   if (isRestricted) {
     return (
       <Box sx={{ p: 5, width: '100%' }}>
-        <Grid xs={12} item>
+        <Grid size={12}>
           <Alert severity="warning">
             Access Denied: Because of the serverless mode, tutorial will not work here properly. Please contact your
             administrator.

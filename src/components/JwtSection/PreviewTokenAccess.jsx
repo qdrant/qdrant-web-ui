@@ -17,7 +17,7 @@ const PreviewTokenAccess = (props) => {
 
   return (
     <>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <Typography variant="h4">Preview of token access</Typography>
         <Select
           multiple

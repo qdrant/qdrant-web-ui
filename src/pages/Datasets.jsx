@@ -100,12 +100,12 @@ function Datasets() {
   return (
     <>
       <CenteredFrame>
-        <Grid container maxWidth={'xl'} spacing={3}>
-          <Grid xs={12} item>
+        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
+          <Grid size={12}>
             <Typography variant="h4">Datasets</Typography>
           </Grid>
           {isAccessDenied && (
-            <Grid xs={12} item>
+            <Grid size={12}>
               <Alert severity="warning">
                 You do not have permission to import datasets. Please contact your administrator.
               </Alert>
@@ -114,7 +114,7 @@ function Datasets() {
           {isLoading && <div>Loading...</div>}
           {!isLoading && datasets?.length === 0 && <div>No datasets found</div>}
           {!isLoading && datasets?.length > 0 && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TableContainer>
                 <TableWithGaps aria-label="simple table">
                   <DatasetsHeader

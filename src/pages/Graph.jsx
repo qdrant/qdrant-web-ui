@@ -161,7 +161,7 @@ function Graph() {
     <>
       <Box component="main">
         <Grid container>
-          <Grid xs={12} item>
+          <Grid size={12}>
             <PanelGroup direction="horizontal" autoSaveId="persistence">
               <Panel defaultSize={50}>
                 <Box width={'100%'}>
