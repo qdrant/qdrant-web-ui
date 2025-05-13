@@ -1,6 +1,4 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import SearchQualityPanel from './SearchQualityPanel';
 import { useClient } from '../../../context/client-context';

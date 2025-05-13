@@ -27,6 +27,9 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         <Typography component={StyledLink} to={`/collections/${collection.name}`}>
           {collection.name}
         </Typography>
+        <Typography component={'p'} variant="caption" color="text.secondary">
+          {collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
+        </Typography>
       </TableCell>
       <TableCell>
         <Box

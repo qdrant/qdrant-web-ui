@@ -59,6 +59,7 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
           }
           variant="contained"
           onClick={handleActionClick}
+          data-testid={`confirm-${actionName.toLowerCase()}-button`}
         >
           {actionName}
         </Button>

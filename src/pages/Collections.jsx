@@ -30,6 +30,7 @@ function Collections() {
     async (page = 1) => {
       try {
         const allCollections = await qdrantClient.getCollections();
+        const aliases = await qdrantClient.getAliases();
         const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
         setCollections(sortedCollections);
 
@@ -38,9 +39,13 @@ function Collections() {
         const nextRawCollections = await Promise.all(
           nextPageCollections.map(async (collection) => {
             const collectionData = await qdrantClient.getCollection(collection.name);
+            const collectionAliases = aliases.aliases
+              .filter((alias) => alias.collection_name === collection.name)
+              .map((alias) => alias.alias_name);
             return {
               name: collection.name,
               ...collectionData,
+              aliases: [...collectionAliases],
             };
           })
         );
