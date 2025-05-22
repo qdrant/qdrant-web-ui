@@ -21,7 +21,6 @@ function Collections() {
 
   const { maxCollections } = useMaxCollections();
 
-
   const getErrorMessageWithApiKey = useCallback(
     (error) => {
       const apiKey = qdrantClient.getApiKey();
@@ -126,7 +125,7 @@ function Collections() {
             }}
           >
             <Typography variant="h4" component={'h1'}>
-              Collections {maxCollections && collections ? `(${collections.length} / ${maxCollections})` : ""}
+              Collections {maxCollections && collections ? `(${collections.length} / ${maxCollections})` : ''}
             </Typography>
           </Grid>
           <Grid
