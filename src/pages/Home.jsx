@@ -14,6 +14,7 @@ import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Notifications from '../components/Notifications';
 import AutoModeIcon from '@mui/icons-material/BrightnessAuto';
+import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -24,13 +25,14 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
-export default function MiniDrawer() {
+function HomeContent() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);
   const colorMode = React.useContext(ColorModeContext);
+  const { setMaxCollections } = useMaxCollections();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
@@ -40,6 +42,7 @@ export default function MiniDrawer() {
       const telemetry = await qdrantClient.api('service').telemetry();
       setVersion(telemetry.data.result.app.version);
       setJwtEnabled(telemetry.data.result.app?.jwt_rbac || false);
+      setMaxCollections(telemetry.data.result.collections?.max_collections);
 
       if (telemetry.data.result.app?.hide_jwt_dashboard) {
         setJwtVisible(false);
@@ -121,5 +124,13 @@ export default function MiniDrawer() {
       </Box>
       <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
     </Box>
+  );
+}
+
+export default function MiniDrawer() {
+  return (
+    <MaxCollectionsProvider>
+      <HomeContent />
+    </MaxCollectionsProvider>
   );
 }
