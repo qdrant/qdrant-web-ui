@@ -63,7 +63,13 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 Length:
               </Typography>
               <Chip
-                label={Array.isArray(vectors[key]) ? vectors[key].length : vectors[key].indices?.length}
+                label={
+                  Array.isArray(vectors[key])
+                    ? Array.isArray(vectors[key][0])
+                      ? vectors[key].length + ' x ' + vectors[key][0].length
+                      : vectors[key].length
+                    : vectors[key].indices?.length
+                }
                 variant="outlined"
                 size="small"
               />
