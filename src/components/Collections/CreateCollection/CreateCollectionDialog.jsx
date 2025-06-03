@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CreateCollectionForm } from '../../../../../create-collection-form'; // to be replaced with the actual import path
+import { CreateCollectionForm } from 'create-collection-form'; // todo: replace the branch name in package.json
 import { AppBar, Box, Dialog, Toolbar, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
@@ -8,7 +8,6 @@ import { useTheme } from '@mui/material/styles';
 // import { useClient } from "../../../context/client-context";
 
 // todo:
-// - [ ] when ready: replace the import path with the actual one, update package.json
 // - [ ] normalize form data to the format expected by the backend
 // - [ ] call the backend API to create the collection
 
@@ -30,11 +29,10 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
           display: 'flex',
           flexDirection: 'column',
           pt: 8,
-          // todo: remove here and add to the theme
+          backgroundColor: theme.palette.mode === 'dark' ? '#0b0f19' : '#f3f8fd',
         }}
       >
         <AppBar
-          variant="outlined"
           position="fixed"
           sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
