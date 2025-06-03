@@ -9,6 +9,7 @@ import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/max-collections-context';
+import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -129,12 +130,13 @@ function Collections() {
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}
+            sx={{ display: 'flex', justifyContent: 'end', mb: 4, gap: 2 }}
             size={{
               xs: 12,
               md: 4,
             }}
           >
+            <CreateCollectionButton />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid size={12}>

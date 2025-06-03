@@ -40,5 +40,17 @@ export const lightThemeOptions = {
         root: getVariant,
       },
     },
+    MuiCreateCollectionForm: {
+      styleOverrides: {
+        root: ({ theme }) => {
+          // "root" is a slot name
+          return {
+            backgroundColor: alpha(theme.palette.primary.main, 0.05),
+            paddingTop: theme.spacing(5),
+            minHeight: `calc(100vh - ${theme.spacing(8)})`, // 8 is the height of the AppBar
+          };
+        },
+      },
+    },
   },
 };
