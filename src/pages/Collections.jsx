@@ -136,7 +136,7 @@ function Collections() {
               md: 4,
             }}
           >
-            <CreateCollectionButton />
+            <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid size={12}>

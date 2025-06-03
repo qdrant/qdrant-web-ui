@@ -1,24 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { CreateCollectionForm } from 'create-collection-form'; // todo: replace the branch name in package.json
+import { CreateCollectionForm } from 'create-collection-form';
 import { AppBar, Box, Dialog, Toolbar, Typography } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
-// import { useClient } from "../../../context/client-context";
-
-// todo:
-// - [ ] normalize form data to the format expected by the backend
-// - [ ] call the backend API to create the collection
+import { useClient } from '../../../context/client-context';
+import { convertFromDataToApi } from './convert-form-data';
 
 const CreateCollectionDialog = ({ open, handleClose }) => {
-  // const { client: qdrantClient } = useClient();
+  const { client: qdrantClient } = useClient();
   const theme = useTheme();
 
   const handleFinish = async (data) => {
-    console.log('Collection created with data:', data); // todo: remove this line
-    // Call the backend API to create the collection
-
+    const { collection_name: collectionName, configuration } = convertFromDataToApi(data);
+    await qdrantClient.createCollection(collectionName, configuration);
     handleClose();
   };
 

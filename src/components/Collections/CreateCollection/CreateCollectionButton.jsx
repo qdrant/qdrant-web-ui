@@ -3,18 +3,21 @@ import { Button, Tooltip } from '@mui/material';
 import CreateCollectionDialog from './CreateCollectionDialog';
 import AddIcon from '@mui/icons-material/Add';
 import { useClient } from '../../../context/client-context';
+import PropTypes from 'prop-types';
 
-const CreateCollectionButton = () => {
+const CreateCollectionButton = ({ onComplete }) => {
   const [open, setOpen] = useState(false);
   const { isRestricted } = useClient();
 
   const handleClose = () => {
-    if (!isRestricted) {
-      setOpen(false);
-    }
+    setOpen(false);
+    onComplete();
   };
 
   const handleOpen = () => {
+    if (isRestricted) {
+      return;
+    }
     setOpen(true);
   };
 
@@ -42,6 +45,10 @@ const CreateCollectionButton = () => {
       <CreateCollectionDialog open={open} handleClose={handleClose} />
     </>
   );
+};
+
+CreateCollectionButton.propTypes = {
+  onComplete: PropTypes.func.isRequired,
 };
 
 export default CreateCollectionButton;
