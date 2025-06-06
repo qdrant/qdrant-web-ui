@@ -44,5 +44,15 @@ export const darkThemeOptions = {
         root: getVariant,
       },
     },
+    MuiCreateCollectionForm: {
+      styleOverrides: {
+        root: ({ theme }) => {
+          return {
+            paddingTop: theme.spacing(5),
+            minHeight: `calc(100vh - ${theme.spacing(8)})`, // 8 is the height of the AppBar
+          };
+        },
+      },
+    },
   },
 };
