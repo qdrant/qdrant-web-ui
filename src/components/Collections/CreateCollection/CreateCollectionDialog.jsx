@@ -6,15 +6,16 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
-import { convertFromDataToApi } from './convert-form-data';
+import { createCollection } from './create-collection.js';
 
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
 
   const handleFinish = async (data) => {
-    const { collection_name: collectionName, configuration } = convertFromDataToApi(data);
-    await qdrantClient.createCollection(collectionName, configuration);
+    createCollection(qdrantClient, data);
+    // ToDo: show warning if collection already exists
+    // ToDo: trigger refresh of collections list
     handleClose();
   };
 
