@@ -28,7 +28,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
           {collection.name}
         </Typography>
         <Typography component={'p'} variant="caption" color="text.secondary">
-          {collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
+          {collection.aliases && collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
         </Typography>
       </TableCell>
       <TableCell>
