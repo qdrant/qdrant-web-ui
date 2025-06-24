@@ -241,10 +241,11 @@ export async function createCollection(qdrantClient, configuration, recreate = f
   const collectionExists = await qdrantClient.collectionExists(collectionName).then((result) => result.exists);
 
   if (collectionExists) {
+    // we currently do not use `recreate` option in UI to avoid accidental data loss
     if (recreate) {
       await qdrantClient.deleteCollection(collectionName);
     } else {
-      return false;
+      throw new Error(`Collection "${collectionName}" already exists. Remove it first to recreate.`);
     }
   }
 

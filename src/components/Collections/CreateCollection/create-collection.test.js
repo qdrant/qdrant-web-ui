@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getCreateCollectionConfiguration } from './create-collection';
+import { getCreateCollectionConfiguration, createCollection } from './create-collection';
 
 describe('getCreateCollectionConfiguration', () => {
   it('should create configuration with basic dense vectors', () => {
@@ -185,5 +185,73 @@ describe('getCreateCollectionConfiguration', () => {
     expect(result.vectors_config.transformer.multivector_config).toEqual({
       comparator: 'max_sim',
     });
+  });
+});
+
+describe('createCollection', () => {
+  it('should throw an error if collection already exists and recreate is false', async () => {
+    const qdrantClient = {
+      collectionExists: async () => ({ exists: true }),
+      deleteCollection: async () => {},
+      createCollection: async () => {},
+      createPayloadIndex: async () => {},
+    };
+    const configuration = {
+      collection_name: 'existing_collection',
+      dense_vectors: [{ name: 'vec', size: 10, distance: 'Cosine' }],
+      payload_indexes: [],
+    };
+    await expect(createCollection(qdrantClient, configuration, false)).rejects.toThrow(
+      'Collection "existing_collection" already exists.'
+    );
+  });
+
+  it('should delete and recreate collection if recreate is true', async () => {
+    const deleteCollection = vi.fn();
+    const createCollectionFn = vi.fn().mockResolvedValue(true);
+    const qdrantClient = {
+      collectionExists: async () => ({ exists: true }),
+      deleteCollection,
+      createCollection: createCollectionFn,
+      createPayloadIndex: async () => {},
+    };
+    const configuration = {
+      collection_name: 'existing_collection',
+      dense_vectors: [{ name: 'vec', size: 10, distance: 'Cosine' }],
+      payload_indexes: [],
+    };
+    await createCollection(qdrantClient, configuration, true);
+    expect(deleteCollection).toHaveBeenCalledWith('existing_collection');
+    expect(createCollectionFn).toHaveBeenCalled();
+  });
+
+  it('should create collection and payload indexes if collection does not exist', async () => {
+    const createCollectionFn = vi.fn().mockResolvedValue(true);
+    const createPayloadIndex = vi.fn();
+    const qdrantClient = {
+      collectionExists: async () => ({ exists: false }),
+      deleteCollection: async () => {},
+      createCollection: createCollectionFn,
+      createPayloadIndex,
+    };
+    const configuration = {
+      collection_name: 'new_collection',
+      dense_vectors: [{ name: 'vec', size: 10, distance: 'Cosine' }],
+      payload_indexes: [
+        { name: 'field1', type: 'keyword', params: { on_disk: false } },
+        { name: 'field2', type: 'integer', params: { on_disk: true } },
+      ],
+    };
+    await createCollection(qdrantClient, configuration, false);
+    expect(createCollectionFn).toHaveBeenCalledWith('new_collection', expect.any(Object));
+    expect(createPayloadIndex).toHaveBeenCalledTimes(2);
+    expect(createPayloadIndex).toHaveBeenCalledWith(
+      'new_collection',
+      expect.objectContaining({ field_name: 'field1' })
+    );
+    expect(createPayloadIndex).toHaveBeenCalledWith(
+      'new_collection',
+      expect.objectContaining({ field_name: 'field2' })
+    );
   });
 });

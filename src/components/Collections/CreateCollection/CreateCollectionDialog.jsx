@@ -7,15 +7,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
 import { createCollection } from './create-collection.js';
+import { closeSnackbar, enqueueSnackbar } from 'notistack';
+import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
 
   const handleFinish = async (data) => {
-    createCollection(qdrantClient, data);
-    // ToDo: show warning if collection already exists
-    // ToDo: trigger refresh of collections list
+    createCollection(qdrantClient, data).catch((e) => {
+      enqueueSnackbar(e.message, getSnackbarOptions('warning', closeSnackbar, 2000));
+    });
     handleClose();
   };
 
