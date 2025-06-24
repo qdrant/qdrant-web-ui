@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { CreateCollectionForm } from 'create-collection-form';
-import { AppBar, Box, Dialog, Toolbar, Typography } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
+import { AppBar, Box, Dialog, Toolbar, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
@@ -14,15 +13,21 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
 
-  const handleFinish = async (data) => {
-    createCollection(qdrantClient, data).catch((e) => {
-      enqueueSnackbar(e.message, getSnackbarOptions('warning', closeSnackbar, 2000));
-    });
-    handleClose();
-  };
+  const handleFinish = useCallback(
+    async (data) => {
+      try {
+        await createCollection(qdrantClient, data);
+      } catch (e) {
+        enqueueSnackbar(e.message, getSnackbarOptions('warning', closeSnackbar, 2000));
+      } finally {
+        handleClose();
+      }
+    },
+    [qdrantClient, handleClose]
+  );
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose}>
+    <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="create-collection-dialog-title">
       <Box
         sx={{
           display: 'flex',
@@ -45,6 +50,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
               <CloseIcon />
             </IconButton>
             <Typography
+              id="create-collection-dialog-title"
               sx={{
                 ml: 4,
                 flex: 1,

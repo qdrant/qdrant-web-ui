@@ -68,6 +68,7 @@ function Collections() {
   const getFilteredCollections = useCallback(
     async (query) => {
       try {
+        if (!collections) return;
         const filteredCollections = collections.filter((collection) => collection.name.match(query));
         setCollections(filteredCollections);
         const nextRawCollections = await Promise.all(

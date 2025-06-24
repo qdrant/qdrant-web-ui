@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button, Tooltip } from '@mui/material';
 import CreateCollectionDialog from './CreateCollectionDialog';
 import AddIcon from '@mui/icons-material/Add';
@@ -9,34 +9,35 @@ const CreateCollectionButton = ({ onComplete }) => {
   const [open, setOpen] = useState(false);
   const { isRestricted } = useClient();
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
     onComplete();
-  };
+  }, [onComplete]);
 
-  const handleOpen = () => {
-    if (isRestricted) {
-      return;
+  const handleOpen = useCallback(() => {
+    if (!isRestricted) {
+      setOpen(true);
     }
-    setOpen(true);
-  };
+  }, [isRestricted]);
 
   return (
     <>
       <Tooltip
         title={
           isRestricted
-            ? 'Access Denied: You do not have permission to create collections. ' + 'Please contact your administrator.'
+            ? 'Access Denied: You do not have permission to create collections. Please contact your administrator.'
             : 'Create collection'
         }
         placement="left"
       >
+        {/* span is needed to allow tooltip on disabled button */}
         <span>
           <Button
             variant="contained"
-            startIcon={<AddIcon fontSize={'small'} />}
+            startIcon={<AddIcon fontSize="small" />}
             onClick={handleOpen}
             disabled={isRestricted}
+            aria-label="Create Collection"
           >
             Create Collection
           </Button>
