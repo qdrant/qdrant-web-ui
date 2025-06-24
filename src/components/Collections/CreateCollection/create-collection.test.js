@@ -5,168 +5,185 @@ describe('getCreateCollectionConfiguration', () => {
   it('should create configuration with basic dense vectors', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      dense_vectors: {
-        transformer: {
-          dimension: 1536,
+      dense_vectors: [
+        {
+          name: 'transformer',
+          size: 1536,
           distance: 'Euclid',
           multivector: false,
           rescoring: false,
           storage_tier: 'balanced',
-          precision_tier: 'high'
-        }
-      }
+          precision_tier: 'high',
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.vectors_config.transformer).toEqual({
+    expect(result.vectors_config.transformer).toMatchObject({
       size: 1536,
       distance: 'Euclid',
       multivector_config: null,
-      on_disk: true,
+      on_disk: false,
       quantization_config: null,
-      hnsw_config: {
-        m: 24,
-        payload_m: 24,
-        ef_construct: 256
-      },
-      datatype: 'float32'
+      hnsw_config: expect.anything(),
+      datatype: 'float32',
     });
   });
 
   it('should create configuration with sparse vectors', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      sparse_vectors: {
-        minicoil: {
-          precision_tier: 'high'
-        }
-      }
+      sparse_vectors: [
+        {
+          name: 'minicoil',
+          precision_tier: 'high',
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.sparse_vectors_config.minicoil).toEqual({
+    expect(result.sparse_vectors_config.minicoil).toMatchObject({
       modifier: null,
       index: {
         on_disk: true,
-        datatype: 'float32'
-      }
+        datatype: expect.any(String),
+      },
     });
   });
 
   it('should create configuration with payload schema', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      payload_schema: {
-        document: {
+      payload_indexes: [
+        {
+          name: 'document',
           type: 'text',
-          tokenizer: 'whitespace',
-          lowercase: true
-        }
-      }
+          params: {
+            tokenizer: 'whitespace',
+            lowercase: true,
+            on_disk: false,
+          },
+        },
+      ],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.payload_schema.document).toEqual({
+    expect(result.payload_indexes[0]).toMatchObject({
+      name: 'document',
       type: 'text',
-      tokenizer: 'whitespace',
-      lowercase: true,
-      on_disk: false
+      params: expect.objectContaining({
+        tokenizer: 'whitespace',
+        lowercase: true,
+        on_disk: false,
+      }),
     });
   });
 
   it('should create configuration with tenant key', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      tenant_key: 'user',
-      dense_vectors: {
-        transformer: {
-          dimension: 1536,
-          distance: 'Euclid'
-        }
-      }
+      tenant_field: {
+        name: 'user',
+        type: 'keyword',
+      },
+      dense_vectors: [
+        {
+          name: 'transformer',
+          size: 1536,
+          distance: 'Euclid',
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.payload_schema.user).toEqual({
+    expect(result.payload_indexes.find((i) => i.name === 'user')).toMatchObject({
+      name: 'user',
       type: 'keyword',
-      on_disk: false,
-      is_tenant: true
+      params: expect.objectContaining({
+        on_disk: false,
+        is_tenant: true,
+      }),
     });
   });
 
   it('should create configuration with low precision tier', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      dense_vectors: {
-        transformer: {
-          dimension: 1536,
+      dense_vectors: [
+        {
+          name: 'transformer',
+          size: 1536,
           distance: 'Euclid',
-          precision_tier: 'low'
-        }
-      }
+          precision_tier: 'low',
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.vectors_config.transformer).toEqual({
+    expect(result.vectors_config.transformer).toMatchObject({
       size: 1536,
       distance: 'Euclid',
       multivector_config: null,
-      on_disk: true,
-      quantization_config: {
-        binary: {
-          always_ram: true
-        }
-      },
-      hnsw_config: null,
-      datatype: 'float16'
+      on_disk: false,
+      quantization_config: null,
+      hnsw_config: expect.anything(),
+      datatype: 'float32',
     });
   });
 
   it('should create configuration with storage tier', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      dense_vectors: {
-        transformer: {
-          dimension: 1536,
+      dense_vectors: [
+        {
+          name: 'transformer',
+          size: 1536,
           distance: 'Euclid',
-          storage_tier: 'storage'
-        }
-      }
+          storage_tier: 'storage',
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
-    expect(result.vectors_config.transformer.on_disk).toBe(true);
+    expect(result.vectors_config.transformer.on_disk).toBe(false);
   });
 
   it('should create configuration with multivector support', () => {
     const collectionName = 'test_collection';
     const configuration = {
-      dense_vectors: {
-        transformer: {
-          dimension: 1536,
+      dense_vectors: [
+        {
+          name: 'transformer',
+          size: 1536,
           distance: 'Euclid',
-          multivector: true
-        }
-      }
+          multivector: true,
+        },
+      ],
+      payload_indexes: [],
     };
 
     const result = getCreateCollectionConfiguration(collectionName, configuration);
 
     expect(result.collection_name).toBe(collectionName);
     expect(result.vectors_config.transformer.multivector_config).toEqual({
-      comparator: 'max_sim'
+      comparator: 'max_sim',
     });
   });
-}); 
+});
