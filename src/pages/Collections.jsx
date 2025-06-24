@@ -62,7 +62,7 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey]
+    [qdrantClient, getErrorMessageWithApiKey, collections]
   );
 
   const getFilteredCollections = useCallback(
