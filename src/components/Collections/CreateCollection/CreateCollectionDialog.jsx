@@ -32,17 +32,15 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          pt: 8,
           backgroundColor: theme.palette.mode === 'dark' ? '#0b0f19' : '#f3f8fd',
         }}
       >
         <AppBar
-          position="fixed"
           sx={{
-            zIndex: (theme) => theme.zIndex.drawer + 1,
             background: theme.palette.mode === 'dark' ? '#111827' : theme.palette.background.default,
             boxShadow: 'none',
             borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+            position: 'sticky',
           }}
         >
           <Toolbar>
