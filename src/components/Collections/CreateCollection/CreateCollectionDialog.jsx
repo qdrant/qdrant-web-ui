@@ -13,15 +13,20 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
 
+  // This function have to return a promise that resolves to a value,
+  // as it is used as `onFinish` prop for CreateCollectionForm.
+  // otherwise the form will not be cleared (for example, if an error occurs).
   const handleFinish = useCallback(
     async (data) => {
+      let result = null;
       try {
-        await createCollection(qdrantClient, data);
+        result = await createCollection(qdrantClient, data);
       } catch (e) {
         enqueueSnackbar(e.message, getSnackbarOptions('warning', closeSnackbar, 2000));
       } finally {
         handleClose();
       }
+      return result;
     },
     [qdrantClient, handleClose]
   );
