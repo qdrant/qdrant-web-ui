@@ -123,7 +123,7 @@ function Collections() {
             mb={4}
             size={{
               xs: 12,
-              md: 8,
+              md: 5,
             }}
           >
             <Typography variant="h4" component={'h1'}>
@@ -131,10 +131,10 @@ function Collections() {
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: 'end', mb: 4, gap: 2 }}
+            sx={{ display: 'flex', justifyContent: { md: 'end' }, mb: 4, gap: 2 }}
             size={{
               xs: 12,
-              md: 4,
+              md: 7,
             }}
           >
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
