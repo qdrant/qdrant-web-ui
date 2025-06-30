@@ -12,10 +12,21 @@ import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
+  const dialogRef = React.useRef();
+  const [scrollableParent, setScrollableParent] = React.useState(null);
 
-  // This function have to return a promise that resolves to a value,
+  React.useEffect(() => {
+    if (open && dialogRef.current) {
+      const parent = dialogRef.current.querySelector('.MuiPaper-root');
+      setScrollableParent(parent);
+    } else if (!open) {
+      setScrollableParent(null);
+    }
+  }, [open]);
+
+  // This function has to return a promise that resolves to a value,
   // as it is used as `onFinish` prop for CreateCollectionForm.
-  // otherwise the form will not be cleared (for example, if an error occurs).
+  // otherwise, the form will not be cleared (for example, if an error occurs).
   const handleFinish = useCallback(
     async (data) => {
       let result = null;
@@ -31,8 +42,26 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
     [qdrantClient, handleClose]
   );
 
+  const handleDialogEntered = () => {
+    if (dialogRef.current) {
+      const dialogPaper = dialogRef.current.querySelector('.MuiPaper-root');
+      setScrollableParent(dialogPaper);
+    }
+  };
+
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="create-collection-dialog-title">
+    <Dialog
+      fullScreen
+      open={open}
+      ref={dialogRef}
+      onClose={handleClose}
+      slotProps={{
+        transition: {
+          onEntered: handleDialogEntered,
+        },
+      }}
+      aria-labelledby="create-collection-dialog-title"
+    >
       <Box
         sx={{
           display: 'flex',
@@ -70,6 +99,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
         <CreateCollectionForm
           onFinish={handleFinish}
           hideSidebar={true}
+          scrollableParent={scrollableParent}
           aria-label="Create Collection Form"
           aria-role="dialog"
         />
