@@ -5,3 +5,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+@keyframes shine {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes shine-follow {
+  0% {
+    background-position: 50% 0;
+  }
+  50% {
+    background-position: -80% 0;
+  }
+  100% {
+    background-position: -150% 0;
+  }
+}

@@ -8,6 +8,7 @@ import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
 import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
 import { useClient } from '../context/client-context';
+import ClusterMonitor from '../components/Collections/Cluster/ClusterMonitor';
 
 function Collection() {
   const { collectionName } = useParams();
@@ -33,9 +34,15 @@ function Collection() {
 
           <Grid size={12}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={currentTab} onChange={handleTabChange} aria-label="basic tabs example">
+              <Tabs
+                value={currentTab}
+                onChange={handleTabChange}
+                aria-label="tabs"
+                aria-description="Collection tabs menu"
+              >
                 <Tab label="Points" value={'points'} />
                 <Tab label="Info" value={'info'} />
+                <Tab label="Cluster" value={'cluster'} />
                 {!isRestricted && <Tab label="Search Quality" value={'quality'} />}
                 {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
                 <Tab label="Visualize" component={Link} to={`${location.pathname}/visualize`} />
@@ -49,6 +56,7 @@ function Collection() {
             {!isRestricted && currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
             {currentTab === 'points' && <PointsTabs collectionName={collectionName} />}
             {!isRestricted && currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
+            {currentTab === 'cluster' && <ClusterMonitor collectionName={collectionName} />}
           </Grid>
         </Grid>
       </CenteredFrame>
