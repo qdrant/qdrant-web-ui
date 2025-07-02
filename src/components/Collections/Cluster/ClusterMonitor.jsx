@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
-import { Card, CardContent, CardHeader, Grid } from '@mui/material';
+import { ArcherContainer, ArcherElement } from 'react-archer';
+import { Card, CardContent, CardHeader, Grid, Typography } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 
 const ClusterMonitor = ({collectionName}) => {
+  const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
 
@@ -90,9 +92,14 @@ const ClusterMonitor = ({collectionName}) => {
         variant="heading"
       />
       <CardContent sx={{ '&:last-child': { pb: 1 } }}>
+        <ArcherContainer
+          strokeColor={theme.palette.primary.main}
+          lineStyle={'angle'}
+        >
       <Grid container spacing={1}>
         {cluster && cluster.peers.map((peerId) => (
           <Grid item xs={12} sm={6} md={4} key={peerId}>
+            <Typography variant={'caption'}>Peer Id: {peerId}</Typography>
             <Node peerId={peerId} shards={cluster.shards.filter(shard => shard.peer_id === peerId)} />
           </Grid>
         ))}
@@ -102,6 +109,7 @@ const ClusterMonitor = ({collectionName}) => {
           </Grid>
         )}
       </Grid>
+        </ArcherContainer>
     </CardContent>
     </Card>
   );
@@ -118,14 +126,13 @@ const StyledNode = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
   border: '1px solid #ccc',
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: '#f3f8fd',
 }));
 
 const Node = ({peerId, shards}) => {
+  console.log(peerId);
   return (
     <StyledNode>
-      <h3>Node {peerId}</h3>
-
       {shards.length > 0 ? (
         shards.map((shard) => (
           <Shard shard={shard} key={shard.shard_id} />
@@ -146,17 +153,36 @@ const StyledShard = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
   border: '1px solid #ccc',
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: '#caecd7',
+  height: '100px', // todo
 }));
 
 const Shard = ({shard}) => {
+  // todo:
+  const relations = [];
+  if (shard.shard_id === 2) {
+    relations.push({
+      targetId: 4,
+      targetAnchor: 'left',
+      sourceAnchor: 'right',
+      style: {
+        strokeDasharray: '5,5',
+        strokeWidth: '2'
+      },
+    })
+  }
   return (
+    <ArcherElement
+      id={shard.shard_id}
+      relations={relations}
+    >
     <StyledShard>
-      <h4>Shard {shard.shard_id}</h4>
-      <p>State: {shard.state}</p>
-      <p>Points Count: {shard.points_count}</p>
-      {shard.peer_id && <p>Peer ID: {shard.peer_id}</p>}
+      {/* <h4>Shard {shard.shard_id}</h4>*/}
+      {/* <p>State: {shard.state}</p>*/}
+      {/* <p>Points Count: {shard.points_count}</p>*/}
+      {/* {shard.peer_id && <p>Peer ID: {shard.peer_id}</p>}*/}
     </StyledShard>
+    </ArcherElement>
   );
 }
 
