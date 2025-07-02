@@ -34,8 +34,12 @@ function Collection() {
 
           <Grid size={12}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={currentTab} onChange={handleTabChange}
-                    aria-label="tabs" aria-description="Collection tabs menu">
+              <Tabs
+                value={currentTab}
+                onChange={handleTabChange}
+                aria-label="tabs"
+                aria-description="Collection tabs menu"
+              >
                 <Tab label="Points" value={'points'} />
                 <Tab label="Info" value={'info'} />
                 <Tab label="Cluster" value={'cluster'} />

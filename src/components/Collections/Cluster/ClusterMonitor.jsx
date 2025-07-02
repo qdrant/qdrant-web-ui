@@ -7,7 +7,7 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
 
-const ClusterMonitor = ({collectionName}) => {
+const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
@@ -59,61 +59,57 @@ const ClusterMonitor = ({collectionName}) => {
     //   "shard_transfers": []
     // }
     qdrantClient
-    .api('cluster')
-    .collectionClusterInfo({ collection_name: collectionName })
-    .then((res) => {
-      const newCluster = res.data.result;
-      const localShards = newCluster.local_shards.length && newCluster.local_shards.map(shard => {
-        return {
-          ...shard,
-          peer_id: newCluster.peer_id
-        }
+      .api('cluster')
+      .collectionClusterInfo({ collection_name: collectionName })
+      .then((res) => {
+        const newCluster = res.data.result;
+        const localShards =
+          newCluster.local_shards.length &&
+          newCluster.local_shards.map((shard) => {
+            return {
+              ...shard,
+              peer_id: newCluster.peer_id,
+            };
+          });
+        newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
+        newCluster.peers = [...new Set([newCluster.peer_id, ...newCluster.shards.map((shard) => shard.peer_id)])];
+        console.log(newCluster.peers);
+        setCluster({ ...newCluster });
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       });
-      newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
-      newCluster.peers = [...new Set([newCluster.peer_id, ...newCluster.shards.map(shard => shard.peer_id)])];
-      console.log(newCluster.peers);
-      setCluster({ ...newCluster });
-    })
-    .catch((err) => {
-      enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-    });
   }, [collectionName]);
-
 
   // todo: remove
   useEffect(() => {
     console.log('Cluster Info:', cluster);
-  }, [cluster])
+  }, [cluster]);
 
   return (
     <Card variant="dual" sx={{ mb: 5 }}>
-      <CardHeader
-        title="Cluster Monitor"
-        variant="heading"
-      />
+      <CardHeader title="Cluster Monitor" variant="heading" />
       <CardContent sx={{ '&:last-child': { pb: 1 } }}>
-        <ArcherContainer
-          strokeColor={theme.palette.primary.main}
-          lineStyle={'angle'}
-        >
-      <Grid container spacing={1}>
-        {cluster && cluster.peers.map((peerId) => (
-          <Grid item xs={12} sm={6} md={4} key={peerId}>
-            <Typography variant={'caption'}>Peer Id: {peerId}</Typography>
-            <Node peerId={peerId} shards={cluster.shards.filter(shard => shard.peer_id === peerId)} />
+        <ArcherContainer strokeColor={theme.palette.primary.main} lineStyle={'angle'}>
+          <Grid container spacing={1}>
+            {cluster &&
+              cluster.peers.map((peerId) => (
+                <Grid item xs={12} sm={6} md={4} key={peerId}>
+                  <Typography variant={'caption'}>Peer Id: {peerId}</Typography>
+                  <Node peerId={peerId} shards={cluster.shards.filter((shard) => shard.peer_id === peerId)} />
+                </Grid>
+              ))}
+            {(!cluster || cluster.peers.length === 0) && (
+              <Grid item xs={12}>
+                <p>No nodes found in the cluster.</p>
+              </Grid>
+            )}
           </Grid>
-        ))}
-        {(!cluster || cluster.peers.length === 0) && (
-          <Grid item xs={12}>
-            <p>No nodes found in the cluster.</p>
-          </Grid>
-        )}
-      </Grid>
         </ArcherContainer>
-    </CardContent>
+      </CardContent>
     </Card>
   );
-}
+};
 
 ClusterMonitor.propTypes = {
   collectionName: PropTypes.string,
@@ -129,25 +125,23 @@ const StyledNode = styled('div')(({ theme }) => ({
   backgroundColor: '#f3f8fd',
 }));
 
-const Node = ({peerId, shards}) => {
+const Node = ({ peerId, shards }) => {
   console.log(peerId);
   return (
     <StyledNode>
       {shards.length > 0 ? (
-        shards.map((shard) => (
-          <Shard shard={shard} key={shard.shard_id} />
-        ))
+        shards.map((shard) => <Shard shard={shard} key={shard.shard_id} />)
       ) : (
         <p>No shards found for this node.</p>
       )}
     </StyledNode>
   );
-}
+};
 
 Node.propTypes = {
   peerId: PropTypes.number.isRequired,
   shards: PropTypes.arrayOf(PropTypes.object).isRequired,
-}
+};
 
 const StyledShard = styled('div')(({ theme }) => ({
   padding: theme.spacing(1),
@@ -157,7 +151,7 @@ const StyledShard = styled('div')(({ theme }) => ({
   height: '100px', // todo
 }));
 
-const Shard = ({shard}) => {
+const Shard = ({ shard }) => {
   // todo:
   const relations = [];
   if (shard.shard_id === 2) {
@@ -167,24 +161,21 @@ const Shard = ({shard}) => {
       sourceAnchor: 'right',
       style: {
         strokeDasharray: '5,5',
-        strokeWidth: '2'
+        strokeWidth: '2',
       },
-    })
+    });
   }
   return (
-    <ArcherElement
-      id={shard.shard_id}
-      relations={relations}
-    >
-    <StyledShard>
-      {/* <h4>Shard {shard.shard_id}</h4>*/}
-      {/* <p>State: {shard.state}</p>*/}
-      {/* <p>Points Count: {shard.points_count}</p>*/}
-      {/* {shard.peer_id && <p>Peer ID: {shard.peer_id}</p>}*/}
-    </StyledShard>
+    <ArcherElement id={shard.shard_id} relations={relations}>
+      <StyledShard>
+        {/* <h4>Shard {shard.shard_id}</h4>*/}
+        {/* <p>State: {shard.state}</p>*/}
+        {/* <p>Points Count: {shard.points_count}</p>*/}
+        {/* {shard.peer_id && <p>Peer ID: {shard.peer_id}</p>}*/}
+      </StyledShard>
     </ArcherElement>
   );
-}
+};
 
 Shard.propTypes = {
   shard: PropTypes.shape({
@@ -193,6 +184,6 @@ Shard.propTypes = {
     points_count: PropTypes.number,
     peer_id: PropTypes.number.isRequired,
   }).isRequired,
-}
+};
 
 export default ClusterMonitor;
