@@ -75,8 +75,8 @@ function getVectorParams(denseVectorConfig, isMultitenant) {
     distance,
     multivector = false,
     rescoring = false,
-    storageTier = StorageTier.BALANCED,
-    precisionTier = PrecisionTier.HIGH,
+    storage_tier: storageTier = StorageTier.BALANCED,
+    precision_tier: precisionTier = PrecisionTier.HIGH,
   } = denseVectorConfig;
 
   let multivectorConfig = null;
