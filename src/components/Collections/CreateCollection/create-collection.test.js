@@ -138,10 +138,14 @@ describe('getCreateCollectionConfiguration', () => {
       size: 1536,
       distance: 'Euclid',
       multivector_config: null,
-      on_disk: false,
-      quantization_config: null,
-      hnsw_config: expect.anything(),
-      datatype: 'float32',
+      quantization_config: {
+        binary: {
+          always_ram: true,
+        },
+      },
+      on_disk: true,
+      hnsw_config: null,
+      datatype: 'float16',
     });
   });
 
