@@ -9,6 +9,7 @@ import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/max-collections-context';
+import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -67,6 +68,7 @@ function Collections() {
   const getFilteredCollections = useCallback(
     async (query) => {
       try {
+        if (!collections) return;
         const filteredCollections = collections.filter((collection) => collection.name.match(query));
         setCollections(filteredCollections);
         const nextRawCollections = await Promise.all(
@@ -121,7 +123,7 @@ function Collections() {
             mb={4}
             size={{
               xs: 12,
-              md: 8,
+              md: 5,
             }}
           >
             <Typography variant="h4" component={'h1'}>
@@ -129,12 +131,13 @@ function Collections() {
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: 'end', mb: 4 }}
+            sx={{ display: 'flex', justifyContent: { md: 'end' }, mb: 4, gap: 2 }}
             size={{
               xs: 12,
-              md: 4,
+              md: 7,
             }}
           >
+            <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid size={12}>
