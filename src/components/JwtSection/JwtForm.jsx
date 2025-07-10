@@ -1,27 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  Typography,
-  FormControlLabel,
-  CardHeader,
-} from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import { CancelOutlined } from '@mui/icons-material';
-
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
-import CollectionAccessDialog from './CollectionAccessDialog';
-import configureCollection from './RbacCollectionSettings';
+import { Box, Card, CardContent, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import TokenValidatior from './TokenValidatior';
+import JwtPerCollection from './JwtPerCollection';
+import StyledSlider from '../Common/StyledSlider';
 
 const ExpirationSelect = ({ expiration, setExpiration }) => {
   const handleChange = (event) => {
@@ -38,6 +20,7 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
           value={expiration}
           label="Expiration"
           onChange={handleChange}
+          variant="outlined"
         >
           <MenuItem value={1}>1 day</MenuItem>
           <MenuItem value={7}>7 days</MenuItem>
@@ -55,79 +38,6 @@ ExpirationSelect.propTypes = {
   setExpiration: PropTypes.func.isRequired,
 };
 
-const Collections = ({ globalAccess, collections, setCollections }) => {
-  const handleDelete = (collection) => {
-    setCollections((prev) => prev.filter((c) => c !== collection));
-  };
-
-  const [settingsDialogOpen, setSettingsDialogOpen] = React.useState(false);
-
-  return (
-    <Card sx={{ flexGrow: 1 }} variant="dual">
-      <CardHeader
-        title="Collections"
-        action={
-          <IconButton disabled={globalAccess} onClick={() => setSettingsDialogOpen(true)}>
-            <AddIcon />
-          </IconButton>
-        }
-      />
-
-      <CollectionAccessDialog
-        show={settingsDialogOpen}
-        setShow={setSettingsDialogOpen}
-        onSave={({ isAccessible, isWritable, payloadFilters, selectedCollection }) => {
-          configureCollection({
-            collectionName: selectedCollection,
-            isAccessible,
-            isWritable,
-            payloadFilters,
-            configuredCollections: collections,
-            setConfiguredCollections: setCollections,
-          });
-        }}
-      />
-
-      <CardContent>
-        <Box>
-          {globalAccess && (
-            <Typography component={'p'} variant={'body2'} mb={2}>
-              Global access is enabled. All collections will be accessible.
-            </Typography>
-          )}
-          {!globalAccess && collections.length == 0 && (
-            <Typography component={'p'} variant={'body2'} mb={2}>
-              No collections access configured.
-            </Typography>
-          )}
-          {!globalAccess && collections && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '18px 12px', mb: 5 }}>
-              {collections.map((collection) => (
-                <Chip
-                  key={collection.collection}
-                  label={collection.collection}
-                  deleteIcon={
-                    <Tooltip title={'Remove from set'} placement={'right'}>
-                      <CancelOutlined fontSize="small" />
-                    </Tooltip>
-                  }
-                  onDelete={() => handleDelete(collection)}
-                />
-              ))}
-            </Box>
-          )}
-        </Box>
-      </CardContent>
-    </Card>
-  );
-};
-
-Collections.propTypes = {
-  globalAccess: PropTypes.bool.isRequired,
-  collections: PropTypes.array.isRequired,
-  setCollections: PropTypes.func.isRequired,
-};
-
 function JwtForm({
   expiration,
   setExpiration,
@@ -136,51 +46,71 @@ function JwtForm({
   manageAccess,
   setManageAccess,
   collections,
-  setCollections,
+  setConfiguredCollections,
   setTokenValidatior,
-  sx,
 }) {
   return (
-    <Box sx={{ ...sx }}>
-      <Box display={'flex'} gap={2} mb={3}>
-        <Card sx={{ minWidth: '270px', width: '35%' }} variant="dual">
-          <CardContent>
-            <Box ml={1}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Tooltip title="Allows read access to all collections in the cluster." placement="right">
-                  <FormControlLabel
-                    control={<Switch checked={globalAccess} onChange={(e) => setGlobalAccess(e.target.checked)} />}
-                    label="Allow global access"
-                  />
-                </Tooltip>
-              </Box>
+    <>
+      <Box>
+        <StyledSlider
+          aria-label="Access Level"
+          value={manageAccess ? 100 : globalAccess ? 50 : 0}
+          onChange={(e, newValue) => {
+            setManageAccess(newValue === 100);
+            setGlobalAccess(newValue >= 50);
+            if (newValue !== 0) {
+              setConfiguredCollections([]); // Reset collections if global or managed access is selected
+            }
+          }}
+          valueLabelDisplay="off"
+          step={50}
+          marks={[
+            { value: 0, label: 'Collection Access' },
+            { value: 50, label: 'Global Access' },
+            { value: 100, label: 'Managed Access' },
+          ]}
+          min={0}
+          max={100}
+        />
 
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Tooltip
-                  title="Allows full access to the cluster, including
-                    writing and deleting data,
-                    creating and deleting collections, changing topology, etc."
-                  placement="right"
-                >
-                  <FormControlLabel
-                    disabled={!globalAccess}
-                    control={<Switch checked={manageAccess} onChange={(e) => setManageAccess(e.target.checked)} />}
-                    label="Allow manage operations"
-                  />
-                </Tooltip>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                <TokenValidatior setTokenValidatior={setTokenValidatior} />
-              </Box>
-            </Box>
-
-            {/* Select */}
-            <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
+        {/* Description of the access level, displayed depending on the slider value*/}
+        <Card variant="dual" sx={{ my: 4 }}>
+          <CardContent sx={{ '&:last-child': { pb: 2 } }}>
+            {manageAccess && (
+              <Typography variant="body2" color="text.secondary">
+                <strong>Managed Access:</strong> You can manage access to specific collections.
+              </Typography>
+            )}
+            {globalAccess && !manageAccess && (
+              <Typography variant="body2" color="text.secondary">
+                <strong>Global Access:</strong> This token will have access to all collections.
+              </Typography>
+            )}
+            {!globalAccess && !manageAccess && (
+              <Typography variant="body2" color="text.secondary">
+                <strong>Collection Access:</strong> This token will only have access to specific collections.
+              </Typography>
+            )}
           </CardContent>
         </Card>
-        <Collections globalAccess={globalAccess} collections={collections} setCollections={setCollections} />
       </Box>
-    </Box>
+
+      {collections.length && (
+        <JwtPerCollection
+          globalAccess={globalAccess}
+          collections={collections}
+          setConfiguredCollections={setConfiguredCollections}
+          manageAccess={manageAccess}
+        />
+      )}
+
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+        <TokenValidatior setTokenValidatior={setTokenValidatior} />
+      </Box>
+
+      {/* Select */}
+      <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
+    </>
   );
 }
 
@@ -192,9 +122,8 @@ JwtForm.propTypes = {
   manageAccess: PropTypes.bool.isRequired,
   setManageAccess: PropTypes.func.isRequired,
   collections: PropTypes.array.isRequired,
-  setCollections: PropTypes.func.isRequired,
+  setConfiguredCollections: PropTypes.func.isRequired,
   setTokenValidatior: PropTypes.func.isRequired,
-  sx: PropTypes.object,
 };
 
 export default JwtForm;

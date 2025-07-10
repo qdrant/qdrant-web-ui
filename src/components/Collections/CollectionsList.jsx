@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Box, MenuItem, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-import { TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
+import { HeaderTableCell, TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import { Dot } from '../Common/Dot';
 import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
@@ -85,10 +85,6 @@ CollectionTableRow.propTypes = {
   collection: PropTypes.object.isRequired,
   getCollectionsCall: PropTypes.func.isRequired,
 };
-
-const HeaderTableCell = styled(TableCell)`
-  font-weight: bold;
-`;
 
 const CollectionsList = ({ collections, getCollectionsCall }) => {
   return (

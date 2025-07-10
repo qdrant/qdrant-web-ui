@@ -1,12 +1,11 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { Alert, Box, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
-import JwtResultForm from '../components/JwtSection/JwtResultForm';
 import * as jose from 'jose';
 import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
+import { CenteredFrame } from '../components/Common/CenteredFrame';
 
 async function getJwt(apiKey, token, setJwt) {
   const jwt = await new jose.SignJWT(token).setProtectedHeader({ alg: 'HS256' }).sign(new TextEncoder().encode(apiKey));
@@ -16,11 +15,7 @@ async function getJwt(apiKey, token, setJwt) {
 function generateToken(globalAccess, manageAccess, expirationDays, configuredCollections, tokenValidatior) {
   const token = {};
   if (globalAccess) {
-    if (manageAccess) {
-      token.access = 'm';
-    } else {
-      token.access = 'r';
-    }
+    token.access = manageAccess ? 'm' : 'r';
   } else {
     token.access = configuredCollections;
   }
@@ -38,7 +33,7 @@ function generateToken(globalAccess, manageAccess, expirationDays, configuredCol
 }
 
 function Jwt() {
-  const headerHeight = 64;
+  // const headerHeight = 64;
   const { client: qdrantClient, isRestricted } = useClient();
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -87,29 +82,18 @@ function Jwt() {
   }
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignContent: 'stretch',
-        height: `calc(100vh - ${headerHeight}px)`,
-        overflowY: 'scroll',
-      }}
-    >
+    <CenteredFrame>
       {errorMessage && <ErrorNotifier message={errorMessage} />}
 
       <Box
         sx={{
-          px: 2,
-          pt: 4,
           pb: 20,
-          width: '50%',
-          overflowY: 'scroll',
-          maxWidth: '1200px',
-          mx: 'auto',
+          width: '100%',
+          maxWidth: '900px',
         }}
       >
-        <Typography variant="h4" gutterBottom>
-          Generate new Access Token
+        <Typography variant="h4" mb={5}>
+          Generate Access Token
         </Typography>
 
         <JwtForm
@@ -119,31 +103,15 @@ function Jwt() {
           setGlobalAccess={setGlobalAccess}
           manageAccess={manageAccess}
           setManageAccess={setManageAccess}
-          collections={configuredCollections}
-          setCollections={setConfiguredCollections}
+          collections={collections}
+          setConfiguredCollections={setConfiguredCollections}
           setTokenValidatior={setTokenValidatior}
         />
 
         <JwtTokenViewer jwt={jwt} token={token} />
       </Box>
-
-      {collections.length > 0 && (
-        <JwtResultForm
-          allCollecitons={collections}
-          configuredCollections={configuredCollections}
-          setConfiguredCollections={setConfiguredCollections}
-          jwt={jwt}
-          sx={{
-            height: `calc(100vh - ${headerHeight}px)`,
-            overflowY: 'scroll',
-            width: '50%',
-          }}
-        />
-      )}
-    </Box>
+    </CenteredFrame>
   );
 }
-
-// todo: remove eslint-disable
 
 export default Jwt;

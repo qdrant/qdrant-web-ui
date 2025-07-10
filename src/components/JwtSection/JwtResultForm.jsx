@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
@@ -29,7 +28,6 @@ function renderErrorMessage(error) {
   }
 }
 
-// todo: remove eslint-disable
 const CollectionPoints = ({ selectedCollection, jwt }) => {
   const theme = useTheme();
   const [expandedPoint, setExpandedPoint] = React.useState(null);

@@ -1,5 +1,5 @@
 import { styled } from '@mui/material/styles';
-import { alpha, Table, TableBody, TableHead } from '@mui/material';
+import { alpha, Table, TableBody, TableCell, TableHead } from '@mui/material';
 
 const SPACING = '16px';
 
@@ -129,3 +129,7 @@ export const TableBodyWithGaps = styled(TableBody)(({ theme }) => {
   }
 `;
 });
+
+export const HeaderTableCell = styled(TableCell)`
+  font-weight: bold;
+`;
