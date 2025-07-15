@@ -12,10 +12,10 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
   };
 
   React.useEffect(() => {
-    if (globalAccess) {
-      setValue('r');
-    } else if (manageAccess) {
+    if (manageAccess) {
       setValue('rw');
+    } else if (globalAccess) {
+      setValue('r');
     } else {
       setValue('');
     }

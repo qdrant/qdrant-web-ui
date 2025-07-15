@@ -76,13 +76,19 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
             }}
             data-testid={'code-block-pre'}
           >
-            {tokens.map((line, i) => (
-              <div key={i} {...getLineProps({ line, key: i })}>
-                {line.map((token, key) => (
-                  <span key={token} {...getTokenProps({ token, key })} />
-                ))}
-              </div>
-            ))}
+            {tokens.map((line, i) => {
+              const lineProps = getLineProps({ line, key: i });
+              const { key: lineKey, ...restLineProps } = lineProps;
+              return (
+                <div key={lineKey} {...restLineProps}>
+                {line.map((token, key) => {
+                  const tokenProps = getTokenProps({ token, key });
+                  const { key: tokenKey, ...restTokenProps } = tokenProps;
+                  return <span key={tokenKey} {...restTokenProps} />;
+                  })}
+                </div>
+              );
+            })}
           </pre>
         );
       }}
