@@ -78,9 +78,9 @@ function JwtForm({
           <CardContent sx={{ '&:last-child': { pb: 2 } }}>
             {manageAccess && (
               <Typography variant="body2" color="text.secondary">
-                <strong>Managed Access:</strong> Full access to all data stored in Qdrant.
-                This level of access allows you to read and write data to all collections,
-                 as well as create and delete collections, modify collection settings, etc.
+                <strong>Managed Access:</strong> Full access to all data stored in Qdrant. This level of access allows
+                you to read and write data to all collections, as well as create and delete collections, modify
+                collection settings, etc.
               </Typography>
             )}
             {globalAccess && !manageAccess && (
@@ -90,7 +90,7 @@ function JwtForm({
             )}
             {!globalAccess && !manageAccess && (
               <Typography variant="body2" color="text.secondary">
-                <strong>Collection Access:</strong> 
+                <strong>Collection Access:</strong>
                 This access level allows to configure access level for specific collections.
               </Typography>
             )}

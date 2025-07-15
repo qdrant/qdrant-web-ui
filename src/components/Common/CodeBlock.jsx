@@ -81,10 +81,10 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
               const { key: lineKey, ...restLineProps } = lineProps;
               return (
                 <div key={lineKey} {...restLineProps}>
-                {line.map((token, key) => {
-                  const tokenProps = getTokenProps({ token, key });
-                  const { key: tokenKey, ...restTokenProps } = tokenProps;
-                  return <span key={tokenKey} {...restTokenProps} />;
+                  {line.map((token, key) => {
+                    const tokenProps = getTokenProps({ token, key });
+                    const { key: tokenKey, ...restTokenProps } = tokenProps;
+                    return <span key={tokenKey} {...restTokenProps} />;
                   })}
                 </div>
               );
