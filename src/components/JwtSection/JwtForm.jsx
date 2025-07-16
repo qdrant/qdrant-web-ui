@@ -98,7 +98,7 @@ function JwtForm({
         </Card>
       </Box>
 
-      {collections.length && (
+      {collections.length > 0 && (
         <JwtPerCollection
           globalAccess={globalAccess}
           collections={collections}
