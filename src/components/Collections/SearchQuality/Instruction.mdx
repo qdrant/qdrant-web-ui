@@ -1,0 +1,44 @@
+### Example Output: 
+`
+[18/10/2024, 01:51:38] Point ID 1(1/100) precision@10: 0.8 
+(search time exact: 30ms, regular: 5ms)
+`
+
+### Explanation
+
+This output provides a comparison between:
+- **Exact Search** (full kNN) 
+- **Approximate Search** (using ANN - Approximate Nearest Neighbor)
+
+**precision@10: 0.8**  
+- Out of the top 10 results returned by the exact search, 8 were also found in the ANN search.
+
+**Search Time Comparison**  
+- Exact search: 30ms  
+- ANN search: 5ms (faster but with minor accuracy loss)
+
+---
+
+### Tuning the HNSW Algorithm (Advanced Mode)
+
+- **"hnsw_ef" parameter**: Controls how many neighbors to consider during a search.  
+  - Increasing **hnsw_ef** improves precision but may slow down the search.
+
+---
+
+### Practical Use
+
+The ANN search (with HNSW) is significantly faster (5ms vs. 30ms) but may have slight accuracy trade-offs.  
+**Tip**: Adjust **hnsw_ef** in advanced mode to balance speed and accuracy.
+
+---
+
+### Additional Tuning Parameters (set in collection configuration)
+
+1. **"m" Parameter**  
+   - Defines the number of edges per node in the graph.  
+   - A higher **m** value improves accuracy but increases memory usage.
+
+2. **"ef_construct" Parameter**  
+   - Sets the number of neighbors considered during index creation.  
+   - Higher values increase precision but lengthen indexing time.

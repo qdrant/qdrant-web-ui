@@ -61,11 +61,11 @@ export const checkIndexPrecision = async (
           limit +
           ': ' +
           precision +
-          ' (search time exact: ' +
+          '\n (search time exact: ' +
           exactSearchElapsed +
           'ms, regular: ' +
           searchElapsed +
-          'ms)'
+          'ms)\n'
       );
 
     return precision;

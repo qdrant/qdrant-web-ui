@@ -9,11 +9,13 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  IconButton,
+  Button,
   FormControlLabel,
   Switch,
   CardContent,
   LinearProgress,
+  Box,
+  IconButton,
 } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
@@ -42,23 +44,35 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
         </Typography>
       </TableCell>
       <TableCell>
-        {isInProgress && <LinearProgress />}
-        {!isInProgress && (
-          <>
+        {isInProgress === name && <LinearProgress />}
+        {isInProgress !== name && (
+          <Box display="flex" alignItems="center">
             <Typography variant="subtitle1" component={'span'} color="text.secondary">
-              {precision ? `${precision * 100}%` : '—'}
+              {precision ? `${precision * 100}%` : null}
             </Typography>
             <Tooltip title="Check index quality">
-              <IconButton
-                aria-label="Check index quality"
-                data-testid="index-quality-check-button"
-                onClick={onCheckIndexQuality}
-                sx={{ p: 0, ml: 1 }}
-              >
-                <PublishedWithChanges color={'primary'} />
-              </IconButton>
+              {precision ? (
+                <IconButton
+                  aria-label="Check index quality"
+                  data-testid="index-quality-check-button"
+                  onClick={onCheckIndexQuality}
+                  sx={{ p: 0, ml: 3 }}
+                >
+                  <PublishedWithChanges color={'primary'} />
+                </IconButton>
+              ) : (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<PublishedWithChanges />}
+                  onClick={onCheckIndexQuality}
+                  data-testid="index-quality-check-button"
+                >
+                  Check Quality
+                </Button>
+              )}
             </Tooltip>
-          </>
+          </Box>
         )}
       </TableCell>
     </TableRow>
@@ -70,7 +84,7 @@ VectorTableRow.propTypes = {
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
   precision: PropTypes.number,
-  isInProgress: PropTypes.bool,
+  isInProgress: PropTypes.string,
 };
 
 const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
@@ -87,7 +101,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   });
 
   const [advancedMod, setAdvancedMod] = useState(false);
-  const [inProgress, setInProgress] = useState(false);
+  const [inProgress, setInProgress] = useState(null);
 
   const [code, setCode] = useState(`
 // Run this code to estimate search quality versus exact search
@@ -168,10 +182,14 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
     return <>No vectors</>;
   }
 
-  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }) => {
-    setInProgress(true);
-
+  const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }, controller) => {
+    setInProgress(using);
     clearLogsFoo && clearLogsFoo();
+    if (vectorsNames && !vectorsNames.includes(using)) {
+      loggingFoo && loggingFoo('Vector field name not found\n');
+      setInProgress(null);
+      return;
+    }
     const precisions = [];
     try {
       const scrollResult = await client.scroll(collectionName, {
@@ -188,6 +206,10 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + using || '---');
 
       for (let idx = 0; idx < total; idx++) {
+        if (controller.signal.aborted) {
+          loggingFoo && loggingFoo('Previous operation cancelled \n');
+          break;
+        }
         const pointId = pointIds[idx];
         const precision = await checkIndexPrecision(
           client,
@@ -215,7 +237,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         Math.sqrt(precisions.reduce((x, val) => x + (val - avgPrecision) ** 2, 0) / precisions.length)
       );
 
-      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
+      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev + '\n');
 
       setPrecision((prev) => {
         return {
@@ -224,24 +246,32 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         };
       });
 
-      setInProgress(false);
+      setInProgress(null);
     } catch (e) {
-      setInProgress(false);
+      setInProgress(null);
       console.error(e);
       loggingFoo && loggingFoo(JSON.stringify(e));
     }
   };
 
   const handleRunCode = async (qulityCheckParams) => {
-    onCheckIndexQuality(qulityCheckParams);
+    if (window.currentController) {
+      window.currentController.abort();
+    }
+    const controller = new AbortController();
+    window.currentController = controller;
+
+    onCheckIndexQuality(qulityCheckParams, controller);
   };
 
   return (
     <Card variant="dual" data-testid="vectors-info" {...other}>
       <CardHeader
         title={
-          <>
-            Search Quality
+          <Box display="flex" alignItems="center">
+            <Typography variant="h6" component="div">
+              Search Quality
+            </Typography>
             <FormControlLabel
               sx={{ ml: 2 }}
               control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="small" />}
@@ -251,58 +281,64 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
                 </Typography>
               }
             />
-          </>
+          </Box>
         }
         variant="heading"
         sx={{
           flexGrow: 1,
         }}
-        action={
-          <>
-            <CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />
-          </>
-        }
+        action={<CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />}
       />
-      {!advancedMod && (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Vector Name
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Size
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Distance
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Precision
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
 
-          <TableBody>
-            {Object.keys(vectors).map((vectorName) => (
-              <VectorTableRow
-                vectorObj={vectors[vectorName]}
-                name={vectorName}
-                onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
-                precision={precision ? precision[vectorName] : null}
-                key={vectorName}
-                isInProgress={inProgress}
-              />
-            ))}
-          </TableBody>
-        </Table>
+      {!advancedMod && (
+        <CardContent>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Vector Name
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Size
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Distance
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Precision
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {Object.keys(vectors).map((vectorName) => (
+                <VectorTableRow
+                  vectorObj={vectors[vectorName]}
+                  name={vectorName}
+                  onCheckIndexQuality={() => {
+                    if (window.currentController) {
+                      window.currentController.abort();
+                    }
+                    const controller = new AbortController();
+                    window.currentController = controller;
+                    onCheckIndexQuality({ using: vectorName }, controller);
+                  }}
+                  precision={precision ? precision[vectorName] : null}
+                  key={vectorName}
+                  isInProgress={inProgress}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       )}
 
       {advancedMod && (
