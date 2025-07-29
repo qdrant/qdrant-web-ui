@@ -6,6 +6,7 @@ import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
+import { normalizeVectorConfigObject } from '../../lib/qdrant-entities-helpers';
 
 const PointsTabs = ({ collectionName, client }) => {
   const pageSize = 10;
@@ -40,8 +41,12 @@ const PointsTabs = ({ collectionName, client }) => {
     const getCollection = async () => {
       const collectionInfo = await qdrantClient.getCollection(collectionName);
       const vectors = [];
-      Object.keys(collectionInfo.config.params.vectors).map((key) => {
-        if (typeof collectionInfo.config.params.vectors[key] === 'object') {
+
+      const normalizedVectorsConfig = normalizeVectorConfigObject(collectionInfo);
+
+      Object.keys(normalizedVectorsConfig).map((key) => {
+        if (key !== '' && typeof normalizedVectorsConfig[key] === 'object') {
+          // not sure if check for object is needed
           vectors.push(key);
         }
       });
