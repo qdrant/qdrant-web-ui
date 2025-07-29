@@ -8,7 +8,7 @@ import { Box, Card, CardHeader } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import EditorCommon from '../../EditorCommon';
-import _ from 'lodash';
+import { normalizeVectorConfigObject } from '../../../lib/qdrant-entities-helpers';
 
 const SearchQuality = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -41,11 +41,9 @@ const SearchQuality = ({ collectionName }) => {
       });
   }, []);
 
-  // Check that collection.config.params.vectors?.size exists and integer
-  const isNamedVectors = !collection?.config?.params.vectors?.size && _.isObject(collection?.config?.params?.vectors);
   let vectors = {};
   if (collection) {
-    vectors = isNamedVectors ? collection?.config?.params?.vectors : { '': collection?.config?.params?.vectors };
+    vectors = normalizeVectorConfigObject(collection);
   }
 
   return (
