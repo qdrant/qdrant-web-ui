@@ -174,6 +174,7 @@ const PointsTabs = ({ collectionName, client }) => {
           <Grid key={point.id} size={12}>
             <PointCard
               point={point}
+              score={point.score}
               onConditionChange={onConditionChange}
               conditions={conditions}
               collectionName={collectionName}
