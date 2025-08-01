@@ -4,6 +4,7 @@ import { styled, alpha, lighten, useTheme } from '@mui/material/styles';
 import { ArcherElement } from 'react-archer';
 import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
+import Tooltip, {tooltipClasses} from '@mui/material/Tooltip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 
 const StyledShard = styled('div')(({ theme, state, sx }) => {
@@ -47,6 +48,19 @@ const StyledShard = styled('div')(({ theme, state, sx }) => {
   return styles;
 });
 
+const StyledTooltip = styled(({ className, theme, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.mode === 'dark' ? '#0B0F19' : '#FCFDFF', // todo: take from theme
+    color: theme.palette.mode === 'dark' ? '#FCFDFF' : '#0B0F19', // todo: take from theme
+    boxShadow: theme.shadows[5],
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.mode === 'dark' ? '#0B0F19' : '#FCFDFF', // todo: take from theme
+  },
+}));
+
 const Slot = forwardRef(({ id, peerId: currentPeerId, shard, transfer, peersNumber }, ref) => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('md'));
@@ -88,6 +102,25 @@ const Slot = forwardRef(({ id, peerId: currentPeerId, shard, transfer, peersNumb
   console.log('archer id 2', `${currentPeerId}-${id}`);
   return (
     <ArcherElement id={`${currentPeerId}-${id}`} relations={relations}>
+      <StyledTooltip
+        arrow
+               title={
+                 <React.Fragment>
+<Typography variant='caption'><b>Peer Id:</b> {currentPeerId}</Typography><br />
+                   {/* todo: abstract one line of tooltip */}
+                    {shard ? (
+                      <>
+                        <Typography variant='caption'><b>Shard Id:</b> {shard.shard_id}</Typography><br />
+<Typography variant='caption'><b>Shard Key:</b> {shard.shard_key ? shard.shard_key : 'N/A'}</Typography><br />
+                        <Typography variant='caption'><b>Shard State:</b> {shard.state}</Typography><br/>
+                      </>
+                    ) : (
+
+                      <Typography variant='caption'><b>Shard State:</b> Empty</Typography>
+                    )}
+                 </React.Fragment>
+               }
+      >
       <div style={{position: 'static'}} ref={ref} title={currentPeerId}>
       <StyledShard state={shard ? shard.state.toLowerCase() : 'empty'}
                    sx={{
@@ -110,6 +143,7 @@ const Slot = forwardRef(({ id, peerId: currentPeerId, shard, transfer, peersNumb
             )}
       </StyledShard>
       </div>
+      </StyledTooltip>
     </ArcherElement>
   );
 });
