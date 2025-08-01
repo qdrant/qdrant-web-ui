@@ -3,13 +3,15 @@ import PropTypes from 'prop-types';
 import { Box } from '@mui/system';
 
 export const Circle = ({ color, size }) => (
-  <Box sx={{
-    width: size,
-    height: size,
-    borderRadius: '50%',
-    backgroundColor: color,
-    display: 'inline-block',
-  }} />
+  <Box
+    sx={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      backgroundColor: color,
+      display: 'inline-block',
+    }}
+  />
 );
 
 // prop types

@@ -23,14 +23,16 @@ const ClusterNode = ({ peerId, cluster }) => {
               transfer: foundTransfer,
             };
           }
-          return <Slot
-            id={idx}
-            key={`${peerId}-${idx}`}
-            peerId={peerId}
-            shard={shard}
-            transfer={transfer}
-            peersNumber={cluster?.peers.length}
-          />;
+          return (
+            <Slot
+              id={idx}
+              key={`${peerId}-${idx}`}
+              peerId={peerId}
+              shard={shard}
+              transfer={transfer}
+              peersNumber={cluster?.peers.length}
+            />
+          );
         })) || <div>No slots available</div>}
     </StyledNode>
   );

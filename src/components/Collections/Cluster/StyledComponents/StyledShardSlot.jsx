@@ -5,7 +5,7 @@ export const StyledShardSlot = styled('div')(({ theme, state, sx }) => {
   let color;
   switch (state) {
     case 'active':
-      color ='#26A69A';
+      color = '#26A69A';
       break;
     case 'dead':
       color = '#EC407A';
@@ -34,7 +34,6 @@ export const StyledShardSlot = styled('div')(({ theme, state, sx }) => {
       margin: '0 auto',
       zIndex: 1,
     },
-    ...sx
-  }
+    ...sx,
+  };
 });
-

@@ -14,4 +14,3 @@ export const StyledTooltip = styled(({ className, ...props }) => (
     color: theme.palette.mode === 'dark' ? '#0B0F19' : '#FCFDFF', // todo: take from theme
   },
 }));
-

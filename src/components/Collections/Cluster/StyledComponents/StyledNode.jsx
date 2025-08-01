@@ -5,4 +5,3 @@ export const StyledNode = styled('div')(() => ({
   flexDirection: 'column',
   gap: '0.5rem',
 }));
-

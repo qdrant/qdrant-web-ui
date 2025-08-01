@@ -7,23 +7,17 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import { StyledTooltip } from './StyledComponents/StyledTooltip';
 
-const TooltipRow = ({label, value}) => (
-  <Typography variant='caption'>
+const TooltipRow = ({ label, value }) => (
+  <Typography variant="caption">
     <b>{label}:</b> {value}
   </Typography>
 );
 TooltipRow.propTypes = {
   label: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-}
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
 
-const Slot = forwardRef(({
-                           id,
-                           peerId: currentPeerId,
-                           shard,
-                           transfer,
-                           peersNumber
-                         }, ref) => {
+const Slot = forwardRef(({ id, peerId: currentPeerId, shard, transfer, peersNumber }, ref) => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -41,8 +35,7 @@ const Slot = forwardRef(({
     }
 
     relations.push({
-      targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id ||
-      transfer.transfer.shard_id}`,
+      targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id || transfer.transfer.shard_id}`,
       targetAnchor: targetAnchorDirection,
       sourceAnchor: sourceAnchorDirection,
       style: {
@@ -51,33 +44,39 @@ const Slot = forwardRef(({
         endShape: {
           arrow: {
             arrowLength: 2,
-          }
-        }
+          },
+        },
       },
     });
   }
 
   return (
     <ArcherElement id={`${currentPeerId}-${id}`} relations={relations}>
-        <div style={{position: 'static'}} ref={ref}>
-          <StyledTooltip
-            arrow
-            placement='top'
-            title={
-              <>
-                <TooltipRow label='Peer Id' value={currentPeerId} /><br />
-                {shard ? (
-                  <>
-                    <TooltipRow label='Shard Id' value={shard.shard_id} /><br />
-                    <TooltipRow label='Shard Key' value={shard.shard_key || 'N/A'} /><br />
-                    <TooltipRow label='Shard State' value={shard.state} /><br />
-                  </>
-                ) : (
-                  <Typography variant='caption'><b>Shard State:</b> Empty</Typography>
-                )}
-              </>
-            }
-          >
+      <div style={{ position: 'static' }} ref={ref}>
+        <StyledTooltip
+          arrow
+          placement="top"
+          title={
+            <>
+              <TooltipRow label="Peer Id" value={currentPeerId} />
+              <br />
+              {shard ? (
+                <>
+                  <TooltipRow label="Shard Id" value={shard.shard_id} />
+                  <br />
+                  <TooltipRow label="Shard Key" value={shard.shard_key || 'N/A'} />
+                  <br />
+                  <TooltipRow label="Shard State" value={shard.state} />
+                  <br />
+                </>
+              ) : (
+                <Typography variant="caption">
+                  <b>Shard State:</b> Empty
+                </Typography>
+              )}
+            </>
+          }
+        >
           <StyledShardSlot
             state={shard ? shard.state.toLowerCase() : 'empty'}
             sx={{
@@ -89,18 +88,17 @@ const Slot = forwardRef(({
           >
             {shard && (
               <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-                {`${(!matches && peersNumber <= 20 ? 'Shard' : '')} ${shard.shard_id}`}
+                {`${!matches && peersNumber <= 20 ? 'Shard' : ''} ${shard.shard_id}`}
               </Typography>
             )}
             {shard?.shard_key && (
-
               <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-                {(peersNumber <= 5 ? `${shard.shard_key}` : '')}
+                {peersNumber <= 5 ? `${shard.shard_key}` : ''}
               </Typography>
             )}
           </StyledShardSlot>
-      </StyledTooltip>
-        </div>
+        </StyledTooltip>
+      </div>
     </ArcherElement>
   );
 });

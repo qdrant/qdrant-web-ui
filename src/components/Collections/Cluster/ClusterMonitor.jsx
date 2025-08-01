@@ -16,44 +16,53 @@ import { Circle } from '../../Common/Circle';
  * @return {React.JSX.Element}
  * @constructor
  */
-const Legend = ({sx}) => {
+const Legend = ({ sx }) => {
   const theme = useTheme();
 
   return (
-    <Box sx={{
-      padding: '0 10px',
-      margin: '10px 0',
-      ...sx,
-    }}>
-      <Box sx={{
-        display: 'flex',
-        gap: '0.5rem',
-      }}>
+    <Box
+      sx={{
+        padding: '0 10px',
+        margin: '10px 0',
+        ...sx,
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          gap: '0.5rem',
+        }}
+      >
         <Box display="flex" alignItems="center" gap={0.5}>
           <Circle size={'1rem'} color={theme.palette.mode === 'dark' ? '#262B3A' : '#E2E7F5'} />
-          <Typography variant='caption'>Empty</Typography>
+          <Typography variant="caption">Empty</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
           <Circle size={'1rem'} color={'#26A69A'} />
-          <Typography variant='caption'>Active</Typography>
+          <Typography variant="caption">Active</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
           <Circle size={'1rem'} color={'#FFA726'} />
-          <Typography variant='caption'>Partial</Typography>
+          <Typography variant="caption">Partial</Typography>
         </Box>
       </Box>
     </Box>
   );
-}
+};
 
 Legend.propTypes = {
   sx: PropTypes.object,
-}
+};
 
 const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
+
+  // todo:
+  useEffect(() => {
+    console.log(cluster);
+  }, [cluster]);
 
   useEffect(() => {
     const fetchClusterInfo = async () => {
@@ -94,24 +103,25 @@ const ClusterMonitor = ({ collectionName }) => {
   }, [collectionName, isRestricted, qdrantClient]);
 
   return (
-    <Box sx={{
-      display: 'grid',
-      gridTemplateColumns: '20px 1fr',
-      gridTemplateRows: 'auto 1fr',
-      gridColumnGap: 0,
-      gridRowGap: 0,
-      // breakpoints
-      [theme.breakpoints.up('md')]: {
-        gridTemplateColumns: '50px 1fr',
-      }
-    }}
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: '20px 1fr',
+        gridTemplateRows: 'auto 1fr',
+        gridColumnGap: 0,
+        gridRowGap: 0,
+        // breakpoints
+        [theme.breakpoints.up('md')]: {
+          gridTemplateColumns: '50px 1fr',
+        },
+      }}
     >
-      <Box sx={{ gridArea: '1 / 1 / 2 / 3', }}>
+      <Box sx={{ gridArea: '1 / 1 / 2 / 3' }}>
         <Typography variant="subtitle1" sx={{ textAlign: 'center' }} mb={2}>
           Cluster Nodes
         </Typography>
       </Box>
-      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end'}}>
+      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end' }}>
         <Legend />
       </Box>
       <Box sx={{ gridArea: '2 / 1 / 6 / 2', alignContent: 'center' }}>
@@ -122,41 +132,38 @@ const ClusterMonitor = ({ collectionName }) => {
           Shards
         </Typography>
       </Box>
-      <Box sx={{
-        width: 'auto',
-        height: 'fit-content',
-        overflowX: 'auto',
-        gridArea: '2 / 2 / 6 / 10',
-        gap: '0.5rem',
-        '& svg': {
-          zIndex: 10,
-        }
-      }}>
-
-        <Box sx={{
-          width: cluster?.peers.length >= 40 ? 'max-content' : '100%',
-        }}>
-        <ArcherContainer
-          strokeColor={theme.palette.mode === 'dark' ? '#d4d9e6' : '#647cb9'}
-          lineStyle={'angle'}
+      <Box
+        sx={{
+          width: 'auto',
+          height: 'fit-content',
+          overflowX: 'auto',
+          gridArea: '2 / 2 / 6 / 10',
+          gap: '0.5rem',
+          '& svg': {
+            zIndex: 10,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            width: cluster?.peers.length >= 40 ? 'max-content' : '100%',
+          }}
         >
-          <Grid container spacing={1}>
-            {cluster &&
-              cluster.peers.map((peerId) => (
-                <Grid
-                  key={peerId}
-                  size={'grow'}
-                >
-                  <ClusterNode peerId={peerId} cluster={cluster} />
+          <ArcherContainer strokeColor={theme.palette.mode === 'dark' ? '#d4d9e6' : '#647cb9'} lineStyle={'angle'}>
+            <Grid container spacing={1}>
+              {cluster &&
+                cluster.peers.map((peerId) => (
+                  <Grid key={peerId} size={'grow'}>
+                    <ClusterNode peerId={peerId} cluster={cluster} />
+                  </Grid>
+                ))}
+              {(typeof cluster !== 'object' || cluster?.peers.length === 0) && (
+                <Grid size={12}>
+                  <p>No nodes found in the cluster.</p>
                 </Grid>
-              ))}
-            {(typeof cluster !== 'object' || cluster?.peers.length === 0) && (
-              <Grid size={12}>
-                <p>No nodes found in the cluster.</p>
-              </Grid>
-            )}
-          </Grid>
-        </ArcherContainer>
+              )}
+            </Grid>
+          </ArcherContainer>
         </Box>
       </Box>
     </Box>
