@@ -1,18 +1,13 @@
-/* es-lint-disable * */
+/* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
 import Slot from './ClusterSlot';
 
-const StyledNode = styled('div')(({ theme }) => ({
+const StyledNode = styled('div')(() => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '0.5rem',
-  padding: theme.spacing(1),
-  // border: '1px solid #ccc',
-  // borderRadius: theme.shape.borderRadius,
-  // backgroundColor: '#f3f8fd',
-  // boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.1)',
 }));
 
 const ClusterNode = ({ peerId, cluster }) => {
@@ -35,7 +30,14 @@ const ClusterNode = ({ peerId, cluster }) => {
               transfer: foundTransfer,
             };
           }
-          return <Slot id={idx} key={`${peerId}-${idx}`} peerId={peerId} shard={shard} transfer={transfer} />;
+          return <Slot
+            id={idx}
+            key={`${peerId}-${idx}`}
+            peerId={peerId}
+            shard={shard}
+            transfer={transfer}
+            peersNumber={cluster?.peers.length}
+          />;
         })) || <div>No slots available</div>}
     </StyledNode>
   );
