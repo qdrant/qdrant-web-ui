@@ -1,5 +1,6 @@
 import { lighten, styled } from '@mui/material/styles';
 
+// todo: move colors to theme
 export const StyledShardSlot = styled('div')(({ theme, state, sx }) => {
   let color;
   switch (state) {

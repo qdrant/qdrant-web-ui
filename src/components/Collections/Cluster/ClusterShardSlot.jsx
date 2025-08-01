@@ -35,9 +35,7 @@ const Slot = forwardRef(({
       targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id ||
       transfer.transfer.shard_id}`,
       targetAnchor: targetAnchorDirection,
-      // targetAnchor: 'middle',
       sourceAnchor: sourceAnchorDirection,
-      // sourceAnchor: 'middle',
       style: {
         strokeWidth: '2',
         endMarker: true,
@@ -61,6 +59,7 @@ const Slot = forwardRef(({
         <div style={{position: 'static'}} ref={ref}>
           <StyledTooltip
             arrow
+            placement='top'
             title={
               <>
                 <TooltipRow label='Peer Id' value={currentPeerId} /><br />
@@ -71,7 +70,6 @@ const Slot = forwardRef(({
                     <TooltipRow label='Shard State' value={shard.state} /><br />
                   </>
                 ) : (
-
                   <Typography variant='caption'><b>Shard State:</b> Empty</Typography>
                 )}
               </>

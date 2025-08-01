@@ -3,18 +3,57 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, Box } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
-import { Box } from '@mui/system';
+import { Circle } from '../../Common/Circle';
 
 // todo: remove eslint-disable
 
+/**
+ * Legend component to explain the status of shards in the cluster.
+ * @param {Object} sx - MUI sx prop for custom styles
+ * @return {React.JSX.Element}
+ * @constructor
+ */
+const Legend = ({sx}) => {
+  const theme = useTheme();
+
+  return (
+    <Box sx={{
+      padding: '0 10px',
+      margin: '10px 0',
+      ... sx,
+    }}>
+      <Box sx={{
+        display: 'flex',
+        gap: '0.5rem',
+      }}>
+        <Box display="flex" alignItems="center" gap={0.5}>
+          <Circle size={'1rem'} color={theme.palette.mode === 'dark' ? '#262B3A' : '#E2E7F5'} />
+          <Typography variant='caption'>Empty</Typography>
+        </Box>
+        <Box display="flex" alignItems="center" gap={0.5}>
+          <Circle size={'1rem'} color={'#26A69A'} />
+          <Typography variant='caption'>Active</Typography>
+        </Box>
+        <Box display="flex" alignItems="center" gap={0.5}>
+          <Circle size={'1rem'} color={'#FFA726'} />
+          <Typography variant='caption'>Partial</Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+Legend.propTypes = {
+  sx: PropTypes.object,
+}
+
 const ClusterMonitor = ({ collectionName }) => {
-  // eslint-disable-next-line no-unused-vars
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
@@ -57,11 +96,6 @@ const ClusterMonitor = ({ collectionName }) => {
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
 
-  // todo: remove
-  useEffect(() => {
-    console.log('Cluster Info:', cluster);
-  }, [cluster]);
-
   return (
     <Box sx={{
       display: 'grid',
@@ -75,10 +109,13 @@ const ClusterMonitor = ({ collectionName }) => {
       }
     }}
     >
-      <Box sx={{ gridArea: '1 / 2 / 2 / 10', }}>
+      <Box sx={{ gridArea: '1 / 1 / 2 / 3', }}>
         <Typography variant="subtitle1" sx={{ textAlign: 'center' }} mb={2}>
           Cluster Nodes
         </Typography>
+      </Box>
+      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end'}}>
+        <Legend />
       </Box>
       <Box sx={{ gridArea: '2 / 1 / 6 / 2', alignContent: 'center' }}>
         <Typography
