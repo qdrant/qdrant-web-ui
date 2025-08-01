@@ -23,7 +23,7 @@ const Legend = ({sx}) => {
     <Box sx={{
       padding: '0 10px',
       margin: '10px 0',
-      ... sx,
+      ...sx,
     }}>
       <Box sx={{
         display: 'flex',
