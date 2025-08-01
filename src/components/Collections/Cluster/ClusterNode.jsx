@@ -1,14 +1,8 @@
 /* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
-import Slot from './ClusterSlot';
-
-const StyledNode = styled('div')(() => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-}));
+import Slot from './ClusterShardSlot';
+import { StyledNode } from './StyledComponents/StyledNode';
 
 const ClusterNode = ({ peerId, cluster }) => {
   const slotsNumber = cluster.shards.reduce((max, shard) => {
