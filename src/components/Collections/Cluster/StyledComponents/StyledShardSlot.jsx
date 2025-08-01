@@ -34,7 +34,7 @@ export const StyledShardSlot = styled('div')(({ theme, state, sx }) => {
       margin: '0 auto',
       zIndex: 1,
     },
-    ... sx
+    ...sx
   }
 });
 
