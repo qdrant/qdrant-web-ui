@@ -67,7 +67,8 @@
     "lint": "eslint  src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier ./src --write",
-    "format:check": "prettier ./src --check"
+    "format:check": "prettier ./src --check",
+    "dev:msw": "VITE_DEV_WITH_MSW=true vite"
   },
   "browserslist": {
     "production": [
@@ -92,8 +93,14 @@
     "eslint-config-prettier": "^8.9.0",
     "eslint-plugin-react": "^7.32.2",
     "jsdom": "^22.1.0",
+    "msw": "^2.10.4",
     "prettier": "2.8.7",
     "vite-plugin-eslint": "^1.8.1",
     "vitest": "^3.1.2"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
