@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Slot from './ClusterShardSlot';
@@ -48,6 +47,7 @@ ClusterNode.propTypes = {
         to: PropTypes.number,
       })
     ),
+    peers: PropTypes.arrayOf(PropTypes.number),
   }).isRequired,
 };
 

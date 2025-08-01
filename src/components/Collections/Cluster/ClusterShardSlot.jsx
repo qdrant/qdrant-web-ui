@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { forwardRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { ArcherElement } from 'react-archer';
@@ -7,6 +6,16 @@ import { Typography } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import { StyledTooltip } from './StyledComponents/StyledTooltip';
+
+const TooltipRow = ({label, value}) => (
+  <Typography variant='caption'>
+    <b>{label}:</b> {value}
+  </Typography>
+);
+TooltipRow.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+}
 
 const Slot = forwardRef(({
                            id,
@@ -47,12 +56,6 @@ const Slot = forwardRef(({
       },
     });
   }
-
-  const TooltipRow = ({label, value}) => (
-    <Typography variant='caption'>
-      <b>{label}:</b> {value}
-    </Typography>
-  );
 
   return (
     <ArcherElement id={`${currentPeerId}-${id}`} relations={relations}>
@@ -112,6 +115,7 @@ Slot.propTypes = {
     state: PropTypes.string,
     points_count: PropTypes.number,
     peer_id: PropTypes.number.isRequired,
+    shard_key: PropTypes.string,
   }),
   transfer: PropTypes.shape({
     transfer: PropTypes.shape({
