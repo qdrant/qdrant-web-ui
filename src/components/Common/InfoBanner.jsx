@@ -4,7 +4,7 @@ import { Alert, Box, Collapse } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
-const InfoBanner = ({ severity, children, onClose }) => {
+const InfoBanner = ({ severity, children, onClose, hideCloseButton }) => {
   const [open, setOpen] = useState(true);
 
   const handleClose = () => {
@@ -18,9 +18,11 @@ const InfoBanner = ({ severity, children, onClose }) => {
         <Alert
           severity={severity}
           action={
-            <IconButton aria-label="close" color="inherit" size="small" onClick={handleClose}>
-              <CloseIcon fontSize="inherit" />
-            </IconButton>
+            !hideCloseButton && (
+              <IconButton aria-label="close" color="inherit" size="small" onClick={handleClose}>
+                <CloseIcon fontSize="inherit" />
+              </IconButton>
+            )
           }
           sx={{ my: 2, lineHeight: 1.7 }}
         >
@@ -35,6 +37,7 @@ InfoBanner.propTypes = {
   severity: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
   onClose: PropTypes.func,
+  hideCloseButton: PropTypes.bool,
 };
 
 export default InfoBanner;

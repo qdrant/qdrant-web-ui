@@ -42,6 +42,7 @@
     "prismjs": "^1.29.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
+    "react-archer": "^4.4.0",
     "react-diff-viewer-continued": "^3.4.0",
     "react-dom": "^18.2.0",
     "react-resizable-panels": "^0.0.51",
