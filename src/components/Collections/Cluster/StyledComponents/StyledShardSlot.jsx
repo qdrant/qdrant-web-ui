@@ -1,28 +1,24 @@
 import { lighten, styled } from '@mui/material/styles';
+import { CLUSTER_COLORS } from '../constants';
 
-// todo: move colors to theme
 export const StyledShardSlot = styled('div')(({ theme, state, sx }) => {
   let color;
   switch (state) {
     case 'active':
-      color = '#26A69A';
+      color = CLUSTER_COLORS.active;
       break;
     case 'dead':
-      color = '#e02828';
+      color = CLUSTER_COLORS.dead;
       break;
     case 'empty':
-      if (theme.palette.mode === 'dark') {
-        color = '#262B3A';
-      } else {
-        color = '#E2E7F5';
-      }
+      color = theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light;
       break;
     default:
-      color = '#FFA726';
+      color = CLUSTER_COLORS.default;
   }
 
   return {
-    borderRadius: '2px', // todo: take from theme
+    borderRadius: 2,
     backgroundColor: color,
     minHeight: '32px',
     maxHeight: '80px',

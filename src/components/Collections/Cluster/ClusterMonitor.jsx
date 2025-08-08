@@ -9,6 +9,7 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
+import { CLUSTER_COLORS } from './constants';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -34,19 +35,22 @@ const Legend = ({ sx }) => {
         }}
       >
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={theme.palette.mode === 'dark' ? '#262B3A' : '#E2E7F5'} />
+          <Circle
+            size={'1rem'}
+            color={theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light}
+          />
           <Typography variant="caption">Empty</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={'#26A69A'} />
+          <Circle size={'1rem'} color={CLUSTER_COLORS.active} />
           <Typography variant="caption">Active</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={'#e02828'} />
+          <Circle size={'1rem'} color={CLUSTER_COLORS.dead} />
           <Typography variant="caption">Dead</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={'#FFA726'} />
+          <Circle size={'1rem'} color={CLUSTER_COLORS.default} />
           <Typography variant="caption">Other</Typography>
         </Box>
       </Box>
