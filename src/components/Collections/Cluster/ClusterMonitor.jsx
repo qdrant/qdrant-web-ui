@@ -42,8 +42,12 @@ const Legend = ({ sx }) => {
           <Typography variant="caption">Active</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
+          <Circle size={'1rem'} color={'#e02828'} />
+          <Typography variant="caption">Dead</Typography>
+        </Box>
+        <Box display="flex" alignItems="center" gap={0.5}>
           <Circle size={'1rem'} color={'#FFA726'} />
-          <Typography variant="caption">Partial</Typography>
+          <Typography variant="caption">Other</Typography>
         </Box>
       </Box>
     </Box>
@@ -58,11 +62,6 @@ const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
-
-  // todo:
-  useEffect(() => {
-    console.log(cluster);
-  }, [cluster]);
 
   useEffect(() => {
     const fetchClusterInfo = async () => {
@@ -108,7 +107,7 @@ const ClusterMonitor = ({ collectionName }) => {
         display: 'grid',
         gridTemplateColumns: '20px 1fr',
         gridTemplateRows: 'auto 1fr',
-        gridColumnGap: 0,
+        gridColumnGap: '0.5rem',
         gridRowGap: 0,
         // breakpoints
         [theme.breakpoints.up('md')]: {
@@ -116,15 +115,15 @@ const ClusterMonitor = ({ collectionName }) => {
         },
       }}
     >
-      <Box sx={{ gridArea: '1 / 1 / 2 / 3' }}>
-        <Typography variant="subtitle1" sx={{ textAlign: 'center' }} mb={2}>
+      <Box sx={{ gridArea: '1 / 2 / 2 / 3' }}>
+        <Typography variant="subtitle1" mb={2}>
           Cluster Nodes
         </Typography>
       </Box>
       <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end' }}>
         <Legend />
       </Box>
-      <Box sx={{ gridArea: '2 / 1 / 6 / 2', alignContent: 'center' }}>
+      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center' }}>
         <Typography
           variant="subtitle1"
           sx={{ writingMode: 'vertical-lr', textAlign: 'center', transform: 'rotate(180deg)' }}
@@ -136,9 +135,9 @@ const ClusterMonitor = ({ collectionName }) => {
         sx={{
           width: 'auto',
           height: 'fit-content',
+          paddingBottom: '1.5rem',
           overflowX: 'auto',
           gridArea: '2 / 2 / 6 / 10',
-          gap: '0.5rem',
           '& svg': {
             zIndex: 10,
           },
@@ -146,11 +145,12 @@ const ClusterMonitor = ({ collectionName }) => {
       >
         <Box
           sx={{
-            width: cluster?.peers.length >= 40 ? 'max-content' : '100%',
+            minWidth: '100%',
+            width: 'max-content',
           }}
         >
           <ArcherContainer strokeColor={theme.palette.mode === 'dark' ? '#d4d9e6' : '#647cb9'} lineStyle={'angle'}>
-            <Grid container spacing={1}>
+            <Grid container spacing={2}>
               {cluster &&
                 cluster.peers.map((peerId) => (
                   <Grid key={peerId} size={'grow'}>

@@ -27,7 +27,7 @@ const ClusterNode = ({ peerId, cluster }) => {
             <Slot
               id={idx}
               key={`${peerId}-${idx}`}
-              peerId={peerId}
+              currentPeerId={peerId}
               shard={shard}
               transfer={transfer}
               peersNumber={cluster?.peers.length}
