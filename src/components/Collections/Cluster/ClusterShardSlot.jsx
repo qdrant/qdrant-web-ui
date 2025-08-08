@@ -57,27 +57,29 @@ const Slot = ({ id, currentPeerId, shard, transfer, peersNumber }) => {
           arrow
           placement="top"
           title={
-            <>
-              <TooltipRow label="Peer Id" value={currentPeerId} />
-              {shard?.shard_id && (
-                <>
-                  <br />
-                  <TooltipRow label="Shard Id" value={shard.shard_id} />
-                </>
-              )}
-              {shard?.shard_key && (
-                <>
-                  <br />
-                  <TooltipRow label="Shard Key" value={shard.shard_key} />
-                </>
-              )}
-              {shard?.state && (
-                <>
-                  <br />
-                  <TooltipRow label="Shard State" value={shard.state} />
-                </>
-              )}
-            </>
+            shard && (
+              <>
+                <TooltipRow label="Peer Id" value={currentPeerId} />
+                {'shard_id' in shard && (
+                  <>
+                    <br />
+                    <TooltipRow label="Shard Id" value={shard.shard_id} />
+                  </>
+                )}
+                {shard.shard_key && (
+                  <>
+                    <br />
+                    <TooltipRow label="Shard Key" value={shard.shard_key} />
+                  </>
+                )}
+                {shard.state && (
+                  <>
+                    <br />
+                    <TooltipRow label="Shard State" value={shard.state} />
+                  </>
+                )}
+              </>
+            )
           }
         >
           <StyledShardSlot state={shard ? shard.state.toLowerCase() : 'empty'}>

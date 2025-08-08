@@ -10,6 +10,7 @@ import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS } from './constants';
+import InfoBanner from '../../Common/InfoBanner';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -96,6 +97,7 @@ const ClusterMonitor = ({ collectionName }) => {
               .map((peerId) => parseInt(peerId))
               .sort((a, b) => a - b)
           : [];
+        newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
         setCluster({ ...newCluster });
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
@@ -104,6 +106,16 @@ const ClusterMonitor = ({ collectionName }) => {
 
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
+
+  if (!cluster || cluster.status !== 'enabled') {
+    return (
+      <Box>
+        <InfoBanner severity={'warning'} hideCloseButton={true}>
+          <Typography>Distributed mode is not enabled for this cluster.</Typography>
+        </InfoBanner>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -155,17 +167,11 @@ const ClusterMonitor = ({ collectionName }) => {
         >
           <ArcherContainer strokeColor={theme.palette.mode === 'dark' ? '#d4d9e6' : '#647cb9'} lineStyle={'angle'}>
             <Grid container spacing={2}>
-              {cluster &&
-                cluster.peers.map((peerId) => (
-                  <Grid key={peerId} size={'grow'}>
-                    <ClusterNode peerId={peerId} cluster={cluster} />
-                  </Grid>
-                ))}
-              {(typeof cluster !== 'object' || cluster?.peers.length === 0) && (
-                <Grid size={12}>
-                  <p>No nodes found in the cluster.</p>
+              {cluster.peers?.map((peerId) => (
+                <Grid key={peerId} size={'grow'}>
+                  <ClusterNode peerId={peerId} cluster={cluster} />
                 </Grid>
-              )}
+              ))}
             </Grid>
           </ArcherContainer>
         </Box>
