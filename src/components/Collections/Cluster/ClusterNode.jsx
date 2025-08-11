@@ -21,7 +21,7 @@ const ClusterNode = ({ peerId, cluster }) => {
         Array.from({ length: maxSlotsIndex - minSlotsIndex + 1 }, (_, i) => {
           const idx = minSlotsIndex + i;
           const shard = shards.find((s) => s.shard_id === idx);
-          let transfer = undefined;
+          let transfer;
           if (shard) {
             const foundTransfer = cluster.shard_transfers.find(
               (transfer) => transfer.shard_id === shard.shard_id && transfer.from === peerId
