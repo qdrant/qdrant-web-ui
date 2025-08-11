@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Box, MenuItem, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import { Box, MenuItem, TableCell, TableContainer, TablePagination, TableRow, Typography } from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
 import { HeaderTableCell, TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
 import { Dot } from '../Common/Dot';
@@ -86,7 +86,25 @@ CollectionTableRow.propTypes = {
   getCollectionsCall: PropTypes.func.isRequired,
 };
 
-const CollectionsList = ({ collections, getCollectionsCall }) => {
+const CollectionsList = ({
+  collections,
+  getCollectionsCall,
+  currentPage,
+  setCurrentPage,
+  pageSize,
+  setPageSize,
+  allCollectionsLength,
+}) => {
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value + 1);
+  };
+
+  // row per page handler
+  const handleChangePageSize = (event) => {
+    setPageSize(parseInt(event.target.value, 10));
+    setCurrentPage(1);
+  };
+
   return (
     <TableContainer>
       <TableWithGaps aria-label="simple table">
@@ -122,6 +140,17 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
                 getCollectionsCall={getCollectionsCall}
               />
             ))}
+
+          <tr>
+            <TablePagination
+              count={allCollectionsLength}
+              page={Math.max(currentPage - 1, 0)}
+              rowsPerPage={pageSize}
+              rowsPerPageOptions={[5, 10, 25, 50, 100, { value: -1, label: 'All' }]}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleChangePageSize}
+            />
+          </tr>
         </TableBodyWithGaps>
       </TableWithGaps>
     </TableContainer>
@@ -131,6 +160,11 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
 CollectionsList.propTypes = {
   collections: PropTypes.array.isRequired,
   getCollectionsCall: PropTypes.func.isRequired,
+  currentPage: PropTypes.number.isRequired,
+  setCurrentPage: PropTypes.func.isRequired,
+  pageSize: PropTypes.number.isRequired,
+  setPageSize: PropTypes.func.isRequired,
+  allCollectionsLength: PropTypes.number.isRequired,
 };
 
 export default CollectionsList;

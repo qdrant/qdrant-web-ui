@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box, Skeleton } from '@mui/material';
+import { Typography, Grid, Skeleton } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
@@ -17,8 +17,23 @@ function Collections() {
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const { client: qdrantClient } = useClient();
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 5;
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const stored = localStorage.getItem('collectionsCurrentPage');
+    return stored ? Number(stored) : 1;
+  });
+  const [pageSize, setPageSize] = useState(() => {
+    const stored = localStorage.getItem('collectionsPageSize');
+    return stored ? Number(stored) : 5;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('collectionsCurrentPage', currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    localStorage.setItem('collectionsPageSize', pageSize);
+  }, [pageSize]);
 
   const { maxCollections } = useMaxCollections();
 
@@ -38,7 +53,8 @@ function Collections() {
         const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
         setCollections(sortedCollections);
 
-        const nextPageCollections = sortedCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+        const nextPageCollections =
+          pageSize === -1 ? sortedCollections : sortedCollections.slice((page - 1) * pageSize, page * pageSize);
 
         const nextRawCollections = await Promise.all(
           nextPageCollections.map(async (collection) => {
@@ -62,7 +78,7 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey]
+    [qdrantClient, getErrorMessageWithApiKey, pageSize, currentPage]
   );
 
   const getFilteredCollections = useCallback(
@@ -108,10 +124,6 @@ function Collections() {
     () => debounce(getFilteredCollections, 100),
     [getFilteredCollections]
   );
-
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
 
   return (
     <>
@@ -161,22 +173,17 @@ function Collections() {
             </Grid>
           )}
 
-          {rawCollections?.length && !errorMessage ? (
+          {collections?.length && rawCollections?.length && !errorMessage ? (
             <Grid size={12}>
               <CollectionsList
                 collections={rawCollections}
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+                allCollectionsLength={collections?.length || 0}
               />
-              {collections.length > PAGE_SIZE && (
-                <Box justifyContent="center" display="flex">
-                  <Pagination
-                    shape={'rounded'}
-                    count={Math.ceil(collections.length / PAGE_SIZE)}
-                    page={currentPage}
-                    onChange={handlePageChange}
-                  />
-                </Box>
-              )}
             </Grid>
           ) : (
             <></>
