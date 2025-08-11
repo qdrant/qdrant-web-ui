@@ -4,15 +4,22 @@ import Slot from './ClusterShardSlot';
 import { StyledNode } from './StyledComponents/StyledNode';
 
 const ClusterNode = ({ peerId, cluster }) => {
-  const slotsNumber = cluster.shards.reduce((max, shard) => {
-    return Math.max(max, shard.shard_id + 1);
+  const maxSlotsIndex = cluster.shards.reduce((max, shard) => {
+    return Math.max(max, shard.shard_id);
   }, 0);
+  const minSlotsIndex = cluster.shards.reduce((min, shard) => {
+    return Math.min(min, shard.shard_id);
+  }, maxSlotsIndex);
+
+  const numSlots = cluster.shards.length;
+
   const shards = cluster.shards.filter((shard) => shard.peer_id === peerId);
 
   return (
     <StyledNode>
-      {(slotsNumber &&
-        [...Array(slotsNumber)].map((_, idx) => {
+      {(numSlots &&
+        Array.from({ length: maxSlotsIndex - minSlotsIndex + 1 }, (_, i) => {
+          const idx = minSlotsIndex + i;
           const shard = shards.find((s) => s.shard_id === idx);
           let transfer = undefined;
           if (shard) {
