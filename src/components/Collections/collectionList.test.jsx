@@ -56,7 +56,15 @@ describe('CollectionsList', () => {
   it('should render CollectionsList with given data', () => {
     render(
       <MemoryRouter>
-        <CollectionsList collections={COLLECTIONS} getCollectionsCall={() => {}} />
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          currentPage={1}
+          setCurrentPage={() => {}}
+          pageSize={5}
+          setPageSize={() => {}}
+          allCollectionsLength={COLLECTIONS.length}
+        />
       </MemoryRouter>
     );
     expect(screen.getByText('Collection 1')).toBeInTheDocument();
@@ -66,7 +74,15 @@ describe('CollectionsList', () => {
   it('should render CollectionTableRow with given data', () => {
     render(
       <MemoryRouter>
-        <CollectionsList collections={COLLECTIONS} getCollectionsCall={() => {}} />
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          currentPage={1}
+          setCurrentPage={() => {}}
+          pageSize={5}
+          setPageSize={() => {}}
+          allCollectionsLength={COLLECTIONS.length}
+        />
       </MemoryRouter>
     );
     expect(screen.getByText('green')).toBeInTheDocument();

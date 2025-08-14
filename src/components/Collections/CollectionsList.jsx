@@ -146,7 +146,7 @@ const CollectionsList = ({
               count={allCollectionsLength}
               page={Math.max(currentPage - 1, 0)}
               rowsPerPage={pageSize}
-              rowsPerPageOptions={[5, 10, 25, 50, 100, { value: -1, label: 'All' }]}
+              rowsPerPageOptions={[5, 10, 20]}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleChangePageSize}
             />
