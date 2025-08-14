@@ -78,7 +78,7 @@ export const darkThemeOptions = {
       default: neutral[950],
       paper: '#111824ff',
       card: '#111824ff',
-      code: '#1e1e1e',
+      code: '#111824',
     },
     divider: '#ffffff1f',
   },

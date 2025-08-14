@@ -53,7 +53,14 @@ RunButton.propTypes = {
 export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true, loading }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
-  const prismTheme = theme.palette.mode === 'light' ? themes.nightOwlLight : themes.vsDark;
+  const basePrismTheme = theme.palette.mode === 'light' ? themes.github : themes.dracula;
+  const prismTheme = {
+    ...basePrismTheme,
+    plain: {
+      ...basePrismTheme.plain,
+      backgroundColor: theme.palette.background.code,
+    },
+  };
 
   useEffect(() => {
     setCode(codeStr);
