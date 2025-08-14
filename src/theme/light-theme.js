@@ -78,7 +78,7 @@ export const lightThemeOptions = {
     background: {
       default: '#f7f8faff',
       paper: '#ffffffff',
-      code: '#fbfbfb',
+      code: '#ffffff',
     },
     divider: '#0000001f',
   },
