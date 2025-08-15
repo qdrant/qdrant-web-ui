@@ -91,7 +91,6 @@ const ClusterMonitor = ({ collectionName }) => {
   });
   const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
 
-  // Handle slot grab
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
 
@@ -130,30 +129,26 @@ const ClusterMonitor = ({ collectionName }) => {
     }
   };
 
-  // Handle slot drop
   const handleSlotDrop = (targetPeerId, targetSlotId) => {
     if (!dragState.isDragging || !dragState.draggedSlot) return;
 
     const { peerId: sourcePeerId, slotId: sourceSlotId } = dragState.draggedSlot;
 
-    // If initial id and peerId are the same as the new ids - return without doing anything
+    // If shard dropped in the same slot - return without doing anything
     if (sourcePeerId === targetPeerId && sourceSlotId === targetSlotId) {
       setDragState({ isDragging: false, draggedSlot: null });
       return;
     }
 
-    // If IDs are different, execute logic (for now, just console log)
     console.log('Moving slot:', {
       from: { peerId: sourcePeerId, slotId: sourceSlotId },
       to: { peerId: targetPeerId, slotId: targetSlotId },
       shard: dragState.draggedSlot.shard,
     });
 
-    // Reset drag state
     setDragState({ isDragging: false, draggedSlot: null });
   };
 
-  // Handle drag cancel
   const handleDragCancel = () => {
     setDragState({ isDragging: false, draggedSlot: null });
   };
@@ -225,7 +220,6 @@ const ClusterMonitor = ({ collectionName }) => {
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
 
-  // If cluster is not enabled, show a warning banner
   if (!cluster || cluster.status !== 'enabled') {
     return (
       <Box>
@@ -307,7 +301,6 @@ const ClusterMonitor = ({ collectionName }) => {
       {/* Floating drag element that follows the cursor */}
       {dragState.isDragging && dragState.draggedSlot && (
         <>
-          {/* Floating drag element that follows the cursor */}
           <Box
             sx={{
               position: 'fixed',
