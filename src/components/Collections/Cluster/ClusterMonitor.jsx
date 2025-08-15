@@ -9,7 +9,7 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
-import { CLUSTER_COLORS } from './constants';
+import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 
 /**
@@ -18,7 +18,7 @@ import InfoBanner from '../../Common/InfoBanner';
  * @return {React.JSX.Element}
  * @constructor
  */
-const Legend = ({ sx }) => {
+const Legend = ({ sx, dragState }) => {
   const theme = useTheme();
 
   return (
@@ -33,6 +33,7 @@ const Legend = ({ sx }) => {
         sx={{
           display: 'flex',
           gap: '0.5rem',
+          alignItems: 'center',
         }}
       >
         <Box display="flex" alignItems="center" gap={0.5}>
@@ -54,6 +55,18 @@ const Legend = ({ sx }) => {
           <Circle size={'1rem'} color={CLUSTER_COLORS.default} />
           <Typography variant="caption">Other</Typography>
         </Box>
+        {dragState.isDragging && (
+          <Box display="flex" alignItems="center" gap={0.5} sx={{ ml: 2, pl: 2, borderLeft: '1px solid #ccc' }}>
+            <Circle
+              size={'1rem'}
+              color={theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light}
+              sx={{
+                border: CLUSTER_STYLES.dragAndDrop.awaiting.border,
+              }}
+            />
+            <Typography variant="caption">Drop Here</Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -61,12 +74,83 @@ const Legend = ({ sx }) => {
 
 Legend.propTypes = {
   sx: PropTypes.object,
+  dragState: PropTypes.shape({
+    isDragging: PropTypes.bool.isRequired,
+    draggedSlot: PropTypes.object,
+  }),
 };
 
 const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
+  const [dragState, setDragState] = React.useState({
+    isDragging: false,
+    draggedSlot: null,
+  });
+
+  // Handle slot grab
+  const handleSlotGrab = (peerId, slotId, shard) => {
+    if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
+
+    setDragState({
+      isDragging: true,
+      draggedSlot: { peerId, slotId, shard },
+    });
+  };
+
+  // Handle slot drop
+  const handleSlotDrop = (targetPeerId, targetSlotId) => {
+    if (!dragState.isDragging || !dragState.draggedSlot) return;
+
+    const { peerId: sourcePeerId, slotId: sourceSlotId } = dragState.draggedSlot;
+
+    // If initial id and peerId are the same as the new ids - return without doing anything
+    if (sourcePeerId === targetPeerId && sourceSlotId === targetSlotId) {
+      setDragState({ isDragging: false, draggedSlot: null });
+      return;
+    }
+
+    // If IDs are different, execute logic (for now, just console log)
+    console.log('Moving slot:', {
+      from: { peerId: sourcePeerId, slotId: sourceSlotId },
+      to: { peerId: targetPeerId, slotId: targetSlotId },
+      shard: dragState.draggedSlot.shard,
+    });
+
+    // Reset drag state
+    setDragState({ isDragging: false, draggedSlot: null });
+  };
+
+  // Handle drag cancel
+  const handleDragCancel = () => {
+    setDragState({ isDragging: false, draggedSlot: null });
+  };
+
+  // Add global event listeners for drag cancellation
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (dragState.isDragging && !e.target.closest('[data-cluster-slot]')) {
+        handleDragCancel();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && dragState.isDragging) {
+        handleDragCancel();
+      }
+    };
+
+    if (dragState.isDragging) {
+      document.addEventListener('click', handleGlobalClick);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [dragState.isDragging]);
 
   useEffect(() => {
     const fetchClusterInfo = async () => {
@@ -137,7 +221,7 @@ const ClusterMonitor = ({ collectionName }) => {
         </Typography>
       </Box>
       <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end' }}>
-        <Legend />
+        <Legend dragState={dragState} />
       </Box>
       <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center' }}>
         <Typography
@@ -169,7 +253,14 @@ const ClusterMonitor = ({ collectionName }) => {
             <Grid container spacing={2}>
               {cluster.peers?.map((peerId) => (
                 <Grid key={peerId} size={'grow'}>
-                  <ClusterNode peerId={peerId} cluster={cluster} />
+                  <ClusterNode
+                    peerId={peerId}
+                    cluster={cluster}
+                    dragState={dragState}
+                    onSlotGrab={handleSlotGrab}
+                    onSlotDrop={handleSlotDrop}
+                    onDragCancel={handleDragCancel}
+                  />
                 </Grid>
               ))}
             </Grid>

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Slot from './ClusterShardSlot';
 import { StyledNode } from './StyledComponents/StyledNode';
 
-const ClusterNode = ({ peerId, cluster }) => {
+const ClusterNode = ({ peerId, cluster, dragState, onSlotGrab, onSlotDrop, onDragCancel }) => {
   const maxSlotsIndex = cluster.shards.reduce((max, shard) => {
     return Math.max(max, shard.shard_id);
   }, 0);
@@ -30,6 +30,17 @@ const ClusterNode = ({ peerId, cluster }) => {
               transfer: foundTransfer,
             };
           }
+
+          // Determine drag and drop state for this slot
+          let dragAndDropState = null;
+          if (dragState.isDragging) {
+            if (dragState.draggedSlot.peerId === peerId && dragState.draggedSlot.slotId === idx) {
+              dragAndDropState = 'grabbed';
+            } else if (!shard) {
+              dragAndDropState = 'awaiting';
+            }
+          }
+
           return (
             <Slot
               id={idx}
@@ -38,6 +49,10 @@ const ClusterNode = ({ peerId, cluster }) => {
               shard={shard}
               transfer={transfer}
               peersNumber={cluster?.peers.length}
+              dragAndDropState={dragAndDropState}
+              onSlotGrab={onSlotGrab}
+              onSlotDrop={onSlotDrop}
+              onDragCancel={onDragCancel}
             />
           );
         })) || <div>No slots available</div>}
@@ -58,6 +73,13 @@ ClusterNode.propTypes = {
     ),
     peers: PropTypes.arrayOf(PropTypes.number),
   }).isRequired,
+  dragState: PropTypes.shape({
+    isDragging: PropTypes.bool.isRequired,
+    draggedSlot: PropTypes.object,
+  }).isRequired,
+  onSlotGrab: PropTypes.func.isRequired,
+  onSlotDrop: PropTypes.func.isRequired,
+  onDragCancel: PropTypes.func.isRequired,
 };
 
 export default ClusterNode;
