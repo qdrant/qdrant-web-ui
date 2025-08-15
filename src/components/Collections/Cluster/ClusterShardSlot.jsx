@@ -75,9 +75,9 @@ const Slot = ({
   }
 
   // Handle mouse down for grabbing
-  const handleMouseDown = () => {
+  const handleMouseDown = (e) => {
     if (shard && !dragAndDropState) {
-      onSlotGrab(currentPeerId, id, shard);
+      onSlotGrab(e, currentPeerId, id, shard);
     }
   };
 

@@ -7,10 +7,22 @@ import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
+import { keyframes } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
+import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
+
+// Define the floating animation keyframes
+const floatAnimation = keyframes`
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-3px);
+  }
+`;
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -88,15 +100,24 @@ const ClusterMonitor = ({ collectionName }) => {
     isDragging: false,
     draggedSlot: null,
   });
+  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
 
   // Handle slot grab
-  const handleSlotGrab = (peerId, slotId, shard) => {
+  const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
 
     setDragState({
       isDragging: true,
       draggedSlot: { peerId, slotId, shard },
     });
+    setMousePosition({ x: e.clientX, y: e.clientY });
+  };
+
+  // Handle mouse move for drag element positioning
+  const handleMouseMove = (e) => {
+    if (dragState.isDragging) {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    }
   };
 
   // Handle slot drop
@@ -144,14 +165,17 @@ const ClusterMonitor = ({ collectionName }) => {
     if (dragState.isDragging) {
       document.addEventListener('click', handleGlobalClick);
       document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('mousemove', handleMouseMove);
     }
 
     return () => {
       document.removeEventListener('click', handleGlobalClick);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousemove', handleMouseMove);
     };
   }, [dragState.isDragging]);
 
+  // Fetch cluster info and update cluster state
   useEffect(() => {
     const fetchClusterInfo = async () => {
       if (isRestricted) {
@@ -191,6 +215,7 @@ const ClusterMonitor = ({ collectionName }) => {
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
 
+  // If cluster is not enabled, show a warning banner
   if (!cluster || cluster.status !== 'enabled') {
     return (
       <Box>
@@ -267,6 +292,68 @@ const ClusterMonitor = ({ collectionName }) => {
           </ArcherContainer>
         </Box>
       </Box>
+
+      {/* Floating drag element that follows the cursor */}
+      {dragState.isDragging && dragState.draggedSlot && (
+        <>
+          {/* Floating drag element that follows the cursor */}
+          <Box
+            sx={{
+              position: 'fixed',
+              left: mousePosition.x + 10,
+              top: mousePosition.y + 10,
+              width: '50px',
+              height: '50px',
+              zIndex: 9999,
+              pointerEvents: 'none',
+              transform: 'translate(-50%, -50%)',
+              transition: 'none', // Disable transition for smooth cursor following
+              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))',
+              animation: `${floatAnimation} 2s ease-in-out infinite`,
+            }}
+          >
+            <StyledShardSlot
+              state={dragState.draggedSlot.shard.state.toLowerCase()}
+              dragAndDropState="grabbed"
+              sx={{
+                width: '50px',
+                height: '50px',
+                opacity: 0.9,
+                transform: 'scale(1.1) rotate(5deg)',
+                boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '0.8rem',
+                  lineHeight: 1,
+                  color: 'white',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                }}
+              >
+                {dragState.draggedSlot.shard.shard_id}
+              </Typography>
+              {dragState.draggedSlot.shard.shard_key && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    textAlign: 'center',
+                    fontSize: '0.6rem',
+                    lineHeight: 1,
+                    color: 'rgba(255,255,255,0.8)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                  }}
+                >
+                  {dragState.draggedSlot.shard.shard_key}
+                </Typography>
+              )}
+            </StyledShardSlot>
+          </Box>
+        </>
+      )}
     </Box>
   );
 };
