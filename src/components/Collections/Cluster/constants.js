@@ -20,3 +20,11 @@ export const TOOLTIP_COLORS = {
     light: neutral['800'],
   },
 };
+
+export const CLUSTER_STYLES = {
+  dragAndDrop: {
+    awaiting: {
+      border: '1px dashed #fff',
+    },
+  },
+};
