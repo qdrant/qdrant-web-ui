@@ -7,22 +7,11 @@ import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
-import { keyframes } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
-
-// Define the floating animation keyframes
-const floatAnimation = keyframes`
-  0%, 100% {
-    transform: translate(-50%, -50%) translateY(0px);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateY(-3px);
-  }
-`;
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -117,6 +106,27 @@ const ClusterMonitor = ({ collectionName }) => {
   const handleMouseMove = (e) => {
     if (dragState.isDragging) {
       setMousePosition({ x: e.clientX, y: e.clientY });
+    }
+
+    // scroll long monitor if the user reaches the edge
+    const clusterMonitor = document.querySelector('[data-cluster-monitor]');
+    if (clusterMonitor) {
+      const rect = clusterMonitor.getBoundingClientRect();
+      const scrollLeft = clusterMonitor.scrollLeft;
+      const scrollWidth = clusterMonitor.scrollWidth;
+      const clientWidth = clusterMonitor.clientWidth;
+      const mouseX = e.clientX - rect.left;
+      const scrollStep = 16;
+
+      // todo: how to make it to look smooth?
+      // Check if we need to scroll right (mouse near right edge and can scroll right)
+      if (mouseX > clientWidth - 50 && scrollLeft + clientWidth < scrollWidth) {
+        clusterMonitor.scrollLeft = scrollLeft + scrollStep;
+      }
+      // Check if we need to scroll left (mouse near left edge and can scroll left)
+      if (mouseX < 50 && scrollLeft > 0) {
+        clusterMonitor.scrollLeft = scrollLeft - scrollStep;
+      }
     }
   };
 
@@ -257,6 +267,7 @@ const ClusterMonitor = ({ collectionName }) => {
         </Typography>
       </Box>
       <Box
+        data-cluster-monitor
         sx={{
           width: 'auto',
           height: 'fit-content',
@@ -309,7 +320,6 @@ const ClusterMonitor = ({ collectionName }) => {
               transform: 'translate(-50%, -50%)',
               transition: 'none', // Disable transition for smooth cursor following
               filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))',
-              animation: `${floatAnimation} 2s ease-in-out infinite`,
             }}
           >
             <StyledShardSlot

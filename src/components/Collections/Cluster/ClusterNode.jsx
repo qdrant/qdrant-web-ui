@@ -36,7 +36,7 @@ const ClusterNode = ({ peerId, cluster, dragState, onSlotGrab, onSlotDrop, onDra
           if (dragState.isDragging) {
             if (dragState.draggedSlot.peerId === peerId && dragState.draggedSlot.slotId === idx) {
               dragAndDropState = 'grabbed';
-            } else if (!shard) {
+            } else if (!shard && dragState.draggedSlot.slotId === idx) {
               dragAndDropState = 'awaiting';
             }
           }
