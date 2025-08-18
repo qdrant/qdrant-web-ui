@@ -12,6 +12,7 @@ import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
+import ShardTransferDialog from './ShardTransferDialog';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -90,6 +91,11 @@ const ClusterMonitor = ({ collectionName }) => {
     draggedSlot: null,
   });
   const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
+  const [transferDialog, setTransferDialog] = React.useState({
+    open: false,
+    transferRequest: null,
+  });
+  const [transferLoading, setTransferLoading] = React.useState(false);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -146,7 +152,80 @@ const ClusterMonitor = ({ collectionName }) => {
       shard: dragState.draggedSlot.shard,
     });
 
+    // Open confirmation dialog instead of direct API call
+    setTransferDialog({
+      open: true,
+      transferRequest: {
+        shard: dragState.draggedSlot.shard,
+        fromPeerId: sourcePeerId,
+        toPeerId: targetPeerId,
+      },
+    });
+
     setDragState({ isDragging: false, draggedSlot: null });
+  };
+
+  const handleTransferConfirm = async (transferRequest) => {
+    setTransferLoading(true);
+    
+    try {
+      const result = await qdrantClient.updateCollectionCluster(collectionName, {
+        move_shard: {
+          shard_id: transferRequest.shard.shard_id,
+          to_peer_id: transferRequest.toPeerId,
+          from_peer_id: transferRequest.fromPeerId,
+        },
+      });
+      
+      console.log('Move shard result:', result);
+      enqueueSnackbar('Shard transfer initiated successfully', getSnackbarOptions('success', closeSnackbar));
+      
+      // Close dialog and refresh cluster info
+      setTransferDialog({ open: false, transferRequest: null });
+      
+      // Refresh cluster info to show updated state
+      const fetchClusterInfo = async () => {
+        try {
+          const clusterInfo = await axios.get(`/cluster`);
+          const collectionClusterInfo = await qdrantClient
+            .api('cluster')
+            .collectionClusterInfo({ collection_name: collectionName });
+
+          const newCluster = collectionClusterInfo.data.result;
+          const localShards =
+            newCluster.local_shards.length &&
+            newCluster.local_shards.map((shard) => {
+              return {
+                ...shard,
+                peer_id: newCluster.peer_id,
+              };
+            });
+          newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
+
+          newCluster.peers = clusterInfo?.data?.result?.peers
+            ? Object.keys(clusterInfo.data.result.peers)
+                .map((peerId) => parseInt(peerId))
+                .sort((a, b) => a - b)
+            : [];
+          newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
+          setCluster({ ...newCluster });
+        } catch (err) {
+          console.error('Error refreshing cluster info:', err);
+        }
+      };
+      
+      fetchClusterInfo();
+      
+    } catch (err) {
+      console.error('Error moving shard:', err);
+      enqueueSnackbar(`Failed to transfer shard: ${err.message}`, getSnackbarOptions('error', closeSnackbar));
+    } finally {
+      setTransferLoading(false);
+    }
+  };
+
+  const handleTransferDialogClose = () => {
+    setTransferDialog({ open: false, transferRequest: null });
   };
 
   const handleDragCancel = () => {
@@ -357,6 +436,16 @@ const ClusterMonitor = ({ collectionName }) => {
           </Box>
         </>
       )}
+
+      {/* Add ShardTransferDialog */}
+      <ShardTransferDialog
+        open={transferDialog.open}
+        onClose={handleTransferDialogClose}
+        transferRequest={transferDialog.transferRequest}
+        onConfirm={handleTransferConfirm}
+        loading={transferLoading}
+        collectionName={collectionName}
+      />
     </Box>
   );
 };
