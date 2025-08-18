@@ -169,7 +169,7 @@ const ClusterMonitor = ({ collectionName }) => {
     setTransferLoading(true);
     
     try {
-      const result = await qdrantClient.updateCollectionCluster(collectionName, {
+      await qdrantClient.updateCollectionCluster(collectionName, {
         move_shard: {
           shard_id: transferRequest.shard.shard_id,
           to_peer_id: transferRequest.toPeerId,
@@ -177,8 +177,7 @@ const ClusterMonitor = ({ collectionName }) => {
         },
       });
       
-      console.log('Move shard result:', result);
-      enqueueSnackbar('Shard transfer initiated successfully', getSnackbarOptions('success', closeSnackbar));
+      enqueueSnackbar('Shard transfer initiated successfully', getSnackbarOptions('success', closeSnackbar, 2000));
       
       // Close dialog and refresh cluster info
       setTransferDialog({ open: false, transferRequest: null });
@@ -344,7 +343,7 @@ const ClusterMonitor = ({ collectionName }) => {
         sx={{
           width: 'auto',
           height: 'fit-content',
-          paddingBottom: '1.5rem',
+          padding: '0.5rem 0.5rem 1.5rem 0.5rem',
           overflowX: 'auto',
           gridArea: '2 / 2 / 6 / 10',
           '& svg': {

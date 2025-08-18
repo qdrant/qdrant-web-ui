@@ -1,7 +1,7 @@
 import { lighten, styled, alpha } from '@mui/material/styles';
 import { CLUSTER_COLORS, CLUSTER_STYLES } from '../constants';
 
-export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, sx }) => {
+export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, isTransferring, sx }) => {
   let color;
   switch (state) {
     case 'active':
@@ -29,9 +29,9 @@ export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, 
     case 'awaiting':
       dragAndDropStyles.border = CLUSTER_STYLES.dragAndDrop.awaiting.border;
       dragAndDropStyles.backgroundColor = alpha(color, 0.8);
-      dragAndDropStyles.cursor = 'copy';
+      dragAndDropStyles.cursor = state === 'empty' ? 'copy' : 'default';
       dragAndDropStyles['&:hover'] = {
-        transform: 'scale(1.06)',
+        transform: 'scale(1.02)',
         backgroundColor: alpha(CLUSTER_COLORS.active, 0.7),
       };
 
@@ -54,15 +54,13 @@ export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, 
     padding: '4px 2px',
     transition: 'all 0.2s ease-in-out',
     userSelect: 'none',
-    cursor: state === 'active' ? 'grab' : 'default',
+    cursor: state === 'active' && !isTransferring ? 'grab' : 'default',
+    zIndex: 1,
     '& .MuiTypography-root': {
       color: lighten(color, 0.8),
       position: 'relative',
       margin: '0 auto',
-      zIndex: 1,
-    },
-    '&:hover': {
-      transform: dragAndDropState === 'grabbed' ? 'scale(1.05)' : 'scale(1.02)',
+      zIndex: 2,
     },
     ...dragAndDropStyles,
     ...sx,

@@ -76,7 +76,7 @@ const Slot = ({
 
   // Handle mouse down for grabbing
   const handleMouseDown = (e) => {
-    if (shard && !dragAndDropState) {
+    if (shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer) {
       onSlotGrab(e, currentPeerId, id, shard);
     }
   };
@@ -85,20 +85,6 @@ const Slot = ({
   const handleMouseUp = () => {
     if (dragAndDropState === 'awaiting' && !shard) {
       onSlotDrop(currentPeerId, id);
-    }
-  };
-
-  // Handle mouse enter for drop zone highlighting
-  const handleMouseEnter = (e) => {
-    if (dragAndDropState === 'awaiting') {
-      e.target.style.cursor = 'copy';
-    }
-  };
-
-  // Handle mouse leave for drop zone highlighting
-  const handleMouseLeave = (e) => {
-    if (dragAndDropState === 'awaiting') {
-      e.target.style.cursor = 'default';
     }
   };
 
@@ -137,6 +123,26 @@ const Slot = ({
                     <TooltipRow label="Shard State" value={shard.state} />
                   </>
                 )}
+                {shard.state === 'Active' && !transfer?.transfer && (
+                  <>
+                    <br />
+                    <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
+                      Drag to an empty slot to transfer
+                    </Typography>
+                  </>
+                )}
+                {transfer?.transfer && (
+                  <>
+                    <br />
+                    <Typography variant="caption" sx={{ color: '#ff9800', fontWeight: 'bold' }}>
+                      Transferring to peer {transfer.transfer.to}
+                    </Typography>
+                    <br />
+                    <Typography variant="caption" sx={{ color: '#f44336', fontStyle: 'italic' }}>
+                      Cannot be dragged during transfer
+                    </Typography>
+                  </>
+                )}
               </>
             ) : dragAndDropState === 'awaiting' ? (
               <>
@@ -164,12 +170,11 @@ const Slot = ({
           <StyledShardSlot
             state={shard ? shard.state.toLowerCase() : 'empty'}
             dragAndDropState={dragAndDropState}
+            isTransferring={!!transfer?.transfer}
             onMouseDown={handleMouseDown}
             onMouseUp={handleMouseUp}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
             onDragEnd={handleDragEnd}
-            draggable={shard && !dragAndDropState}
+            draggable={shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer}
             data-cluster-slot="true"
           >
             {shard && (
