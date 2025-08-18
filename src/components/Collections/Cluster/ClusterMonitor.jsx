@@ -167,7 +167,7 @@ const ClusterMonitor = ({ collectionName }) => {
 
   const handleTransferConfirm = async (transferRequest) => {
     setTransferLoading(true);
-    
+
     try {
       await qdrantClient.updateCollectionCluster(collectionName, {
         move_shard: {
@@ -176,12 +176,12 @@ const ClusterMonitor = ({ collectionName }) => {
           from_peer_id: transferRequest.fromPeerId,
         },
       });
-      
+
       enqueueSnackbar('Shard transfer initiated successfully', getSnackbarOptions('success', closeSnackbar, 2000));
-      
+
       // Close dialog and refresh cluster info
       setTransferDialog({ open: false, transferRequest: null });
-      
+
       // Refresh cluster info to show updated state
       const fetchClusterInfo = async () => {
         try {
@@ -212,9 +212,8 @@ const ClusterMonitor = ({ collectionName }) => {
           console.error('Error refreshing cluster info:', err);
         }
       };
-      
+
       fetchClusterInfo();
-      
     } catch (err) {
       console.error('Error moving shard:', err);
       enqueueSnackbar(`Failed to transfer shard: ${err.message}`, getSnackbarOptions('error', closeSnackbar));

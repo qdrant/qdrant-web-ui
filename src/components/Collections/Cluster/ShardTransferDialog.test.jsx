@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation((query) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -57,7 +57,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.queryByText('Transfer Shard')).not.toBeInTheDocument();
   });
 
@@ -71,7 +71,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('Transfer Shard')).toBeInTheDocument();
   });
 
@@ -85,11 +85,11 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     // Check shard details section specifically
     const shardDetailsSection = screen.getByText('Shard Details').closest('div');
     expect(shardDetailsSection).toBeInTheDocument();
-    
+
     // Check that the shard details are displayed in the grid
     expect(shardDetailsSection).toHaveTextContent('ID:');
     expect(shardDetailsSection).toHaveTextContent('1'); // shard_id
@@ -113,7 +113,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText(/This action will move shard 1 from peer 100 to peer 200/)).toBeInTheDocument();
     expect(screen.getByText(/Shard key: test-key/)).toBeInTheDocument();
   });
@@ -128,7 +128,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('Request')).toBeInTheDocument();
     expect(screen.getByTestId('copy-button')).toBeInTheDocument();
     expect(screen.getByTestId('copy-button')).toHaveAttribute('title', 'Copy request to clipboard');
@@ -144,7 +144,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('POST collections/test-collection/cluster')).toBeInTheDocument();
   });
 
@@ -158,7 +158,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('Shard Details')).toBeInTheDocument();
     expect(screen.getByText('ID:')).toBeInTheDocument();
     expect(screen.getByText('State:')).toBeInTheDocument();
@@ -175,7 +175,7 @@ describe('ShardTransferDialog', () => {
         shard_key: undefined,
       },
     };
-    
+
     renderWithTheme(
       <ShardTransferDialog
         open={true}
@@ -185,7 +185,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText(/This action will move shard 1 from peer 100 to peer 200/)).toBeInTheDocument();
     expect(screen.queryByText(/Shard key:/)).not.toBeInTheDocument();
     expect(screen.queryByText('Key:')).not.toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('ShardTransferDialog', () => {
 
   it('should call onClose when cancel button is clicked', () => {
     const mockOnClose = vi.fn();
-    
+
     renderWithTheme(
       <ShardTransferDialog
         open={true}
@@ -203,16 +203,16 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
-    
+
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
   it('should call onConfirm when confirm button is clicked', () => {
     const mockOnConfirm = vi.fn();
-    
+
     renderWithTheme(
       <ShardTransferDialog
         open={true}
@@ -222,10 +222,10 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     const confirmButton = screen.getByText('Confirm Transfer');
     fireEvent.click(confirmButton);
-    
+
     expect(mockOnConfirm).toHaveBeenCalledTimes(1);
     expect(mockOnConfirm).toHaveBeenCalledWith(mockTransferRequest);
   });
@@ -241,10 +241,10 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     const cancelButton = screen.getByText('Cancel');
     const confirmButton = screen.getByText('Transferring...');
-    
+
     expect(cancelButton).toBeDisabled();
     expect(confirmButton).toBeDisabled();
   });
@@ -260,7 +260,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('Transferring...')).toBeInTheDocument();
   });
 
@@ -272,7 +272,7 @@ describe('ShardTransferDialog', () => {
         state: 'Inactive',
       },
     };
-    
+
     renderWithTheme(
       <ShardTransferDialog
         open={true}
@@ -282,7 +282,7 @@ describe('ShardTransferDialog', () => {
         collectionName={mockCollectionName}
       />
     );
-    
+
     expect(screen.getByText('Inactive')).toBeInTheDocument();
   });
 });
