@@ -146,12 +146,6 @@ const ClusterMonitor = ({ collectionName }) => {
       return;
     }
 
-    console.log('Moving slot:', {
-      from: { peerId: sourcePeerId, slotId: sourceSlotId },
-      to: { peerId: targetPeerId, slotId: targetSlotId },
-      shard: dragState.draggedSlot.shard,
-    });
-
     // Open confirmation dialog instead of direct API call
     setTransferDialog({
       open: true,
