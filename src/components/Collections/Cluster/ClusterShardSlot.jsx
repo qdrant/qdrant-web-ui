@@ -126,7 +126,7 @@ const Slot = ({
                 {shard.state === 'Active' && !transfer?.transfer && (
                   <>
                     <br />
-                    <Typography variant="caption" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 'bold' }}>
                       Drag to an empty slot to transfer
                     </Typography>
                   </>
@@ -134,11 +134,11 @@ const Slot = ({
                 {transfer?.transfer && (
                   <>
                     <br />
-                    <Typography variant="caption" sx={{ color: '#ff9800', fontWeight: 'bold' }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.warning.main, fontWeight: 'bold' }}>
                       Transferring to peer {transfer.transfer.to}
                     </Typography>
                     <br />
-                    <Typography variant="caption" sx={{ color: '#f44336', fontStyle: 'italic' }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.error.main, fontStyle: 'italic' }}>
                       Cannot be dragged during transfer
                     </Typography>
                   </>
@@ -160,9 +160,7 @@ const Slot = ({
                 <br />
                 <TooltipRow label="Slot Id" value={id} />
                 <br />
-                <Typography variant="caption" sx={{ color: '#ccc' }}>
-                  Empty slot
-                </Typography>
+                <Typography variant="caption">Empty slot</Typography>
               </>
             )
           }
