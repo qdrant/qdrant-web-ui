@@ -12,7 +12,7 @@
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@mui/x-data-grid": "^7.29.1",
-    "@qdrant/js-client-rest": "^1.14.1",
+    "@qdrant/js-client-rest": "^1.15.1",
     "@saehrimnir/druidjs": "^0.6.3",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",

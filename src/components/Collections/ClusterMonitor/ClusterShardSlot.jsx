@@ -17,7 +17,31 @@ TooltipRow.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
 
-const Slot = ({ id, currentPeerId, shard, transfer, peersNumber }) => {
+/**
+ * Legend component to explain the status of shards in the cluster.
+ * @param {number} id - The id of the slot.
+ * @param {number} currentPeerId - The id of the current peer.
+ * @param {object} shard - The shard object.
+ * @param {object} transfer - The transfer object.
+ * @param {number} peersNumber - The number of peers.
+ * @param {string} dragAndDropState - The current drag and drop state.
+ * @param {function} onSlotGrab - Function called when slot is grabbed.
+ * @param {function} onSlotDrop - Function called when slot is dropped.
+ * @param {function} onDragCancel - Function called when drag is cancelled.
+ * @return {React.JSX.Element}
+ * @constructor
+ */
+const Slot = ({
+  id,
+  currentPeerId,
+  shard,
+  transfer,
+  peersNumber,
+  dragAndDropState,
+  onSlotGrab,
+  onSlotDrop,
+  onDragCancel,
+}) => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -50,6 +74,27 @@ const Slot = ({ id, currentPeerId, shard, transfer, peersNumber }) => {
     });
   }
 
+  // Handle mouse down for grabbing
+  const handleMouseDown = (e) => {
+    if (shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer) {
+      onSlotGrab(e, currentPeerId, id, shard);
+    }
+  };
+
+  // Handle mouse up for dropping
+  const handleMouseUp = () => {
+    if (dragAndDropState === 'awaiting' && !shard) {
+      onSlotDrop(currentPeerId, id);
+    }
+  };
+
+  // Handle drag end to cancel if dropped outside valid zones
+  const handleDragEnd = () => {
+    if (dragAndDropState === 'grabbed') {
+      onDragCancel();
+    }
+  };
+
   return (
     <ArcherElement id={`${currentPeerId}-${id}`} relations={relations}>
       <div style={{ position: 'static' }}>
@@ -57,7 +102,7 @@ const Slot = ({ id, currentPeerId, shard, transfer, peersNumber }) => {
           arrow
           placement="top"
           title={
-            shard && (
+            shard ? (
               <>
                 <TooltipRow label="Peer Id" value={currentPeerId} />
                 {'shard_id' in shard && (
@@ -78,11 +123,58 @@ const Slot = ({ id, currentPeerId, shard, transfer, peersNumber }) => {
                     <TooltipRow label="Shard State" value={shard.state} />
                   </>
                 )}
+                {shard.state === 'Active' && !transfer?.transfer && (
+                  <>
+                    <br />
+                    <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 'bold' }}>
+                      Drag to an empty slot to transfer
+                    </Typography>
+                  </>
+                )}
+                {transfer?.transfer && (
+                  <>
+                    <br />
+                    <Typography variant="caption" sx={{ color: theme.palette.warning.main, fontWeight: 'bold' }}>
+                      Transferring to peer {transfer.transfer.to}
+                    </Typography>
+                    <br />
+                    <Typography variant="caption" sx={{ color: theme.palette.error.main, fontStyle: 'italic' }}>
+                      Cannot be dragged during transfer
+                    </Typography>
+                  </>
+                )}
+              </>
+            ) : dragAndDropState === 'awaiting' ? (
+              <>
+                <TooltipRow label="Peer Id" value={currentPeerId} />
+                <br />
+                <TooltipRow label="Slot Id" value={id} />
+                <br />
+                <Typography variant="caption" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                  Drop here to move shard
+                </Typography>
+              </>
+            ) : (
+              <>
+                <TooltipRow label="Peer Id" value={currentPeerId} />
+                <br />
+                <TooltipRow label="Slot Id" value={id} />
+                <br />
+                <Typography variant="caption">Empty slot</Typography>
               </>
             )
           }
         >
-          <StyledShardSlot state={shard ? shard.state.toLowerCase() : 'empty'}>
+          <StyledShardSlot
+            state={shard ? shard.state.toLowerCase() : 'empty'}
+            dragAndDropState={dragAndDropState}
+            isTransferring={!!transfer?.transfer}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onDragEnd={handleDragEnd}
+            draggable={shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer}
+            data-cluster-slot="true"
+          >
             {shard && (
               <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
                 {`${!matches && peersNumber <= 12 ? 'Shard' : ''} ${shard.shard_id}`}
@@ -124,6 +216,10 @@ Slot.propTypes = {
     }),
   }),
   peersNumber: PropTypes.number,
+  dragAndDropState: PropTypes.oneOf(['grabbed', 'awaiting', null]),
+  onSlotGrab: PropTypes.func.isRequired,
+  onSlotDrop: PropTypes.func.isRequired,
+  onDragCancel: PropTypes.func.isRequired,
 };
 
 export default Slot;
