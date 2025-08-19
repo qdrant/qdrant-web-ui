@@ -8,7 +8,7 @@ import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
 import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
 import { useClient } from '../context/client-context';
-import ClusterMonitor from '../components/Collections/Cluster/ClusterMonitor';
+import ClusterMonitor from '../components/Collections/ClusterMonitor/ClusterMonitor';
 
 function Collection() {
   const { collectionName } = useParams();
