@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { IconButton, Tooltip } from '@mui/material';
-import { CopyAll } from '@mui/icons-material';
+import { ContentCopy } from '@mui/icons-material';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from './utils/snackbarOptions';
 
@@ -30,7 +30,7 @@ export const CopyButton = ({
             });
         }}
       >
-        <CopyAll />
+        <ContentCopy />
       </IconButton>
     </Tooltip>
   );

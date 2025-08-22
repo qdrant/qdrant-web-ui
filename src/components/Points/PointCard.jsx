@@ -3,22 +3,23 @@ import PropTypes from 'prop-types';
 import { Card, CardContent, Grid, CardHeader, LinearProgress, Box } from '@mui/material';
 
 import PointImage from './PointImage';
-import { alpha } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+// import { useTheme } from '@mui/material/styles';
 import Edit from '@mui/icons-material/Edit';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Vectors from './PointVectors';
 import { PayloadEditor } from './PayloadEditor';
-import { DataGridList } from './DataGridList';
+// import { DataGridList } from './DataGridList';
 import { CopyButton } from '../Common/CopyButton';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { DeleteOutline } from '@mui/icons-material';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import { bigIntJSON } from '../../common/bigIntJSON';
+import { Divider } from '@mui/material';
+import JsonViewerCustom from '../Common/JsonViewerCustom';
 
 const PointCard = (props) => {
-  const theme = useTheme();
-  const { onConditionChange, conditions } = props;
+  // const theme = useTheme();
+  const { onConditionChange /* , conditions */ } = props;
   const [point, setPoint] = React.useState(props.point);
   const [openPayloadEditor, setOpenPayloadEditor] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -65,6 +66,7 @@ const PointCard = (props) => {
         )}
         <CardHeader
           title={'Point ' + point.id}
+          variant="heading"
           action={
             <>
               {Object.keys(point.payload).length === 0 && (
@@ -86,7 +88,7 @@ const PointCard = (props) => {
                     setOpenDeleteDialog(true);
                   }}
                 >
-                  <DeleteIcon color={'error'} />
+                  <DeleteOutline />
                 </IconButton>
               </Tooltip>
             </>
@@ -94,35 +96,15 @@ const PointCard = (props) => {
         />
         {Object.keys(point.payload).length > 0 && (
           <>
-            <CardHeader
-              subheader={'Payload:'}
-              sx={{
-                flexGrow: 1,
-                background: alpha(theme.palette.primary.main, 0.05),
-              }}
-              action={
-                <>
-                  <Tooltip title="Edit Payload" placement="left">
-                    <IconButton aria-label="edit point payload" onClick={() => setOpenPayloadEditor(true)}>
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <CopyButton
-                    text={bigIntJSON.stringify(point.payload)}
-                    tooltip={'Copy payload to clipboard'}
-                    successMessage={'Payload JSON copied to clipboard.'}
-                  />
-                </>
-              }
-            />
             <CardContent>
               <Grid container display={'flex'}>
                 <Grid my={1} size="grow">
-                  <DataGridList
-                    data={point.payload}
-                    onConditionChange={onConditionChange}
-                    conditions={conditions}
-                    payloadSchema={props.payloadSchema}
+                  <JsonViewerCustom
+                    value={point.payload}
+                    displayDataTypes={false}
+                    lineNumbers={true}
+                    defaultInspectDepth={2}
+                    rootName={false}
                   />
                 </Grid>
                 {point.payload && <PointImage data={point.payload} sx={{ ml: 2 }} />}
@@ -130,13 +112,7 @@ const PointCard = (props) => {
             </CardContent>
           </>
         )}
-        <CardHeader
-          subheader={'Vectors:'}
-          sx={{
-            flexGrow: 1,
-            background: alpha(theme.palette.primary.main, 0.05),
-          }}
-        />
+        <Divider />
         <CardContent>{point?.vector && <Vectors point={point} onConditionChange={onConditionChange} />}</CardContent>
       </Card>
       <PayloadEditor
