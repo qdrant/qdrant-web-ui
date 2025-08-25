@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardMedia, Grid, Modal, Typography } from '@mui/material';
+import { Box, CardMedia, Modal, Typography } from '@mui/material';
 
-function PointImage({ data, sx, xs = 3 }) {
+function PointImage({ data, sx }) {
   const [fullScreenImg, setFullScreenImg] = useState(null);
   const renderImages = () => {
     const images = [];
@@ -27,13 +27,13 @@ function PointImage({ data, sx, xs = 3 }) {
         if (isImgUrl(data[key])) {
           images.push(
             <Box
-                key={key}
-                 sx={{
-                  py: 1,
-                  px: 0.5,
-                  ml: 5,
-                 }}
-                 >
+              key={key}
+              sx={{
+                py: 1,
+                px: 0.5,
+                ml: 5,
+              }}
+            >
               <CardMedia
                 component="img"
                 sx={{
@@ -65,12 +65,12 @@ function PointImage({ data, sx, xs = 3 }) {
   }
 
   return (
-    <Grid display="grid" justifyContent={'center'} size={xs}>
+    <Box>
       {images}
       <Modal
         open={!!fullScreenImg}
         onClose={() => setFullScreenImg(null)}
-        componentsProps={{
+        slotProps={{
           backdrop: {
             sx: { cursor: 'pointer' },
             title: 'Click to close',
@@ -115,7 +115,7 @@ function PointImage({ data, sx, xs = 3 }) {
           />
         </Box>
       </Modal>
-    </Grid>
+    </Box>
   );
 }
 PointImage.propTypes = {
