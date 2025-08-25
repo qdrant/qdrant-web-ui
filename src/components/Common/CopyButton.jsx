@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { IconButton, Tooltip } from '@mui/material';
-import { ContentCopy } from '@mui/icons-material';
+import { Copy } from 'lucide-react';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from './utils/snackbarOptions';
 
@@ -10,6 +10,7 @@ export const CopyButton = ({
   tooltip = 'Copy to clipboard',
   tooltipPlacement = 'left',
   successMessage = 'Copied to clipboard',
+  size = '1.25rem',
 }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
@@ -30,7 +31,7 @@ export const CopyButton = ({
             });
         }}
       >
-        <ContentCopy />
+        <Copy size={size} />
       </IconButton>
     </Tooltip>
   );
@@ -41,4 +42,5 @@ CopyButton.propTypes = {
   tooltip: PropTypes.string,
   tooltipPlacement: PropTypes.string,
   successMessage: PropTypes.string,
+  size: PropTypes.string,
 };
