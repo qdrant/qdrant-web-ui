@@ -69,16 +69,16 @@ const themeOptions = {
       styleOverrides: {
         root: ({ theme, ownerState }) => {
           if (ownerState?.variant === 'heading') {
-          return {
-            padding: '0.5rem 1rem',
-            // child typography with variant="body2"
-            '& .MuiTypography-body2': {
-              color: theme.palette.text.secondary,
-              fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
-              fontFamily: 'Mona Sans, sans-serif',
-              fontSize: '0.875rem',
-              fontStyle: 'normal',
-              fontWeight: 400,
+            return {
+              padding: '0.5rem 1rem',
+              // child typography with variant="body2"
+              '& .MuiTypography-body2': {
+                color: theme.palette.text.secondary,
+                fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+                fontFamily: 'Mona Sans, sans-serif',
+                fontSize: '0.875rem',
+                fontStyle: 'normal',
+                fontWeight: 400,
                 lineHeight: '150%',
               },
             };
