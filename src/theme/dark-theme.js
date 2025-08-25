@@ -104,7 +104,6 @@ export const darkThemeOptions = {
       paperElevation22: '#2b303eff',
       paperElevation23: '#2b303eff',
       paperElevation24: '#2b303eff',
-
     },
     elevationOutlined: '#ffffff1f',
     avatarFill: grey[600],

@@ -14,10 +14,10 @@ const StyledButton = styled(Button)({
   justifyContent: 'center',
   alignItems: 'center',
   // color: var(--primary-main, #9494FF);
-// font-feature-settings: 'ss01' on, 'ss05' on, 'ss06' on;
+  // font-feature-settings: 'ss01' on, 'ss05' on, 'ss06' on;
 
-// /* button/small */
-// font-family: var(--fontFamily, "Mona Sans");
+  // /* button/small */
+  // font-family: var(--fontFamily, "Mona Sans");
   fontSize: '13px',
   fontStyle: 'normal',
   fontWeight: 500,

@@ -11,7 +11,6 @@ import { X } from 'lucide-react';
 function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVector }) {
   // const [errorMessage, setErrorMessage] = useState(null);
   console.log(vectors);
-  
 
   // const handleAddChip = (chip) => {
   //   setErrorMessage(null);
@@ -90,30 +89,30 @@ function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVecto
 
   return (
     conditions?.length > 0 && (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-        <Typography variant="h6">Similar:</Typography>
-        {/* {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />} */}
-        {conditions.map((condition) => (
-          <Chip
-            color="primary"
-            size="medium"
-            key={condition.key + '_' + condition.value}
-            label={getChipValue(condition)}
-            onDelete={() => handleDeleteChip(condition)}
-          />
-        ))}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Typography variant="h6">Similar:</Typography>
+          {/* {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />} */}
+          {conditions.map((condition) => (
+            <Chip
+              color="primary"
+              size="medium"
+              key={condition.key + '_' + condition.value}
+              label={getChipValue(condition)}
+              onDelete={() => handleDeleteChip(condition)}
+            />
+          ))}
+        </Box>
+        {/* todo: sizes etc. from Figma */}
+        <Button
+          variant="text"
+          onClick={handleDeleteAllChips}
+          sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}
+        >
+          <X />
+          Clear All
+        </Button>
       </Box>
-      {/* todo: sizes etc. from Figma */}
-      <Button
-      variant='text' 
-      onClick={handleDeleteAllChips}
-      sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}
-      >
-        <X />
-        Clear All
-      </Button>
-    </Box>
     )
 
     //   <Card sx={{ p: 2 }} variant="dual">
