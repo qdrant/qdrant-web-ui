@@ -10,7 +10,8 @@ export const CopyButton = ({
   tooltip = 'Copy to clipboard',
   tooltipPlacement = 'left',
   successMessage = 'Copied to clipboard',
-  size = '1.25rem',
+  size,
+  iconButtonProps,
 }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
@@ -19,6 +20,9 @@ export const CopyButton = ({
   return (
     <Tooltip title={tooltip} placement={tooltipPlacement}>
       <IconButton
+        sx={{
+          color: 'text.primary',
+        }}
         aria-label={tooltip}
         onClick={() => {
           navigator.clipboard
@@ -30,8 +34,9 @@ export const CopyButton = ({
               enqueueSnackbar(err.message, errorSnackbarOptions);
             });
         }}
+        {...iconButtonProps}
       >
-        <Copy size={size} />
+        <Copy size={size || '1.25rem'} />
       </IconButton>
     </Tooltip>
   );
@@ -43,4 +48,5 @@ CopyButton.propTypes = {
   tooltipPlacement: PropTypes.string,
   successMessage: PropTypes.string,
   size: PropTypes.string,
+  iconButtonProps: PropTypes.object,
 };
