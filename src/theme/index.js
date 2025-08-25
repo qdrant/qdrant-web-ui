@@ -3,16 +3,6 @@ import { darkThemeOptions } from './dark-theme';
 import { lightThemeOptions } from './light-theme';
 import { alpha } from '@mui/material';
 
-const getVariant = ({ theme, ownerState }) => {
-  if (ownerState?.variant === 'heading') {
-    return {
-      padding: '1rem',
-      backgroundColor: theme.palette.action.hover,
-      // borderRadius: '8px',
-    };
-  }
-};
-
 // order of applying theme options:
 // config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions
 // this file `themeOptions`
@@ -27,6 +17,18 @@ const themeOptions = {
           if (ownerState?.variant === 'heading') {
             return {
               backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              padding: '0.625rem 1rem',
+              alignItems: 'center',
+              '& .MuiCardHeader-title': {
+                fontFamily: 'Mona Sans, sans-serif',
+                fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+                fontSize: '1.25rem',
+                fontStyle: 'normal',
+                fontWeight: 500,
+                lineHeight: 1,
+                letterSpacing: '-0.03125rem',
+                marginBottom: '-0.25rem',
+              },
             };
           }
         },
@@ -52,10 +54,35 @@ const themeOptions = {
           };
 
           // add getVariant styles
-          Object.assign(styles, getVariant({ theme, ownerState }));
+          // Object.assign(styles, getVariant({ theme, ownerState }));
 
+          if (ownerState?.variant === 'heading') {
+            styles.padding = '1rem 1.25rem';
+            styles.backgroundColor = theme.palette.action.hover;
+          }
 
           return styles;
+        },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: ({ theme, ownerState }) => {
+          if (ownerState?.variant === 'heading') {
+          return {
+            padding: '0.5rem 1rem',
+            // child typography with variant="body2"
+            '& .MuiTypography-body2': {
+              color: theme.palette.text.secondary,
+              fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+              fontFamily: 'Mona Sans, sans-serif',
+              fontSize: '0.875rem',
+              fontStyle: 'normal',
+              fontWeight: 400,
+                lineHeight: '150%',
+              },
+            };
+          }
         },
       },
     },

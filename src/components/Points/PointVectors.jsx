@@ -4,6 +4,26 @@ import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CopyButton } from '../Common/CopyButton';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useNavigate, useParams } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+
+const StyledButton = styled(Button)({
+  display: 'flex',
+  height: '28px',
+  padding: '4px 10px',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  // color: var(--primary-main, #9494FF);
+// font-feature-settings: 'ss01' on, 'ss05' on, 'ss06' on;
+
+// /* button/small */
+// font-family: var(--fontFamily, "Mona Sans");
+  fontSize: '13px',
+  fontStyle: 'normal',
+  fontWeight: 500,
+  textTransform: 'capitalize',
+  // lineHeight: '150%',
+});
 
 /**
  * Component for displaying vectors of a point
@@ -33,36 +53,35 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
   };
 
   return (
-    <Box pt={2}>
+    <Box>
       Vectors:
       {Object.keys(vectors).map((key) => {
         return (
-          <Grid key={key} container spacing={2}>
-            <Grid my={1} size={4}>
+          <Grid key={key} container spacing={2} alignItems={'center'}>
+            <Grid size={4} display={'flex'} alignItems={'center'}>
               {key === '' ? (
-                <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
+                <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
                   Default vector
                 </Typography>
               ) : (
                 <>
-                  <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
+                  <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
                     Name:
                   </Typography>
                   <Chip label={key} size="small" variant="outlined" sx={{ mr: 1 }} />
                 </>
               )}
-              <CopyButton
-                text={bigIntJSON.stringify(vectors[key])}
-                tooltip={'Copy vector to clipboard'}
-                tooltipPlacement={'right'}
-                successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
-              />
             </Grid>
             <Grid my={1} size={4}>
-              <Typography variant="subtitle1" color="text.secondary" display={'inline'} mr={1}>
+              <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
                 Length:
               </Typography>
               <Chip
+                sx={{
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  fontSize: '13px',
+                }}
                 label={
                   Array.isArray(vectors[key])
                     ? Array.isArray(vectors[key][0])
@@ -82,12 +101,21 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 gap: 2,
               }}
               size={4}
+              display={'flex'}
+              alignItems={'center'}
             >
-              <Button variant="outlined" size="small" onClick={() => handleNavigate(key)}>
+              <CopyButton
+                text={bigIntJSON.stringify(vectors[key])}
+                tooltip={'Copy vector to clipboard'}
+                tooltipPlacement={'right'}
+                successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
+              />
+              Copy
+              <StyledButton variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
-              </Button>
+              </StyledButton>
               {typeof onConditionChange !== 'function' ? null : (
-                <Button
+                <StyledButton
                   variant="outlined"
                   size="small"
                   onClick={() =>
@@ -95,7 +123,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                   }
                 >
                   Find Similar
-                </Button>
+                </StyledButton>
               )}
             </Grid>
           </Grid>
