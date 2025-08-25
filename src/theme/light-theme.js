@@ -1,4 +1,4 @@
-import { alpha } from '@mui/material';
+// import { alpha } from '@mui/material';
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
 
 const getVariant = ({ theme, ownerState }) => {
@@ -12,11 +12,11 @@ const getVariant = ({ theme, ownerState }) => {
       border: `1px solid ${theme.palette.divider}`,
     };
   }
-  if (ownerState?.variant === 'heading') {
-    return {
-      backgroundColor: alpha(theme.palette.primary.main, 0.05),
-    };
-  }
+  // if (ownerState?.variant === 'heading') {
+  //   return {
+  //     backgroundColor: alpha(theme.palette.primary.main, 0.05),
+  //   };
+  // }
 };
 
 // these options override the base light theme
