@@ -26,21 +26,30 @@ function PointImage({ data, sx, xs = 3 }) {
         // Check if the value is an image URL
         if (isImgUrl(data[key])) {
           images.push(
-            <CardMedia
-              component="img"
-              sx={{
-                width: 150,
-                margin: 'auto',
-                wordWrap: 'break-word',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                ...sx,
-              }}
-              key={key}
-              image={data[key]}
-              alt={data[key]}
-              onClick={() => setFullScreenImg(data[key])}
-            />
+            <Box
+                key={key}
+                 sx={{
+                  py: 1,
+                  px: 0.5,
+                  ml: 5,
+                 }}
+                 >
+              <CardMedia
+                component="img"
+                sx={{
+                  width: '120px',
+                  height: '120px',
+                  aspectRatio: '1/1',
+                  wordWrap: 'break-word',
+                  border: '1px solid #ccc',
+                  borderRadius: '5px',
+                  ...sx,
+                }}
+                image={data[key]}
+                alt={data[key]}
+                onClick={() => setFullScreenImg(data[key])}
+              />
+            </Box>
           );
         }
       }
