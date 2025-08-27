@@ -13,6 +13,7 @@ export const getEditorTheme = (theme) => {
       ],
       colors: {
         'editor.foreground': '#FFFFFF',
+        'editor.background': theme.palette.background.code,
       },
     };
   } else {
@@ -29,6 +30,7 @@ export const getEditorTheme = (theme) => {
       ],
       colors: {
         'editor.foreground': '#000000',
+        'editor.background': theme.palette.background.code,
       },
     };
   }
