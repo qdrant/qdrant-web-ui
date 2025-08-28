@@ -8,9 +8,8 @@ import { Typography, Box, Chip, Button } from '@mui/material';
 // import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import { X } from 'lucide-react';
 
-function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVector }) {
+function SimilarSerachfield({ conditions, onConditionChange, /* vectors, */ usingVector }) {
   // const [errorMessage, setErrorMessage] = useState(null);
-  console.log(vectors);
 
   // const handleAddChip = (chip) => {
   //   setErrorMessage(null);
@@ -89,9 +88,9 @@ function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVecto
 
   return (
     conditions?.length > 0 && (
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Typography variant="h6">Similar:</Typography>
+          <Typography variant="subtitle2">Similar:</Typography>
           {/* {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />} */}
           {conditions.map((condition) => (
             <Chip
@@ -107,9 +106,21 @@ function SimilarSerachfield({ conditions, onConditionChange, vectors, usingVecto
         <Button
           variant="text"
           onClick={handleDeleteAllChips}
-          sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 1, textTransform: 'capitalize' }}
+          sx={{
+            color: 'text.primary',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            textTransform: 'capitalize',
+
+            fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on",
+            fontSize: '13px',
+            fontStyle: 'normal',
+            fontWeight: 500,
+            lineHeight: 1.5,
+          }}
         >
-          <X />
+          <X size={18}/>
           Clear All
         </Button>
       </Box>
