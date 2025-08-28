@@ -56,7 +56,7 @@ const PointCard = (props) => {
             fontStyle: 'normal',
             fontWeight: 500,
             lineHeight: 1.5,
-          },
+          }
         }}
         role="listitem"
       >
@@ -128,7 +128,9 @@ const PointCard = (props) => {
                     displayDataTypes={false}
                     lineNumbers={true}
                     defaultInspectDepth={2}
+                    displayObjectSize={false}
                     rootName={false}
+                    enableClipboard={false}
                   />
                 </Box>
                 {point.payload && <PointImage data={point.payload} />}

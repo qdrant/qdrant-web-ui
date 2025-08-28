@@ -145,6 +145,7 @@ const PointsTabs = ({ collectionName, client }) => {
   return (
     <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
+      {conditions && Object.keys(conditions).length > 0 && (
       <Grid size={12}>
         <SimilarSerachfield
           conditions={conditions}
@@ -153,6 +154,7 @@ const PointsTabs = ({ collectionName, client }) => {
           usingVector={usingVector}
         />
       </Grid>
+      )}
       {errorMessage && (
         <Grid textAlign={'center'} size={12}>
           <Typography>⚠ Error: {errorMessage}</Typography>

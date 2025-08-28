@@ -86,6 +86,31 @@ const themeOptions = {
         },
       },
     },
+    // tabs overwrite
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          color: 'text.secondary',
+          fontFeatureSettings: "'ss01' on, 'ss05' on",
+          fontSize: '0.875rem',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: 1.4,
+          textTransform: 'capitalize',
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        subtitle2: {
+          fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+          fontSize: '0.875rem',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: '150%',
+        },
+      },
+    },
   },
 };
 
