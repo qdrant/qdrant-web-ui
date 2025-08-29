@@ -1,4 +1,3 @@
-// import { alpha } from '@mui/material';
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
 
 const getVariant = ({ theme, ownerState }) => {
@@ -11,11 +10,6 @@ const getVariant = ({ theme, ownerState }) => {
       backgroundColor: theme.palette.background.paper,
     };
   }
-  // if (ownerState?.variant === 'heading') {
-  //   return {
-  //     backgroundColor: alpha(theme.palette.primary.main, 0.05),
-  //   };
-  // }
 };
 
 // these options override the base dark theme
@@ -144,14 +138,18 @@ export const darkThemeOptions = {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Card component
-        root: getVariant,
+        root: ({ theme, ownerState }) => {
+          return getVariant({ theme, ownerState });
+        },
       },
     },
     MuiPaper: {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Paper component
-        root: getVariant,
+        root: ({ theme, ownerState }) => {
+          return getVariant({ theme, ownerState });
+        },
       },
     },
     MuiCreateCollectionForm: {

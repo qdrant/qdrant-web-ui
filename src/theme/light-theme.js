@@ -1,7 +1,7 @@
-// import { alpha } from '@mui/material';
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
 
 const getVariant = ({ theme, ownerState }) => {
+  console.log(ownerState.variant);
   // this adds variant="dual" support to the Card component
   // dual cards have a white background and a 1px border around them
   // in the light theme (alike variant="outlined" cards)
@@ -12,11 +12,6 @@ const getVariant = ({ theme, ownerState }) => {
       border: `1px solid ${theme.palette.divider}`,
     };
   }
-  // if (ownerState?.variant === 'heading') {
-  //   return {
-  //     backgroundColor: alpha(theme.palette.primary.main, 0.05),
-  //   };
-  // }
 };
 
 // these options override the base light theme
@@ -144,14 +139,18 @@ export const lightThemeOptions = {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Card component
-        root: getVariant,
+        root: ({ theme, ownerState }) => {
+          return getVariant({ theme, ownerState });
+        },
       },
     },
     MuiPaper: {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Paper component
-        root: getVariant,
+        root: ({ theme, ownerState }) => {
+          return getVariant({ theme, ownerState });
+        },
       },
     },
     MuiCreateCollectionForm: {
