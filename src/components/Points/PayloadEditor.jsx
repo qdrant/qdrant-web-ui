@@ -127,7 +127,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
             }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 3, }}>
+        <DialogActions sx={{ p: 3 }}>
           <Button onClick={onClose} color="text.primary" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
