@@ -29,11 +29,13 @@ function Collection() {
       <CenteredFrame>
         <Grid container maxWidth={'xl'} width={'100%'}>
           <Grid size={12}>
-            <Typography variant="h4" mb={3}>{collectionName}</Typography>
+            <Typography variant="h4" mb={3}>
+              {collectionName}
+            </Typography>
           </Grid>
 
           <Grid size={12}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '2.5rem', }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: '2.5rem' }}>
               <Tabs
                 value={currentTab}
                 onChange={handleTabChange}
