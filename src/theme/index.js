@@ -16,7 +16,7 @@ const themeOptions = {
         root: ({ theme, ownerState }) => {
           if (ownerState?.variant === 'heading') {
             return {
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              backgroundColor: alpha(theme.palette.action.hover, 0.04),
               padding: '0.625rem 1rem',
               alignItems: 'center',
               '& .MuiCardHeader-title': {
@@ -131,10 +131,12 @@ const themeOptions = {
             color: theme.palette.primary.contrastText,
           };
         },
-        outlined: ({ theme }) => {
-          return {
-            border: `1px solid ${theme.palette.divider}`,
-          };
+        outlined: ({ theme, ownerState }) => {
+          if (ownerState.color === 'text.primary') {
+            return {
+              border: `1px solid ${theme.palette.divider}`,
+            };
+          }
         },
         text: ({ theme }) => {
           return {

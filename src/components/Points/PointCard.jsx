@@ -56,7 +56,7 @@ const PointCard = (props) => {
             fontStyle: 'normal',
             fontWeight: 500,
             lineHeight: 1.5,
-          },
+          }
         }}
         role="listitem"
       >

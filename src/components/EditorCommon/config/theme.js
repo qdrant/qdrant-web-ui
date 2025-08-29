@@ -30,7 +30,7 @@ export const getEditorTheme = (theme) => {
       ],
       colors: {
         'editor.foreground': '#000000',
-        'editor.background': theme.palette.background.code,
+        'editor.background': theme.palette.background.default,
       },
     };
   }
