@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
-import { CopyButton } from '../Common/CopyButton';
+import { CopyTextButton } from '../Common/CopyTextButton';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useNavigate, useParams } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -104,13 +104,12 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               display={'flex'}
               alignItems={'center'}
             >
-              <CopyButton
+              <CopyTextButton
                 text={bigIntJSON.stringify(vectors[key])}
                 tooltip={'Copy vector to clipboard'}
-                tooltipPlacement={'right'}
+                tooltipPlacement={'left'}
                 successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
               />
-              Copy
               <StyledButton variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
               </StyledButton>
