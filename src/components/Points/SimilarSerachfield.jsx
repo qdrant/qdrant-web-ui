@@ -10,9 +10,11 @@ function SimilarSerachfield({ conditions, onConditionChange, usingVector }) {
   const handleDeleteChip = (conditionToDelete) => {
     const newValues = conditions.filter((condition) => {
       // Compare the actual condition objects, not the formatted string
-      return !(condition.key === conditionToDelete.key && 
-               condition.value === conditionToDelete.value && 
-               condition.type === conditionToDelete.type);
+      return !(
+        condition.key === conditionToDelete.key &&
+        condition.value === conditionToDelete.value &&
+        condition.type === conditionToDelete.type
+      );
     });
     onConditionChange(newValues);
   };
@@ -60,7 +62,7 @@ function SimilarSerachfield({ conditions, onConditionChange, usingVector }) {
             },
           }}
         >
-          <X size={18}/>
+          <X size={18} />
           Clear All
         </Button>
       </Box>

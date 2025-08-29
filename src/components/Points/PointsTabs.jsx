@@ -146,14 +146,14 @@ const PointsTabs = ({ collectionName, client }) => {
     <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
       {conditions && Object.keys(conditions).length > 0 && (
-      <Grid size={12}>
-        <SimilarSerachfield
-          conditions={conditions}
-          onConditionChange={onConditionChange}
-          vectors={vectors}
-          usingVector={usingVector}
-        />
-      </Grid>
+        <Grid size={12}>
+          <SimilarSerachfield
+            conditions={conditions}
+            onConditionChange={onConditionChange}
+            vectors={vectors}
+            usingVector={usingVector}
+          />
+        </Grid>
       )}
       {errorMessage && (
         <Grid textAlign={'center'} size={12}>
