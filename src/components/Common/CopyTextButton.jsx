@@ -1,9 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Tooltip } from '@mui/material';
+import { Button } from '@mui/material';
 import { Copy } from 'lucide-react';
-import { useSnackbar } from 'notistack';
-import { getSnackbarOptions } from './utils/snackbarOptions';
+import { BaseCopyComponent } from './BaseCopyComponent';
 
 export const CopyTextButton = ({
   text,
@@ -16,21 +15,6 @@ export const CopyTextButton = ({
   iconPosition = 'start', // 'start' or 'end'
   children = 'Copy',
 }) => {
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
-  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
-
-  const handleCopy = () => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        enqueueSnackbar(successMessage, successSnackbarOptions);
-      })
-      .catch((err) => {
-        enqueueSnackbar(err.message, errorSnackbarOptions);
-      });
-  };
-
   const renderIcon = () => {
     if (!showIcon) return null;
     return <Copy size={size || '1.25rem'} />;
@@ -54,28 +38,36 @@ export const CopyTextButton = ({
     );
   };
 
+  const renderButton = ({ handleCopy }) => (
+    <Button
+      variant="text"
+      onClick={handleCopy}
+      sx={{
+        color: 'text.primary',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        textTransform: 'capitalize',
+        fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on",
+        fontSize: '13px',
+        fontStyle: 'normal',
+        fontWeight: 500,
+        lineHeight: 1.5,
+      }}
+      {...buttonProps}
+    >
+      {renderContent()}
+    </Button>
+  );
+
   return (
-    <Tooltip title={tooltip} placement={tooltipPlacement}>
-      <Button
-        variant="text"
-        onClick={handleCopy}
-        sx={{
-          color: 'text.primary',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          textTransform: 'capitalize',
-          fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on",
-          fontSize: '13px',
-          fontStyle: 'normal',
-          fontWeight: 500,
-          lineHeight: 1.5,
-        }}
-        {...buttonProps}
-      >
-        {renderContent()}
-      </Button>
-    </Tooltip>
+    <BaseCopyComponent
+      text={text}
+      tooltip={tooltip}
+      tooltipPlacement={tooltipPlacement}
+      successMessage={successMessage}
+      renderButton={renderButton}
+    />
   );
 };
 
