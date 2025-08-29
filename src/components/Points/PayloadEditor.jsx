@@ -101,7 +101,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
         </DialogTitle>
         <DialogContent sx={{ pb: 1 }}>
           <EditorCommon
-            height="50vh"
+            height="360px"
             language="json"
             value={bigIntJSON.stringify(point.payload, null, 2)}
             onChange={handleChange}
@@ -123,14 +123,15 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
               acceptSuggestionOnEnter: 'off',
               tabCompletion: 'off',
               wordBasedSuggestions: false,
+              padding: { top: 16, bottom: 16 },
             }}
           />
         </DialogContent>
-        <DialogActions sx={{ pb: 2, px: 3 }}>
-          <Button onClick={onClose} color="error" variant="outlined" sx={{ mr: 1 }}>
+        <DialogActions sx={{ p: 3, }}>
+          <Button onClick={onClose} color="text.primary" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
-          <Button onClick={handleSave} color="success" variant="outlined">
+          <Button onClick={handleSave} color="primary" variant="contained">
             Save
           </Button>
         </DialogActions>
@@ -158,10 +159,10 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDiff(false)} color="error" variant="outlined" sx={{ mr: 1 }}>
+          <Button onClick={() => setShowDiff(false)} color="text.primary" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
-          <Button onClick={handleConfirmSave} color="success" variant="outlined">
+          <Button onClick={handleConfirmSave} color="primary" variant="contained">
             Confirm
           </Button>
         </DialogActions>

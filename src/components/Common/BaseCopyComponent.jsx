@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from '@mui/material';
-import { useCopyToClipboard } from './hooks/useCopyToClipboard';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 
 export const BaseCopyComponent = ({
   text,
