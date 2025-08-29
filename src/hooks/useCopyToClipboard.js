@@ -1,5 +1,5 @@
 import { useSnackbar } from 'notistack';
-import { getSnackbarOptions } from '../utils/snackbarOptions';
+import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
 
 export const useCopyToClipboard = ({
   successMessage = 'Copied to clipboard',
