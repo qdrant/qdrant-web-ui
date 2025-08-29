@@ -111,6 +111,38 @@ const themeOptions = {
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '8px',
+          padding: '6px 16px',
+          fontSize: '14px',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: '140%',
+          textTransform: 'capitalize',
+        },
+        containedPrimary: ({ theme }) => {
+          return {
+            background: theme.palette.primary.main,
+            color: theme.palette.primary.contrastText,
+          };
+        },
+        outlined: ({ theme }) => {
+          return {
+            border: `1px solid ${theme.palette.divider}`,
+          };
+        },
+        text: ({ theme }) => {
+          return {
+            border: `1px solid ${theme.palette.divider}`,
+          };
+        },
+      },
+    },
   },
 };
 

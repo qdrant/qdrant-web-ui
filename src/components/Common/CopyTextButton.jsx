@@ -44,15 +44,9 @@ export const CopyTextButton = ({
       onClick={handleCopy}
       sx={{
         color: 'text.primary',
-        display: 'flex',
-        alignItems: 'center',
         gap: 1,
-        textTransform: 'capitalize',
-        fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on",
-        fontSize: '13px',
-        fontStyle: 'normal',
-        fontWeight: 500,
         lineHeight: 1.5,
+        border: 'none',
       }}
       {...buttonProps}
     >
