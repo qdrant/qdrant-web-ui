@@ -54,7 +54,9 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
 
   return (
     <Box>
-      Vectors:
+      <Typography variant="subtitle2">
+        Vectors:
+      </Typography>
       {Object.keys(vectors).map((key) => {
         return (
           <Grid key={key} container spacing={2} alignItems={'center'}>
@@ -109,6 +111,9 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 tooltip={'Copy vector to clipboard'}
                 tooltipPlacement={'left'}
                 successMessage={`Copied ${key === '' ? 'default vector' : 'vector ' + key} to clipboard`}
+                buttonProps={{
+                  size: 'small',
+                }}
               />
               <StyledButton variant="outlined" size="small" onClick={() => handleNavigate(key)}>
                 Open graph
