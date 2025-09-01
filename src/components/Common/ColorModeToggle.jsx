@@ -17,11 +17,10 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   padding: '6px 21px',
   justifyContent: 'center',
   alignItems: 'center',
-  //   gap: '10px',
   border: 'none',
   background: 'transparent',
   '&.Mui-selected': {
-    borderRadius: theme.shape.borderRadius[1],
+    borderRadius: theme.shape.borderRadius * 1,
     border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
     background: theme.palette.background.paper,
   },
