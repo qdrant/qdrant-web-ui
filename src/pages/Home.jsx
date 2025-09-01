@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { ColorModeContext } from '../context/color-context';
@@ -27,7 +25,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 function HomeContent() {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);
@@ -65,10 +62,6 @@ function HomeContent() {
     window.location.reload();
   };
 
-  const handleDrawer = () => {
-    setOpen(!open);
-  };
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -82,16 +75,6 @@ function HomeContent() {
         }}
       >
         <Toolbar>
-          <IconButton
-            aria-label="open drawer"
-            onClick={handleDrawer}
-            edge="start"
-            sx={{
-              marginRight: 2,
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
           <Notifications />
@@ -117,7 +100,7 @@ function HomeContent() {
           </Tooltip>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
+      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet context={{ version }} />
