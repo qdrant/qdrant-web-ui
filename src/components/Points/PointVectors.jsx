@@ -54,9 +54,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
 
   return (
     <Box>
-      <Typography variant="subtitle2">
-        Vectors:
-      </Typography>
+      <Typography variant="subtitle2">Vectors:</Typography>
       {Object.keys(vectors).map((key) => {
         return (
           <Grid key={key} container spacing={2} alignItems={'center'}>
