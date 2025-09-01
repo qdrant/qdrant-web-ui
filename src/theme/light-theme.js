@@ -1,7 +1,6 @@
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
 
 const getVariant = ({ theme, ownerState }) => {
-  console.log(ownerState.variant);
   // this adds variant="dual" support to the Card component
   // dual cards have a white background and a 1px border around them
   // in the light theme (alike variant="outlined" cards)
