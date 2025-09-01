@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Button, Typography, Link } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 
 const ButtonsContainer = styled(Box)`
   display: flex;
@@ -26,8 +26,35 @@ const StyledAbstract = styled(Typography)`
 `;
 
 const Welcome = () => {
+  const [showBanner, setShowBanner] = useState(true);
+
+  const handleCloseBanner = () => {
+    setShowBanner(false);
+  };
+
   return (
-    <Box component="main" px={4}>
+    <Box
+      component="main"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '40px',
+        p: 5,
+        margin: 'auto',
+        maxWidth: '1120px',
+      }}
+    >
+      <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
+        {/* todo: use api for announcements */}
+        <Typography>
+          Blend vector similarity with custom logic using Score Boosting Reranker. Blend vector similarity with custom
+          logic using Score Boosting Reranker. &nbsp;
+          <Link target="_blank" href="https://qdrant.tech/docs/">
+            Now available in Qdrant 1.14
+          </Link>
+        </Typography>
+      </AnnouncementBanner>
+
       <Box component="header">
         <Typography component="h1" variant="h4" mt={4} mb={6}>
           Welcome to Qdrant!
