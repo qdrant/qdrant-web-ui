@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Button } from '@mui/material';
+import { Outlet, Link } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 // import KeyIcon from '@mui/icons-material/Key';
-import { Key } from 'lucide-react';
+import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
@@ -75,14 +75,27 @@ function HomeContent() {
         <Toolbar>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
+          <Button
+            component={Link}
+            to="https://qdrant.tech/cloud/" // todo: replace with the actual link
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="contained"
+            color="primary"
+            size="small"
+            endIcon={<Rocket size={16} />}
+            sx={{ mr: 2 }}
+          >
+            Get Managed Cloud
+          </Button>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Notifications />
-            <ColorModeToggle />
             <Tooltip title="API Key">
               <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
                 <Key size={20} />
               </IconButton>
             </Tooltip>
+            <Notifications />
+            <ColorModeToggle />
           </Box>
         </Toolbar>
       </AppBar>
