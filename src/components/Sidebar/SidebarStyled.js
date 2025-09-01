@@ -24,7 +24,9 @@ export const Drawer = styled(MuiDrawer)(() => ({
   },
 }));
 
-export const StyledListItemButton = styled(ListItemButton)(({ theme, isActive }) => ({
+export const StyledListItemButton = styled(ListItemButton, {
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})(({ theme, isActive }) => ({
   display: 'flex',
   height: '40px',
   padding: '8px 12px',
