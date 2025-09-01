@@ -76,13 +76,13 @@ function HomeContent() {
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Notifications />
-          <ColorModeToggle />
-          <Tooltip title="API Key">
-            <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
-              <Key size={20}/>
-            </IconButton>
-          </Tooltip>
+            <Notifications />
+            <ColorModeToggle />
+            <Tooltip title="API Key">
+              <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
+                <Key size={20} />
+              </IconButton>
+            </Tooltip>
           </Box>
         </Toolbar>
       </AppBar>

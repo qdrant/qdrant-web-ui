@@ -14,7 +14,7 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   display: 'flex',
   width: '64px',
   height: '28px',
-    padding: '6px 21px',
+  padding: '6px 21px',
   justifyContent: 'center',
   alignItems: 'center',
   //   gap: '10px',
@@ -44,7 +44,7 @@ export default function ColorModeToggle() {
       if (colorMode.mode === newMode) {
         return;
       }
-      
+
       // If we're in auto mode, we need to toggle to get to the desired mode
       if (colorMode.mode === 'auto') {
         // Toggle once to get to light, then again if we want dark
@@ -68,12 +68,7 @@ export default function ColorModeToggle() {
   };
 
   return (
-    <StyledToggleButtonGroup
-      value={getCurrentMode()}
-      exclusive
-      onChange={handleModeChange}
-      size="small"
-    >
+    <StyledToggleButtonGroup value={getCurrentMode()} exclusive onChange={handleModeChange} size="small">
       <StyledToggleButton value="dark">
         <Tooltip title="Dark Mode">
           <StyledIcon>

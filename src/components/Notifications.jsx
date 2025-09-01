@@ -127,7 +127,7 @@ export default function Notifications() {
           size="large"
         >
           <Badge color="error" badgeContent={issuesCount}>
-            <Bell size={20}/>
+            <Bell size={20} />
           </Badge>
         </IconButton>
       </Tooltip>
