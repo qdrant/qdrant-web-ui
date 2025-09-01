@@ -60,7 +60,7 @@ const ConsoleIllustration = styled(Box)`
   justify-content: center;
 `;
 
-const CardBanner = ({ title, description, buttonText, buttonHref, onButtonClick }) => {
+const CardBanner = ({ title, description, buttonText, buttonHref }) => {
   return (
     <BannerContainer>
       <GradientOverlay />
@@ -95,9 +95,7 @@ const CardBanner = ({ title, description, buttonText, buttonHref, onButtonClick 
             sx={{
               flexGrow: 0,
             }}
-            component={buttonHref ? 'a' : 'button'}
             href={buttonHref}
-            onClick={onButtonClick}
           >
             {buttonText}
           </Button>
@@ -115,13 +113,7 @@ CardBanner.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   buttonText: PropTypes.string.isRequired,
-  buttonHref: PropTypes.string,
-  onButtonClick: PropTypes.func,
-};
-
-CardBanner.defaultProps = {
-  buttonHref: undefined,
-  onButtonClick: undefined,
+  buttonHref: PropTypes.string.isRequired,
 };
 
 export default CardBanner;
