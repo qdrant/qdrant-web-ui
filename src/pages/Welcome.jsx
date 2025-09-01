@@ -57,21 +57,23 @@ const Welcome = () => {
       </AnnouncementBanner>
 
       <Box component="header">
-        <Typography component="h1" variant="h4"
-        sx={{
-          color: 'text.primary',
-          fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
-          fontSize: '2rem',
-          fontStyle: 'normal',
-          fontWeight: '600',
-          lineHeight: '125%',
-          letterSpacing: '-0.5px',
-          mb: '1rem',
-        }}
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{
+            color: 'text.primary',
+            fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+            fontSize: '2rem',
+            fontStyle: 'normal',
+            fontWeight: '600',
+            lineHeight: '125%',
+            letterSpacing: '-0.5px',
+            mb: '1rem',
+          }}
         >
           Welcome to Qdrant!
         </Typography>
-        
+
         <CardBanner
           title="Get started with vector search in Qdrant"
           description="Start building your app by creating a collection and inserting your vectors."
