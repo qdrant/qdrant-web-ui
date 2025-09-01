@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Button, Typography, Link } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
+import CardBanner from '../components/Common/CardBanner';
 
 const ButtonsContainer = styled(Box)`
   display: flex;
@@ -56,9 +57,27 @@ const Welcome = () => {
       </AnnouncementBanner>
 
       <Box component="header">
-        <Typography component="h1" variant="h4" mt={4} mb={6}>
+        <Typography component="h1" variant="h4"
+        sx={{
+          color: 'text.primary',
+          fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+          fontSize: '2rem',
+          fontStyle: 'normal',
+          fontWeight: '600',
+          lineHeight: '125%',
+          letterSpacing: '-0.5px',
+          mb: '1rem',
+        }}
+        >
           Welcome to Qdrant!
         </Typography>
+        
+        <CardBanner
+          title="Get started with vector search in Qdrant"
+          description="Start building your app by creating a collection and inserting your vectors."
+          buttonText="View Quickstart"
+          buttonHref="/tutorial/quickstart"
+        />
       </Box>
 
       <Box component="section">
