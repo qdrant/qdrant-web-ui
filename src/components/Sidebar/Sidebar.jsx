@@ -1,68 +1,19 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled, alpha } from '@mui/material/styles';
-import MuiDrawer from '@mui/material/Drawer';
-import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useClient } from '../../context/client-context';
 import { Rocket, SquareTerminal, RectangleEllipsis, FileCode, KeyRound, BookMarked } from 'lucide-react';
-
-const drawerWidth = 240;
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-
-const Drawer = styled(MuiDrawer)(() => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-  boxSizing: 'border-box',
-  '& .MuiDrawer-paper': {
-    width: drawerWidth,
-    overflowX: 'hidden',
-  },
-}));
-
-const StyledListItemButton = styled(ListItemButton)(({ theme, isActive }) => ({
-  display: 'flex',
-  height: '40px',
-  padding: '8px 12px',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  alignSelf: 'stretch',
-  borderRadius: '8px',
-  '& .MuiListItemText-primary, & .MuiListItemIcon-root': {
-    color: theme.palette.text.secondary,
-  },
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.05),
-  },
-  ...(isActive && {
-    backgroundColor: alpha(theme.palette.primary.light, 0.08),
-    '& .MuiListItemIcon-root': {
-      color: theme.palette.primary.main,
-    },
-    '& .MuiListItemText-primary': {
-      color: theme.palette.text.primary,
-    },
-  }),
-}));
-
-const StyledList = styled(List)(() => ({
-  display: 'flex',
-  padding: '24px 12px 0 12px',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  flex: '1 0 0',
-  alignSelf: 'stretch',
-}));
+import {
+  DrawerHeader,
+  Drawer,
+  StyledListItemButton,
+  StyledList,
+  StyledVersionListItem,
+  StyledVersionText,
+  StyledVersionList,
+} from './SidebarStyled';
 
 export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
   const { isRestricted } = useClient();
@@ -85,11 +36,11 @@ export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
           sidebarItem('Access Tokens', <KeyRound size="16px" />, '/jwt', location, jwtEnabled)}
       </StyledList>
 
-      <List style={{ marginTop: 'auto' }}>
-        <ListItem>
-          <Typography variant="caption">Qdrant v{version}</Typography>
-        </ListItem>
-      </List>
+      <StyledVersionList>
+        <StyledVersionListItem>
+          <StyledVersionText variant="caption">Qdrant v{version}</StyledVersionText>
+        </StyledVersionListItem>
+      </StyledVersionList>
     </Drawer>
   );
 }
