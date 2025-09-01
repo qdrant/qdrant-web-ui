@@ -3,15 +3,14 @@ import { styled, useTheme } from '@mui/material/styles';
 import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { ColorModeContext } from '../context/color-context';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import KeyIcon from '@mui/icons-material/Key';
+// import KeyIcon from '@mui/icons-material/Key';
+import { Key } from 'lucide-react';
+import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Notifications from '../components/Notifications';
-import AutoModeIcon from '@mui/icons-material/BrightnessAuto';
+
 import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -28,7 +27,6 @@ function HomeContent() {
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);
-  const colorMode = React.useContext(ColorModeContext);
   const { setMaxCollections } = useMaxCollections();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
@@ -69,35 +67,23 @@ function HomeContent() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: theme.palette.background.default,
+          background: theme.palette.background.paper,
           boxShadow: 'none',
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Toolbar>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Notifications />
-          <Tooltip title="Color Mode">
-            <IconButton size="large" onClick={colorMode.toggleColorMode}>
-              <ColorModeContext.Consumer>
-                {(colorMode) => {
-                  if (colorMode.mode === 'light') {
-                    return <DarkModeIcon />;
-                  } else if (colorMode.mode === 'dark') {
-                    return <LightModeIcon />;
-                  } else {
-                    return <AutoModeIcon />;
-                  }
-                }}
-              </ColorModeContext.Consumer>
-            </IconButton>
-          </Tooltip>
+          <ColorModeToggle />
           <Tooltip title="API Key">
             <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
-              <KeyIcon />
+              <Key size={20}/>
             </IconButton>
           </Tooltip>
+          </Box>
         </Toolbar>
       </AppBar>
       <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
