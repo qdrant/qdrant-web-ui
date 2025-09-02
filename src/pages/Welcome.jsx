@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, Link } from '@mui/material';
+import { Box, Button, Typography, Link, Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
+import InfoCard from '../components/Common/InfoCard';
+import { Workflow, FileCode } from 'lucide-react';
 
 const ButtonsContainer = styled(Box)`
   display: flex;
@@ -22,7 +24,6 @@ const StyledButton = styled((props) => <Button variant="contained" {...props} />
 `;
 
 const StyledAbstract = styled(Typography)`
-  max-width: 600px;
   margin-bottom: 2rem;
 `;
 
@@ -81,6 +82,31 @@ const Welcome = () => {
           buttonHref="/tutorial/quickstart"
           imgSrc="/assets/console.svg"
         />
+      </Box>
+
+      <Box component="section">
+        <Typography component="h2" variant="h6" mb="1rem">
+          Connect to your Project or Start with Samples
+        </Typography>
+
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <InfoCard
+              icon={Workflow}
+              title="API Reference"
+              description={
+                'Explore Qdrant&apos;s REST API and SDKs to connect, query, and manage your vector data with ease.'
+              }
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <InfoCard
+              icon={FileCode}
+              title="Load Sample Data"
+              description={`Follow this tutorial to import a remote snapshot and explore vector search with real data in just a few steps.`}
+            />
+          </Grid>
+        </Grid>
       </Box>
 
       <Box component="section">
