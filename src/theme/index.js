@@ -20,8 +20,6 @@ const themeOptions = {
               padding: '0.625rem 1rem',
               alignItems: 'center',
               '& .MuiCardHeader-title': {
-                fontFamily: 'Mona Sans, sans-serif',
-                fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
                 fontSize: '1.25rem',
                 fontStyle: 'normal',
                 fontWeight: 500,
@@ -74,8 +72,6 @@ const themeOptions = {
               // child typography with variant="body2"
               '& .MuiTypography-body2': {
                 color: theme.palette.text.secondary,
-                fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
-                fontFamily: 'Mona Sans, sans-serif',
                 fontSize: '0.875rem',
                 fontStyle: 'normal',
                 fontWeight: 400,
@@ -91,7 +87,6 @@ const themeOptions = {
       styleOverrides: {
         root: {
           color: 'text.secondary',
-          fontFeatureSettings: "'ss01' on, 'ss05' on",
           fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: 500,
@@ -103,7 +98,6 @@ const themeOptions = {
     MuiTypography: {
       styleOverrides: {
         subtitle2: {
-          fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
           fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: 500,
@@ -149,5 +143,34 @@ const themeOptions = {
 };
 
 export const createTheme = (config) => {
-  return createMuiTheme(config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions, themeOptions, config);
+  // Create the base theme with our typography settings first
+  const baseTheme = createMuiTheme({
+    typography: {
+      fontFamily: [
+        '"Mona Sans"',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        '"Roboto"',
+        '"Oxygen"',
+        '"Ubuntu"',
+        '"Cantarell"',
+        '"Fira Sans"',
+        '"Droid Sans"',
+        '"Helvetica Neue"',
+        'sans-serif',
+      ].join(', '),
+      allVariants: {
+        fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+      },
+    },
+  });
+
+  // Then apply the mode-specific options and component overrides
+  return createMuiTheme(
+    baseTheme,
+    config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions,
+    themeOptions,
+    config
+  );
 };
