@@ -1,27 +1,26 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
-    'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-@keyframes shine {
-  0% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
-  }
+/* Mona Sans Font Face Declarations */
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('/assets/fonts/Mona_Sans/MonaSans-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-style: normal;
+  font-display: swap;
 }
 
-@keyframes shine-follow {
-  0% {
-    background-position: 50% 0;
-  }
-  50% {
-    background-position: -80% 0;
-  }
-  100% {
-    background-position: -150% 0;
-  }
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('/assets/fonts/Mona_Sans/MonaSans-Italic-VariableFont_wdth,wght.ttf') format('truetype-variations');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-style: italic;
+  font-display: swap;
+}
+
+body {
+  margin: 0;
+  font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
