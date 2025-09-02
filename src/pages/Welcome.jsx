@@ -79,6 +79,7 @@ const Welcome = () => {
           description="Start building your app by creating a collection and inserting your vectors."
           buttonText="View Quickstart"
           buttonHref="/tutorial/quickstart"
+          imgSrc="/assets/console.svg"
         />
       </Box>
 
