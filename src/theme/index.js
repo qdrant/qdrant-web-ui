@@ -132,11 +132,11 @@ const themeOptions = {
             };
           }
         },
-        text: ({ theme }) => {
-          return {
-            border: `1px solid ${theme.palette.divider}`,
-          };
-        },
+        // text: ({ theme }) => {
+          // return {
+            // border: `1px solid ${theme.palette.divider}`,
+          // };
+        // },
       },
     },
   },
