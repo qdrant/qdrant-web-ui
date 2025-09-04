@@ -1,13 +1,72 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Box, MenuItem, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
+import {
+  MenuItem,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Table,
+  TableBody,
+} from '@mui/material';
 import { styled, useTheme } from '@mui/material/styles';
-import { HeaderTableCell, TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
-import { Dot } from '../Common/Dot';
 import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
 import VectorsConfigChip from '../Common/VectorsConfigChip';
+import CollectionStatus from './CollectionStatus';
+
+const StyledTableHead = styled(TableHead)({
+  backgroundColor: '#f7f8fa',
+  borderRadius: '8px 8px 0 0',
+  border: '1px solid rgba(0, 0, 0, 0.12)',
+  borderBottom: 'none',
+});
+
+const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
+  padding: '8px 16px',
+  borderBottom: 'none',
+  fontFamily: '"Mona Sans", sans-serif',
+  fontSize: '12px',
+  fontWeight: 400,
+  lineHeight: 1.5,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  // todo: add border radius to the first and last cells
+  '&:first-of-type': {
+    borderRadius: '8px 0 0 0',
+  },
+  '&:last-of-type': {
+    borderRadius: '0 8px 0 0',
+  },
+}));
+
+const StyledTableBody = styled(TableBody)({
+  backgroundColor: '#ffffff',
+  borderRadius: '0 0 8px 8px',
+  border: '1px solid rgba(0, 0, 0, 0.12)',
+  borderTop: 'none',
+});
+
+const StyledTableRow = styled(TableRow)({
+  height: '72px',
+  padding: '16px',
+  borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+  '& .MuiTableCell-root': {
+    padding: '16px',
+    borderBottom: 'none',
+    fontFamily: '"Mona Sans", sans-serif',
+    fontSize: '16px',
+    fontWeight: 400,
+    lineHeight: 1.5,
+    color: '#111824',
+  },
+});
 
 const StyledLink = styled(Link)`
   text-decoration: none;
@@ -22,7 +81,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const theme = useTheme();
 
   return (
-    <TableRow>
+    <StyledTableRow>
       <TableCell>
         <Typography component={StyledLink} to={`/collections/${collection.name}`}>
           {collection.name}
@@ -32,14 +91,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         </Typography>
       </TableCell>
       <TableCell>
-        <Box
-          sx={{ display: 'inline-flex', alignItems: 'center' }}
-          component={StyledLink}
-          to={`/collections/${collection.name}#info`}
-        >
-          <Dot color={collection.status} />
-          <Typography sx={{ ml: 1 }}>{collection.status}</Typography>
-        </Box>
+        <CollectionStatus status={collection.status} collectionName={collection.name} />
       </TableCell>
       <TableCell align="center">
         <Typography component={StyledLink} to={`/collections/${collection.name}`}>
@@ -77,7 +129,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
           getCollectionsCall={getCollectionsCall}
         />
       </TableCell>
-    </TableRow>
+    </StyledTableRow>
   );
 };
 
@@ -89,31 +141,31 @@ CollectionTableRow.propTypes = {
 const CollectionsList = ({ collections, getCollectionsCall }) => {
   return (
     <TableContainer>
-      <TableWithGaps aria-label="simple table">
-        <TableHeadWithGaps>
+      <Table aria-label="simple table">
+        <StyledTableHead>
           <TableRow>
-            <HeaderTableCell width="25%">Name</HeaderTableCell>
-            <HeaderTableCell width="12%">Status</HeaderTableCell>
-            <HeaderTableCell width="12%" align="center">
+            <StyledHeaderCell width="25%">Name</StyledHeaderCell>
+            <StyledHeaderCell width="12%">Status</StyledHeaderCell>
+            <StyledHeaderCell width="12%" align="center">
               Points (Approx)
-            </HeaderTableCell>
-            <HeaderTableCell width="12%" align="center">
+            </StyledHeaderCell>
+            <StyledHeaderCell width="12%" align="center">
               Segments
-            </HeaderTableCell>
-            <HeaderTableCell width="12%" align="center">
+            </StyledHeaderCell>
+            <StyledHeaderCell width="12%" align="center">
               Shards
-            </HeaderTableCell>
-            <HeaderTableCell width="20%" align="center">
+            </StyledHeaderCell>
+            <StyledHeaderCell width="20%" align="center">
               Vectors Configuration
               <br />
               (Name, Size, Distance)
-            </HeaderTableCell>
-            <HeaderTableCell width="7%" align="right">
+            </StyledHeaderCell>
+            <StyledHeaderCell width="7%" align="right">
               Actions
-            </HeaderTableCell>
+            </StyledHeaderCell>
           </TableRow>
-        </TableHeadWithGaps>
-        <TableBodyWithGaps>
+        </StyledTableHead>
+        <StyledTableBody>
           {collections.length > 0 &&
             collections.map((collection) => (
               <CollectionTableRow
@@ -122,8 +174,8 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
                 getCollectionsCall={getCollectionsCall}
               />
             ))}
-        </TableBodyWithGaps>
-      </TableWithGaps>
+        </StyledTableBody>
+      </Table>
     </TableContainer>
   );
 };
