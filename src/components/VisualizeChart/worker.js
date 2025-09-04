@@ -84,17 +84,24 @@ self.onmessage = function (e) {
   }
 
   if (data.length) {
-    const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
-    const next = D.generator(); // default = 500 iterations
+    if (algorithm === 'PCA') {
+      const D = new druid[algorithm](data, {});
+      const transformedData = D.transform();
 
-    let reducedPoints = [];
-    for (reducedPoints of next) {
-      if (Date.now() - now > MESSAGE_INTERVAL) {
-        now = Date.now();
-        self.postMessage({ result: getDataset(reducedPoints), error: null });
+      self.postMessage({ result: getDataset(transformedData), error: null });
+    } else {
+      const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
+      const next = D.generator(); // default = 500 iterations
+
+      let reducedPoints = [];
+      for (reducedPoints of next) {
+        if (Date.now() - now > MESSAGE_INTERVAL) {
+          now = Date.now();
+          self.postMessage({ result: getDataset(reducedPoints), error: null });
+        }
       }
+      self.postMessage({ result: getDataset(reducedPoints), error: null });
     }
-    self.postMessage({ result: getDataset(reducedPoints), error: null });
   }
 };
 

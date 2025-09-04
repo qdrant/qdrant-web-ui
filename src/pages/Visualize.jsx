@@ -40,7 +40,7 @@ const query = `
 // - 'using': specify which vector to use for visualization
 //                  if there are multiple.
 //
-// - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP'.
+// - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP', 'PCA'.
 
 
 `;
@@ -138,7 +138,7 @@ function Visualize() {
       algorithm: {
         description: 'Algorithm to use for visualization',
         type: 'string',
-        enum: ['TSNE', 'UMAP'],
+        enum: ['TSNE', 'UMAP', 'PCA'],
         default: 'TSNE',
       },
     },
