@@ -82,7 +82,7 @@ describe('InfoCard', () => {
       expect(screen.getByText('Test Description')).toBeInTheDocument();
       expect(screen.getByTestId('mock-icon')).toBeInTheDocument();
       expect(screen.getByText('Learn More')).toBeInTheDocument();
-      expect(screen.getByRole('link')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Learn More' })).toBeInTheDocument();
 
       const icon = screen.getByTestId('mock-icon');
       expect(icon).toHaveAttribute('stroke', testTheme.palette.info.main);
@@ -148,7 +148,7 @@ describe('InfoCard', () => {
       );
 
       expect(screen.getByText('Learn More')).toBeInTheDocument();
-      expect(screen.getByRole('link')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Learn More' })).toBeInTheDocument();
     });
 
     it('should hide CTA button when showCta is false', () => {
@@ -159,7 +159,7 @@ describe('InfoCard', () => {
       );
 
       expect(screen.queryByText('Learn More')).not.toBeInTheDocument();
-      expect(screen.queryByRole('link')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Learn More' })).not.toBeInTheDocument();
     });
 
     it('should add margin-left class for side icon with CTA', () => {
@@ -169,7 +169,7 @@ describe('InfoCard', () => {
         </TestWrapper>
       );
 
-      const linkButton = screen.getByRole('link');
+      const linkButton = screen.getByRole('button', { name: 'Learn More' });
       expect(linkButton).toHaveClass('add-margin-left');
     });
   });
@@ -190,6 +190,10 @@ describe('InfoCard', () => {
 
     it('should not navigate when href is not provided', () => {
       const { href, ...propsWithoutHref } = defaultProps;
+
+      // Capture console.error to verify the expected PropTypes warning
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       render(
         <TestWrapper>
           <InfoCard {...propsWithoutHref} />
@@ -200,6 +204,16 @@ describe('InfoCard', () => {
       fireEvent.click(card);
 
       expect(mockNavigate).not.toHaveBeenCalled();
+
+      // Verify that the expected PropTypes warning was logged
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Warning: Failed %s type: %s%s'),
+        'prop',
+        expect.stringContaining('The prop `href` is marked as required'),
+        expect.any(String)
+      );
+
+      consoleSpy.mockRestore();
     });
 
     it('should navigate when CTA button is clicked', () => {
@@ -209,7 +223,7 @@ describe('InfoCard', () => {
         </TestWrapper>
       );
 
-      const ctaButton = screen.getByRole('link');
+      const ctaButton = screen.getByRole('button', { name: 'Learn More' });
       fireEvent.click(ctaButton);
 
       expect(mockNavigate).toHaveBeenCalledWith('/test-path');
