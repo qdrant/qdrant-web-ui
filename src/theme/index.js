@@ -133,9 +133,9 @@ const themeOptions = {
           }
         },
         // text: ({ theme }) => {
-          // return {
-            // border: `1px solid ${theme.palette.divider}`,
-          // };
+        // return {
+        // border: `1px solid ${theme.palette.divider}`,
+        // };
         // },
       },
     },

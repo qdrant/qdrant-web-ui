@@ -3,7 +3,17 @@ import { Box, Typography, Link, Grid } from '@mui/material';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard';
-import { Workflow, FileCode, Filter, Search, Layers, Zap, GitBranch, Users } from 'lucide-react';
+import {
+  Workflow,
+  FileCode,
+  Filter,
+  SlidersHorizontal,
+  ScanText,
+  VectorSquare,
+  Grip,
+  SearchCode,
+  Network,
+} from 'lucide-react';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -96,7 +106,7 @@ const Welcome = () => {
           Interactive Tutorials
         </Typography>
         <Grid container spacing={2} sx={{ '& > .MuiGrid-root': { display: 'flex' } }}>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
               icon={Filter}
               iconVariant="top"
@@ -105,54 +115,54 @@ const Welcome = () => {
               href="/tutorial/filtering-beginner"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={Filter}
+              icon={SlidersHorizontal}
               iconVariant="top"
               title="Filtering - Advanced"
               description="Try advanced filtering based on nested payload conditions."
               href="/tutorial/filtering-advanced"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={Search}
+              icon={ScanText}
               iconVariant="top"
               title="Filtering - Full Text"
               description="Search for substrings, tokens, or phrases within text fields."
               href="/tutorial/filteringfulltext"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={Layers}
+              icon={VectorSquare}
               iconVariant="top"
               title="Multivector Search"
               description="Work with data represented by ColBERT multivectors."
               href="/tutorial/multivectors"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={Zap}
+              icon={Grip}
               iconVariant="top"
               title="Sparse Vector Search"
               description="Use sparse vectors to get specific search results."
               href="/tutorial/sparsevectors"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={GitBranch}
+              icon={SearchCode}
               iconVariant="top"
               title="Hybrid Search"
               description="Combine dense and sparse vectors for more accurate search results."
               href="/tutorial/hybridsearch"
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
             <InfoCard
-              icon={Users}
+              icon={Network}
               iconVariant="top"
               title="Multitenancy"
               description="Manage multiple users within a single collection."
