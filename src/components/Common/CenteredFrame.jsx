@@ -9,8 +9,9 @@ export const CenteredFrame = ({ children }) => {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        px: 3,
-        py: 6,
+        maxWidth: '1120px',
+        p: 5,
+        margin: 'auto',
       }}
     >
       {children}

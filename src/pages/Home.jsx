@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import { Outlet } from 'react-router-dom';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Button } from '@mui/material';
+import { Outlet, Link } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { ColorModeContext } from '../context/color-context';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import KeyIcon from '@mui/icons-material/Key';
+// import KeyIcon from '@mui/icons-material/Key';
+import { Key, Rocket } from 'lucide-react';
+import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Notifications from '../components/Notifications';
-import AutoModeIcon from '@mui/icons-material/BrightnessAuto';
+
 import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -27,11 +24,9 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 function HomeContent() {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
   const [version, setVersion] = useState('???');
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);
-  const colorMode = React.useContext(ColorModeContext);
   const { setMaxCollections } = useMaxCollections();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
@@ -65,10 +60,6 @@ function HomeContent() {
     window.location.reload();
   };
 
-  const handleDrawer = () => {
-    setOpen(!open);
-  };
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -76,48 +67,39 @@ function HomeContent() {
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          background: theme.palette.background.default,
+          background: theme.palette.background.paper,
           boxShadow: 'none',
-          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+          borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Toolbar>
-          <IconButton
-            aria-label="open drawer"
-            onClick={handleDrawer}
-            edge="start"
-            sx={{
-              marginRight: 2,
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Logo width={200} />
           <Box sx={{ flexGrow: 1 }}></Box>
-          <Notifications />
-          <Tooltip title="Color Mode">
-            <IconButton size="large" onClick={colorMode.toggleColorMode}>
-              <ColorModeContext.Consumer>
-                {(colorMode) => {
-                  if (colorMode.mode === 'light') {
-                    return <DarkModeIcon />;
-                  } else if (colorMode.mode === 'dark') {
-                    return <LightModeIcon />;
-                  } else {
-                    return <AutoModeIcon />;
-                  }
-                }}
-              </ColorModeContext.Consumer>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="API Key">
-            <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
-              <KeyIcon />
-            </IconButton>
-          </Tooltip>
+          <Button
+            component={Link}
+            to="https://qdrant.tech/cloud/" // todo: replace with the actual link
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="contained"
+            color="primary"
+            size="small"
+            endIcon={<Rocket size={16} />}
+            sx={{ mr: 2 }}
+          >
+            Get Managed Cloud
+          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Tooltip title="API Key">
+              <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
+                <Key size={20} />
+              </IconButton>
+            </Tooltip>
+            <Notifications />
+            <ColorModeToggle />
+          </Box>
         </Toolbar>
       </AppBar>
-      <Sidebar open={open} version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
+      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet context={{ version }} />

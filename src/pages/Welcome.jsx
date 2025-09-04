@@ -1,79 +1,175 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Button, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const ButtonsContainer = styled(Box)`
-  display: flex;
-  justify-content: flex-start;
-  gap: 1rem;
-  margin: 2rem 0;
-`;
-
-const StyledButton = styled((props) => <Button variant="contained" {...props} />)`
-  background-color: #333;
-  color: white;
-  font-size: 1rem;
-  text-transform: capitalize;
-  &:hover {
-    background-color: #555;
-  }
-`;
-
-const StyledAbstract = styled(Typography)`
-  max-width: 600px;
-  margin-bottom: 2rem;
-`;
+import React, { useState } from 'react';
+import { Box, Typography, Link, Grid } from '@mui/material';
+import AnnouncementBanner from '../components/Common/AnnouncementBanner';
+import CardBanner from '../components/Common/CardBanner';
+import InfoCard from '../components/Common/InfoCard/InfoCard';
+import {
+  Workflow,
+  FileCode,
+  Filter,
+  SlidersHorizontal,
+  ScanText,
+  VectorSquare,
+  Grip,
+  SearchCode,
+  Network,
+} from 'lucide-react';
 
 const Welcome = () => {
+  const [showBanner, setShowBanner] = useState(true);
+
+  const handleCloseBanner = () => {
+    setShowBanner(false);
+  };
+
   return (
-    <Box component="main" px={4}>
+    <Box
+      component="main"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '40px',
+        p: 5,
+        margin: 'auto',
+        maxWidth: '1120px',
+      }}
+    >
+      <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
+        {/* todo: use api for announcements */}
+        <Typography>
+          Blend vector similarity with custom logic using Score Boosting Reranker. Blend vector similarity with custom
+          logic using Score Boosting Reranker. &nbsp;
+          <Link target="_blank" href="https://qdrant.tech/docs/">
+            Now available in Qdrant 1.14
+          </Link>
+        </Typography>
+      </AnnouncementBanner>
+
       <Box component="header">
-        <Typography component="h1" variant="h4" mt={4} mb={6}>
+        <Typography
+          component="h1"
+          variant="h4"
+          sx={{
+            color: 'text.primary',
+            fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+            fontSize: '2rem',
+            fontStyle: 'normal',
+            fontWeight: '600',
+            lineHeight: '125%',
+            letterSpacing: '-0.5px',
+            mb: '1rem',
+          }}
+        >
           Welcome to Qdrant!
         </Typography>
+
+        <CardBanner
+          title="Get started with vector search in Qdrant"
+          description="Start building your app by creating a collection and inserting your vectors."
+          buttonText="View Quickstart"
+          buttonHref="/tutorial/quickstart"
+          imgSrc="/assets/console.svg"
+        />
       </Box>
 
       <Box component="section">
-        <Typography component="h2" variant="h5" mb="1rem">
-          Begin by setting up your collection
+        <Typography component="h2" variant="h6" mb="1rem">
+          Connect to your Project or Start with Samples
         </Typography>
-        <StyledAbstract>
-          Start building your app by creating a collection and inserting your vectors. Interactive tutorials will show
-          you how to organize data and perform searches.
-        </StyledAbstract>
-        <ButtonsContainer>
-          <StyledButton variant="contained" component={Link} to="/tutorial/quickstart">
-            Quickstart
-          </StyledButton>
-          <StyledButton variant="contained" component={Link} to="/tutorial/loadcontent">
-            Load Sample Data
-          </StyledButton>
-          <StyledButton variant="contained" component={Link} to="/tutorial/">
-            Vector Search Tutorials
-          </StyledButton>
-        </ButtonsContainer>
+
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <InfoCard
+              icon={Workflow}
+              title="API Reference"
+              description={
+                'Explore Qdrant&apos;s REST API and SDKs to connect, query, and manage your vector data with ease.'
+              }
+              href="/api-reference"
+              showCta={false}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <InfoCard
+              icon={FileCode}
+              title="Load Sample Data"
+              description={`Follow this tutorial to import a remote snapshot and explore vector search with real data in just a few steps.`}
+              href="/datasets"
+              showCta={false}
+            />
+          </Grid>
+        </Grid>
       </Box>
 
       <Box component="section">
-        <Typography component="h2" variant="h5" mb="1rem">
-          Connect to your new project
+        <Typography component="h2" variant="h6" mb="1rem">
+          Interactive Tutorials
         </Typography>
-        <StyledAbstract>
-          Easily interact with your database using Qdrant SDKs and our REST API. Use these libraries to connect, query,
-          and manage your vector data from the app.
-        </StyledAbstract>
-        <ButtonsContainer>
-          <StyledButton
-            className="btn"
-            component={'a'}
-            href="https://api.qdrant.tech/api-reference"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            API Reference
-          </StyledButton>
-        </ButtonsContainer>
+        <Grid container spacing={2} sx={{ '& > .MuiGrid-root': { display: 'flex' } }}>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={Filter}
+              iconVariant="top"
+              title="Filtering - Beginner"
+              description="Filter search results using basic payload conditions."
+              href="/tutorial/filtering-beginner"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={SlidersHorizontal}
+              iconVariant="top"
+              title="Filtering - Advanced"
+              description="Try advanced filtering based on nested payload conditions."
+              href="/tutorial/filtering-advanced"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={ScanText}
+              iconVariant="top"
+              title="Filtering - Full Text"
+              description="Search for substrings, tokens, or phrases within text fields."
+              href="/tutorial/filteringfulltext"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={VectorSquare}
+              iconVariant="top"
+              title="Multivector Search"
+              description="Work with data represented by ColBERT multivectors."
+              href="/tutorial/multivectors"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={Grip}
+              iconVariant="top"
+              title="Sparse Vector Search"
+              description="Use sparse vectors to get specific search results."
+              href="/tutorial/sparsevectors"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={SearchCode}
+              iconVariant="top"
+              title="Hybrid Search"
+              description="Combine dense and sparse vectors for more accurate search results."
+              href="/tutorial/hybridsearch"
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+            <InfoCard
+              icon={Network}
+              iconVariant="top"
+              title="Multitenancy"
+              description="Manage multiple users within a single collection."
+              href="/tutorial/multitenancy"
+            />
+          </Grid>
+        </Grid>
       </Box>
     </Box>
   );
