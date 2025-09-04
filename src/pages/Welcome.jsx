@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, Link, Grid } from '@mui/material';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
-import InfoCard from '../components/Common/InfoCard';
+import InfoCard from '../components/Common/InfoCard/InfoCard';
 import {
   Workflow,
   FileCode,
