@@ -63,7 +63,7 @@ const AnnouncementBanner = ({ children, icon, onClose, show = true }) => {
         </CloseButton>
       }
     >
-      <BannerText>{children}</BannerText>
+      <BannerText component="div">{children}</BannerText>
     </AnnouncementBannerStyled>
   );
 };
