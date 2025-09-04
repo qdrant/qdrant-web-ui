@@ -84,9 +84,8 @@ self.onmessage = function (e) {
   }
 
   if (data.length) {
-
     if (algorithm === 'PCA') {
-      const D = new druid[algorithm](data, {}); 
+      const D = new druid[algorithm](data, {});
       const transformedData = D.transform();
 
       self.postMessage({ result: getDataset(transformedData), error: null });
