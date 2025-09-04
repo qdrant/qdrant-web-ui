@@ -7,8 +7,9 @@ import { ChevronRight } from 'lucide-react';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`, 
-  borderRadius: '8px',
+  width: '100%',
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  borderRadius: '0.5rem',
   boxShadow: 'none',
   '&:hover': {
     boxShadow: theme.shadows[8],
@@ -30,12 +31,13 @@ const StyledCardActionArea = styled(CardActionArea)(({ theme }) => ({
 }));
 
 const StyledCardContent = styled(CardContent)({
-  padding: '24px',
+  width: '100%',
+  padding: '1.5rem',
   display: 'flex',
   '&.side': {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: '12px',
+    gap: '0.75rem', // 12px
   },
   '&.top': {
     flexDirection: 'column',
@@ -50,7 +52,7 @@ const IconWrapper = styled(Box)({
   justifyContent: 'center',
   flexShrink: 0,
   '.side &': {
-    padding: '16px',
+    padding: '1rem',
     border: '1px solid rgba(0, 0, 0, 0.12)', // divider color
     borderRadius: '8px',
   },
@@ -63,49 +65,48 @@ const IconWrapper = styled(Box)({
 const ContentWrapper = styled(Box)`
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem; // 6px
   flex: 1;
   min-width: 0;
 `;
 
 const StyledTitle = styled(Typography)`
   font-weight: 500;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
 `;
 
 const StyledDescription = styled(Typography)`
   font-weight: 400;
-  font-size: 14px;
+  font-size: 0.875rem; // 14px
   line-height: 1.5;
   color: ${({ theme }) => theme.palette.text.secondary};
 `;
 
 const StyledCardActions = styled(CardActions)({
   width: '100%',
-  padding: '0 24px 24px 20px',
+  padding: '0 1.5rem 1.5rem 1.25rem',
 });
 
-
-const StyledLink = styled((props) => <Button variant="text" {...props} />)(({ theme }) => ({ // todo: always use variant="text"
+const StyledLink = styled((props) => <Button variant="text" {...props} />)(({ theme }) => ({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '4px',
-color: theme.palette.text.primary,
-fontSize: "0.8125rem",
-textDecoration: "none",
-fontWeight: 500,
-paddingLeft: '4px',
-paddingRight: 0,
-// add margin left if side icon with cta, to align with the icon
-'&.add-margin-left': {
-  marginLeft: '4.375rem',
-},
-'&:hover': {
-  '& svg': {
-    color: theme.palette.primary.main,
+  color: theme.palette.text.primary,
+  fontSize: '0.8125rem',
+  textDecoration: 'none',
+  fontWeight: 500,
+  paddingLeft: '4px',
+  paddingRight: 0,
+  // add margin left if side icon with cta, to align with the icon
+  '&.add-margin-left': {
+    marginLeft: '4.375rem',
   },
-}
+  '&:hover': {
+    '& svg': {
+      color: theme.palette.primary.main,
+    },
+  },
 }));
 
 const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, linkText, href, showCta = true }) => {
@@ -119,9 +120,9 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
     navigate(href);
   };
 
-const isSideIconWithCta = (iconVariant, withCta) => {
-  return (!iconVariant || iconVariant === 'side') && withCta;
-};
+  const isSideIconWithCta = (iconVariant, withCta) => {
+    return (!iconVariant || iconVariant === 'side') && withCta;
+  };
 
   return (
     <StyledCard onClick={handleClick} role="button">
