@@ -139,7 +139,11 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
 
         {showCta && href && (
           <StyledCardActions>
-            <StyledLink href={href} className={isSideIconWithCta(iconVariant, showCta) ? 'add-margin-left' : ''}>
+            <StyledLink
+              component="a"
+              onClick={handleClick}
+              className={isSideIconWithCta(iconVariant, showCta) ? 'add-margin-left' : ''}
+            >
               {linkText || 'Learn More'} <ChevronRight size="16px" />
             </StyledLink>
           </StyledCardActions>
