@@ -92,7 +92,7 @@ const StyledLink = styled((props) => <Button variant="text" {...props} />)(({ th
   alignItems: 'center',
   gap: '4px',
 color: theme.palette.text.primary,
-fontSize: "13px",
+fontSize: "0.8125rem",
 textDecoration: "none",
 fontWeight: 500,
 paddingLeft: '4px',
@@ -123,7 +123,6 @@ const isSideIconWithCta = (iconVariant, withCta) => {
   return (!iconVariant || iconVariant === 'side') && withCta;
 };
 
-console.log(showCta);
   return (
     <StyledCard onClick={handleClick} role="button">
       <StyledCardActionArea>
