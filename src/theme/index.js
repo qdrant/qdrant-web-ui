@@ -103,6 +103,12 @@ const themeOptions = {
           fontWeight: 500,
           lineHeight: '150%',
         },
+        h4: {
+          fontWeight: 600,
+          fontSize: '32px',
+          lineHeight: 1.25,
+          letterSpacing: '-0.5px',
+        },
       },
     },
     MuiButton: {
@@ -137,6 +143,17 @@ const themeOptions = {
         // border: `1px solid ${theme.palette.divider}`,
         // };
         // },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          textDecorationThickness: '1px',
+          textUnderlineOffset: '2px',
+          '&:hover': {
+            textDecorationThickness: '1px',
+          },
+        },
       },
     },
   },
