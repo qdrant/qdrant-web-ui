@@ -3,7 +3,7 @@ import * as druid from '@saehrimnir/druidjs';
 import get from 'lodash/get';
 
 const MESSAGE_INTERVAL = 200;
-const DEFAULT_ALGORITHM = "UMAP";
+const DEFAULT_ALGORITHM = 'UMAP';
 
 function getVectorType(vector) {
   if (Array.isArray(vector)) {
