@@ -26,6 +26,8 @@ function SpeedDialMenu({ actions }) {
         size: 'small',
         sx: {
           boxShadow: 1,
+          backgroundColor: 'info.light',
+          '&:hover': { backgroundColor: 'info.main' },
         },
       }}
     >
