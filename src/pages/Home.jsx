@@ -66,7 +66,7 @@ function HomeContent() {
       <AppBar
         position="fixed"
         sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+          zIndex: (theme) => theme.zIndex.drawer,
           background: theme.palette.background.paper,
           boxShadow: 'none',
           borderBottom: `1px solid ${theme.palette.divider}`,
