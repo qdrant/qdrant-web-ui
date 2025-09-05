@@ -3,6 +3,7 @@ import * as druid from '@saehrimnir/druidjs';
 import get from 'lodash/get';
 
 const MESSAGE_INTERVAL = 200;
+const DEFAULT_ALGORITHM = 'UMAP';
 
 function getVectorType(vector) {
   if (Array.isArray(vector)) {
@@ -25,7 +26,7 @@ self.onmessage = function (e) {
 
   const params = e?.data?.params || {};
 
-  const algorithm = params.algorithm || 'TSNE';
+  const algorithm = params.algorithm || DEFAULT_ALGORITHM;
 
   const data = [];
 
@@ -43,7 +44,7 @@ self.onmessage = function (e) {
   if (points.length === 1) {
     self.postMessage({
       data: [],
-      error: `cannot perform ${params.algorithm || 'TSNE'} on single point`,
+      error: `cannot perform ${params.algorithm || DEFAULT_ALGORITHM} on single point`,
     });
     return;
   }
