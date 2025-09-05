@@ -14,6 +14,7 @@ import {
   StyledVersionText,
   StyledVersionList,
 } from './SidebarStyled';
+import { Logo } from '../Logo';
 
 export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
   const { isRestricted } = useClient();
@@ -21,7 +22,9 @@ export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
 
   return (
     <Drawer variant="permanent">
-      <DrawerHeader />
+      <DrawerHeader sx={{ justifyContent: 'start', paddingLeft: '24px', paddingRight: '24px' }}>
+        <Logo width={120} />
+      </DrawerHeader>
       <Divider />
       <StyledList>
         {!isRestricted && sidebarItem('Welcome', <Rocket size="16px" />, '/welcome', location)}

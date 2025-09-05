@@ -14,6 +14,7 @@ import HistoryRounded from '@mui/icons-material/HistoryRounded';
 import RestartAlt from '@mui/icons-material/RestartAlt';
 import { Code } from '@mui/icons-material';
 import CommandsDrawer from '../components/CodeEditorWindow/Menu/CommandsDrawer/CommandsDrawer';
+import { green } from '@mui/material/colors';
 
 const query = `// List all collections
 GET collections
@@ -126,8 +127,15 @@ function Console() {
           </Grid>
           <Tooltip title="Commands" placement="left" arrow>
             <Fab
-              sx={{ position: 'absolute', bottom: '40px', right: '49px', boxShadow: 3 }}
-              color="success"
+              sx={{
+                position: 'absolute',
+                bottom: '40px',
+                right: '49px',
+                boxShadow: 3,
+                backgroundColor: green[500],
+                '&:hover': { backgroundColor: green[700] },
+              }}
+              color="info"
               aria-label="add"
               onClick={() => setOpenCommands(true)}
             >
