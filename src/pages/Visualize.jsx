@@ -215,6 +215,7 @@ function Visualize() {
                       onChange={setCode}
                       onChangeResult={onEditorCodeRun}
                       customRequestSchema={filterRequestSchema}
+                      customHeight="100%"
                     />
                   </Panel>
                   <PanelResizeHandle

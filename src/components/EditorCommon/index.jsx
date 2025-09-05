@@ -59,7 +59,7 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
   }, [height, editorWrapper]);
 
   return (
-    <div className={theme.palette.mode} ref={editorWrapper}>
+    <div className={theme.palette.mode} ref={editorWrapper} style={{ height: '100%' }}>
       <Editor
         theme={props.theme ?? 'custom-language-theme'} // todo: move to config
         height={editorHeight}
