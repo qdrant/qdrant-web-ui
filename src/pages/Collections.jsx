@@ -118,20 +118,19 @@ function Collections() {
       <CenteredFrame>
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
-        <Grid container maxWidth={'xl'} width={'100%'} spacing={6}>
+        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
           <Grid
-            mb={4}
             size={{
               xs: 12,
               md: 5,
             }}
           >
-            <Typography variant="h4" component={'h1'}>
+            <Typography variant="h4" component={'h1'} sx={{ lineHeight: '1' }}>
               Collections {maxCollections && collections ? `(${collections.length} / ${maxCollections})` : ''}
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: { md: 'end' }, mb: 4, gap: 2 }}
+            sx={{ display: 'flex', justifyContent: { md: 'end' }, gap: 2 }}
             size={{
               xs: 12,
               md: 7,
@@ -140,7 +139,7 @@ function Collections() {
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
-          <Grid size={12}>
+          <Grid size={12} mb={2}>
             <SearchBar value={searchQuery} setValue={setSearchQuery} />
           </Grid>
 
@@ -151,8 +150,9 @@ function Collections() {
           )}
           {!collections && !errorMessage && (
             <Grid textAlign={'center'} size={12}>
-              <Typography>🔃 Loading...</Typography>
-              <Skeleton variant="rectangular" height={200} />
+              <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
+              <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
+              <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
             </Grid>
           )}
           {collections && !errorMessage && collections.length === 0 && (

@@ -42,7 +42,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
       >
         <span>
           <Button
-            variant={'contained'}
+            variant={'outlined'}
             onClick={handleUploadClick}
             startIcon={<UploadFile fontSize={'small'} />}
             disabled={isRestricted}

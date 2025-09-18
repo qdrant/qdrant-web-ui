@@ -1,80 +1,20 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import {
-  MenuItem,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  Table,
-  TableBody,
-} from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+  StyledTableBody,
+  StyledTableContainer,
+  StyledTableHead,
+  StyledHeaderCell,
+  StyledTableRow,
+  StyledLink,
+} from '../Common/StyledTable';
 import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
-import VectorsConfigChip from '../Common/VectorsConfigChip';
 import CollectionStatus from './CollectionStatus';
-
-const StyledTableHead = styled(TableHead)({
-  backgroundColor: '#f7f8fa',
-  borderRadius: '8px 8px 0 0',
-  border: '1px solid rgba(0, 0, 0, 0.12)',
-  borderBottom: 'none',
-});
-
-const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
-  padding: '8px 16px',
-  borderBottom: 'none',
-  fontFamily: '"Mona Sans", sans-serif',
-  fontSize: '12px',
-  fontWeight: 400,
-  lineHeight: 1.5,
-  color: theme.palette.text.secondary,
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
-  // todo: add border radius to the first and last cells
-  '&:first-of-type': {
-    borderRadius: '8px 0 0 0',
-  },
-  '&:last-of-type': {
-    borderRadius: '0 8px 0 0',
-  },
-}));
-
-const StyledTableBody = styled(TableBody)({
-  backgroundColor: '#ffffff',
-  borderRadius: '0 0 8px 8px',
-  border: '1px solid rgba(0, 0, 0, 0.12)',
-  borderTop: 'none',
-});
-
-const StyledTableRow = styled(TableRow)({
-  height: '72px',
-  padding: '16px',
-  borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-  '&:last-child': {
-    borderBottom: 'none',
-  },
-  '& .MuiTableCell-root': {
-    padding: '16px',
-    borderBottom: 'none',
-    fontFamily: '"Mona Sans", sans-serif',
-    fontSize: '16px',
-    fontWeight: 400,
-    lineHeight: 1.5,
-    color: '#111824',
-  },
-});
-
-const StyledLink = styled(Link)`
-  text-decoration: none;
-  color: inherit;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+import VectorsConfigChips from '../Common/VectorsConfigChips';
 
 const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -105,7 +45,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         <Typography>{collection.config.params.shard_number}</Typography>
       </TableCell>
       <TableCell>
-        <VectorsConfigChip collectionConfigParams={collection.config.params} sx={{ justifyContent: 'center' }} />
+        <VectorsConfigChips collectionConfigParams={collection.config.params} collectionName={collection.name} />
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>
@@ -140,23 +80,17 @@ CollectionTableRow.propTypes = {
 
 const CollectionsList = ({ collections, getCollectionsCall }) => {
   return (
-    <TableContainer>
+    <StyledTableContainer>
       <Table aria-label="simple table">
         <StyledTableHead>
           <TableRow>
             <StyledHeaderCell width="25%">Name</StyledHeaderCell>
             <StyledHeaderCell width="12%">Status</StyledHeaderCell>
-            <StyledHeaderCell width="12%" align="center">
-              Points (Approx)
-            </StyledHeaderCell>
-            <StyledHeaderCell width="12%" align="center">
-              Segments
-            </StyledHeaderCell>
-            <StyledHeaderCell width="12%" align="center">
-              Shards
-            </StyledHeaderCell>
+            <StyledHeaderCell align="center">Points (Approx)</StyledHeaderCell>
+            <StyledHeaderCell align="center">Segments</StyledHeaderCell>
+            <StyledHeaderCell align="center">Shards</StyledHeaderCell>
             <StyledHeaderCell width="20%" align="center">
-              Vectors Configuration
+              Vectors Config
               <br />
               (Name, Size, Distance)
             </StyledHeaderCell>
@@ -176,7 +110,7 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
             ))}
         </StyledTableBody>
       </Table>
-    </TableContainer>
+    </StyledTableContainer>
   );
 };
 

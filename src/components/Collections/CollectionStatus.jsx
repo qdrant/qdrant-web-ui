@@ -69,7 +69,12 @@ const StatusBadge = styled(Box)(({ status }) => {
 });
 
 const CollectionStatus = ({ status, collectionName }) => (
-  <StatusBadge status={status} component={Link} to={`/collections/${collectionName}#info`} sx={{ textDecoration: 'none' }}>
+  <StatusBadge
+    status={status}
+    component={Link}
+    to={`/collections/${collectionName}#info`}
+    sx={{ textDecoration: 'none' }}
+  >
     <div className="status-dot" />
     <Typography className="status-text">{status}</Typography>
   </StatusBadge>
