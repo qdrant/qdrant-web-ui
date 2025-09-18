@@ -127,8 +127,8 @@ export const lightThemeOptions = {
     alertWarningBackground: '#fff4e5ff',
     alertInfoColor: '#014361ff',
     alertInfoBackground: '#e5f6fdff',
-    alertSuccessColor: '#1e4620ff',
-    alertSuccessBackground: '#edf7edff',
+    alertSuccessColor: '#1e4641ff',
+    alertSuccessBackground: '#edf7f5ff',
     switchKnowFillDisabled: grey[100],
     nativeScrollbarBg: grey[200],
     divider: '#0000001f',
@@ -160,6 +160,32 @@ export const lightThemeOptions = {
             paddingTop: theme.spacing(5),
             minHeight: `calc(100vh - ${theme.spacing(8)})`, // 8 is the height of the AppBar
           };
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: ({ theme, ownerState }) => {
+          const variantStyles = {
+            success: {
+              backgroundColor: theme.palette.alertSuccessBackground,
+              color: theme.palette.alertSuccessColor,
+            },
+            info: {
+              backgroundColor: theme.palette.alertInfoBackground,
+              color: theme.palette.alertInfoColor,
+            },
+            warning: {
+              backgroundColor: theme.palette.alertWarningBackground,
+              color: theme.palette.alertWarningColor,
+            },
+            error: {
+              backgroundColor: theme.palette.alertErrorBackground,
+              color: theme.palette.alertErrorColor,
+            },
+          };
+
+          return variantStyles[ownerState?.severity] || {};
         },
       },
     },

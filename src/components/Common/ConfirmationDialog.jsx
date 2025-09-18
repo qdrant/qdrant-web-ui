@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Dialog, Typography } from '@mui/material';
+import { Box, Button, Dialog, Typography, Alert } from '@mui/material';
 
 const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName, actionHandler }) => {
   const handleActionClick = () => {
@@ -18,9 +18,11 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
       >
         <div>
           <Typography variant="h5">{title}</Typography>
-          <Typography color="textSecondary" sx={{ mt: 2 }} variant="body1">
-            {content}
-          </Typography>
+          {content && (
+            <Typography sx={{ mt: 2 }} variant="body1">
+              {content}
+            </Typography>
+          )}
         </div>
       </Box>
       {warning && (
@@ -30,9 +32,11 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
             mb: 2,
           }}
         >
-          <Typography color="error.main" component={'span'}>
-            Warning: {warning}
-          </Typography>
+          <Alert severity="error">
+            <Typography color="error.main.dark" component={'span'}>
+              <b>Warning:</b> {warning}
+            </Typography>
+          </Alert>
         </Box>
       )}
       <Box
@@ -40,13 +44,14 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
           display: 'flex',
           justifyContent: 'flex-end',
           px: 3,
-          py: 1.5,
+          py: 3,
         }}
       >
-        <Button sx={{ mr: 2 }} variant="outlined" onClick={onClose}>
+        <Button size="medium" sx={{ mr: 2 }} variant="outlined" color="text.primary" onClick={onClose}>
           Cancel
         </Button>
         <Button
+          size="medium"
           sx={
             warning
               ? {
@@ -73,7 +78,7 @@ ConfirmationDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
-  content: PropTypes.string.isRequired,
+  content: PropTypes.string,
   warning: PropTypes.string,
   actionName: PropTypes.string.isRequired,
   actionHandler: PropTypes.func.isRequired,

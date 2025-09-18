@@ -8,21 +8,14 @@ import { styled } from '@mui/material/styles';
 
 const StyledButton = styled(Button)({
   display: 'flex',
-  height: '28px',
-  padding: '4px 10px',
+  padding: '0.25rem 0.625rem',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
-  // color: var(--primary-main, #9494FF);
-  // font-feature-settings: 'ss01' on, 'ss05' on, 'ss06' on;
-
-  // /* button/small */
-  // font-family: var(--fontFamily, "Mona Sans");
-  fontSize: '13px',
+  fontSize: '0.8125rem',
   fontStyle: 'normal',
   fontWeight: 500,
   textTransform: 'capitalize',
-  // lineHeight: '150%',
 });
 
 /**
@@ -58,7 +51,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
       {Object.keys(vectors).map((key) => {
         return (
           <Grid key={key} container spacing={2} alignItems={'center'}>
-            <Grid size={4} display={'flex'} alignItems={'center'}>
+            <Grid size={{ xs: 12, md: 4 }} display={'flex'} alignItems={'center'}>
               {key === '' ? (
                 <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
                   Default vector
@@ -72,7 +65,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 </>
               )}
             </Grid>
-            <Grid my={1} size={4}>
+            <Grid my={1} size={{ xs: 12, md: 4 }}>
               <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
                 Length:
               </Typography>
@@ -100,7 +93,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                 justifyContent: 'end',
                 gap: 2,
               }}
-              size={4}
+              size={{ xs: 12, md: 4 }}
               display={'flex'}
               alignItems={'center'}
             >
@@ -113,7 +106,14 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                   size: 'small',
                 }}
               />
-              <StyledButton variant="outlined" size="small" onClick={() => handleNavigate(key)}>
+              <StyledButton
+                variant="outlined"
+                size="small"
+                onClick={() => handleNavigate(key)}
+                sx={{
+                  width: { xs: '100%', md: 'auto' },
+                }}
+              >
                 Open graph
               </StyledButton>
               {typeof onConditionChange !== 'function' ? null : (
@@ -123,6 +123,9 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
                   onClick={() =>
                     onConditionChange([{ key: 'id', type: 'id', value: point.id }], key === '' ? null : key)
                   }
+                  sx={{
+                    width: { xs: '100%', md: 'auto' },
+                  }}
                 >
                   Find Similar
                 </StyledButton>

@@ -113,15 +113,17 @@ const PointCard = (props) => {
                       tooltip={'Copy payload to clipboard'}
                       successMessage={'Payload JSON copied to clipboard.'}
                     />
-                    <IconButton
-                      aria-label="add payload"
-                      onClick={() => setOpenPayloadEditor(true)}
-                      sx={{
-                        color: 'text.primary',
-                      }}
-                    >
-                      <Pencil size={'1.25rem'} />
-                    </IconButton>
+                    <Tooltip title={'Edit payload'} placement={'left'}>
+                      <IconButton
+                        aria-label="add payload"
+                        onClick={() => setOpenPayloadEditor(true)}
+                        sx={{
+                          color: 'text.primary',
+                        }}
+                      >
+                        <Pencil size={'1.25rem'} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <JsonViewerCustom
                     value={point.payload}
