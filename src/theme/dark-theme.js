@@ -162,5 +162,31 @@ export const darkThemeOptions = {
         },
       },
     },
+    MuiAlert: {
+      styleOverrides: {
+        root: ({ theme, ownerState }) => {
+          const variantStyles = {
+            success: {
+              backgroundColor: theme.palette.alertSuccessBackground,
+              color: theme.palette.alertSuccessColor,
+            },
+            info: {
+              backgroundColor: theme.palette.alertInfoBackground,
+              color: theme.palette.alertInfoColor,
+            },
+            warning: {
+              backgroundColor: theme.palette.alertWarningBackground,
+              color: theme.palette.alertWarningColor,
+            },
+            error: {
+              backgroundColor: theme.palette.alertErrorBackground,
+              color: theme.palette.alertErrorColor,
+            },
+          };
+
+          return variantStyles[ownerState?.severity] || {};
+        },
+      },
+    },
   },
 };

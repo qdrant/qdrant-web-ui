@@ -117,24 +117,32 @@ const themeOptions = {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '8px',
-          padding: '6px 16px',
-          fontSize: '14px',
+          borderRadius: '0.5rem',
+          padding: '0.5rem 1rem',
+          fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: 500,
-          lineHeight: '140%',
+          lineHeight: '1.4',
           textTransform: 'capitalize',
         },
         containedPrimary: ({ theme }) => {
           return {
             background: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
+            boxShadow: 'none',
+            '&:hover': {
+              background: theme.palette.primary.dark,
+              boxShadow: 'none',
+            },
           };
         },
         outlined: ({ theme, ownerState }) => {
           if (ownerState.color === 'text.primary') {
             return {
               border: `1px solid ${theme.palette.divider}`,
+              '&:hover': {
+                background: theme.palette.action.hover,
+              },
             };
           }
         },
@@ -153,6 +161,38 @@ const themeOptions = {
           '&:hover': {
             textDecorationThickness: '1px',
           },
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: '0.5rem',
+          padding: '0.375rem 1rem',
+          fontSize: '0.875rem',
+          fontWeight: 400,
+          lineHeight: 1.5,
+          '& .MuiAlert-icon': {
+            fontSize: '1.375rem',
+            marginRight: '0.75rem',
+            padding: '0.4375rem 0',
+          },
+          '& .MuiAlert-message': {
+            padding: '0.5rem 0',
+            '& .MuiAlertTitle-root': {
+              fontSize: '1rem',
+              fontWeight: 500,
+              lineHeight: 1.5,
+              marginBottom: '0.25rem',
+            },
+          },
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: '0.5rem',
         },
       },
     },
