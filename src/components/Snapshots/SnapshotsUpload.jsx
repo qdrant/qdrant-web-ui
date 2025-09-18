@@ -55,7 +55,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
       <Dialog
         fullScreen={fullScreen}
         fullWidth={true}
-        maxWidth={'md'}
+        maxWidth={'sm'}
         open={open}
         onClose={() => setOpen(false)}
         aria-labelledby="Snapshot upload dialog"
