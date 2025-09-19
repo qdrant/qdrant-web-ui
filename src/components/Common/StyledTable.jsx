@@ -29,7 +29,6 @@ export const StyledTableBody = styled(TableBody)(({ theme }) => ({
 }));
 
 export const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  height: '4.5rem',
   padding: '1rem',
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   '&:last-child': {

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
-import { useTheme } from '@mui/material/styles';
-import { Box, Chip, ListItemIcon, MenuItem, TableCell, TableRow, Tooltip } from '@mui/material';
-import { CancelOutlined, Delete, Download, FolderZip } from '@mui/icons-material';
-import ActionsMenu from '../Common/ActionsMenu';
+import { useTheme, alpha } from '@mui/material/styles';
+import { Box, Chip, TableCell, Tooltip, Button } from '@mui/material';
+import { ArchiveRestore, CircleX, Download, Trash } from 'lucide-react';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import CircularProgressWithLabel from '../Common/CircularProgressWithLabel';
 import { useClient } from '../../context/client-context';
+import { StyledTableRow } from '../Common/StyledTable';
 
 export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }) => {
   const theme = useTheme();
@@ -16,7 +16,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
   const [progress, setProgress] = useState(0);
 
   return (
-    <TableRow key={snapshot.name}>
+    <StyledTableRow key={snapshot.name}>
       <TableCell width={'60%'}>
         <Tooltip title={'Download snapshot'} arrow placement={'top'}>
           <Box
@@ -35,13 +35,21 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
             onClick={() => downloadSnapshot(snapshot.name, snapshot.size, progress, setProgress)}
           >
             <Box sx={{ position: 'relative' }}>
-              <FolderZip
-                fontSize={'large'}
+              <Box
                 sx={{
-                  color: progress === 0 ? theme.palette.primary.main : theme.palette.divider,
-                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.16),
+                  borderRadius: '0.5rem',
+                  padding: '0.5rem',
+                  marginRight: '0.5rem',
                 }}
-              />
+              >
+                <ArchiveRestore
+                  size={16}
+                  color={progress === 0 ? theme.palette.secondary.main : theme.palette.divider}
+                />
+              </Box>
               {progress > 0 && (
                 <CircularProgressWithLabel
                   value={progress}
@@ -65,7 +73,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
             sx={{ ml: 3, mb: '2px' }}
             deleteIcon={
               <Tooltip title={'Cancel download'} placement={'right'}>
-                <CancelOutlined fontSize="small" />
+                <CircleX size={16} />
               </Tooltip>
             }
             onDelete={() => {
@@ -76,27 +84,37 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
         )}
       </TableCell>
       <TableCell align="center">{snapshot.creation_time || 'unknown'}</TableCell>
-      <TableCell align="center">{prettyBytes(snapshot.size)}</TableCell>
+      <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+        {prettyBytes(snapshot.size)}
+      </TableCell>
       <TableCell align="right">
-        <ActionsMenu>
-          <MenuItem onClick={() => downloadSnapshot(snapshot.name, snapshot.size, progress, setProgress)}>
-            <ListItemIcon>
-              <Download fontSize="small" />
-            </ListItemIcon>
-            Download
-          </MenuItem>
-          <MenuItem
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Download size={18} />}
+            onClick={() => downloadSnapshot(snapshot.name, snapshot.size, progress, setProgress)}
             sx={{
-              color: theme.palette.error.main,
+              px: '10px',
+              py: '4px',
             }}
-            onClick={() => setIsDeleteDialogOpen(true)}
           >
-            <ListItemIcon>
-              <Delete color="error" fontSize="small" />
-            </ListItemIcon>
+            Download
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            color="error"
+            startIcon={<Trash size={18} />}
+            onClick={() => setIsDeleteDialogOpen(true)}
+            sx={{
+              px: '10px',
+              py: '4px',
+            }}
+          >
             Delete
-          </MenuItem>
-        </ActionsMenu>
+          </Button>
+        </Box>
       </TableCell>
       <ConfirmationDialog
         open={isDeleteDialogOpen}
@@ -107,7 +125,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
         actionName={'Delete'}
         actionHandler={() => deleteSnapshot(snapshot.name)}
       />
-    </TableRow>
+    </StyledTableRow>
   );
 };
 

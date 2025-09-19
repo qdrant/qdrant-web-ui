@@ -3,9 +3,15 @@ import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
-import { Button, Grid, Link, TableCell, TableContainer, TableRow, Typography } from '@mui/material';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import { TableWithGaps, TableHeadWithGaps, TableBodyWithGaps } from '../Common/TableWithGaps';
+import { Button, Grid, Link, Table, TableCell, TableRow, Typography } from '@mui/material';
+import { Camera } from 'lucide-react';
+import {
+  StyledTableContainer,
+  StyledTableHead,
+  StyledHeaderCell,
+  StyledTableBody,
+  StyledTableRow,
+} from '../Common/StyledTable';
 import { SnapshotsTableRow } from './SnapshotsTableRow';
 import { pumpFile, updateProgress } from '../../common/utils';
 import InfoBanner from '../Common/InfoBanner';
@@ -151,7 +157,7 @@ export const SnapshotsTab = ({ collectionName }) => {
           <Button
             variant={'contained'}
             onClick={createSnapshot}
-            startIcon={<PhotoCamera fontSize={'small'} />}
+            startIcon={<Camera size={18} />}
             disabled={isSnapshotLoading}
           >
             Take snapshot
@@ -197,35 +203,29 @@ export const SnapshotsTab = ({ collectionName }) => {
         {isLoading && <div>Loading...</div>}
         {(snapshots?.length > 0 || isSnapshotLoading) && (
           <Grid size={12}>
-            <TableContainer>
-              <TableWithGaps aria-label="simple table">
-                <TableHeadWithGaps>
+            <StyledTableContainer>
+              <Table aria-label="simple table">
+                <StyledTableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Snapshot Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">
-                      Created at
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="center">
-                      Size
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }} align="right">
-                      Action
-                    </TableCell>
+                    <StyledHeaderCell>Snapshot Name</StyledHeaderCell>
+                    <StyledHeaderCell align="center">Created at</StyledHeaderCell>
+                    <StyledHeaderCell align="center">Size</StyledHeaderCell>
+                    <StyledHeaderCell align="center">Actions</StyledHeaderCell>
                   </TableRow>
-                </TableHeadWithGaps>
-                <TableBodyWithGaps>
+                </StyledTableHead>
+                <StyledTableBody>
                   {tableRows}
 
                   {isSnapshotLoading && (
-                    <TableRow>
+                    <StyledTableRow>
                       <TableCell colSpan={4} align="center">
                         Loading...
                       </TableCell>
-                    </TableRow>
+                    </StyledTableRow>
                   )}
-                </TableBodyWithGaps>
-              </TableWithGaps>
-            </TableContainer>
+                </StyledTableBody>
+              </Table>
+            </StyledTableContainer>
           </Grid>
         )}
         {!isLoading && !snapshots?.length && !isSnapshotLoading && (
