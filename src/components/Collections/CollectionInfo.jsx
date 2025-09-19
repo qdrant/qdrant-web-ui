@@ -1,15 +1,14 @@
 import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Card, CardContent, CardHeader, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, CardHeader } from '@mui/material';
 import { useClient } from '../../context/client-context';
-import { DataGridList } from '../Points/DataGridList';
 import { CopyButton } from '../Common/CopyButton';
-import { Dot } from '../Common/Dot';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import CollectionAliases from './CollectionAliases';
+import JsonViewerCustom from '../Common/JsonViewerCustom';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -74,26 +73,35 @@ export const CollectionInfo = ({ collectionName }) => {
           sx={{
             flexGrow: 1,
           }}
-          action={<CopyButton text={bigIntJSON.stringify(collection)} />}
+          action={
+            <Box display="flex" gap={1}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={triggerOptimizers}
+                disabled={
+                  collection.status === 'green' ||
+                  collection.optimizer_status?.error === `optimizations pending, awaiting update operation`
+                }
+                sx={{
+                  py: 0.75,
+                  mb: 0.2,
+                }}
+              >
+                Trigger optimizers
+              </Button>
+              <CopyButton text={bigIntJSON.stringify(collection)} />
+            </Box>
+          }
         />
         <CardContent>
-          <DataGridList
-            data={collection}
-            specialCases={{
-              status: (
-                <Box display="flex" alignItems="center" justifyContent={'space-between'}>
-                  <Typography variant="subtitle1" color="text.secondary">
-                    {collection.status} <Dot color={collection.status} />
-                  </Typography>
-                  {(collection.status === 'grey' ||
-                    collection.optimizer_status?.error === `optimizations pending, awaiting update operation`) && (
-                    <Button variant="outlined" size="small" onClick={triggerOptimizers}>
-                      Trigger optimizers
-                    </Button>
-                  )}
-                </Box>
-              ),
-            }}
+          <JsonViewerCustom
+            // theme="info todo: make it possible
+            value={collection}
+            displayDataTypes={false}
+            displayObjectSize={false}
+            rootName={false}
+            enableClipboard={false}
           />
         </CardContent>
       </Card>

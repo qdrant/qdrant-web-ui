@@ -128,7 +128,6 @@ const PointCard = (props) => {
                   <JsonViewerCustom
                     value={point.payload}
                     displayDataTypes={false}
-                    lineNumbers={true}
                     defaultInspectDepth={2}
                     displayObjectSize={false}
                     rootName={false}
