@@ -11,10 +11,11 @@ import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
  * @param {any} props.value - The JSON value to display
  * @param {Object} props.sx - Additional sx styles to merge with theme overrides
  * @param {Object} props.jsonViewerProps - Additional props to pass to JsonViewer
+ * @param {string} props.theme - JsonViewer theme name (default: 'qdrant-custom')
  * @return {JSX.Element} Themed JsonViewer component with overrides
  */
-const JsonViewerWrapper = ({ sx = {}, jsonViewerProps = {}, ...otherProps }) => {
-  const { theme, overrides } = useJsonViewerTheme();
+const JsonViewerWrapper = ({ sx = {}, jsonViewerProps = {}, theme: themeName = 'qdrant-custom', ...otherProps }) => {
+  const { theme, overrides } = useJsonViewerTheme(themeName);
 
   return (
     <JsonViewer
@@ -32,6 +33,7 @@ const JsonViewerWrapper = ({ sx = {}, jsonViewerProps = {}, ...otherProps }) => 
 JsonViewerWrapper.propTypes = {
   sx: PropTypes.object,
   jsonViewerProps: PropTypes.object,
+  theme: PropTypes.string,
 };
 
 export default JsonViewerWrapper;

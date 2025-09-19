@@ -96,7 +96,7 @@ export const CollectionInfo = ({ collectionName }) => {
         />
         <CardContent>
           <JsonViewerCustom
-            // theme="info todo: make it possible
+            theme="info"
             value={collection}
             displayDataTypes={false}
             displayObjectSize={false}
