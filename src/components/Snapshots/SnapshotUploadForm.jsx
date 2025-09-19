@@ -174,10 +174,15 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
           '& .MuiStepConnector-root, & .MuiStepContent-root': {
             marginLeft: '0.3125rem',
           },
+          '& .MuiCollapse-wrapperInner': {
+            paddingTop: '0.5rem',
+          },
           '& .MuiStepLabel-root': {
             fontSize: '1rem',
             fontWeight: 400,
-            marginBottom: '1rem',
+            '& .MuiStepLabel-iconContainer': {
+              paddingRight: '1rem',
+            },
           },
         }}
       >
