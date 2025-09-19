@@ -110,7 +110,12 @@ const CollectionAliases = ({ collectionName }) => {
         variant="heading"
         action={
           <Box>
-            <Button variant="outlined" size="small" onClick={() => setOpenCreateModal(true)}>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ py: 0.75, mb: 0.2 }}
+              onClick={() => setOpenCreateModal(true)}
+            >
               Create alias
             </Button>
           </Box>
@@ -185,7 +190,9 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
       data-testid="create-alias-dialog"
       role="dialog"
     >
-      <DialogTitle id="create-alias-title">Create Collection Alias</DialogTitle>
+      <DialogTitle sx={{ p: 3 }} id="create-alias-title">
+        Create Collection Alias
+      </DialogTitle>
       <DialogContent>
         <TextField
           id="alias-name-input"
@@ -197,14 +204,14 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
           required
           margin="dense"
           fullWidth
-          variant="standard"
+          variant="outlined"
         />
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={onClose}>
+      <DialogActions sx={{ p: 3 }}>
+        <Button variant="outlined" color="text.primary" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleCreate} data-testid="create-alias-button">
+        <Button variant="contained" disabled={!aliasName} onClick={handleCreate} data-testid="create-alias-button">
           Create
         </Button>
       </DialogActions>
