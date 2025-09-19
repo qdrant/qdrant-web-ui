@@ -32,7 +32,16 @@ const ClusterInfo = ({ collectionCluster = { result: {} }, ...other }) => {
       />
       <Table>
         <ClusterInfoHead />
-        <TableBody>{shardRows}</TableBody>
+        <TableBody
+          sx={{
+            // last row should have no border
+            '& tr:last-of-type td': {
+              borderBottom: 'none',
+            },
+          }}
+        >
+          {shardRows}
+        </TableBody>
       </Table>
     </Card>
   );
