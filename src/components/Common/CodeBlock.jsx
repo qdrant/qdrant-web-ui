@@ -28,11 +28,12 @@ const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'c
 export const RunButton = ({ code, onRun, loading }) => {
   return (
     <Button
-      variant="outlined"
-      endIcon={loading ? <CircularProgress size={24} color="inherit" /> : <PlayArrowOutlined />}
+      variant="contained"
+      endIcon={loading ? <CircularProgress size={24} color="inherit" /> : <PlayArrowOutlined sx={{ fontSize: 18 }} />}
       onClick={() => onRun(code)}
       disabled={loading}
       data-testid="code-block-run"
+      sx={{ height: '2rem', lineHeight: '2rem', fontSize: '0.8125rem' }}
     >
       {loading ? 'Running...' : 'Run'}
     </Button>
@@ -152,4 +153,5 @@ CodeBlock.propTypes = {
   title: PropTypes.string,
   editable: PropTypes.bool, // by default code block is editable
   loading: PropTypes.bool,
+  withOutput: PropTypes.bool,
 };
