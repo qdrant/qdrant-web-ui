@@ -4,10 +4,7 @@ import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
-import {
-  Workflow,
-  FileCode,
-} from 'lucide-react';
+import { Workflow, FileCode } from 'lucide-react';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
