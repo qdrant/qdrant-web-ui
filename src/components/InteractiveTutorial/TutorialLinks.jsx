@@ -2,15 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Grid, Typography } from '@mui/material';
 import InfoCard from '../Common/InfoCard/InfoCard';
-import {
-  Filter,
-  SlidersHorizontal,
-  ScanText,
-  VectorSquare,
-  Grip,
-  SearchCode,
-  Network,
-} from 'lucide-react';
+import { Filter, SlidersHorizontal, ScanText, VectorSquare, Grip, SearchCode, Network } from 'lucide-react';
 
 const TUTORIAL_SECTIONS = {
   vectorSearch: {

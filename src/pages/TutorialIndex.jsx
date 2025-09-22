@@ -21,7 +21,7 @@ export const TutorialIndex = () => {
     );
   }
   return (
-<Box
+    <Box
       component="main"
       sx={{
         display: 'flex',
@@ -49,7 +49,6 @@ export const TutorialIndex = () => {
         >
           Welcome to Qdrant!
         </Typography>
-
       </Box>
 
       <Box component="section">
@@ -62,9 +61,7 @@ export const TutorialIndex = () => {
             <InfoCard
               icon={Zap}
               title="Quickstart"
-              description={
-                'Create a collection, upsert vectors, and run a search.'
-              }
+              description={'Create a collection, upsert vectors, and run a search.'}
               href="/api-reference"
               showCta={false}
               sx={{ flexGrow: 1 }}
@@ -89,4 +86,3 @@ export const TutorialIndex = () => {
 };
 
 export default TutorialIndex;
-

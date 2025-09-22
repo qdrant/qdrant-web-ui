@@ -35,15 +35,15 @@ export const MdxCodeBlock = ({ children }) => {
 
   return (
     <>
-    <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
-    {result && result !== '{}' && (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Result</Typography>
-      <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
-      <ResultEditorWindow code={result} />
-      </Box>
-    </Box>
-    )}
+      <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
+      {result && result !== '{}' && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Result</Typography>
+          <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+            <ResultEditorWindow code={result} />
+          </Box>
+        </Box>
+      )}
     </>
   );
 };

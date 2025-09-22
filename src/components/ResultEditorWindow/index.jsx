@@ -22,10 +22,10 @@ const ResultEditorWindow = ({ code }) => {
   const { formattedCode, editorHeight } = useMemo(() => {
     const formatted = formatJSON(code);
     const lineCount = formatted.split('\n').length;
-    const calculatedHeight = Math.max(60, (lineCount * lineHeight) + padding + padding);
+    const calculatedHeight = Math.max(60, lineCount * lineHeight + padding + padding);
     return {
       formattedCode: formatted,
-      editorHeight: `${calculatedHeight}px`
+      editorHeight: `${calculatedHeight}px`,
     };
   }, [code]);
 
