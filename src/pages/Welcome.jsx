@@ -3,16 +3,10 @@ import { Box, Typography, Link, Grid } from '@mui/material';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
+import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import {
   Workflow,
   FileCode,
-  Filter,
-  SlidersHorizontal,
-  ScanText,
-  VectorSquare,
-  Grip,
-  SearchCode,
-  Network,
 } from 'lucide-react';
 
 const Welcome = () => {
@@ -105,71 +99,7 @@ const Welcome = () => {
         <Typography component="h2" variant="h6" mb="1rem">
           Interactive Tutorials
         </Typography>
-        <Grid container spacing={2} sx={{ '& > .MuiGrid-root': { display: 'flex' } }}>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={Filter}
-              iconVariant="top"
-              title="Filtering - Beginner"
-              description="Filter search results using basic payload conditions."
-              href="/tutorial/filtering-beginner"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={SlidersHorizontal}
-              iconVariant="top"
-              title="Filtering - Advanced"
-              description="Try advanced filtering based on nested payload conditions."
-              href="/tutorial/filtering-advanced"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={ScanText}
-              iconVariant="top"
-              title="Filtering - Full Text"
-              description="Search for substrings, tokens, or phrases within text fields."
-              href="/tutorial/filteringfulltext"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={VectorSquare}
-              iconVariant="top"
-              title="Multivector Search"
-              description="Work with data represented by ColBERT multivectors."
-              href="/tutorial/multivectors"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={Grip}
-              iconVariant="top"
-              title="Sparse Vector Search"
-              description="Use sparse vectors to get specific search results."
-              href="/tutorial/sparsevectors"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={SearchCode}
-              iconVariant="top"
-              title="Hybrid Search"
-              description="Combine dense and sparse vectors for more accurate search results."
-              href="/tutorial/hybridsearch"
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-            <InfoCard
-              icon={Network}
-              iconVariant="top"
-              title="Multitenancy"
-              description="Manage multiple users within a single collection."
-              href="/tutorial/multitenancy"
-            />
-          </Grid>
-        </Grid>
+        <TutorialLinks sections={['vectorSearch', 'multitenancy']} showTitle={false} />
       </Box>
     </Box>
   );
