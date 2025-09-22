@@ -30,7 +30,11 @@ const InteractiveTutorial = ({ pageSlug }) => {
   }
 
   // todo: maxWith
-  return <Box sx={{ maxWidth: '840px', margin: 'auto' }}><TagName components={mdxComponents} /></Box>;
+  return (
+    <Box sx={{ maxWidth: '840px', margin: 'auto' }}>
+      <TagName components={mdxComponents} />
+    </Box>
+  );
 };
 
 InteractiveTutorial.propTypes = {
