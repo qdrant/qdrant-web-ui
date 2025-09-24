@@ -50,7 +50,7 @@ export const MdxCodeBlock = ({ children }) => {
       <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
       {result && result !== '{}' && (
         <Box ref={resultRef} sx={{ mt: 2 }}>
-          <Typography variant="subtitle1">Result</Typography>
+          <Typography variant="subtitle1" mb={2}>Result</Typography>
           <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
             <ResultEditorWindow code={result} />
           </Box>

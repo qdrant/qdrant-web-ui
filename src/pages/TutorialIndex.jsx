@@ -53,21 +53,21 @@ export const TutorialIndex = () => {
 
       <Box component="section">
         <Typography component="h2" variant="h6" mb="1rem">
-          Connect to your Project or Start with Samples
+          Connect to your Project or Start with Samples 11
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid size={{ display: 'flex', flexDirection: 'column', xs: 12, md: 6 }}>
+          <Grid sx={{ display: 'flex', flexDirection: 'column'}}  size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={Zap}
               title="Quickstart"
               description={'Create a collection, upsert vectors, and run a search.'}
               href="/tutorial/quickstart"
               showCta={false}
-              sx={{ flexGrow: 1, height: '100%' }}
+              sx={{ flexGrow: 1 }}
             />
           </Grid>
-          <Grid size={{ display: 'flex', xs: 12, md: 6 }}>
+          <Grid sx={{ display: 'flex', flexDirection: 'column'}}  size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={FileCode}
               title="Load Sample Data"
