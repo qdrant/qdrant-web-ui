@@ -18,6 +18,7 @@ export const TutorialFooter = () => {
       currentPageIndex = 0;
       navigate('/tutorial');
     }
+    window.scrollTo(0, 0);
   };
 
   const handleNext = () => {
@@ -25,6 +26,7 @@ export const TutorialFooter = () => {
       currentPageIndex = currentPageIndex + 1;
       navigate(`/tutorial/${pageKeys[currentPageIndex]}`);
     }
+    window.scrollTo(0, 0);
   };
 
   return (
