@@ -1,17 +1,5 @@
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
 
-const getVariant = ({ theme, ownerState }) => {
-  // dual cards have a white background and a 1px border around them
-  // in the light theme (alike variant="outlined" cards)
-  // and a dark background and no border in the dark theme
-  // (alike variant="elevation" elevation={1} cards)
-  if (ownerState?.variant === 'dual') {
-    return {
-      backgroundColor: theme.palette.background.paper,
-    };
-  }
-};
-
 // these options override the base dark theme
 export const darkThemeOptions = {
   palette: {
@@ -138,8 +126,10 @@ export const darkThemeOptions = {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Card component
-        root: ({ theme, ownerState }) => {
-          return getVariant({ theme, ownerState });
+        root: {
+          '&.MuiCard-variantDual': {
+            backgroundColor: (theme) => theme.palette.background.paper,
+          },
         },
       },
     },
@@ -147,44 +137,40 @@ export const darkThemeOptions = {
       styleOverrides: {
         // this adds variant="dual" and variant="heading" support
         // to the Paper component
-        root: ({ theme, ownerState }) => {
-          return getVariant({ theme, ownerState });
+        root: {
+          '&.MuiPaper-variantDual': {
+            backgroundColor: (theme) => theme.palette.background.paper,
+          },
         },
       },
     },
     MuiCreateCollectionForm: {
       styleOverrides: {
-        root: ({ theme }) => {
-          return {
-            paddingTop: theme.spacing(5),
-            minHeight: `calc(100vh - ${theme.spacing(8)})`, // 8 is the height of the AppBar
-          };
+        root: {
+          paddingTop: (theme) => theme.spacing(5),
+          minHeight: (theme) => `calc(100vh - ${theme.spacing(8)})`, // 8 is the height of the AppBar
         },
       },
     },
     MuiAlert: {
       styleOverrides: {
-        root: ({ theme, ownerState }) => {
-          const variantStyles = {
-            success: {
-              backgroundColor: theme.palette.alertSuccessBackground,
-              color: theme.palette.alertSuccessColor,
-            },
-            info: {
-              backgroundColor: theme.palette.alertInfoBackground,
-              color: theme.palette.alertInfoColor,
-            },
-            warning: {
-              backgroundColor: theme.palette.alertWarningBackground,
-              color: theme.palette.alertWarningColor,
-            },
-            error: {
-              backgroundColor: theme.palette.alertErrorBackground,
-              color: theme.palette.alertErrorColor,
-            },
-          };
-
-          return variantStyles[ownerState?.severity] || {};
+        root: {
+          '&.MuiAlert-standardSuccess': {
+            backgroundColor: (theme) => theme.palette.alertSuccessBackground,
+            color: (theme) => theme.palette.alertSuccessColor,
+          },
+          '&.MuiAlert-standardInfo': {
+            backgroundColor: (theme) => theme.palette.alertInfoBackground,
+            color: (theme) => theme.palette.alertInfoColor,
+          },
+          '&.MuiAlert-standardWarning': {
+            backgroundColor: (theme) => theme.palette.alertWarningBackground,
+            color: (theme) => theme.palette.alertWarningColor,
+          },
+          '&.MuiAlert-standardError': {
+            backgroundColor: (theme) => theme.palette.alertErrorBackground,
+            color: (theme) => theme.palette.alertErrorColor,
+          },
         },
       },
     },
