@@ -19,6 +19,17 @@ export const MdxCodeBlock = ({ children }) => {
   const withRunButton = children.props.withRunButton && bigIntJSON.parse(children.props.withRunButton);
   const [result, setResult] = React.useState('{}');
   const [loading, setLoading] = React.useState(false);
+  const resultRef = React.useRef(null);
+
+  // Scroll to result
+  React.useEffect(() => {
+    if (result && result !== '{}' && resultRef.current) {
+      resultRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [result]);
 
   const handleRun = (code) => {
     setLoading(true);
@@ -38,7 +49,7 @@ export const MdxCodeBlock = ({ children }) => {
     <>
       <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
       {result && result !== '{}' && (
-        <Box sx={{ mt: 2 }}>
+        <Box ref={resultRef} sx={{ mt: 2 }}>
           <Typography variant="subtitle1">Result</Typography>
           <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
             <ResultEditorWindow code={result} />
