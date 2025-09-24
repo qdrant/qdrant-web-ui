@@ -111,6 +111,26 @@ const themeOptions = {
           lineHeight: 1.25,
           letterSpacing: '-0.5px',
         },
+        h5: {
+          fontWeight: 600,
+          fontSize: '24px',
+          lineHeight: 1.3,
+        },
+        body1: {
+          fontSize: '16px',
+          fontWeight: 400,
+          lineHeight: 1.5,
+        },
+        body2: {
+          fontSize: '14px',
+          fontWeight: 400,
+          lineHeight: 1.5,
+        },
+        subtitle1: {
+          fontSize: '16px',
+          fontWeight: 500,
+          lineHeight: 1.5,
+        },
       },
     },
     MuiButton: {
@@ -144,11 +164,6 @@ const themeOptions = {
             },
           },
         },
-        // text: ({ theme }) => {
-        // return {
-        // border: `1px solid ${theme.palette.divider}`,
-        // };
-        // },
       },
     },
     MuiLink: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import InteractiveTutorial from '../components/InteractiveTutorial/InteractiveTutorial';
-import { TutorialProvider } from '../context/tutorial-context';
+import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { useParams } from 'react-router-dom';
 import { Alert, Box, Grid } from '@mui/material';
 import { useClient } from '../context/client-context';
@@ -22,9 +22,9 @@ export const Tutorial = () => {
     );
   }
   return (
-    <TutorialProvider>
+    <CenteredFrame>
       <InteractiveTutorial pageSlug={pageSlug} />
-    </TutorialProvider>
+    </CenteredFrame>
   );
 };
 

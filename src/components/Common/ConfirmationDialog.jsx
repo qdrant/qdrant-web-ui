@@ -56,6 +56,7 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
             warning
               ? {
                   backgroundColor: 'error.main',
+                  color: 'error.contrastText',
                   '&:hover': {
                     backgroundColor: 'error.dark',
                   },

@@ -34,6 +34,7 @@ const StyledCardContent = styled(CardContent)({
   width: '100%',
   padding: '1.5rem',
   display: 'flex',
+  flexGrow: 1,
   '&.side': {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,7 +110,7 @@ const StyledLink = styled((props) => <Button variant="text" {...props} />)(({ th
   },
 }));
 
-const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, linkText, href, showCta = true }) => {
+const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, linkText, href, showCta = true, sx }) => {
   const theme = useTheme();
   const displayIconColor = iconColor || theme.palette.info.main;
   const displayIconVariant = iconVariant || 'side';
@@ -125,7 +126,7 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
   };
 
   return (
-    <StyledCard onClick={handleClick} role="button">
+    <StyledCard onClick={handleClick} role="button" sx={{...sx}}>
       <StyledCardActionArea>
         <StyledCardContent className={displayIconVariant}>
           <IconWrapper>
@@ -162,6 +163,7 @@ InfoCard.propTypes = {
   linkText: PropTypes.string,
   href: PropTypes.string.isRequired,
   showCta: PropTypes.bool,
+  sx: PropTypes.object,
 };
 
 export default InfoCard;
