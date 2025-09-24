@@ -126,7 +126,7 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
   };
 
   return (
-    <StyledCard onClick={handleClick} role="button" sx={{...sx}}>
+    <StyledCard onClick={handleClick} role="button" sx={{ ...sx }}>
       <StyledCardActionArea>
         <StyledCardContent className={displayIconVariant}>
           <IconWrapper>
