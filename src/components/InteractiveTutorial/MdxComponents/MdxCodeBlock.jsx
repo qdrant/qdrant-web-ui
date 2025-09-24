@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../../../common/bigIntJSON';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { CodeBlock } from '../../Common/CodeBlock';
 import ResultEditorWindow from '../../ResultEditorWindow';
 /**
@@ -12,6 +12,7 @@ import ResultEditorWindow from '../../ResultEditorWindow';
  * @constructor
  */
 export const MdxCodeBlock = ({ children }) => {
+  const theme = useTheme();
   const className = children.props.className || '';
   const code = children.props.children.trim();
   const language = className.replace(/language-/, '');
@@ -38,8 +39,8 @@ export const MdxCodeBlock = ({ children }) => {
       <CodeBlock codeStr={code} language={language} withRunButton={withRunButton} onRun={handleRun} loading={loading} />
       {result && result !== '{}' && (
         <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">Result</Typography>
-          <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden' }}>
+          <Typography variant="subtitle1">Result</Typography>
+          <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
             <ResultEditorWindow code={result} />
           </Box>
         </Box>

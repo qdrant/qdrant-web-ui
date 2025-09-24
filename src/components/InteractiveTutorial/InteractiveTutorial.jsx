@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { tutorialSubPages } from './TutorialSubpages';
+import { TutorialFooter } from './TutorialFooter';
 import { useLocation } from 'react-router-dom';
 import { Prism } from 'prism-react-renderer';
 const InteractiveTutorial = ({ pageSlug }) => {
@@ -33,6 +34,7 @@ const InteractiveTutorial = ({ pageSlug }) => {
   return (
     <Box sx={{ maxWidth: '840px', margin: 'auto' }}>
       <TagName components={mdxComponents} />
+      <TutorialFooter pageSlug={pageSlug} />
     </Box>
   );
 };

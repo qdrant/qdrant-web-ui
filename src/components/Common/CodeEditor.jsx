@@ -15,17 +15,17 @@ import StyledEditor from './StyledEditor';
  * @param {object} options - Additional editor options
  * @return {JSX.Element}
  */
-const CodeEditor = ({ 
-  value, 
-  language = 'javascript', 
-  onChange, 
-  readOnly = false, 
+const CodeEditor = ({
+  value,
+  language = 'javascript',
+  onChange,
+  readOnly = false,
   height = 'auto',
   options = {},
-  ...props 
+  ...props
 }) => {
   const theme = useTheme();
-  
+
   // Custom Prism theme using exact Figma color matches
   const customPrismTheme = {
     plain: {
