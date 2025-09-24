@@ -1,22 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Highlight, Prism, themes } from 'prism-react-renderer';
-import Editor from 'react-simple-code-editor';
 import { alpha, Box, Button, CircularProgress } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { CopyButton } from './CopyButton';
-
-const StyledEditor = styled((props) => <Editor padding={0} textareaClassName={'code-block-textarea'} {...props} />)({
-  fontFamily: '"Menlo", monospace',
-  fontSize: '16px',
-  lineHeight: '24px',
-  fontWeight: '400',
-  '& .code-block-textarea': {
-    margin: '1rem 0 !important',
-    outline: 'none',
-  },
-});
+import CodeEditor from './CodeEditor';
 
 /**
  * Run button for code block
@@ -54,14 +42,6 @@ RunButton.propTypes = {
 export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, editable = true, loading }) => {
   const [code, setCode] = useState(codeStr);
   const theme = useTheme();
-  const basePrismTheme = theme.palette.mode === 'light' ? themes.github : themes.dracula;
-  const prismTheme = {
-    ...basePrismTheme,
-    plain: {
-      ...basePrismTheme.plain,
-      backgroundColor: theme.palette.background.code,
-    },
-  };
 
   useEffect(() => {
     setCode(codeStr);
@@ -71,43 +51,13 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
     setCode(() => code);
   };
 
-  const highlight = (code) => (
-    <Highlight code={code} language={language} theme={prismTheme} prism={Prism}>
-      {({ className, style, tokens, getLineProps, getTokenProps }) => {
-        return (
-          <pre
-            className={className}
-            style={{
-              wordBreak: 'keep-all',
-              whiteSpace: 'pre-wrap',
-              ...style,
-            }}
-            data-testid={'code-block-pre'}
-          >
-            {tokens.map((line, i) => {
-              const lineProps = getLineProps({ line, key: i });
-              const { key: lineKey, ...restLineProps } = lineProps;
-              return (
-                <div key={lineKey} {...restLineProps}>
-                  {line.map((token, key) => {
-                    const tokenProps = getTokenProps({ token, key });
-                    const { key: tokenKey, ...restTokenProps } = tokenProps;
-                    return <span key={tokenKey} {...restTokenProps} />;
-                  })}
-                </div>
-              );
-            })}
-          </pre>
-        );
-      }}
-    </Highlight>
-  );
-
   return (
     <Box
       sx={{
         background: theme.palette.background.code,
         borderRadius: '0.5rem',
+        border: '1px solid',
+        borderColor: theme.palette.divider,
         my: 3,
       }}
       data-testid={'code-block'}
@@ -118,7 +68,8 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
         px={2}
         py={1}
         sx={{
-          background: alpha(theme.palette.primary.main, 0.05),
+          background:
+            theme.palette.mode === 'light' ? theme.palette.action.hover : alpha(theme.palette.primary.main, 0.05),
         }}
       >
         {withRunButton && onRun && (
@@ -131,15 +82,13 @@ export const CodeBlock = ({ codeStr, language, withRunButton, onRun, title, edit
         <CopyButton text={code} />
       </Box>
       <Box sx={{ px: 2, pb: 1 }}>
-        {withRunButton && editable && (
-          <StyledEditor
-            value={code}
-            onValueChange={handleChange}
-            highlight={highlight}
-            data-testid={'code-block-editor'}
-          />
-        )}
-        {((withRunButton && !editable) || !withRunButton) && highlight(code)}
+        <CodeEditor
+          value={code}
+          language={language}
+          onChange={withRunButton && editable ? handleChange : undefined}
+          readOnly={!withRunButton || !editable}
+          data-testid={'code-block-editor'}
+        />
       </Box>
     </Box>
   );

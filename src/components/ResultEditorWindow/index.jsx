@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import EditorCommon from '../EditorCommon';
+import CodeEditor from '../Common/CodeEditor';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
 const ResultEditorWindow = ({ code }) => {
@@ -29,26 +30,7 @@ const ResultEditorWindow = ({ code }) => {
     };
   }, [code]);
 
-  return (
-    <EditorCommon
-      language="json"
-      theme={'custom-language-theme'}
-      value={formattedCode}
-      customHeight={editorHeight}
-      options={{
-        scrollBeyondLastLine: false,
-        fontSize: 14,
-        wordWrap: 'on',
-        minimap: { enabled: false },
-        automaticLayout: true,
-        readOnly: true,
-        mouseWheelZoom: true,
-        folding: false,
-        lineHeight: lineHeight,
-        padding: { top: padding, bottom: padding },
-      }}
-    />
-  );
+  return <CodeEditor value={formattedCode} language="json" readOnly={true} />;
 };
 
 ResultEditorWindow.propTypes = {

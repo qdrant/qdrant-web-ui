@@ -57,14 +57,14 @@ export const TutorialIndex = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid size={{ display: 'flex', xs: 12, md: 6 }}>
+          <Grid size={{ display: 'flex', flexDirection: 'column', xs: 12, md: 6 }}>
             <InfoCard
               icon={Zap}
               title="Quickstart"
               description={'Create a collection, upsert vectors, and run a search.'}
-              href="/api-reference"
+              href="/tutorial/quickstart"
               showCta={false}
-              sx={{ flexGrow: 1 }}
+              sx={{ flexGrow: 1, height: '100%' }}
             />
           </Grid>
           <Grid size={{ display: 'flex', xs: 12, md: 6 }}>
