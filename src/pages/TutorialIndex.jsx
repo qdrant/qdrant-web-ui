@@ -57,7 +57,7 @@ export const TutorialIndex = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid sx={{ display: 'flex', flexDirection: 'column'}}  size={{ xs: 12, md: 6 }}>
+          <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={Zap}
               title="Quickstart"
@@ -67,7 +67,7 @@ export const TutorialIndex = () => {
               sx={{ flexGrow: 1 }}
             />
           </Grid>
-          <Grid sx={{ display: 'flex', flexDirection: 'column'}}  size={{ xs: 12, md: 6 }}>
+          <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={FileCode}
               title="Load Sample Data"
