@@ -163,6 +163,13 @@ function Graph() {
     },
   });
 
+  console.log('activePoint', activePoint);
+  useEffect(() => {
+    if (activePoint != null && tabValue !== 1) {
+      setTabValue(1);
+    }
+  }, [activePoint]);
+
   return (
     <>
       <Box component="main">
@@ -240,7 +247,7 @@ function Graph() {
                   </TabPanel>
                   <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
                     <Box sx={{ height: '100%', overflowY: 'scroll' }}>
-                      {activePoint && <PointPreview point={activePoint} />}
+                      <PointPreview point={activePoint} />
                     </Box>
                   </TabPanel>
                 </Box>
