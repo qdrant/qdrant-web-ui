@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
-import { alpha, Box, Typography, Card, CardContent, Divider } from '@mui/material';
+import { alpha, Box, Typography, Card, CardContent, Divider, Alert } from '@mui/material';
 import PointImage from '../Points/PointImage';
 import PointPayload from '../Points/PointPayload';
 import Vectors from '../Points/PointVectors';
@@ -9,9 +9,15 @@ import Vectors from '../Points/PointVectors';
 // todo: fix this, reuse parts of PointCard.jsx where is possible, fix hardcoded parts
 const PointPreview = ({ point }) => {
   const theme = useTheme();
+  console.log('HEY RENDERING PointPreview');
+  console.log('PointPreview render', point);
 
   if (!point) {
-    return null;
+    return (
+      <Alert severity="info" sx={{ m: 5 }}>
+        Select a point to see its data preview
+      </Alert>
+    );
   }
 
   return (

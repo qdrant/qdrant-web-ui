@@ -73,6 +73,12 @@ function Visualize() {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
 
+  useEffect(() => {
+    if (activePoint != null && tabValue !== 1) {
+      setTabValue(1);
+    }
+  }, [activePoint]);
+
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
 
@@ -231,9 +237,7 @@ function Visualize() {
                     />
                   </TabPanel>
                   <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>
-                      {activePoint && <PointPreview point={activePoint} />}
-                    </Box>
+                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>{<PointPreview point={activePoint} />}</Box>
                   </TabPanel>
                 </Box>
               </Panel>
