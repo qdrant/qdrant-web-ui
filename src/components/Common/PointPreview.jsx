@@ -1,87 +1,93 @@
 import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
-import { alpha, Box, Card, CardContent, CardHeader, Grid, LinearProgress } from '@mui/material';
-import { DataGridList } from '../Points/DataGridList';
+import { alpha, Box, Typography, Card, CardContent, Divider } from '@mui/material';
 import PointImage from '../Points/PointImage';
+import PointPayload from '../Points/PointPayload';
 import Vectors from '../Points/PointVectors';
 
+// todo: fix this, reuse parts of PointCard.jsx where is possible, fix hardcoded parts
 const PointPreview = ({ point }) => {
   const theme = useTheme();
-  const [loading] = React.useState(false);
-  const conditions = [];
-  const payloadSchema = {};
 
   if (!point) {
     return null;
   }
 
-  const sortedPayload = Object.keys(point.payload)
-    .sort() // Sort the keys alphabetically
-    .reduce((obj, key) => {
-      obj[key] = point.payload[key]; // Rebuild the object with sorted keys
-      return obj;
-    }, {});
-
   return (
-    <>
-      <Card
-        variant="dual"
+    <Card
+      variant="dual"
+      sx={{
+        borderRadius: 0,
+      }}
+    >
+      {/* Header */}
+      <Box
+        component="header"
         sx={{
+          backgroundColor: alpha(theme.palette.action.hover, 0.08),
+          px: 2,
+          py: 0.5,
           display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          border: '0',
+          alignItems: 'center',
+          height: 48,
         }}
       >
-        {loading && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-            }}
-          >
-            <LinearProgress />
-          </Box>
-        )}
-        {Object.keys(point.payload).length > 0 && (
-          <>
-            <CardContent>
-              <Grid container display={'flex'}>
-                {point.payload && <PointImage data={point.payload} sx={{ width: 300, mx: 'auto' }} xs={12} />}
-                <Grid my={1} size={12}>
-                  <DataGridList
-                    data={{ id: point.id, ...sortedPayload }}
-                    conditions={conditions}
-                    payloadSchema={payloadSchema}
-                  />
-                </Grid>
-              </Grid>
-            </CardContent>
-          </>
-        )}
-        {point?.vector && (
-          <>
-            <CardHeader
-              subheader={'Vectors:'}
+        <Typography variant="h6">Point {point.id}</Typography>
+      </Box>
+
+      {/* Image Section */}
+      {Object.keys(point.payload).length > 0 && (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+            <PointImage
+              data={point.payload}
               sx={{
-                flexGrow: 1,
-                background: alpha(theme.palette.primary.main, 0.05),
+                width: 300,
+                height: 300,
+                borderRadius: 0.25,
+                mx: 2,
+                my: 3,
+                border: `1px solid ${alpha(theme.palette.text.primary, 0.12)}`,
+                'div:has(> &):after': {
+                  // emulates a border after padding,
+                  // only works in modern browsers
+                  // but it is just a cosmetic tweak;
+                  // needed to avoid adding extra logic to check if image is present
+                  content: '""',
+                  display: 'block',
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderBottom: `1px solid ${alpha(theme.palette.text.primary, 0.12)}`,
+                },
               }}
             />
-            <CardContent>
-              <Vectors point={point} />
-            </CardContent>
-          </>
-        )}
-      </Card>
-    </>
+          </Box>
+        </>
+      )}
+
+      {/* Payload Section */}
+      {Object.keys(point.payload).length > 0 && (
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ px: 2, py: 1 }}>
+            <PointPayload point={point} showImage={false} onPayloadEdit={() => {}} />
+          </Box>
+        </Box>
+      )}
+
+      {/* Vectors Section */}
+      {point?.vector && (
+        <Box sx={{ borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.12)}` }}>
+          <Divider />
+          <CardContent sx={{ padding: '1rem' }}>{point?.vector && <Vectors point={point} />}</CardContent>
+        </Box>
+      )}
+    </Card>
   );
 };
 
-// prop types
 PointPreview.propTypes = {
   point: PropTypes.object,
 };

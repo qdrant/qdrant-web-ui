@@ -2,27 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Link, Alert } from '@mui/material';
 import { MdxCodeBlock } from './MdxCodeBlock';
-import { useTheme } from '@mui/material/styles';
-
-// if we will use mdx in other places, then this is better to be done on the App level
-// and passed into MDXProvider wrapping the app
-export const LIGHT_BACKGROUND = '#fbfbfb';
-export const DARK_BACKGROUND = '#1e1e1e';
-export const INLINE_CODE_COLOR_LIGHT = 'rgb(170, 9, 130)';
-export const INLINE_CODE_COLOR_DARK = 'rgb(206, 145, 120)';
+import { deepOrange } from '../../../theme/colors';
 
 export const InlineCode = (props) => {
-  const theme = useTheme();
-  const background = theme.palette.mode === 'light' ? LIGHT_BACKGROUND : DARK_BACKGROUND;
   return (
     <Typography
       component={'code'}
       variant={'code'}
       sx={{
-        background,
+        background: 'transparent',
         borderRadius: 1,
         p: 0.3,
-        color: theme.palette.mode === 'light' ? INLINE_CODE_COLOR_LIGHT : INLINE_CODE_COLOR_DARK,
+        color: deepOrange['500'],
       }}
       {...props}
     />
