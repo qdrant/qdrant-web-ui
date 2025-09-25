@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab } from '@mui/material';
+import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -172,6 +172,7 @@ function Visualize() {
                         alignItems: 'center',
                         p: 1,
                         borderRadius: 0,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
                       }}
                     >
                       <Tooltip title={'Back to collection'}>
@@ -199,7 +200,7 @@ function Visualize() {
               <PanelResizeHandle
                 style={{
                   width: '10px',
-                  background: alpha(theme.palette.primary.main, 0.05),
+                  background: theme.palette.background.paperElevation2,
                 }}
               >
                 <Box
