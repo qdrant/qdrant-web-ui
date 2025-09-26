@@ -1,38 +1,38 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { IconButton, Tooltip } from '@mui/material';
-import { CopyAll } from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
-import { getSnackbarOptions } from './utils/snackbarOptions';
+import { IconButton } from '@mui/material';
+import { Copy } from 'lucide-react';
+import { BaseCopyComponent } from './BaseCopyComponent';
 
 export const CopyButton = ({
   text,
   tooltip = 'Copy to clipboard',
   tooltipPlacement = 'left',
   successMessage = 'Copied to clipboard',
+  size,
+  iconButtonProps,
 }) => {
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 1000);
-  const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
+  const renderButton = ({ handleCopy }) => (
+    <IconButton
+      sx={{
+        color: 'text.primary',
+      }}
+      aria-label={tooltip}
+      onClick={handleCopy}
+      {...iconButtonProps}
+    >
+      <Copy size={size || '1.25rem'} />
+    </IconButton>
+  );
 
   return (
-    <Tooltip title={tooltip} placement={tooltipPlacement}>
-      <IconButton
-        aria-label={tooltip}
-        onClick={() => {
-          navigator.clipboard
-            .writeText(text)
-            .then(() => {
-              enqueueSnackbar(successMessage, successSnackbarOptions);
-            })
-            .catch((err) => {
-              enqueueSnackbar(err.message, errorSnackbarOptions);
-            });
-        }}
-      >
-        <CopyAll />
-      </IconButton>
-    </Tooltip>
+    <BaseCopyComponent
+      text={text}
+      tooltip={tooltip}
+      tooltipPlacement={tooltipPlacement}
+      successMessage={successMessage}
+      renderButton={renderButton}
+    />
   );
 };
 
@@ -41,4 +41,6 @@ CopyButton.propTypes = {
   tooltip: PropTypes.string,
   tooltipPlacement: PropTypes.string,
   successMessage: PropTypes.string,
+  size: PropTypes.string,
+  iconButtonProps: PropTypes.object,
 };

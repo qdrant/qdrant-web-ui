@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
+  Box,
   Card,
   CardHeader,
   Table,
@@ -8,8 +9,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Tooltip,
-  IconButton,
+  Button,
   FormControlLabel,
   Switch,
   CardContent,
@@ -18,7 +18,7 @@ import {
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import Typography from '@mui/material/Typography';
-import { PublishedWithChanges } from '@mui/icons-material';
+import { SearchCheck } from 'lucide-react';
 import { checkIndexPrecision } from './check-index-precision';
 import { useClient } from '../../../context/client-context';
 import CodeEditorWindow from '../../FilterEditorWindow';
@@ -44,21 +44,21 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
       <TableCell>
         {isInProgress && <LinearProgress />}
         {!isInProgress && (
-          <>
+          <Box display="flex" alignItems="center" gap={1.5}>
             <Typography variant="subtitle1" component={'span'} color="text.secondary">
               {precision ? `${precision * 100}%` : '—'}
             </Typography>
-            <Tooltip title="Check index quality">
-              <IconButton
-                aria-label="Check index quality"
-                data-testid="index-quality-check-button"
-                onClick={onCheckIndexQuality}
-                sx={{ p: 0, ml: 1 }}
-              >
-                <PublishedWithChanges color={'primary'} />
-              </IconButton>
-            </Tooltip>
-          </>
+            <Button
+              variant="contained"
+              size="small"
+              aria-label="Check index quality"
+              data-testid="index-quality-check-button"
+              onClick={onCheckIndexQuality}
+              startIcon={<SearchCheck size={18} />}
+            >
+              Check&nbsp;Index&nbsp;Quality
+            </Button>
+          </Box>
         )}
       </TableCell>
     </TableRow>
@@ -239,26 +239,22 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   return (
     <Card variant="dual" data-testid="vectors-info" {...other}>
       <CardHeader
-        title={
-          <>
-            Search Quality
-            <FormControlLabel
-              sx={{ ml: 2 }}
-              control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="small" />}
-              label={
-                <Typography component={'span'} variant={'caption'}>
-                  Advanced Mode
-                </Typography>
-              }
-            />
-          </>
-        }
+        title="Search Quality"
         variant="heading"
         sx={{
           flexGrow: 1,
         }}
         action={
           <>
+            <FormControlLabel
+              sx={{ mr: 2 }}
+              control={<Switch checked={advancedMod} onChange={() => setAdvancedMod(!advancedMod)} size="medium" />}
+              label={
+                <Typography component={'span'} variant={'body1'}>
+                  Advanced Mode
+                </Typography>
+              }
+            />
             <CopyButton text={advancedMod ? code : bigIntJSON.stringify(vectors)} />
           </>
         }
@@ -266,7 +262,13 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       {!advancedMod && (
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                '& th': {
+                  borderBottom: 'none',
+                },
+              }}
+            >
               <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
                   Vector Name
@@ -290,7 +292,13 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
             </TableRow>
           </TableHead>
 
-          <TableBody>
+          <TableBody
+            sx={{
+              '& tr:last-of-type td': {
+                borderBottom: 'none',
+              },
+            }}
+          >
             {Object.keys(vectors).map((vectorName) => (
               <VectorTableRow
                 vectorObj={vectors[vectorName]}

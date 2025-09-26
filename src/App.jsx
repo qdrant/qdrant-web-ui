@@ -45,6 +45,8 @@ function NewApp() {
     [mode]
   );
 
+  console.log(theme);
+
   const routing = useRoutes(routes());
   useTitle('UI | Qdrant ');
 

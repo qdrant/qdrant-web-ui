@@ -1,128 +1,75 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
-import MuiDrawer from '@mui/material/Drawer';
-import { List, Typography, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { LibraryBooks, Terminal, Animation, Key, RocketLaunch } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import SidebarTutorialSection from './SidebarTutorialSection';
+import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
+
 import { useClient } from '../../context/client-context';
+import { Rocket, SquareTerminal, RectangleEllipsis, FileCode, KeyRound, BookMarked } from 'lucide-react';
+import {
+  DrawerHeader,
+  Drawer,
+  StyledListItemButton,
+  StyledList,
+  StyledVersionListItem,
+  StyledVersionText,
+  StyledVersionList,
+} from './SidebarStyled';
+import { Logo } from '../Logo';
 
-const drawerWidth = 240;
-
-const openedMixin = (theme) => ({
-  width: drawerWidth,
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.enteringScreen,
-  }),
-  overflowX: 'hidden',
-});
-
-const closedMixin = (theme) => ({
-  transition: theme.transitions.create('width', {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  overflowX: 'hidden',
-  width: `calc(${theme.spacing(7)} + 1px)`,
-  [theme.breakpoints.up('sm')]: {
-    width: `calc(${theme.spacing(8)} + 1px)`,
-  },
-});
-
-const DrawerHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-
-const Drawer = styled(MuiDrawer, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-  width: drawerWidth,
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-  boxSizing: 'border-box',
-  ...(open && {
-    ...openedMixin(theme),
-    '& .MuiDrawer-paper': openedMixin(theme),
-  }),
-  ...(!open && {
-    ...closedMixin(theme),
-    '& .MuiDrawer-paper': closedMixin(theme),
-  }),
-}));
-
-export default function Sidebar({ open, version, jwtEnabled, jwtVisible }) {
+export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
   const { isRestricted } = useClient();
+  const location = useLocation();
 
   return (
-    <Drawer variant="permanent" open={open}>
-      <DrawerHeader />
+    <Drawer variant="permanent">
+      <DrawerHeader sx={{ justifyContent: 'start', paddingLeft: '24px', paddingRight: '24px' }}>
+        <Logo width={120} />
+      </DrawerHeader>
       <Divider />
-      <List>
-        {!isRestricted && sidebarItem('Welcome', <RocketLaunch />, '/welcome', open)}
-        {sidebarItem('Console', <Terminal />, '/console', open)}
-        {sidebarItem('Collections', <LibraryBooks />, '/collections', open)}
-        {!isRestricted && (
-          <ListItem key={'Tutorial'} disablePadding sx={{ display: 'block' }}>
-            <SidebarTutorialSection isSidebarOpen={open} />
-          </ListItem>
-        )}
+      <StyledList>
+        {!isRestricted && sidebarItem('Welcome', <Rocket size="16px" />, '/welcome', location)}
+        {sidebarItem('Console', <SquareTerminal size="16px" />, '/console', location)}
+        {sidebarItem('Collections', <RectangleEllipsis size="16px" />, '/collections', location)}
+        {!isRestricted && sidebarItem('Tutorial', <BookMarked size="16px" />, '/tutorial', location)}
 
-        {!isRestricted && sidebarItem('Datasets', <Animation />, '/datasets', open)}
+        {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
 
-        {!isRestricted && jwtVisible && sidebarItem('Access Tokens', <Key />, '/jwt', open, jwtEnabled)}
-      </List>
+        {!isRestricted &&
+          jwtVisible &&
+          sidebarItem('Access Tokens', <KeyRound size="16px" />, '/jwt', location, jwtEnabled)}
+      </StyledList>
 
-      <List style={{ marginTop: 'auto' }}>
-        <ListItem>
-          <Typography variant="caption">
-            {open ? 'Qdrant ' : ''}v{version}
-          </Typography>
-        </ListItem>
-      </List>
+      <StyledVersionList>
+        <StyledVersionListItem>
+          <StyledVersionText variant="caption">Qdrant v{version}</StyledVersionText>
+        </StyledVersionListItem>
+      </StyledVersionList>
     </Drawer>
   );
 }
 
-function sidebarItem(title, icon, linkPath, isOpen, enabled = true) {
+function sidebarItem(title, icon, linkPath, location, enabled = true) {
+  const isActive = location.pathname === linkPath || location.pathname.startsWith(linkPath + '/');
+
   return (
     <ListItem key={title} disablePadding sx={{ display: 'block' }}>
-      <Tooltip title={title} placement="right" arrow disableHoverListener={isOpen}>
-        <ListItemButton
+      <StyledListItemButton component={Link} to={linkPath} disabled={!enabled} isActive={isActive}>
+        <ListItemIcon
           sx={{
-            minHeight: 48,
-            justifyContent: isOpen ? 'initial' : 'center',
-            px: 2.5,
+            minWidth: 0,
+            mr: 3,
+            justifyContent: 'center',
           }}
-          component={Link}
-          to={linkPath}
-          disabled={!enabled}
         >
-          <ListItemIcon
-            sx={{
-              minWidth: 0,
-              mr: isOpen ? 3 : 'auto',
-              justifyContent: 'center',
-            }}
-          >
-            {icon}
-          </ListItemIcon>
-          <ListItemText primary={title} sx={{ opacity: isOpen ? 1 : 0 }} />
-        </ListItemButton>
-      </Tooltip>
+          {icon}
+        </ListItemIcon>
+        <ListItemText primary={title} />
+      </StyledListItemButton>
     </ListItem>
   );
 }
 
 Sidebar.propTypes = {
-  open: PropTypes.bool,
   version: PropTypes.string,
   jwtEnabled: PropTypes.bool,
   jwtVisible: PropTypes.bool,

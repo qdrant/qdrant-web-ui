@@ -35,8 +35,9 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
     monaco.languages.register({ id: 'custom-language' });
     // Defining Rules
     monaco.languages.setMonarchTokensProvider('custom-language', Rules);
-    // Defining Theme
-    monaco.editor.defineTheme('custom-language-theme', getEditorTheme(theme));
+    // Defining Themes
+    monaco.editor.defineTheme('custom-language-theme', getEditorTheme(theme, 'custom-language-theme'));
+    monaco.editor.defineTheme('qdrant-theme', getEditorTheme(theme, 'qdrant-theme'));
 
     // Defining Language Configuration, e.g. comments, brackets
     monaco.languages.setLanguageConfiguration('custom-language', langConfig);
@@ -48,7 +49,8 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
 
   // Monitor if theme changes
   useEffect(() => {
-    monacoRef.current?.editor.defineTheme('custom-language-theme', getEditorTheme(theme));
+    monacoRef.current?.editor.defineTheme('custom-language-theme', getEditorTheme(theme, 'custom-language-theme'));
+    monacoRef.current?.editor.defineTheme('qdrant-theme', getEditorTheme(theme, 'qdrant-theme'));
   }, [theme]);
 
   useEffect(() => {

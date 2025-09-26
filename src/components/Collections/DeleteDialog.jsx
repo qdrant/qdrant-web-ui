@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
-
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
-import Box from '@mui/material/Box';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
 
 export default function DeleteDialog({ open, setOpen, collectionName, getCollectionsCall }) {
   const [hasError, setHasError] = useState(false);
@@ -35,34 +28,21 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
   };
 
   return (
-    <div>
+    <>
       {hasError && <ErrorNotifier {...{ message: errorMessage }} />}
-      <Dialog open={open} onClose={handleClose} aria-labelledby="Delete-collection-confirmation">
-        <DialogTitle id="Delete-collection-confirmation">
-          Do you want to{' '}
-          <Box component="span" display={'inline'} sx={{ color: 'error.main' }}>
-            delete {collectionName}
-          </Box>
-          ?
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            <Box display={'inline'} component="span" sx={{ color: 'error.main' }}>
-              Warning:
-            </Box>{' '}
-            Deleting a collection cannot be undone. Make sure you have backed up all important data before proceeding.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={callDelete} color="error" variant="contained">
-            Delete
-          </Button>
-          <Button autoFocus onClick={handleClose} color="success" variant="contained">
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+      <ConfirmationDialog
+        open={open}
+        onClose={handleClose}
+        title={'Do you want to delete ' + collectionName + '?'}
+        warning={
+          'Deleting a collection cannot be undone. ' +
+          'Make sure you have backed up all important data before proceeding.'
+        }
+        actionName={'Delete'}
+        actionHandler={callDelete}
+        aria-label="Delete Collection Confirmation Dialog"
+      />
+    </>
   );
 }
 
