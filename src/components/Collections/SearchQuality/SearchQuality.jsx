@@ -58,7 +58,7 @@ const SearchQuality = ({ collectionName }) => {
         />
       )}
 
-      <Card varian="dual" sx={{ mt: 5 }}>
+      <Card elevation={0} sx={{ mt: 5 }}>
         <CardHeader
           title={'Report'}
           variant="heading"

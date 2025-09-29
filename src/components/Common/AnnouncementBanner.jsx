@@ -4,31 +4,31 @@ import { Alert, IconButton, Typography, useTheme } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Sparkles, X } from 'lucide-react';
 
-const AnnouncementBannerStyled = styled(Alert)`
-  background-color: ${({ theme }) => alpha(theme.palette.primary.main, 0.12)};
-  border-radius: 0.5rem;
-  padding: 1rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
+const AnnouncementBannerStyled = styled(Alert)(({ theme }) => ({
+  background: `${alpha(theme.palette.primary.main, 0.12)} !important`,
+  borderRadius: '0.5rem',
+  padding: '1rem',
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '1rem',
 
-  .MuiAlert-icon {
-    width: 1.875rem;
-    height: 1.875rem;
-    margin: 0;
-  }
+  '& .MuiAlert-icon': {
+    width: '1.875rem',
+    height: '1.875rem',
+    margin: 0,
+  },
 
-  .MuiAlert-message {
-    flex: 1;
-    padding: 0;
-    margin: 0;
-  }
+  '& .MuiAlert-message': {
+    flex: 1,
+    padding: 0,
+    margin: 0,
+  },
 
-  .MuiAlert-action {
-    padding: 0;
-    margin: 0;
-  }
-`;
+  '& .MuiAlert-action': {
+    padding: 0,
+    margin: 0,
+  },
+}));
 
 const BannerText = styled(Typography)`
   font-size: 1rem;

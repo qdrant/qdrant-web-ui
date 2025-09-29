@@ -74,7 +74,7 @@ function JwtForm({
         />
 
         {/* Description of the access level, displayed depending on the slider value*/}
-        <Card variant="dual" sx={{ my: 4 }}>
+        <Card elevation={0} sx={{ my: 4 }}>
           <CardContent sx={{ '&:last-child': { pb: 2 } }}>
             {manageAccess && (
               <Typography variant="body2" color="text.secondary">
