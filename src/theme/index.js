@@ -1,4 +1,6 @@
 import { createTheme as createMuiTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
+import { deepmerge } from '@mui/utils';
 import { darkThemeOptions } from './dark-theme';
 import { lightThemeOptions } from './light-theme';
 
@@ -25,11 +27,9 @@ const themeOptions = {
   components: {
     MuiCardHeader: {
       styleOverrides: {
-        // this adds variant="heading" support
-        // to the CardHeader component
-        root: {
-          '&.MuiCardHeader-variantHeading': {
-            backgroundColor: 'rgba(11, 15, 25, 0.04)', // alpha(theme.palette.action.hover, 0.04)
+        root: ({ theme }) => ({
+          '&[variant="heading"]': {
+            backgroundColor: alpha(theme.palette.action.hover, 0.04),
             padding: '0.625rem 1rem',
             alignItems: 'center',
             '& .MuiCardHeader-title': {
@@ -41,60 +41,46 @@ const themeOptions = {
               marginBottom: '-0.25rem',
             },
           },
-        },
+        }),
       },
     },
     MuiCard: {
       styleOverrides: {
-        // this adds variant="dual" and variant="heading" support
-        // to the Card component
-        root: {
+        root: ({ theme }) => ({
           borderRadius: '8px',
-          border: (theme) => `1px solid ${theme.palette.divider}`,
-          background: (theme) => theme.palette.background.paperElevation1,
-          // todo: fix this, so that hover only works on clickable elements
-          // '&:hover': {
-          //   background: theme.palette.background.paperElevation8,
-          //   boxShadow:
-          //     '0 3px 14px 2px rgba(0, 0, 0, 0.12), ' +
-          //     '0 8px 10px 1px rgba(0, 0, 0, 0.14), ' +
-          //     '0 5px 5px -3px rgba(0, 0, 0, 0.20)',
-          // },
-          '&.MuiCard-variantHeading': {
-            padding: '1rem 1.25rem',
-            backgroundColor: (theme) => theme.palette.action.hover,
-          },
-        },
+          border: `1px solid ${theme.palette.divider}`,
+          background: theme.palette.background.paperElevation1,
+        }),
       },
     },
     MuiCardContent: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           '&.MuiCardContent-variantHeading': {
             padding: '0.5rem 1rem',
             // child typography with variant="body2"
             '& .MuiTypography-body2': {
-              color: (theme) => theme.palette.text.secondary,
+              color: theme.palette.text.secondary,
               fontSize: '0.875rem',
               fontStyle: 'normal',
               fontWeight: 400,
               lineHeight: '150%',
             },
           },
-        },
+        }),
       },
     },
     // tabs overwrite
     MuiTab: {
       styleOverrides: {
-        root: {
-          color: 'text.secondary',
+        root: ({ theme }) => ({
+          color: theme.palette.text.secondary,
           fontSize: '0.875rem',
           fontStyle: 'normal',
           fontWeight: 500,
           lineHeight: 1.4,
           textTransform: 'capitalize',
-        },
+        }),
       },
     },
     MuiTypography: {
@@ -147,23 +133,23 @@ const themeOptions = {
           lineHeight: '1.4',
           textTransform: 'capitalize',
         },
-        containedPrimary: {
-          background: (theme) => theme.palette.primary.main,
-          color: (theme) => theme.palette.primary.contrastText,
+        containedPrimary: ({ theme }) => ({
+          background: theme.palette.primary.main,
+          color: theme.palette.primary.contrastText,
           boxShadow: 'none',
           '&:hover': {
-            background: (theme) => theme.palette.primary.dark,
+            background: theme.palette.primary.dark,
             boxShadow: 'none',
           },
-        },
-        outlined: {
+        }),
+        outlined: ({ theme }) => ({
           '&.MuiButton-colorTextPrimary': {
-            border: (theme) => `1px solid ${theme.palette.divider}`,
+            border: `1px solid ${theme.palette.divider}`,
             '&:hover': {
-              background: (theme) => theme.palette.action.hover,
+              background: theme.palette.action.hover,
             },
           },
-        },
+        }),
       },
     },
     MuiLink: {
@@ -212,6 +198,12 @@ const themeOptions = {
   },
 };
 
+const baseTheme = createMuiTheme(themeOptions);
+
 export const createTheme = (config) => {
-  return createMuiTheme(themeOptions, config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions, config);
+  const theme = deepmerge(
+    deepmerge(baseTheme, config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions),
+    config
+  );
+  return createMuiTheme(theme);
 };
