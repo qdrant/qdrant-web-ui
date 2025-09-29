@@ -13,6 +13,7 @@ const props = {
   },
 };
 
+// todo:
 const requestFromCodeSpy = vi.spyOn(requestFromCodeMod, 'requestFromCode').mockImplementation(
   () =>
     new Promise((resolve) => {
@@ -33,7 +34,7 @@ describe('CodeBlock', () => {
     const codeBlock = screen.getByTestId('code-block');
 
     expect(codeBlock).toBeInTheDocument();
-    expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
+    expect(screen.getByTestId('code-editor-pre')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-run')).toBeInTheDocument();
 
     const textContent = codeBlock.textContent;
@@ -50,10 +51,14 @@ describe('CodeBlock', () => {
     const propsWithoutButton = structuredClone(props);
     propsWithoutButton.children.props.withRunButton = 'false';
 
-    render(<MdxCodeBlock {...propsWithoutButton} />);
+    render(
+      <TutorialProvider>
+        <MdxCodeBlock {...propsWithoutButton} />
+      </TutorialProvider>
+    );
 
     expect(screen.getByTestId('code-block')).toBeInTheDocument();
-    expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
+    expect(screen.getByTestId('code-editor-pre')).toBeInTheDocument();
     expect(screen.queryByTestId('code-block-run')).not.toBeInTheDocument();
   });
 
