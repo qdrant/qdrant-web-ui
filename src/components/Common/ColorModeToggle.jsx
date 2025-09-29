@@ -1,7 +1,7 @@
 import React from 'react';
 import { ToggleButtonGroup, ToggleButton, Tooltip, styled, alpha } from '@mui/material';
 import { Sun, Moon } from 'lucide-react';
-import { ColorModeContext } from '../../context/color-context';
+import { useColorModeContext } from '../../context/color-context';
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius[1],
@@ -35,39 +35,16 @@ const StyledIcon = styled('div')(() => ({
 }));
 
 export default function ColorModeToggle() {
-  const colorMode = React.useContext(ColorModeContext);
+  const { colorMode, setColorMode } = useColorModeContext();
 
   const handleModeChange = (event, newMode) => {
     if (newMode !== null) {
-      // If we're already in the desired mode, do nothing
-      if (colorMode.mode === newMode) {
-        return;
-      }
-
-      // If we're in auto mode, we need to toggle to get to the desired mode
-      if (colorMode.mode === 'auto') {
-        // Toggle once to get to light, then again if we want dark
-        colorMode.toggleColorMode(); // auto -> light
-        if (newMode === 'dark') {
-          colorMode.toggleColorMode(); // light -> dark
-        }
-      } else {
-        // We're in light or dark mode, toggle to get to the other
-        colorMode.toggleColorMode();
-      }
+      setColorMode(newMode);
     }
-  };
-
-  // Map the current mode to our toggle button values
-  const getCurrentMode = () => {
-    if (colorMode.mode === 'auto') {
-      return 'light'; // Default to light when in auto mode
-    }
-    return colorMode.mode;
   };
 
   return (
-    <StyledToggleButtonGroup value={getCurrentMode()} exclusive onChange={handleModeChange} size="small">
+    <StyledToggleButtonGroup value={colorMode} exclusive onChange={handleModeChange} size="small">
       <StyledToggleButton value="dark">
         <Tooltip title="Dark Mode">
           <StyledIcon>
