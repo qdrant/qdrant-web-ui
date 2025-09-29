@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
-import { useTheme } from '@mui/material/styles';
-import { Box, CircularProgress, IconButton, TableCell, TableRow, Tooltip, Typography } from '@mui/material';
-import { Download, FolderZip } from '@mui/icons-material';
+import { useTheme, alpha } from '@mui/material/styles';
+import { Box, CircularProgress, TableCell, Tooltip, Typography, Button } from '@mui/material';
+import { StyledTableRow } from '../Common/StyledTable';
+import { ArchiveRestore, Upload } from 'lucide-react';
 import ImportDatasetDialog from './ImportDatasetDialog';
-import VectorsConfigChip from '../Common/VectorsConfigChip';
+import VectorsConfigChips from '../Common/VectorsConfigChips';
 
 export const DatasetsTableRow = ({ dataset, importDataset }) => {
   const theme = useTheme();
@@ -13,7 +14,7 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   return (
-    <TableRow key={dataset.name} align={'center'}>
+    <StyledTableRow key={dataset.name} align={'center'}>
       <TableCell width={'50%'}>
         <Tooltip title={'Import Dataset'} arrow placement={'top'}>
           <Box
@@ -32,21 +33,28 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
             onClick={() => setIsImportDialogOpen(true)}
           >
             <Box sx={{ position: 'relative' }}>
-              <FolderZip
-                fontSize={'large'}
+              <Box
                 sx={{
-                  color: !importing ? theme.palette.primary.main : theme.palette.divider,
-                  mr: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: alpha(theme.palette.secondary.main, 0.16),
+                  borderRadius: '0.5rem',
+                  padding: '0.5rem',
+                  marginRight: '0.5rem',
                 }}
-              />
+              >
+                <ArchiveRestore size={16} color={!importing ? theme.palette.secondary.main : theme.palette.divider} />
+              </Box>
               {importing && (
                 <CircularProgress
+                  size={16}
+                  color={theme.palette.secondary.main}
                   sx={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    marginTop: '-23px',
-                    marginLeft: '-29px',
+                    marginTop: '-8px',
+                    marginLeft: '-12px',
                   }}
                 />
               )}
@@ -64,15 +72,21 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
       <TableCell align="center">{prettyBytes(dataset.size)}</TableCell>
 
       <TableCell>
-        <VectorsConfigChip collectionConfigParams={dataset} />
+        <VectorsConfigChips collectionConfigParams={dataset} collectionName={dataset.name} />
       </TableCell>
 
       <TableCell align="center">{dataset.vectorCount}</TableCell>
       <TableCell align="center">
         <Tooltip title="Import Dataset" arrow placement={'top'}>
-          <IconButton onClick={() => setIsImportDialogOpen(true)}>
-            <Download />
-          </IconButton>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Upload size={18} />}
+            onClick={() => setIsImportDialogOpen(true)}
+            disabled={importing}
+          >
+            Import
+          </Button>
         </Tooltip>
       </TableCell>
       <ImportDatasetDialog
@@ -84,7 +98,7 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
         setImporting={setImporting}
         importing={importing}
       />
-    </TableRow>
+    </StyledTableRow>
   );
 };
 

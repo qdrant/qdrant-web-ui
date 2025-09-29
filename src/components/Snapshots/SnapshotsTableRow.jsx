@@ -53,17 +53,20 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
               {progress > 0 && (
                 <CircularProgressWithLabel
                   value={progress}
+                  size={16}
+                  color={theme.palette.secondary.main}
                   sx={{
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    marginTop: '-23px',
-                    marginLeft: '-29px',
+                    marginTop: '-8px',
+                    marginLeft: '-12px',
                   }}
                 />
               )}
             </Box>
-            {snapshot.name}
+            {/* if progres is not 0, show first 20 characters of the snapshot name + "..." to have enough space for the `Preparing download` chip */}
+            {progress === 0 ? snapshot.name : `${snapshot.name.slice(0, 20)}...`}
           </Box>
         </Tooltip>
         {progress > 0 && (

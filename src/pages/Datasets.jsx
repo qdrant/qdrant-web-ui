@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
-import { Grid, TableContainer, Typography, Alert } from '@mui/material';
-import { TableBodyWithGaps, TableWithGaps } from '../components/Common/TableWithGaps';
+import { Grid, Table, Typography, Alert } from '@mui/material';
+import { StyledTableContainer, StyledTableBody } from '../components/Common/StyledTable';
 import { DatasetsHeader } from '../components/Datasets/DatasetsTableHeader';
 import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
 import { useClient } from '../context/client-context';
@@ -115,21 +115,21 @@ function Datasets() {
           {!isLoading && datasets?.length === 0 && <div>No datasets found</div>}
           {!isLoading && datasets?.length > 0 && (
             <Grid size={12}>
-              <TableContainer>
-                <TableWithGaps aria-label="simple table">
+              <StyledTableContainer>
+                <Table aria-label="Datasets table">
                   <DatasetsHeader
                     headers={[
-                      'Dataset Name',
-                      'Datasets size',
-                      'Vectors Configuration (Name, Size, Distance, Model)',
+                      'Name',
+                      'Datasets&nbsp;size',
+                      'Vectors Config<br>(Name, Size, Distance, Model)',
                       'Vectors count',
-                      'Import',
+                      'Actions',
                     ]}
                   />
 
-                  <TableBodyWithGaps>{tableRows}</TableBodyWithGaps>
-                </TableWithGaps>
-              </TableContainer>
+                  <StyledTableBody>{tableRows}</StyledTableBody>
+                </Table>
+              </StyledTableContainer>
             </Grid>
           )}
         </Grid>

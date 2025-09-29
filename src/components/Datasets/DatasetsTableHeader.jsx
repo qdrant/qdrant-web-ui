@@ -1,23 +1,21 @@
 import React from 'react';
-import { TableCell, TableRow } from '@mui/material';
-import { TableHeadWithGaps } from '../Common/TableWithGaps';
+import { TableRow } from '@mui/material';
+import { StyledTableHead, StyledHeaderCell } from '../Common/StyledTable';
 import PropTypes from 'prop-types';
 
 export const DatasetsHeader = ({ headers }) => {
   return (
-    <TableHeadWithGaps>
+    <StyledTableHead>
       <TableRow>
         {headers.map((header, index) => (
-          <TableCell
+          <StyledHeaderCell
             key={header}
-            sx={{ fontWeight: 'bold' }}
-            align={index === 0 ? 'left' : index === headers.lenght - 1 ? 'right' : 'center'}
-          >
-            {header}
-          </TableCell>
+            align={index === 0 ? 'left' : index === headers.length - 1 ? 'right' : 'center'}
+            dangerouslySetInnerHTML={{ __html: header }}
+          />
         ))}
       </TableRow>
-    </TableHeadWithGaps>
+    </StyledTableHead>
   );
 };
 

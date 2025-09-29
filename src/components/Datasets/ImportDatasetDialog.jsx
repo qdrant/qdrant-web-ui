@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Dialog, Input, Typography } from '@mui/material';
+import { Box, Button, Dialog, TextField, Typography } from '@mui/material';
 
 const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, setImporting, importing }) => {
   const [collectionName, setCollectionName] = useState('');
@@ -19,14 +19,15 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
         }}
       >
         <div>
-          <Typography variant="h5">Enter collection name</Typography>
+          <Typography variant="h5">Import Dataset</Typography>
           <Typography color="textSecondary" sx={{ mt: 2 }} variant="body1">
             {content}
           </Typography>
         </div>
       </Box>
-      <Input
+      <TextField
         sx={{ mx: 3, mb: 3 }}
+        variant="outlined"
         placeholder="Collection Name"
         value={collectionName}
         onChange={(e) => setCollectionName(e.target.value)}
@@ -37,23 +38,13 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
           display: 'flex',
           justifyContent: 'flex-end',
           px: 3,
-          py: 1.5,
+          py: 3,
         }}
       >
-        <Button sx={{ mr: 2 }} variant="outlined" onClick={onClose}>
+        <Button sx={{ mr: 1 }} variant="outlined" color="text.primary" onClick={onClose}>
           Cancel
         </Button>
-        <Button
-          sx={{
-            backgroundColor: 'success.main',
-            '&:hover': {
-              backgroundColor: 'success.dark',
-            },
-          }}
-          variant="contained"
-          onClick={handleActionClick}
-          disabled={!collectionName}
-        >
+        <Button variant="contained" onClick={handleActionClick} disabled={!collectionName}>
           Import Dataset
         </Button>
       </Box>
