@@ -21,7 +21,7 @@ const ClusterInfo = ({ collectionCluster = { result: {} }, ...other }) => {
   ));
 
   return (
-    <Card variant="dual" {...other}>
+    <Card elevation={0} {...other}>
       <CardHeader
         title={'Collection Cluster Info'}
         variant="heading"

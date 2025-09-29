@@ -66,7 +66,7 @@ export const CollectionInfo = ({ collectionName }) => {
   return (
     <Box pt={2}>
       <CollectionAliases collectionName={collectionName} />
-      <Card variant="dual">
+      <Card elevation={0}>
         <CardHeader
           title={'Collection Info'}
           variant="heading"

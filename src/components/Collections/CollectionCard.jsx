@@ -13,7 +13,7 @@ const CollectionCard = (props) => {
   return (
     <>
       <Card
-        variant="dual"
+        elevation={0}
         sx={{
           display: 'flex',
           flexDirection: 'column',

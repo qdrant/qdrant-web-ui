@@ -22,7 +22,7 @@ const PointPreview = ({ point }) => {
 
   return (
     <Card
-      variant="dual"
+      elevation={0}
       sx={{
         borderRadius: 0,
       }}

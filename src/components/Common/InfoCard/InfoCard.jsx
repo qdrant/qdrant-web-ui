@@ -5,10 +5,11 @@ import { Card, CardContent, Typography, Box, CardActions, CardActionArea, Button
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { ChevronRight } from 'lucide-react';
 
-const StyledCard = styled(Card)(({ theme }) => ({
+const StyledCard = styled(({ ...props }) => <Card elevation={0} {...props} />)(({ theme }) => ({
   display: 'flex',
   width: '100%',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  background: theme.palette.background.paperElevation1,
   borderRadius: '0.5rem',
   boxShadow: 'none',
   '&:hover': {

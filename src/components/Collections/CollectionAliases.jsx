@@ -104,7 +104,7 @@ const CollectionAliases = ({ collectionName }) => {
   );
 
   return (
-    <Card variant="dual" sx={{ mb: 5 }}>
+    <Card elevation={0} sx={{ mb: 5 }}>
       <CardHeader
         title="Aliases"
         variant="heading"

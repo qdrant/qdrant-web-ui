@@ -237,7 +237,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   };
 
   return (
-    <Card variant="dual" data-testid="vectors-info" {...other}>
+    <Card elevation={0} data-testid="vectors-info" {...other}>
       <CardHeader
         title="Search Quality"
         variant="heading"
