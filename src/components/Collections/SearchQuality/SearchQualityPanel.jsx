@@ -177,7 +177,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       const scrollResult = await client.scroll(collectionName, {
         with_payload: false,
         with_vector: false,
-        limit: 100,
+        limit,
       });
 
       // todo: if exceeded timeout
