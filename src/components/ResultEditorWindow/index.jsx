@@ -12,7 +12,7 @@ const ResultEditorWindow = ({ code }) => {
   return (
     <EditorCommon
       language="json"
-      theme={'custom-language-theme'}
+      theme={'console-result-theme'}
       value={formattedCode}
       options={{
         scrollBeyondLastLine: false,
