@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { alpha, Box, Button, CircularProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { PlayArrowOutlined } from '@mui/icons-material';
-import { CopyButton } from './CopyButton';
-import CodeEditor from './CodeEditor';
+import { CopyButton } from '../CopyButton';
+import CodeEditor from '../CodeEditor';
 
 /**
  * Run button for code block

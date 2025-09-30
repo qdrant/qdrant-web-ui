@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { requestFromCode } from '../../CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import { Box, Typography, useTheme } from '@mui/material';
-import { CodeBlock } from '../../Common/CodeBlock';
-import ResultEditorWindow from '../../ResultEditorWindow';
+import { CodeBlock } from '../../Common/CodeBlock/CodeBlock';
+import CodeBlockResult from '../../Common/CodeBlock/CodeBlockResult';
+
 /**
  * Code block with syntax highlighting
  * @param {object} children - code block content from mdx
@@ -54,7 +55,7 @@ export const MdxCodeBlock = ({ children }) => {
             Result
           </Typography>
           <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
-            <ResultEditorWindow code={result} />
+            <CodeBlockResult code={result} />
           </Box>
         </Box>
       )}
