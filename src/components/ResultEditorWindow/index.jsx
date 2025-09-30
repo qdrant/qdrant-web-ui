@@ -1,36 +1,33 @@
-/* eslint-disable no-unused-vars */
-import React, { useMemo } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import CodeEditor from '../Common/CodeEditor';
-import { bigIntJSON } from '../../common/bigIntJSON';
+import EditorCommon from '../EditorCommon';
+import { useFormattedJSON } from '../../hooks/useFormattedJSON';
 
 const ResultEditorWindow = ({ code }) => {
-  function formatJSON(val = {}) {
-    try {
-      const res = bigIntJSON.parse(val);
-      return bigIntJSON.stringify(res, null, 2);
-    } catch {
-      const errorJson = {
-        error: `HERE ${val}`,
-      };
-      return bigIntJSON.stringify(errorJson, null, 2);
-    }
-  }
-
   const lineHeight = 21;
   const padding = 16;
 
-  const { formattedCode, editorHeight } = useMemo(() => {
-    const formatted = formatJSON(code);
-    const lineCount = formatted.split('\n').length;
-    const calculatedHeight = Math.max(60, lineCount * lineHeight + padding + padding);
-    return {
-      formattedCode: formatted,
-      editorHeight: `${calculatedHeight}px`,
-    };
-  }, [code]);
+  const { formattedCode } = useFormattedJSON(code, { lineHeight, padding });
 
-  return <CodeEditor value={formattedCode} language="json" readOnly={true} />;
+  return (
+    <EditorCommon
+      language="json"
+      theme={'custom-language-theme'}
+      value={formattedCode}
+      options={{
+        scrollBeyondLastLine: false,
+        fontSize: 14,
+        wordWrap: 'on',
+        minimap: { enabled: false },
+        automaticLayout: true,
+        readOnly: true,
+        mouseWheelZoom: true,
+        folding: false,
+        lineHeight: lineHeight,
+        padding: { top: padding, bottom: padding },
+      }}
+    />
+  );
 };
 
 ResultEditorWindow.propTypes = {

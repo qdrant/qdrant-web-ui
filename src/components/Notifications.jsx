@@ -11,7 +11,7 @@ import List from '@mui/material/List';
 import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
 import { axiosInstance as axios } from '../common/axios';
-import { CodeBlock } from './Common/CodeBlock';
+import { CodeBlock } from './Common/CodeBlock/CodeBlock';
 import { Box, Button, Chip, Drawer, useMediaQuery } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../common/bigIntJSON';

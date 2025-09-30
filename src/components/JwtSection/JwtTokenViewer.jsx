@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Box, Tooltip } from '@mui/material';
 
 import TextField from '@mui/material/TextField';
-import { CodeBlock } from '../Common/CodeBlock';
+import { CodeBlock } from '../Common/CodeBlock/CodeBlock';
 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { CopyButton } from '../Common/CopyButton';

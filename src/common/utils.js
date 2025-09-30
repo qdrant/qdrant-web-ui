@@ -33,3 +33,15 @@ const uuidRegex =
 export const validateUuid = function (uuid) {
   return typeof uuid === 'string' && uuidRegex.test(uuid);
 };
+
+export const formatJSON = function (val = {}, bigIntJSON) {
+  try {
+    const res = bigIntJSON.parse(val);
+    return bigIntJSON.stringify(res, null, 2);
+  } catch {
+    const errorJson = {
+      error: `HERE ${val}`,
+    };
+    return bigIntJSON.stringify(errorJson, null, 2);
+  }
+};
