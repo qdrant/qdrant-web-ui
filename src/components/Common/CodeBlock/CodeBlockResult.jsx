@@ -14,4 +14,3 @@ CodeBlockResult.propTypes = {
 };
 
 export default CodeBlockResult;
-

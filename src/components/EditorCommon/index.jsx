@@ -38,6 +38,12 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
     // Defining Themes
     monaco.editor.defineTheme('custom-language-theme', getEditorTheme(theme, 'custom-language-theme'));
     monaco.editor.defineTheme('qdrant-theme', getEditorTheme(theme, 'qdrant-theme'));
+    monaco.editor.defineTheme('console-result-theme', {
+      ...getEditorTheme(theme, 'custom-language-theme'),
+      colors: {
+        'editor.background': theme.palette.background.default,
+      },
+    });
 
     // Defining Language Configuration, e.g. comments, brackets
     monaco.languages.setLanguageConfiguration('custom-language', langConfig);
@@ -51,6 +57,12 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
   useEffect(() => {
     monacoRef.current?.editor.defineTheme('custom-language-theme', getEditorTheme(theme, 'custom-language-theme'));
     monacoRef.current?.editor.defineTheme('qdrant-theme', getEditorTheme(theme, 'qdrant-theme'));
+    monacoRef.current?.editor.defineTheme('console-result-theme', {
+      ...getEditorTheme(theme, 'custom-language-theme'),
+      colors: {
+        'editor.background': theme.palette.background.default,
+      },
+    });
   }, [theme]);
 
   useEffect(() => {
