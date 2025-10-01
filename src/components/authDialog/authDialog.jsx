@@ -50,7 +50,7 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             label="API Key"
             type={showApiKey ? 'text' : 'password'}
             fullWidth
-            variant="standard"
+            variant="outlined"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -66,9 +66,13 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleApply}>Apply</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button variant="outlined" color="text.primary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleApply}>
+            Apply
+          </Button>
         </DialogActions>
       </Dialog>
     </div>

@@ -1,4 +1,5 @@
 import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
+import { alpha } from '@mui/material/styles';
 
 const lightPalette = {
   common: {
@@ -122,6 +123,15 @@ const lightPalette = {
 export const lightThemeOptions = {
   palette: lightPalette,
   components: {
+    MuiButton: {
+      styleOverrides: {
+        outlined: ({ theme }) => ({
+          '&.MuiButton-colorTextPrimary': {
+            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+          },
+        }),
+      },
+    },
     MuiAlert: {
       styleOverrides: {
         root: {
