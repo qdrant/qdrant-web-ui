@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Box, Tooltip } from '@mui/material';
+import { Box, Tooltip, InputLabel } from '@mui/material';
 
-import TextField from '@mui/material/TextField';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import { CodeBlock } from '../Common/CodeBlock/CodeBlock';
 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -20,7 +20,7 @@ function JwtTokenViewer({ jwt, token, sx }) {
 
   return (
     <Box sx={{ ...sx }}>
-      <Box sx={{ mb: 1 }}>
+      <Box sx={{ mb: 4 }}>
         <CodeBlock
           codeStr={JSON.stringify(token, null, 2)}
           language={'json'}
@@ -29,23 +29,26 @@ function JwtTokenViewer({ jwt, token, sx }) {
         />
       </Box>
       <Tooltip title="Use this JWT token as an API key to get restricted access to the Qdrant API">
-        <TextField
-          id="outlined-basic"
-          label="JWT Token"
-          variant="outlined"
-          sx={{ mb: 1 }}
-          fullWidth
-          value={isVisible ? jwt : '•'.repeat(jwt.length)}
-          disabled
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
-                <CopyButton text={jwt} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Box role="group">
+          <InputLabel htmlFor="jwt-token-output">JWT Token</InputLabel>
+          <OutlinedInput
+            id="jwt-token-output"
+            placeholder="JWT Token"
+            variant="outlined"
+            sx={{ mb: 1 }}
+            fullWidth
+            value={isVisible ? jwt : '•'.repeat(jwt.length)}
+            disabled
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleVisibility}>{isVisible ? <VisibilityOff /> : <Visibility />}</IconButton>
+                  <CopyButton text={jwt} tooltip={'Copy JWT to clipboard'} successMessage={'JWT copied to clipboard'} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
       </Tooltip>
     </Box>
   );
