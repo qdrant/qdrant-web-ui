@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, InputLabel, OutlinedInput, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Button, OutlinedInput, MenuItem, TextField, Typography, InputLabel } from '@mui/material';
 import TokenValidatior from './TokenValidatior';
 import JwtPerCollection from './JwtPerCollection';
 import StyledButtonGroup from '../Common/StyledButtonGroup';
@@ -11,8 +11,14 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
   };
 
   return (
-    <Box role="group">
-      <InputLabel shrink htmlFor="expiration-select">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }} role="group">
+      <InputLabel
+        htmlFor="expiration-select"
+        sx={{
+          color: 'text.primary',
+          fontWeight: 500,
+        }}
+      >
         Expiration
       </InputLabel>
       <TextField
@@ -23,6 +29,11 @@ const ExpirationSelect = ({ expiration, setExpiration }) => {
         onChange={handleChange}
         slots={{
           input: OutlinedInput,
+        }}
+        sx={{
+          '& .MuiSelect-outlined': {
+            py: 1.5,
+          },
         }}
       >
         <MenuItem value={1}>1 day</MenuItem>
@@ -52,9 +63,9 @@ function JwtForm({
   setTokenValidatior,
 }) {
   return (
-    <>
-      <Box>
-        <StyledButtonGroup fullWidth variant="outlined" aria-label="Access Level" sx={{ mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }} role="form">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 1 }}>
+        <StyledButtonGroup fullWidth variant="outlined" aria-label="Access Level">
           <Button
             variant={!globalAccess && !manageAccess ? 'contained' : 'outlined'}
             onClick={() => {
@@ -116,13 +127,10 @@ function JwtForm({
         />
       )}
 
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-        <TokenValidatior setTokenValidatior={setTokenValidatior} />
-      </Box>
+      <TokenValidatior setTokenValidatior={setTokenValidatior} />
 
-      {/* Select */}
       <ExpirationSelect expiration={expiration} setExpiration={setExpiration} />
-    </>
+    </Box>
   );
 }
 

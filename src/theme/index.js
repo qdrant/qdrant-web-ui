@@ -133,6 +133,14 @@ const themeOptions = {
           lineHeight: '1.4',
           textTransform: 'capitalize',
         },
+        outlinedInherit: ({ theme }) => ({
+          border: `1px solid ${theme.palette.divider}`,
+          color: theme.palette.text.primary,
+          '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+            border: `1px solid ${theme.palette.divider}`,
+          },
+        }),
         containedPrimary: ({ theme }) => ({
           background: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
@@ -140,14 +148,6 @@ const themeOptions = {
           '&:hover': {
             background: theme.palette.primary.dark,
             boxShadow: 'none',
-          },
-        }),
-        outlined: ({ theme }) => ({
-          '&.MuiButton-colorTextPrimary': {
-            border: `1px solid ${theme.palette.divider}`,
-            '&:hover': {
-              background: theme.palette.action.hover,
-            },
           },
         }),
       },
@@ -191,6 +191,22 @@ const themeOptions = {
     MuiDialog: {
       styleOverrides: {
         paper: {
+          borderRadius: '0.5rem',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '0.5rem',
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
           borderRadius: '0.5rem',
         },
       },

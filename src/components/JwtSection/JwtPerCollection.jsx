@@ -32,6 +32,7 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
       <TableCell>{collection}</TableCell>
       <TableCell align="center">
         <Switch
+          size="small"
           checked={value === 'r' || value === 'rw'}
           onChange={(e) =>
             handleChange(
@@ -49,6 +50,7 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
       </TableCell>
       <TableCell align="center">
         <Switch
+          size="small"
           checked={value === 'rw'}
           onChange={(e) =>
             handleChange(
@@ -85,10 +87,10 @@ const JwtPerCollection = ({ globalAccess, manageAccess, collections, setConfigur
             <StyledHeaderCell width="33%" sx={{ py: 2 }}>
               Collection Name
             </StyledHeaderCell>
-            <StyledHeaderCell width="33%" align="center">
+            <StyledHeaderCell width="33%" align="center" sx={{ py: 2 }}>
               Read
             </StyledHeaderCell>
-            <StyledHeaderCell width="33%" align="center">
+            <StyledHeaderCell width="33%" align="center" sx={{ py: 2 }}>
               Write
             </StyledHeaderCell>
           </TableRow>

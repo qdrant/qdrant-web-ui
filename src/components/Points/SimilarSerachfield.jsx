@@ -48,7 +48,7 @@ function SimilarSerachfield({ conditions, onConditionChange, usingVector }) {
         <Button
           variant="outlined"
           onClick={handleDeleteAllChips}
-          color="text.primary"
+          color="inherit"
           sx={{
             // display: 'flex',
             // alignItems: 'center',

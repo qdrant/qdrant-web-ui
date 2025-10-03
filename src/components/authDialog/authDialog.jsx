@@ -67,7 +67,7 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button variant="outlined" color="text.primary" onClick={handleClose}>
+          <Button variant="outlined" color="inherit" onClick={handleClose}>
             Cancel
           </Button>
           <Button variant="contained" onClick={handleApply}>

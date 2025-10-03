@@ -87,14 +87,15 @@ function Jwt() {
 
       <Box
         sx={{
-          pb: 20,
+          pb: 12,
           width: '100%',
           maxWidth: '900px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 4,
         }}
       >
-        <Typography variant="h4" mb={5}>
-          Generate Access Token
-        </Typography>
+        <Typography variant="h4">Generate Access Token</Typography>
 
         <JwtForm
           expiration={expirationDays}
