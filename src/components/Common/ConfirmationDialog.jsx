@@ -47,7 +47,7 @@ const ConfirmationDialog = ({ open, onClose, title, content, warning, actionName
           py: 3,
         }}
       >
-        <Button size="medium" sx={{ mr: 2 }} variant="outlined" color="text.primary" onClick={onClose}>
+        <Button size="medium" sx={{ mr: 2 }} variant="outlined" color="inherit" onClick={onClose}>
           Cancel
         </Button>
         <Button

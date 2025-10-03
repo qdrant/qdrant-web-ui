@@ -41,7 +41,7 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
           py: 3,
         }}
       >
-        <Button sx={{ mr: 1 }} variant="outlined" color="text.primary" onClick={onClose}>
+        <Button sx={{ mr: 1 }} variant="outlined" color="inherit" onClick={onClose}>
           Cancel
         </Button>
         <Button variant="contained" onClick={handleActionClick} disabled={!collectionName}>

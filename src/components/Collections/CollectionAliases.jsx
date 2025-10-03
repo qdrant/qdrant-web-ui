@@ -208,7 +208,7 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
         />
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
-        <Button variant="outlined" color="text.primary" onClick={onClose}>
+        <Button variant="outlined" color="inherit" onClick={onClose}>
           Cancel
         </Button>
         <Button variant="contained" disabled={!aliasName} onClick={handleCreate} data-testid="create-alias-button">

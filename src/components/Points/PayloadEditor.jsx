@@ -130,7 +130,7 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={onClose} color="text.primary" variant="outlined" sx={{ mr: 1 }}>
+          <Button onClick={onClose} color="inherit" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
           <Button onClick={handleSave} color="primary" variant="contained">
@@ -161,7 +161,7 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDiff(false)} color="text.primary" variant="outlined" sx={{ mr: 1 }}>
+          <Button onClick={() => setShowDiff(false)} color="inherit" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
           <Button onClick={handleConfirmSave} color="primary" variant="contained">
