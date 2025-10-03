@@ -78,7 +78,7 @@ const PointPreview = ({ point }) => {
       {Object.keys(point.payload).length > 0 && (
         <Box sx={{ flex: 1 }}>
           <Box sx={{ px: 2, py: 1 }}>
-            <PointPayload point={point} showImage={false} onPayloadEdit={() => {}} />
+            <PointPayload point={point} showImage={false} onPayloadEdit={() => {}} buttonsToShow={['copy']} />
           </Box>
         </Box>
       )}

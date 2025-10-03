@@ -23,7 +23,7 @@ const THEMES = {
       ],
       colors: {
         'editor.foreground': '#FFFFFF',
-        'editor.background': theme.palette.background.code,
+        'editor.background': theme.palette.background.default,
       },
     },
     light: {

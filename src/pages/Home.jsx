@@ -3,13 +3,11 @@ import { styled, useTheme } from '@mui/material/styles';
 import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Button } from '@mui/material';
 import { Outlet, Link } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-// import KeyIcon from '@mui/icons-material/Key';
 import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
-import Notifications from '../components/Notifications';
 
 import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
 
@@ -94,7 +92,6 @@ function HomeContent() {
                 <Key size={20} />
               </IconButton>
             </Tooltip>
-            <Notifications />
             <ColorModeToggle />
           </Box>
         </Toolbar>

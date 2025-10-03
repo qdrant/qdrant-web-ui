@@ -22,6 +22,7 @@ const CodeEditor = ({
   readOnly = false,
   height = 'auto',
   options = {},
+  sx = {},
   ...props
 }) => {
   const theme = useTheme();
@@ -122,10 +123,9 @@ const CodeEditor = ({
       sx={{
         background: theme.palette.background.code,
         borderRadius: '0.5rem',
-        // border: '1px solid',
-        // borderColor: theme.palette.divider,
         height: height,
         overflow: 'auto',
+        ...sx,
       }}
       data-testid={'code-editor'}
     >
@@ -154,6 +154,7 @@ CodeEditor.propTypes = {
   readOnly: PropTypes.bool,
   height: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   options: PropTypes.object,
+  sx: PropTypes.object,
 };
 
 export default CodeEditor;

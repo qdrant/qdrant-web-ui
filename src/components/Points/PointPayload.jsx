@@ -8,7 +8,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 import PointImage from './PointImage';
 import { PayloadEditor } from './PayloadEditor';
 
-const PointPayload = ({ point, showImage = true, onPayloadEdit, setLoading }) => {
+const PointPayload = ({ point, showImage = true, onPayloadEdit, setLoading, buttonsToShow = ['copy', 'edit'] }) => {
   const [openPayloadEditor, setOpenPayloadEditor] = useState(false);
 
   if (!point || !point.payload || Object.keys(point.payload).length === 0) {
@@ -23,20 +23,24 @@ const PointPayload = ({ point, showImage = true, onPayloadEdit, setLoading }) =>
             <Typography variant="subtitle2" marginRight={'24px'}>
               Payload
             </Typography>
-            <CopyButton
-              text={bigIntJSON.stringify(point.payload)}
-              tooltip={'Copy payload to clipboard'}
-              successMessage={'Payload JSON copied to clipboard.'}
-            />
-            <Tooltip title={'Edit payload'} placement={'left'}>
-              <IconButton
-                aria-label="add payload"
-                onClick={() => setOpenPayloadEditor(true)}
-                sx={{ color: 'text.primary' }}
-              >
-                <Pencil size={'1.25rem'} />
-              </IconButton>
-            </Tooltip>
+            {buttonsToShow.includes('copy') && (
+              <CopyButton
+                text={bigIntJSON.stringify(point.payload)}
+                tooltip={'Copy payload to clipboard'}
+                successMessage={'Payload JSON copied to clipboard.'}
+              />
+            )}
+            {buttonsToShow.includes('edit') && (
+              <Tooltip title={'Edit payload'} placement={'left'}>
+                <IconButton
+                  aria-label="add payload"
+                  onClick={() => setOpenPayloadEditor(true)}
+                  sx={{ color: 'text.primary' }}
+                >
+                  <Pencil size={'1.25rem'} />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
           <JsonViewerCustom
             value={point.payload}
@@ -66,6 +70,7 @@ PointPayload.propTypes = {
   showImage: PropTypes.bool,
   onPayloadEdit: PropTypes.func.isRequired,
   setLoading: PropTypes.func,
+  buttonsToShow: PropTypes.array,
 };
 
 export default PointPayload;
