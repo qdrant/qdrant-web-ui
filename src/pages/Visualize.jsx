@@ -222,7 +222,13 @@ function Visualize() {
               </PanelResizeHandle>
               <Panel>
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      backgroundColor: theme.palette.background.paper,
+                    }}
+                  >
                     <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
                       <Tab label="Code" />
                       <Tab label="Data Panel" />
@@ -237,7 +243,9 @@ function Visualize() {
                     />
                   </TabPanel>
                   <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>{<PointPreview point={activePoint} />}</Box>
+                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>
+                      <PointPreview point={activePoint} />
+                    </Box>
                   </TabPanel>
                 </Box>
               </Panel>

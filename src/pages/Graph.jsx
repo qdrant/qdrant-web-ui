@@ -231,7 +231,13 @@ function Graph() {
               </PanelResizeHandle>
               <Panel>
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      backgroundColor: theme.palette.background.paper,
+                    }}
+                  >
                     <Tabs value={tabValue} onChange={handleTabChange} aria-label="graph visualization tabs">
                       <Tab label="Code" />
                       <Tab label="Data Panel" />
