@@ -190,9 +190,9 @@ const themeOptions = {
     },
     MuiDialog: {
       styleOverrides: {
-        paper: {
-          borderRadius: '0.5rem',
-        },
+        paper: ({ ownerState }) => ({
+          borderRadius: ownerState.fullScreen ? 0 : '0.5rem',
+        }),
       },
     },
     MuiTextField: {

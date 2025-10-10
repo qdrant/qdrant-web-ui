@@ -1,25 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 
-export const CenteredFrame = ({ children }) => {
+export const CenteredFrame = ({ children, maxWidth = 'lg' }) => {
   return (
-    <Box
+    <Container
+      maxWidth={maxWidth}
       component="main"
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        maxWidth: '1120px',
+        // maxWidth: '1120px',
         p: 5,
         margin: 'auto',
       }}
     >
       {children}
-    </Box>
+    </Container>
   );
 };
 
 // props validation
 CenteredFrame.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.node])), PropTypes.node]),
+  maxWidth: PropTypes.string,
 };
