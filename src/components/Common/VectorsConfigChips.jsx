@@ -28,7 +28,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
 
   const renderVectorChips = (vectorName, vectorConfig) => {
     const chips = [
-      <StyledChip key="name" label={vectorName} />,
+      <StyledChip key="name" label={vectorName || 'Default'} />,
       <StyledChip key="size" label={vectorConfig.size} />,
       <StyledChip key="distance" label={vectorConfig.distance} />,
     ];
