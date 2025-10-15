@@ -17,7 +17,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
 
   const getScrollableParent = () => {
     if (dialogRef.current) {
-      return dialogRef.current.querySelector('.MuiPaper-root');
+      return dialogRef.current;
     }
     return window;
   };
@@ -41,13 +41,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
   );
 
   return (
-    <Dialog
-      fullScreen
-      open={open}
-      ref={dialogRef}
-      onClose={handleClose}
-      aria-labelledby="create-collection-dialog-title"
-    >
+    <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="create-collection-dialog-title">
       <AppBar
         sx={{
           background: theme.palette.background.paperElevation1,
@@ -85,6 +79,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
       </AppBar>
 
       <DialogContent
+        ref={dialogRef}
         sx={{
           p: 0,
           backgroundColor: theme.palette.background.default,
