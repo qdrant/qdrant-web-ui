@@ -1,41 +1,41 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
-const StatusBadge = styled(Box)(({ status }) => {
+const StatusBadge = styled(Box)(({ status, theme }) => {
   const getStatusStyles = (status) => {
     switch (status?.toLowerCase()) {
       case 'green':
         return {
-          backgroundColor: 'rgba(0, 105, 92, 0.08)',
-          dotColor: '#00897b',
-          textColor: '#00897b',
+          backgroundColor: alpha(theme.palette.success.main, 0.08),
+          dotColor: theme.palette.success.main,
+          textColor: theme.palette.success.main,
         };
       case 'yellow':
         return {
-          backgroundColor: 'rgba(239, 108, 0, 0.08)',
-          dotColor: '#ef6c00',
-          textColor: '#ef6c00',
+          backgroundColor: alpha(theme.palette.warning.main, 0.08),
+          dotColor: theme.palette.warning.main,
+          textColor: theme.palette.warning.main,
         };
-      case 'gray':
+      case 'grey':
         return {
-          backgroundColor: 'rgba(17, 24, 36, 0.08)',
-          dotColor: '#656b7f',
-          textColor: '#656b7f',
+          backgroundColor: alpha(theme.palette.text.secondary, 0.08),
+          dotColor: theme.palette.text.secondary,
+          textColor: theme.palette.text.secondary,
         };
       case 'red':
         return {
-          backgroundColor: 'rgba(211, 47, 47, 0.08)',
-          dotColor: '#d32f2f',
-          textColor: '#d32f2f',
+          backgroundColor: alpha(theme.palette.error.main, 0.08),
+          dotColor: theme.palette.error.main,
+          textColor: theme.palette.error.main,
         };
       default:
         return {
-          backgroundColor: 'rgba(0, 105, 92, 0.08)',
-          dotColor: '#00897b',
-          textColor: '#00897b',
+          backgroundColor: alpha(theme.palette.success.main, 0.08),
+          dotColor: theme.palette.success.main,
+          textColor: theme.palette.success.main,
         };
     }
   };
@@ -58,7 +58,6 @@ const StatusBadge = styled(Box)(({ status }) => {
       flexShrink: 0,
     },
     '& .status-text': {
-      fontFamily: '"Mona Sans", sans-serif',
       fontSize: '12px',
       fontWeight: 500,
       lineHeight: 1.5,
