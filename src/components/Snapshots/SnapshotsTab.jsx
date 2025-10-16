@@ -138,14 +138,16 @@ export const SnapshotsTab = ({ collectionName }) => {
 
   return (
     <div>
-      <Grid container alignItems="center">
+      <Grid container alignItems="center" spacing={3}>
         <Grid
           size={{
             xs: 12,
             md: 8,
           }}
         >
-          <h1>Snapshots</h1>
+          <Typography variant="h4" component={'h1'}>
+            Snapshots
+          </Typography>
         </Grid>
         <Grid
           sx={{ display: 'flex', justifyContent: 'end' }}

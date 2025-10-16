@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: '0.5rem',
-  overflow: 'hidden',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
 }));
 
