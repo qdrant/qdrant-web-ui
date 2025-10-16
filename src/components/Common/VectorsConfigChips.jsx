@@ -19,8 +19,7 @@ const StyledChip = styled(Chip)(({ theme }) => ({
 
 const VectorChipsContainer = styled(Box)({
   display: 'flex',
-  gap: 0.5,
-  mb: 0.5,
+  gap: '0.1rem',
   justifyContent: 'center',
   alignItems: 'center',
   flexWrap: 'wrap',
@@ -31,7 +30,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
 
   const handleEllipsisClick = () => {
     if (collectionName) {
-      navigate(`/collections/${collectionName}`);
+      navigate(`/collections/${collectionName}#info`);
     }
   };
 
@@ -89,7 +88,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
   if (allChips.length > 3) {
     const visibleChips = allChips.slice(0, 3);
     const ellipsisChip = (
-      <Box key="ellipsis" sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
+      <VectorChipsContainer key="ellipsis">
         <StyledChip
           label={
             <Box
@@ -107,17 +106,17 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
             },
           }}
         />
-      </Box>
+      </VectorChipsContainer>
     );
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ...sx }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, ...sx }}>
         {visibleChips}
         {ellipsisChip}
       </Box>
     );
   }
 
-  return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center', ...sx }}>{allChips}</Box>;
+  return <Box sx={{ ...sx }}>{allChips}</Box>;
 };
 
 VectorsConfigChips.propTypes = {
