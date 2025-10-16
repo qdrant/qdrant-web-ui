@@ -17,6 +17,15 @@ const StyledChip = styled(Chip)(({ theme }) => ({
   },
 }));
 
+const VectorChipsContainer = styled(Box)({
+  display: 'flex',
+  gap: 0.5,
+  mb: 0.5,
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+});
+
 const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} }) => {
   const navigate = useNavigate();
 
@@ -50,9 +59,9 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
   // Handle single vector configuration
   if (collectionConfigParams.vectors.size) {
     allChips.push(
-      <Box key="default-vector" sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
+      <VectorChipsContainer key="default-vector">
         {renderVectorChips('Default', collectionConfigParams.vectors)}
-      </Box>
+      </VectorChipsContainer>
     );
   }
 
@@ -60,9 +69,9 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
   if (!collectionConfigParams.vectors.size) {
     Object.keys(collectionConfigParams.vectors).forEach((vector) => {
       allChips.push(
-        <Box key={vector} sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
+        <VectorChipsContainer key={vector}>
           {renderVectorChips(vector, collectionConfigParams.vectors[vector])}
-        </Box>
+        </VectorChipsContainer>
       );
     });
   }
@@ -71,9 +80,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
   if (collectionConfigParams.sparse_vectors) {
     Object.keys(collectionConfigParams.sparse_vectors).forEach((vector) => {
       allChips.push(
-        <Box key={`sparse-${vector}`} sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
-          {renderSparseVectorChips(vector)}
-        </Box>
+        <VectorChipsContainer key={`sparse-${vector}`}>{renderSparseVectorChips(vector)}</VectorChipsContainer>
       );
     });
   }

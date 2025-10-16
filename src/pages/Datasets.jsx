@@ -118,13 +118,7 @@ function Datasets() {
               <StyledTableContainer>
                 <Table aria-label="Datasets table">
                   <DatasetsHeader
-                    headers={[
-                      'Name',
-                      'Datasets&nbsp;size',
-                      'Vectors Config<br>(Name, Size, Distance, Model)',
-                      'Vectors count',
-                      'Actions',
-                    ]}
+                    headers={['Name', 'Datasets&nbsp;size', 'Vectors Config', 'Vectors count', 'Actions']}
                   />
 
                   <StyledTableBody>{tableRows}</StyledTableBody>
