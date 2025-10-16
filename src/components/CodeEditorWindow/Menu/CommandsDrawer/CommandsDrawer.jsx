@@ -62,7 +62,6 @@ const CommandsDrawer = ({ open, toggleDrawer, handleInsertCommand }) => {
           minWidth: matchesMdMedia ? '100vw' : '680px',
           width: matchesMdMedia ? '100vw' : '55vw',
           padding: '1rem',
-          pt: '6rem',
         },
         '& .MuiBackdrop-root.MuiModal-backdrop': {
           opacity: '0 !important',

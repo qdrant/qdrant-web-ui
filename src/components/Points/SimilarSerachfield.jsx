@@ -2,11 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Box, Chip, Button } from '@mui/material';
 import { X } from 'lucide-react';
-import { useTheme } from '@mui/material/styles';
 
 function SimilarSerachfield({ conditions, onConditionChange, usingVector }) {
-  const theme = useTheme();
-
   const handleDeleteChip = (conditionToDelete) => {
     const newValues = conditions.filter((condition) => {
       // Compare the actual condition objects, not the formatted string
@@ -46,20 +43,12 @@ function SimilarSerachfield({ conditions, onConditionChange, usingVector }) {
           ))}
         </Box>
         <Button
-          variant="outlined"
+          variant="text"
           onClick={handleDeleteAllChips}
           color="inherit"
           sx={{
-            // display: 'flex',
-            // alignItems: 'center',
             gap: 1,
-            border: 'none',
-            lineHeight: 1.5,
-            mr: -1,
-            borderRadius: 0,
-            '&:hover': {
-              boxShadow: `inset 0 -1px 0 0 ${theme.palette.divider} !important`,
-            },
+            p: 0.5,
           }}
         >
           <X size={18} />

@@ -44,7 +44,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
       <TableCell align="center">
         <Typography>{collection.config.params.shard_number}</Typography>
       </TableCell>
-      <TableCell>
+      <TableCell align="center">
         <VectorsConfigChips collectionConfigParams={collection.config.params} collectionName={collection.name} />
       </TableCell>
       <TableCell align="right">
@@ -91,8 +91,6 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
             <StyledHeaderCell align="center">Shards</StyledHeaderCell>
             <StyledHeaderCell width="20%" align="center">
               Vectors Config
-              <br />
-              (Name, Size, Distance)
             </StyledHeaderCell>
             <StyledHeaderCell width="7%" align="right">
               Actions

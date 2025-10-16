@@ -38,7 +38,6 @@ export const TutorialIndex = () => {
           variant="h4"
           sx={{
             color: 'text.primary',
-            fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
             fontSize: '2rem',
             fontStyle: 'normal',
             fontWeight: '600',
@@ -57,7 +56,7 @@ export const TutorialIndex = () => {
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={Zap}
               title="Quickstart"
@@ -67,7 +66,7 @@ export const TutorialIndex = () => {
               sx={{ flexGrow: 1 }}
             />
           </Grid>
-          <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={FileCode}
               title="Load Sample Data"
