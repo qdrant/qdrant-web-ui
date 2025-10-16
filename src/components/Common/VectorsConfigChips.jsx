@@ -110,7 +110,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
     );
   }
 
-  return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ...sx }}>{allChips}</Box>;
+  return <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center', ...sx }}>{allChips}</Box>;
 };
 
 VectorsConfigChips.propTypes = {
