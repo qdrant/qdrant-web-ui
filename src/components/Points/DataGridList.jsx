@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { JsonViewer } from '@textea/json-viewer';
+// import { JsonViewer } from '@textea/json-viewer';
+import JsonViewerCustom from '../Common/JsonViewerCustom';
 import { useTheme } from '@mui/material/styles';
 import { Divider, Grid, IconButton, Typography } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
@@ -51,13 +52,13 @@ export const DataGridList = function ({ data = {}, specialCases = {}, onConditio
             >
               {/* objects */}
               {typeof data[key] === 'object' && !specialKeys.includes(key) && (
-                <JsonViewer
+                <JsonViewerCustom
                   theme={theme.palette.mode}
                   value={data[key]}
                   displayDataTypes={false}
                   defaultInspectDepth={4}
                   rootName={false}
-                  style={theme.palette.mode === 'dark' ? { backgroundColor: theme.palette.background.card } : {}}
+                  style={{ backgroundColor: theme.palette.background.code }}
                 />
               )}
 

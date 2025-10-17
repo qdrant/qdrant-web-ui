@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { alpha, styled } from '@mui/material/styles';
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
+import { Bell } from 'lucide-react';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -11,7 +11,7 @@ import List from '@mui/material/List';
 import MuiListItem from '@mui/material/ListItem';
 import MuiDivider from '@mui/material/Divider';
 import { axiosInstance as axios } from '../common/axios';
-import { CodeBlock } from './Common/CodeBlock';
+import { CodeBlock } from './Common/CodeBlock/CodeBlock';
 import { Box, Button, Chip, Drawer, useMediaQuery } from '@mui/material';
 import { requestFromCode } from './CodeEditorWindow/config/RequesFromCode';
 import { bigIntJSON } from '../common/bigIntJSON';
@@ -127,7 +127,7 @@ export default function Notifications() {
           size="large"
         >
           <Badge color="error" badgeContent={issuesCount}>
-            <NotificationsNoneRoundedIcon />
+            <Bell size={20} />
           </Badge>
         </IconButton>
       </Tooltip>

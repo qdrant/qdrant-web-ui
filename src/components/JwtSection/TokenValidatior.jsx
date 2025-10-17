@@ -5,12 +5,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
   IconButton,
-  InputLabel,
+  // InputLabel,
   MenuItem,
-  Select,
   Switch,
   TextField,
   Typography,
@@ -18,7 +16,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useClient } from '../../context/client-context';
-import { Check, Delete } from '@mui/icons-material';
+import { Plus, Minus } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 function configureTokenValidator({ validationCollection, matches, setTokenValidatior }) {
@@ -35,7 +33,7 @@ function configureTokenValidator({ validationCollection, matches, setTokenValida
 const TokenValidatior = ({ setTokenValidatior }) => {
   const [open, setOpen] = useState(false);
   const [isTokenValidator, setIsTokenValidator] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState('');
+  const [selectedCollection, setSelectedCollection] = useState(null);
   const [collections, setCollections] = useState([]);
   const handleClose = () => {
     setOpen(false);
@@ -63,44 +61,52 @@ const TokenValidatior = ({ setTokenValidatior }) => {
   }, [open]);
 
   return (
-    <>
-      {/* <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}> */}
+    <Box>
       <Tooltip title="Configures validation of the token based on record stored in the collection" placement="right">
         <FormControlLabel
           control={<Switch checked={isTokenValidator} onChange={handleToggle} />}
           label="Token Validator"
+          sx={{ gap: 0.75 }}
         />
       </Tooltip>
-      {/* </Box> */}
       <Dialog fullWidth open={open} onClose={handleClose}>
         <DialogTitle>Token Validator</DialogTitle>
-        <DialogContent>
+        <DialogContent component="form" role="form">
           <Box sx={{ display: 'flex', gap: 2, mb: 2, mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel id="collection-select-label">Collection</InputLabel>
-              <Select
+            <Box sx={{ display: 'flex', width: '100%', flexDirection: 'column', gap: 1.5 }} role="group">
+              <TextField
+                select
+                fullWidth
                 id="collection-select"
-                labelId="collection-select-label"
-                label="Collection"
                 value={selectedCollection?.name || ''}
                 onChange={(e) => {
-                  setSelectedCollection(collections.find((collection) => collection.name === e.target.value));
+                  setSelectedCollection(
+                    e.target.value ? collections.find((collection) => collection.name === e.target.value) : null
+                  );
+                }}
+                slotProps={{
+                  select: {
+                    displayEmpty: true,
+                    renderValue: (selected) => {
+                      if (!selected) {
+                        return <Box sx={{ color: 'text.secondary' }}>Select Collection</Box>;
+                      }
+                      return selected;
+                    },
+                  },
                 }}
               >
-                <MenuItem value="" key="">
-                  Not Selected
-                </MenuItem>
                 {collections.map((collection) => (
                   <MenuItem key={collection.name} value={collection.name}>
                     {collection.name}
                   </MenuItem>
                 ))}
-              </Select>
-            </FormControl>
+              </TextField>
+            </Box>
           </Box>
 
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="h6" color={selectedCollection.name ? 'textPrimary' : 'textSecondary'}>
+          <Box sx={{ mt: 4, mb: 2 }}>
+            <Typography variant="h6" color={selectedCollection?.name ? 'textPrimary' : 'textSecondary'}>
               Set Matches
             </Typography>
           </Box>
@@ -118,12 +124,12 @@ const TokenValidatior = ({ setTokenValidatior }) => {
                     setMatches(newMatches);
                   }}
                 >
-                  <Delete />
+                  <Minus />
                 </IconButton>
               </Box>
             );
           })}
-          <Box sx={{ display: 'flex', gap: 2, '& > :not(:last-of-type)': { width: '40%' } }}>
+          <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField label="Key" value={newMatchesKey} onChange={(e) => setNewMatchesKey(e.target.value)} />
 
             <TextField label="Value" value={newMatchesValue} onChange={(e) => setNewMatchesValue(e.target.value)} />
@@ -140,28 +146,31 @@ const TokenValidatior = ({ setTokenValidatior }) => {
               }}
               disabled={!newMatchesKey || !newMatchesValue}
             >
-              <Check />
+              <Plus />
             </IconButton>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button variant="outlined" color="inherit" onClick={handleClose}>
+            Cancel
+          </Button>
           <Button
+            variant="contained"
             onClick={() => {
               configureTokenValidator({
-                validationCollection: selectedCollection.name,
+                validationCollection: selectedCollection?.name,
                 matches,
                 setTokenValidatior,
               });
               setOpen(false);
             }}
-            disabled={!selectedCollection.name || Object.keys(matches).length === 0}
+            disabled={!selectedCollection?.name || Object.keys(matches).length === 0}
           >
             Save
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 

@@ -1,34 +1,34 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
-  Grid,
   TextField,
+  Box,
   Typography,
-  IconButton,
   Tooltip,
+  Table,
+  TableCell,
+  TableRow,
+  useTheme,
+  alpha,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Trash } from 'lucide-react';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useClient } from '../../context/client-context';
-import { CopyButton } from '../Common/CopyButton';
+import { StyledTableContainer, StyledTableHead, StyledTableBody, StyledTableRow } from '../Common/StyledTable';
 
 const CollectionAliases = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [aliasToDelete, setAliasToDelete] = useState('');
   const [aliases, setAliases] = useState([]);
+  const theme = useTheme();
 
   // Fetch aliases on mount
   useEffect(() => {
@@ -90,43 +90,48 @@ const CollectionAliases = ({ collectionName }) => {
     [collectionName, qdrantClient, aliases]
   );
 
-  const aliasList = useMemo(
-    () =>
-      aliases.map((alias) => (
-        <React.Fragment key={alias.alias_name}>
-          <AliasRow aliasName={alias.alias_name} onDelete={() => setAliasToDelete(alias.alias_name)} />
-          {alias.alias_name !== aliases[aliases.length - 1].alias_name && (
-            <Divider sx={{ ml: '0.5rem', width: 'calc(100% - 0.5rem)' }} />
-          )}
-        </React.Fragment>
-      )),
-    [aliases]
-  );
+  const AliasList = aliases.map((alias) => (
+    <AliasRow key={alias.alias_name} aliasName={alias.alias_name} onDelete={() => setAliasToDelete(alias.alias_name)} />
+  ));
 
   return (
-    <Card variant="dual" sx={{ mb: 5 }}>
-      <CardHeader
-        title="Aliases"
-        variant="heading"
-        action={
-          <Box>
-            <Button variant="outlined" size="small" onClick={() => setOpenCreateModal(true)}>
-              Create alias
-            </Button>
-          </Box>
-        }
-      />
-      <CardContent sx={{ '&:last-child': { pb: 1 } }}>
-        {aliases.length === 0 ? (
-          <Typography variant="subtitle1" color="text.secondary">
-            No aliases found
-          </Typography>
-        ) : (
-          <Grid container spacing={2}>
-            {aliasList}
-          </Grid>
-        )}
-      </CardContent>
+    <StyledTableContainer sx={{ mb: 5 }}>
+      <Table aria-label="aliases table">
+        <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
+          <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
+            <TableCell sx={{ py: 1, borderBottom: 0 }}>
+              <Typography variant="h6">Aliases</Typography>
+            </TableCell>
+            <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{ display: 'block', py: 0.75, mb: 0.2 }}
+                  onClick={() => setOpenCreateModal(true)}
+                >
+                  Create alias
+                </Button>
+              </Box>
+            </TableCell>
+          </TableRow>
+        </StyledTableHead>
+
+        <StyledTableBody>
+          {aliases.length === 0 ? (
+            <StyledTableRow>
+              <TableCell colSpan={2} width={'100%'} align="left">
+                <Typography variant="subtitle1" color="text.secondary">
+                  No aliases found
+                </Typography>
+              </TableCell>
+            </StyledTableRow>
+          ) : (
+            AliasList
+          )}
+        </StyledTableBody>
+      </Table>
+
       <CreateAliasModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onCreate={handleCreateAlias} />
 
       <ConfirmationDialog
@@ -141,26 +146,39 @@ const CollectionAliases = ({ collectionName }) => {
           setAliasToDelete('');
         }}
       />
-    </Card>
+    </StyledTableContainer>
   );
 };
 
 const AliasRow = ({ aliasName, onDelete }) => (
-  <React.Fragment>
-    <Grid item xs={10} display="flex" alignItems="center" sx={{ pb: 1 }}>
+  <StyledTableRow>
+    <TableCell>
       <Typography variant="subtitle1" color="text.secondary">
         {aliasName}
       </Typography>
-      <CopyButton text={aliasName} tooltipPlacement={'right'} />
-    </Grid>
-    <Grid item xs={2} sx={{ display: 'flex', justifyContent: 'flex-end', pr: 2 }}>
-      <Tooltip title={'Delete alias'} placement={'left'}>
-        <IconButton onClick={onDelete} aria-label="delete" color="error" data-testid={`delete-alias-${aliasName}`}>
-          <DeleteIcon />
-        </IconButton>
-      </Tooltip>
-    </Grid>
-  </React.Fragment>
+    </TableCell>
+    <TableCell align="right">
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Tooltip title={'Delete alias'} placement={'left'}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Trash size={18} />}
+            sx={{
+              px: '10px',
+              py: '4px',
+            }}
+            onClick={onDelete}
+            aria-label="delete"
+            color="error"
+            data-testid={`delete-alias-${aliasName}`}
+          >
+            Delete
+          </Button>
+        </Tooltip>
+      </Box>
+    </TableCell>
+  </StyledTableRow>
 );
 
 AliasRow.propTypes = {
@@ -185,7 +203,9 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
       data-testid="create-alias-dialog"
       role="dialog"
     >
-      <DialogTitle id="create-alias-title">Create Collection Alias</DialogTitle>
+      <DialogTitle sx={{ p: 3 }} id="create-alias-title">
+        Create Collection Alias
+      </DialogTitle>
       <DialogContent>
         <TextField
           id="alias-name-input"
@@ -197,14 +217,14 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
           required
           margin="dense"
           fullWidth
-          variant="standard"
+          variant="outlined"
         />
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={onClose}>
+      <DialogActions sx={{ p: 3 }}>
+        <Button variant="outlined" color="inherit" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleCreate} data-testid="create-alias-button">
+        <Button variant="contained" disabled={!aliasName} onClick={handleCreate} data-testid="create-alias-button">
           Create
         </Button>
       </DialogActions>

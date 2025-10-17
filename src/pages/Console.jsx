@@ -6,14 +6,9 @@ import { Grid } from '@mui/material';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import CodeEditorWindow from '../components/CodeEditorWindow';
 import ResultEditorWindow from '../components/ResultEditorWindow';
-import SpeedDialMenu from '../components/CodeEditorWindow/Menu/SpeedDialMenu';
-import History from '../components/CodeEditorWindow/Menu/history';
-import SavedCode from '../components/CodeEditorWindow/Menu/savedCode';
-import SaveIcon from '@mui/icons-material/Save';
-import HistoryRounded from '@mui/icons-material/HistoryRounded';
-import RestartAlt from '@mui/icons-material/RestartAlt';
 import { Code } from '@mui/icons-material';
 import CommandsDrawer from '../components/CodeEditorWindow/Menu/CommandsDrawer/CommandsDrawer';
+import { green } from '@mui/material/colors';
 
 const query = `// List all collections
 GET collections
@@ -48,11 +43,8 @@ function Console() {
   const theme = useTheme();
   const [code, setCode] = useState(localStorage.getItem('qwuiConsoleCode') ?? query);
   const [result, setResult] = useState(defaultResult);
-  // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
 
   const [requestCount, setRequestCount] = React.useState(0);
-  const [openHistory, setOpenHistory] = useState(false);
-  const [openSavedCode, setOpenSavedCode] = useState(false);
   const [openCommands, setOpenCommands] = useState(false);
 
   const onChangeCode = (action, data) => {
@@ -82,13 +74,7 @@ function Console() {
   return (
     <>
       <Box component="main">
-        {/* {errorMessage !== null && <ErrorNotifier {...{message: errorMessage}} />} */}
         <Grid container>
-          {/*  {errorMessage && (*/}
-          {/*    <Grid xs={12} item textAlign={'center'}>*/}
-          {/*      <Typography>⚠ Error: {errorMessage}</Typography>*/}
-          {/*    </Grid>*/}
-          {/*  )}*/}
           <Grid size={12}>
             <Box sx={{ width: '100%', height: '4px' }}>
               <LinearProgress sx={requestCount ? {} : { display: 'none' }} />
@@ -126,36 +112,21 @@ function Console() {
           </Grid>
           <Tooltip title="Commands" placement="left" arrow>
             <Fab
-              sx={{ position: 'absolute', bottom: '40px', right: '49px', boxShadow: 3 }}
-              color="success"
+              sx={{
+                position: 'absolute',
+                bottom: '40px',
+                right: '49px',
+                boxShadow: 3,
+                backgroundColor: green[500],
+                '&:hover': { backgroundColor: green[700] },
+              }}
+              color="info"
               aria-label="add"
               onClick={() => setOpenCommands(true)}
             >
               <Code />
             </Fab>
           </Tooltip>
-          <SpeedDialMenu
-            openHistory={() => setOpenHistory(true)}
-            openSavedCode={() => setOpenSavedCode(true)}
-            resetConsole={() => onChangeCode('code', query)}
-            actions={[
-              ['Save', () => setOpenSavedCode(true), <SaveIcon key="save-icon" />],
-              ['History', () => setOpenHistory(true), <HistoryRounded key="history-icon" />],
-              ['Reset', () => onChangeCode('code', query), <RestartAlt key="restart-icon" />],
-            ]}
-          />
-          <History
-            code={code}
-            handleEditorChange={onChangeCode}
-            state={openHistory}
-            toggleDrawer={() => setOpenHistory(!openHistory)}
-          />
-          <SavedCode
-            code={code}
-            handleEditorChange={onChangeCode}
-            state={openSavedCode}
-            toggleDrawer={() => setOpenSavedCode(!openSavedCode)}
-          />
           <CommandsDrawer
             open={openCommands}
             toggleDrawer={() => {
