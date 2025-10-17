@@ -143,7 +143,26 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
         <DialogTitle>
           <>Confirm to save payload changes</>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+
+  scrollbarWidth: 'thin',
+  scrollbarColor: `${theme.palette.nativeScrollbarBg} transparent`,
+  '& *::-webkit-scrollbar': {
+    width: '4px',
+    height: '4px',
+  },
+
+  '& *::-webkit-scrollbar-track': {
+    background: 'transparent',
+  },
+
+  '& *::-webkit-scrollbar-thumb': {
+    background: `${theme.palette.nativeScrollbarBg}`,
+    borderRadius: '2px',
+  },
+          }}
+        >
           <ReactDiffViewer
             oldValue={bigIntJSON.stringify(point.payload, null, 2)}
             newValue={payload}
@@ -181,4 +200,4 @@ PayloadEditor.propTypes = {
   setLoading: PropTypes.func.isRequired,
 };
 
-PayloadEditor.displayName = 'PayloadEditor';
+PayloadEditor.displayName = 'PayloadEditor';6
