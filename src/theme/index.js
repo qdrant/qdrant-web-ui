@@ -22,6 +22,11 @@ const themeOptions = {
     ].join(', '),
     allVariants: {
       fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
+      textDecorationThickness: '1px',
+      textUnderlineOffset: '2px',
+      '&:hover': {
+        textDecorationThickness: '1px',
+      },
     },
   },
   components: {
