@@ -25,8 +25,11 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
               alignItems: 'center',
               verticalAlign: 'middle',
               cursor: progress === 0 ? 'pointer' : 'default',
+              textDecorationThickness: '1px',
+              textUnderlineOffset: '2px',
               '&:hover': {
                 textDecoration: progress === 0 ? 'underline' : 'none',
+                textDecorationThickness: '1px',
                 '& .MuiSvgIcon-root': {
                   color: progress === 0 ? theme.palette.primary.dark : theme.palette.divider,
                 },

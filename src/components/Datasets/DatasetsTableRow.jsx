@@ -23,8 +23,11 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
               alignItems: 'center',
               verticalAlign: 'middle',
               cursor: importing ? 'default' : 'pointer',
+              textDecorationThickness: '1px',
+              textUnderlineOffset: '2px',
               '&:hover': {
                 textDecoration: !importing ? 'underline' : 'none',
+                textDecorationThickness: '1px',
                 '& .MuiSvgIcon-root': {
                   color: !importing ? theme.palette.primary.dark : theme.palette.divider,
                 },
@@ -41,6 +44,11 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
                   borderRadius: '0.5rem',
                   padding: '0.5rem',
                   marginRight: '0.5rem',
+                  textDecorationThickness: '1px',
+                  textUnderlineOffset: '2px',
+                  '&:hover': {
+                    textDecorationThickness: '1px',
+                  },
                 }}
               >
                 <ArchiveRestore size={16} color={!importing ? theme.palette.secondary.main : theme.palette.divider} />
