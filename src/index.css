@@ -17,6 +17,26 @@
   font-display: swap;
 }
 
+/* global scrollbar styles */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mui-palette-nativeScrollbarBg) transparent;
+}
+
+html::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--mui-palette-nativeScrollbarBg);
+  border-radius: 2px;
+}
+
 body {
   margin: 0;
   font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
