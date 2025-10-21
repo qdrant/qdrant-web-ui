@@ -58,7 +58,7 @@ const Welcome = () => {
           title="Get started with vector search in Qdrant"
           description="Start building your app by creating a collection and inserting your vectors."
           buttonText="View Quickstart"
-          buttonHref="/tutorial/quickstart"
+          linkTo="/tutorial/quickstart"
           imgSrc="/assets/console.svg"
         />
       </Box>
@@ -74,9 +74,9 @@ const Welcome = () => {
               icon={Workflow}
               title="API Reference"
               description={
-                'Explore Qdrant&apos;s REST API and SDKs to connect, query, and manage your vector data with ease.'
+                "Explore Qdrant's REST API and SDKs to connect, query, and manage your vector data with ease."
               }
-              href="/api-reference"
+              href="https://api.qdrant.tech/"
               showCta={false}
             />
           </Grid>

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography, Button } from '@mui/material';
 import { styled, alpha, useTheme } from '@mui/material/styles';
 import { indigo } from '@mui/material/colors';
+import { Link } from 'react-router-dom';
 
 const BannerContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -69,8 +70,16 @@ const ConsoleIllustration = styled(Box)(({ theme }) => ({
   },
 }));
 
-const CardBanner = ({ title, description, buttonText, buttonHref, imgSrc }) => {
+const CardBanner = ({ title, description, buttonText, linkTo, imgSrc }) => {
   const theme = useTheme();
+
+  const isExternalLink = linkTo.startsWith('http:');
+
+  const onClick = () => {
+    if (!isExternalLink) {
+      window.scrollTo(0, 0);
+    }
+  };
 
   return (
     <BannerContainer>
@@ -103,7 +112,10 @@ const CardBanner = ({ title, description, buttonText, buttonHref, imgSrc }) => {
 
           <Button
             variant="contained"
-            href={buttonHref}
+            component={Link}
+            to={linkTo}
+            target={isExternalLink ? '_blank' : undefined}
+            onClick={onClick}
             sx={{
               mt: 2,
             }}
@@ -124,7 +136,7 @@ CardBanner.propTypes = {
   title: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   buttonText: PropTypes.string.isRequired,
-  buttonHref: PropTypes.string.isRequired,
+  linkTo: PropTypes.string.isRequired,
   imgSrc: PropTypes.string.isRequired,
 };
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Box, CardActions, CardActionArea, Button } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const StyledCard = styled(({ ...props }) => <Card elevation={0} {...props} />)(({ theme }) => ({
   display: 'flex',
@@ -13,6 +13,7 @@ const StyledCard = styled(({ ...props }) => <Card elevation={0} {...props} />)((
   background: theme.palette.background.paperElevation1,
   borderRadius: '0.5rem',
   boxShadow: 'none',
+  textDecoration: 'none',
   '&:hover': {
     boxShadow: theme.shadows[8],
   },
@@ -116,19 +117,27 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
   const theme = useTheme();
   const displayIconColor = iconColor || theme.palette.info.main;
   const displayIconVariant = iconVariant || 'side';
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    if (!href) return;
-    navigate(href);
-  };
 
   const isSideIconWithCta = (iconVariant, withCta) => {
     return (!iconVariant || iconVariant === 'side') && withCta;
   };
 
+  const isExternalLink = href.startsWith('http:');
+
+  const onClick = () => {
+    if (!isExternalLink) {
+      window.scrollTo(0, 0);
+    }
+  };
+
   return (
-    <StyledCard onClick={handleClick} role="button" sx={{ ...sx }}>
+    <StyledCard
+      component={Link}
+      to={href}
+      target={isExternalLink ? '_blank' : undefined}
+      sx={{ ...sx }}
+      onClick={onClick}
+    >
       <StyledCardActionArea>
         <StyledCardContent className={displayIconVariant}>
           <IconWrapper>
@@ -142,11 +151,7 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
 
         {showCta && href && (
           <StyledCardActions>
-            <StyledLink
-              component="a"
-              onClick={handleClick}
-              className={isSideIconWithCta(iconVariant, showCta) ? 'add-margin-left' : ''}
-            >
+            <StyledLink component="span" className={isSideIconWithCta(iconVariant, showCta) ? 'add-margin-left' : ''}>
               {linkText || 'Learn More'} <ChevronRight size="16px" />
             </StyledLink>
           </StyledCardActions>
