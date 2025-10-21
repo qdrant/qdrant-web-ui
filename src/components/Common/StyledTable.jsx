@@ -14,7 +14,6 @@ export const StyledTableHead = styled(TableHead)(({ theme }) => ({
 
 export const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
   padding: '0.5rem 1rem',
-  borderBottom: 'none',
   fontSize: '0.75rem',
   fontWeight: 400,
   lineHeight: 1.5,

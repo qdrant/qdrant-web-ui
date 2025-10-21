@@ -145,22 +145,21 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
         </DialogTitle>
         <DialogContent
           sx={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${theme.palette.nativeScrollbarBg} transparent`,
+            '& *::-webkit-scrollbar': {
+              width: '4px',
+              height: '4px',
+            },
 
-  scrollbarWidth: 'thin',
-  scrollbarColor: `${theme.palette.nativeScrollbarBg} transparent`,
-  '& *::-webkit-scrollbar': {
-    width: '4px',
-    height: '4px',
-  },
+            '& *::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
 
-  '& *::-webkit-scrollbar-track': {
-    background: 'transparent',
-  },
-
-  '& *::-webkit-scrollbar-thumb': {
-    background: `${theme.palette.nativeScrollbarBg}`,
-    borderRadius: '2px',
-  },
+            '& *::-webkit-scrollbar-thumb': {
+              background: `${theme.palette.nativeScrollbarBg}`,
+              borderRadius: '2px',
+            },
           }}
         >
           <ReactDiffViewer
@@ -200,4 +199,5 @@ PayloadEditor.propTypes = {
   setLoading: PropTypes.func.isRequired,
 };
 
-PayloadEditor.displayName = 'PayloadEditor';6
+PayloadEditor.displayName = 'PayloadEditor';
+6;

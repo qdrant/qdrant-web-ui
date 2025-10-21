@@ -24,9 +24,9 @@ html {
 }
 
 html::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
-  }
+  width: 4px;
+  height: 4px;
+}
 
 html::-webkit-scrollbar-track {
   background: transparent;

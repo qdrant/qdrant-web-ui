@@ -6,11 +6,8 @@ import PointImage from '../Points/PointImage';
 import PointPayload from '../Points/PointPayload';
 import Vectors from '../Points/PointVectors';
 
-// todo: fix this, reuse parts of PointCard.jsx where is possible, fix hardcoded parts
 const PointPreview = ({ point }) => {
   const theme = useTheme();
-  console.log('HEY RENDERING PointPreview');
-  console.log('PointPreview render', point);
 
   if (!point) {
     return (
