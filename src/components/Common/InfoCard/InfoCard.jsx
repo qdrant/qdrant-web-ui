@@ -124,7 +124,6 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
 
   const isExternalLink = !!href && href.startsWith('http');
 
-
   const onClick = () => {
     if (!isExternalLink) {
       window.scrollTo(0, 0);

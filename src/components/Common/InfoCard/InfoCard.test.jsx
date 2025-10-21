@@ -175,7 +175,6 @@ describe('InfoCard', () => {
   });
 
   describe('Navigation', () => {
-
     it('should not navigate when href is not provided', () => {
       const { href, ...propsWithoutHref } = defaultProps;
 
@@ -203,6 +202,5 @@ describe('InfoCard', () => {
 
       consoleSpy.mockRestore();
     });
-
   });
 });
