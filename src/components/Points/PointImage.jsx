@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardMedia, Grid, Modal, Typography } from '@mui/material';
+import { Box, CardMedia, Modal, Typography } from '@mui/material';
 
-function PointImage({ data, sx, xs = 3 }) {
+function PointImage({ data, sx }) {
   const [fullScreenImg, setFullScreenImg] = useState(null);
   const renderImages = () => {
     const images = [];
@@ -26,21 +26,30 @@ function PointImage({ data, sx, xs = 3 }) {
         // Check if the value is an image URL
         if (isImgUrl(data[key])) {
           images.push(
-            <CardMedia
-              component="img"
-              sx={{
-                width: 150,
-                margin: 'auto',
-                wordWrap: 'break-word',
-                border: '1px solid #ccc',
-                borderRadius: '5px',
-                ...sx,
-              }}
+            <Box
               key={key}
-              image={data[key]}
-              alt={data[key]}
-              onClick={() => setFullScreenImg(data[key])}
-            />
+              sx={{
+                py: 1,
+                px: 0.5,
+                ml: 5,
+              }}
+            >
+              <CardMedia
+                component="img"
+                sx={{
+                  width: '120px',
+                  height: '120px',
+                  aspectRatio: '1/1',
+                  wordWrap: 'break-word',
+                  border: '1px solid #ccc',
+                  borderRadius: '5px',
+                  ...sx,
+                }}
+                image={data[key]}
+                alt={data[key]}
+                onClick={() => setFullScreenImg(data[key])}
+              />
+            </Box>
           );
         }
       }
@@ -56,12 +65,12 @@ function PointImage({ data, sx, xs = 3 }) {
   }
 
   return (
-    <Grid display="grid" justifyContent={'center'} size={xs}>
+    <Box>
       {images}
       <Modal
         open={!!fullScreenImg}
         onClose={() => setFullScreenImg(null)}
-        componentsProps={{
+        slotProps={{
           backdrop: {
             sx: { cursor: 'pointer' },
             title: 'Click to close',
@@ -106,7 +115,7 @@ function PointImage({ data, sx, xs = 3 }) {
           />
         </Box>
       </Modal>
-    </Grid>
+    </Box>
   );
 }
 PointImage.propTypes = {

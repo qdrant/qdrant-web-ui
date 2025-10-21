@@ -143,28 +143,30 @@ const PointsTabs = ({ collectionName, client }) => {
     getPoints();
   }, [collectionName, offset, conditions]);
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
-      <Grid size={12}>
-        <SimilarSerachfield
-          conditions={conditions}
-          onConditionChange={onConditionChange}
-          vectors={vectors}
-          usingVector={usingVector}
-        />
-      </Grid>
+      {conditions && Object.keys(conditions).length > 0 && (
+        <Grid size={12}>
+          <SimilarSerachfield
+            conditions={conditions}
+            onConditionChange={onConditionChange}
+            vectors={vectors}
+            usingVector={usingVector}
+          />
+        </Grid>
+      )}
       {errorMessage && (
         <Grid textAlign={'center'} size={12}>
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
       {!points && !errorMessage && (
-        <Grid textAlign={'center'} size={12}>
+        <Grid textAlign={'center'} size={12} role="progressbar" aria-label="Loading Points">
           <Typography> 🔃 Loading...</Typography>
         </Grid>
       )}
       {points && !errorMessage && points.points?.length === 0 && (
-        <Grid textAlign={'center'} size={12}>
+        <Grid textAlign={'center'} size={12} role="alert" aria-label="No Points">
           <Typography>📪 No Points are present, {collectionName} is empty</Typography>
         </Grid>
       )}

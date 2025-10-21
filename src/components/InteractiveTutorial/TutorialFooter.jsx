@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Divider, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import tutorialSubPages from './TutorialSubpages';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
@@ -18,6 +18,7 @@ export const TutorialFooter = () => {
       currentPageIndex = 0;
       navigate('/tutorial');
     }
+    window.scrollTo(0, 0);
   };
 
   const handleNext = () => {
@@ -25,11 +26,11 @@ export const TutorialFooter = () => {
       currentPageIndex = currentPageIndex + 1;
       navigate(`/tutorial/${pageKeys[currentPageIndex]}`);
     }
+    window.scrollTo(0, 0);
   };
 
   return (
-    <Box mt={10}>
-      <Divider />
+    <Box my={5}>
       <Grid container mt={4} spacing={1} justifyContent={'space-between'}>
         <Grid>
           {currentPageIndex >= 0 && (
@@ -38,8 +39,6 @@ export const TutorialFooter = () => {
             </Button>
           )}
         </Grid>
-
-        <Grid>{currentPageIndex >= 0 && <Button onClick={() => navigate('/tutorial')}>Home</Button>}</Grid>
 
         <Grid>
           {currentPageIndex < pageKeys.length - 1 && (

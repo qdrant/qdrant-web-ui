@@ -1,7 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { TableRow, TableCell, TableContainer, Switch } from '@mui/material';
-import { HeaderTableCell, TableBodyWithGaps, TableHeadWithGaps, TableWithGaps } from '../Common/TableWithGaps';
+import { TableRow, TableCell, Table, Switch } from '@mui/material';
+import {
+  StyledTableContainer,
+  StyledTableHead,
+  StyledHeaderCell,
+  StyledTableBody,
+  StyledTableRow,
+} from '../Common/StyledTable';
 
 const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChange }) => {
   const [value, setValue] = React.useState('');
@@ -22,10 +28,11 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
   }, [globalAccess, manageAccess]);
 
   return (
-    <TableRow>
+    <StyledTableRow>
       <TableCell>{collection}</TableCell>
       <TableCell align="center">
         <Switch
+          size="small"
           checked={value === 'r' || value === 'rw'}
           onChange={(e) =>
             handleChange(
@@ -43,6 +50,7 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
       </TableCell>
       <TableCell align="center">
         <Switch
+          size="small"
           checked={value === 'rw'}
           onChange={(e) =>
             handleChange(
@@ -59,7 +67,7 @@ const CollectionAccessToggle = ({ collection, globalAccess, manageAccess, onChan
           disabled={globalAccess || manageAccess}
         />
       </TableCell>
-    </TableRow>
+    </StyledTableRow>
   );
 };
 
@@ -72,20 +80,22 @@ CollectionAccessToggle.propTypes = {
 
 const JwtPerCollection = ({ globalAccess, manageAccess, collections, setConfiguredCollections }) => {
   return (
-    <TableContainer>
-      <TableWithGaps aria-label="Access per Collection">
-        <TableHeadWithGaps>
+    <StyledTableContainer>
+      <Table aria-label="Access per Collection">
+        <StyledTableHead>
           <TableRow>
-            <HeaderTableCell width="33%">Collection Name</HeaderTableCell>
-            <HeaderTableCell width="33%" align="center">
+            <StyledHeaderCell width="33%" sx={{ py: 2 }}>
+              Collection Name
+            </StyledHeaderCell>
+            <StyledHeaderCell width="33%" align="center" sx={{ py: 2 }}>
               Read
-            </HeaderTableCell>
-            <HeaderTableCell width="33%" align="center">
+            </StyledHeaderCell>
+            <StyledHeaderCell width="33%" align="center" sx={{ py: 2 }}>
               Write
-            </HeaderTableCell>
+            </StyledHeaderCell>
           </TableRow>
-        </TableHeadWithGaps>
-        <TableBodyWithGaps>
+        </StyledTableHead>
+        <StyledTableBody>
           {collections.map((collection) => (
             <CollectionAccessToggle
               key={collection}
@@ -109,9 +119,9 @@ const JwtPerCollection = ({ globalAccess, manageAccess, collections, setConfigur
               }}
             />
           ))}
-        </TableBodyWithGaps>
-      </TableWithGaps>
-    </TableContainer>
+        </StyledTableBody>
+      </Table>
+    </StyledTableContainer>
   );
 };
 

@@ -1,6 +1,16 @@
-export const getEditorTheme = (theme) => {
+import { red, blue, neutral } from '../../../theme/colors';
+
+export const getEditorTheme = (theme, themeName = 'custom-language-theme') => {
   if (theme.palette.mode === 'dark') {
-    return {
+    return THEMES[themeName](theme).dark;
+  } else {
+    return THEMES[themeName](theme).light;
+  }
+};
+
+const THEMES = {
+  'custom-language-theme': (theme) => ({
+    dark: {
       base: 'vs-dark',
       rules: [
         { token: 'keyword', foreground: '#007acc' },
@@ -13,10 +23,10 @@ export const getEditorTheme = (theme) => {
       ],
       colors: {
         'editor.foreground': '#FFFFFF',
+        'editor.background': theme.palette.background.default,
       },
-    };
-  } else {
-    return {
+    },
+    light: {
       base: 'vs',
       rules: [
         { token: 'keyword', foreground: '#0000FF' },
@@ -29,7 +39,45 @@ export const getEditorTheme = (theme) => {
       ],
       colors: {
         'editor.foreground': '#000000',
+        'editor.background': theme.palette.background.default,
+      },
+    },
+  }),
+  'qdrant-theme': (theme) => {
+    const isDark = theme.palette.mode === 'dark';
+    return {
+      dark: {
+        base: 'vs-dark',
+        rules: [
+          { token: 'keyword', foreground: theme.palette.warning.main },
+          { token: 'string.key', foreground: red[600] },
+          { token: 'string.value', foreground: blue[600] },
+          { token: 'number', foreground: blue[600] },
+          { token: 'comment', foreground: isDark ? neutral[500] : neutral[400] },
+
+          { token: 'string', foreground: red[600] },
+        ],
+        colors: {
+          'editor.foreground': theme.palette.text.primary,
+          'editor.background': theme.palette.background.code,
+        },
+      },
+      light: {
+        base: 'vs',
+        rules: [
+          { token: 'keyword', foreground: theme.palette.warning.main },
+          { token: 'string.key', foreground: red[600] },
+          { token: 'string.value', foreground: blue[600] },
+          { token: 'number', foreground: blue[600] },
+          { token: 'comment', foreground: isDark ? neutral[500] : neutral[400] },
+
+          { token: 'string', foreground: red[600] },
+        ],
+        colors: {
+          'editor.foreground': theme.palette.text.primary,
+          'editor.background': theme.palette.background.code,
+        },
       },
     };
-  }
+  },
 };

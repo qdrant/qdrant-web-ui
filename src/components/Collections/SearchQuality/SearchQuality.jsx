@@ -7,7 +7,7 @@ import { useSnackbar } from 'notistack';
 import { Box, Card, CardHeader } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
-import EditorCommon from '../../EditorCommon';
+import CodeEditor from '../../Common/CodeEditor';
 import { normalizeVectorConfigObject } from '../../../lib/qdrant-entities-helpers';
 
 const SearchQuality = ({ collectionName }) => {
@@ -58,7 +58,7 @@ const SearchQuality = ({ collectionName }) => {
         />
       )}
 
-      <Card varian="dual" sx={{ mt: 5 }}>
+      <Card elevation={0} sx={{ mt: 5 }}>
         <CardHeader
           title={'Report'}
           variant="heading"
@@ -67,21 +67,8 @@ const SearchQuality = ({ collectionName }) => {
           }}
           action={<CopyButton text={bigIntJSON.stringify(log)} />}
         />
-        <Box sx={{ pt: 2, pb: 1, pr: 1 }}>
-          <EditorCommon
-            theme={'custom-language-theme'}
-            value={log}
-            options={{
-              scrollBeyondLastLine: false,
-              fontSize: 12,
-              wordWrap: 'on',
-              minimap: { enabled: false },
-              automaticLayout: true,
-              readOnly: true,
-              mouseWheelZoom: true,
-              lineNumbers: 'off',
-            }}
-          />
+        <Box sx={{ pr: 1 }}>
+          <CodeEditor value={log} language="markdown" readOnly={true} />
         </Box>
       </Card>
     </>

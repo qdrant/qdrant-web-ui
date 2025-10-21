@@ -1,33 +1,30 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import EditorCommon from '../EditorCommon';
-import { bigIntJSON } from '../../common/bigIntJSON';
+import { useFormattedJSON } from '../../hooks/useFormattedJSON';
 
 const ResultEditorWindow = ({ code }) => {
-  function formatJSON(val = {}) {
-    try {
-      const res = bigIntJSON.parse(val);
-      return bigIntJSON.stringify(res, null, 2);
-    } catch {
-      const errorJson = {
-        error: `HERE ${val}`,
-      };
-      return bigIntJSON.stringify(errorJson, null, 2);
-    }
-  }
+  const lineHeight = 21;
+  const padding = 16;
+
+  const { formattedCode } = useFormattedJSON(code, { lineHeight, padding });
+
   return (
     <EditorCommon
       language="json"
       theme={'custom-language-theme'}
-      value={formatJSON(code)}
+      value={formattedCode}
       options={{
         scrollBeyondLastLine: false,
-        fontSize: 12,
+        fontSize: 14,
         wordWrap: 'on',
         minimap: { enabled: false },
         automaticLayout: true,
         readOnly: true,
         mouseWheelZoom: true,
+        folding: false,
+        lineHeight: lineHeight,
+        padding: { top: padding, bottom: padding },
       }}
     />
   );

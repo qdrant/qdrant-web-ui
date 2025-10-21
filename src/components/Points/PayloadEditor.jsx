@@ -9,15 +9,17 @@ import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useTheme } from '@mui/material/styles';
+import { useParams } from 'react-router-dom';
 
-export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSave, setLoading, client }) => {
-  const qdrantClient = client ? client : useClient().client;
+export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading }) => {
+  const qdrantClient = useClient().client;
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar, 6000);
   const successSnackbarOptions = getSnackbarOptions('success', closeSnackbar, 2000);
   const [payload, setPayload] = useState(() => bigIntJSON.stringify(point.payload, null, 2));
   const [showDiff, setShowDiff] = useState(false);
   const theme = useTheme();
+  const { collectionName } = useParams();
 
   const savePayload = async (collectionName, options) => {
     if (Object.keys(point.payload).length !== 0) {
@@ -101,7 +103,7 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
         </DialogTitle>
         <DialogContent sx={{ pb: 1 }}>
           <EditorCommon
-            height="50vh"
+            height="360px"
             language="json"
             value={bigIntJSON.stringify(point.payload, null, 2)}
             onChange={handleChange}
@@ -123,14 +125,15 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
               acceptSuggestionOnEnter: 'off',
               tabCompletion: 'off',
               wordBasedSuggestions: false,
+              padding: { top: 16, bottom: 16 },
             }}
           />
         </DialogContent>
-        <DialogActions sx={{ pb: 2, px: 3 }}>
-          <Button onClick={onClose} color="error" variant="outlined" sx={{ mr: 1 }}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={onClose} color="inherit" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
-          <Button onClick={handleSave} color="success" variant="outlined">
+          <Button onClick={handleSave} color="primary" variant="contained">
             Save
           </Button>
         </DialogActions>
@@ -140,7 +143,25 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
         <DialogTitle>
           <>Confirm to save payload changes</>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent
+          sx={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${theme.palette.nativeScrollbarBg} transparent`,
+            '& *::-webkit-scrollbar': {
+              width: '4px',
+              height: '4px',
+            },
+
+            '& *::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+
+            '& *::-webkit-scrollbar-thumb': {
+              background: `${theme.palette.nativeScrollbarBg}`,
+              borderRadius: '2px',
+            },
+          }}
+        >
           <ReactDiffViewer
             oldValue={bigIntJSON.stringify(point.payload, null, 2)}
             newValue={payload}
@@ -158,10 +179,10 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDiff(false)} color="error" variant="outlined" sx={{ mr: 1 }}>
+          <Button onClick={() => setShowDiff(false)} color="inherit" variant="outlined" sx={{ mr: 1 }}>
             Cancel
           </Button>
-          <Button onClick={handleConfirmSave} color="success" variant="outlined">
+          <Button onClick={handleConfirmSave} color="primary" variant="contained">
             Confirm
           </Button>
         </DialogActions>
@@ -171,13 +192,12 @@ export const PayloadEditor = memo(({ collectionName, point, open, onClose, onSav
 });
 
 PayloadEditor.propTypes = {
-  collectionName: PropTypes.string.isRequired,
   point: PropTypes.object.isRequired,
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onSave: PropTypes.func,
   setLoading: PropTypes.func.isRequired,
-  client: PropTypes.object,
 };
 
 PayloadEditor.displayName = 'PayloadEditor';
+6;

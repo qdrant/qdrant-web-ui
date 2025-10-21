@@ -4,6 +4,7 @@ import Console from './pages/Console';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
 import Visualize from './pages/Visualize';
+import TutorialIndex from './pages/TutorialIndex';
 import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
@@ -30,7 +31,7 @@ const routes = () => [
         path: '/collections/:collectionName/graph',
         element: <Graph />,
       },
-      { path: '/tutorial', element: <Tutorial /> },
+      { path: '/tutorial', element: <TutorialIndex /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },
       { path: '/jwt', element: <Jwt /> },
     ],

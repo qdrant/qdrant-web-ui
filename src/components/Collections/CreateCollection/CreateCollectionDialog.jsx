@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { CreateCollectionForm } from 'create-collection-form';
-import { AppBar, Box, Dialog, Toolbar, Typography, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { AppBar, Dialog, Toolbar, Typography, IconButton } from '@mui/material';
+import { ArrowLeft } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
 import { createCollection } from './create-collection.js';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
+import DialogContent from '@mui/material/DialogContent';
 
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
@@ -16,7 +17,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
 
   const getScrollableParent = () => {
     if (dialogRef.current) {
-      return dialogRef.current.querySelector('.MuiPaper-root');
+      return dialogRef.current;
     }
     return window;
   };
@@ -40,47 +41,50 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
   );
 
   return (
-    <Dialog
-      fullScreen
-      open={open}
-      ref={dialogRef}
-      onClose={handleClose}
-      aria-labelledby="create-collection-dialog-title"
-    >
-      <Box
+    <Dialog fullScreen open={open} onClose={handleClose} aria-labelledby="create-collection-dialog-title">
+      <AppBar
         sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: theme.palette.mode === 'dark' ? '#0b0f19' : '#f3f8fd',
+          background: theme.palette.background.paperElevation1,
+          boxShadow: 'none',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          position: 'sticky',
         }}
       >
-        <AppBar
+        <Toolbar
           sx={{
-            background: theme.palette.mode === 'dark' ? '#111827' : theme.palette.background.default,
-            boxShadow: 'none',
-            borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-            position: 'sticky',
+            width: '848px',
+            maxWidth: '848px',
+            minHeight: '48px',
+            px: 2,
+            py: 0.5,
+            mx: 'auto',
           }}
         >
-          <Toolbar>
-            <IconButton edge="start" color="default" onClick={handleClose} aria-label="close">
-              <CloseIcon />
-            </IconButton>
-            <Typography
-              id="create-collection-dialog-title"
-              sx={{
-                ml: 4,
-                flex: 1,
-                color: theme.palette.mode === 'dark' ? theme.palette.grey['50'] : theme.palette.grey['900'],
-              }}
-              variant="h6"
-              component="div"
-            >
-              Create New Collection
-            </Typography>
-          </Toolbar>
-        </AppBar>
+          <IconButton edge="start" color="default" onClick={handleClose} aria-label="close">
+            <ArrowLeft size={24} />
+          </IconButton>
+          <Typography
+            id="create-collection-dialog-title"
+            sx={{
+              ml: 1,
+              flex: 1,
+              color: theme.palette.text.primary,
+            }}
+            variant="body1"
+            component="div"
+          >
+            Create New Collection
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
+      <DialogContent
+        ref={dialogRef}
+        sx={{
+          p: 0,
+          backgroundColor: theme.palette.background.default,
+        }}
+      >
         <CreateCollectionForm
           onFinish={handleFinish}
           hideSidebar={true}
@@ -88,7 +92,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
           aria-label="Create Collection Form"
           aria-role="dialog"
         />
-      </Box>
+      </DialogContent>
     </Dialog>
   );
 };

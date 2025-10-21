@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { MdxCodeBlock } from './MdxCodeBlock';
 import * as requestFromCodeMod from '../../CodeEditorWindow/config/RequesFromCode';
 import { TutorialProvider } from '../../../context/tutorial-context';
@@ -23,6 +24,12 @@ const requestFromCodeSpy = vi.spyOn(requestFromCodeMod, 'requestFromCode').mockI
 );
 
 describe('CodeBlock', () => {
+  beforeEach(() => {
+    requestFromCodeSpy.mockClear();
+    // Mock scrollIntoView for test environment
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   it('should render CodeBlock with given code', () => {
     render(
       <TutorialProvider>
@@ -33,7 +40,7 @@ describe('CodeBlock', () => {
     const codeBlock = screen.getByTestId('code-block');
 
     expect(codeBlock).toBeInTheDocument();
-    expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
+    expect(screen.getByTestId('code-editor-pre')).toBeInTheDocument();
     expect(screen.getByTestId('code-block-run')).toBeInTheDocument();
 
     const textContent = codeBlock.textContent;
@@ -50,10 +57,14 @@ describe('CodeBlock', () => {
     const propsWithoutButton = structuredClone(props);
     propsWithoutButton.children.props.withRunButton = 'false';
 
-    render(<MdxCodeBlock {...propsWithoutButton} />);
+    render(
+      <TutorialProvider>
+        <MdxCodeBlock {...propsWithoutButton} />
+      </TutorialProvider>
+    );
 
     expect(screen.getByTestId('code-block')).toBeInTheDocument();
-    expect(screen.getByTestId('code-block-pre')).toBeInTheDocument();
+    expect(screen.getByTestId('code-editor-pre')).toBeInTheDocument();
     expect(screen.queryByTestId('code-block-run')).not.toBeInTheDocument();
   });
 
@@ -68,5 +79,24 @@ describe('CodeBlock', () => {
     expect(screen.queryByTestId('code-block-editor')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toBeInTheDocument();
     expect(screen.getByRole('textbox')).toHaveValue('{\n  "name": "test"\n}');
+  });
+
+  it('should execute code when Run button is clicked', async () => {
+    const userEvent = (await import('@testing-library/user-event')).default;
+
+    render(
+      <TutorialProvider>
+        <MdxCodeBlock {...props} />
+      </TutorialProvider>
+    );
+
+    const runButton = screen.getByTestId('code-block-run');
+    expect(runButton).toBeInTheDocument();
+    expect(runButton).toHaveTextContent('Run');
+
+    await userEvent.click(runButton);
+
+    expect(requestFromCodeSpy).toHaveBeenCalledWith('{\n  "name": "test"\n}', false);
+    expect(requestFromCodeSpy).toHaveBeenCalledTimes(1);
   });
 });

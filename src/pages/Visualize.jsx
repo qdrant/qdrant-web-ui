@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton } from '@mui/material';
+import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -8,6 +8,7 @@ import FilterEditorWindow from '../components/FilterEditorWindow';
 import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
 import PointPreview from '../components/Common/PointPreview';
+import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { useSnackbar } from 'notistack';
@@ -62,10 +63,21 @@ function Visualize() {
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
   const [activePoint, setActivePoint] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
   }, [height, VisualizeChartWrapper]);
+
+  useEffect(() => {
+    if (activePoint != null && tabValue !== 1) {
+      setTabValue(1);
+    }
+  }, [activePoint]);
 
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
@@ -166,6 +178,7 @@ function Visualize() {
                         alignItems: 'center',
                         p: 1,
                         borderRadius: 0,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
                       }}
                     >
                       <Tooltip title={'Back to collection'}>
@@ -193,7 +206,7 @@ function Visualize() {
               <PanelResizeHandle
                 style={{
                   width: '10px',
-                  background: alpha(theme.palette.primary.main, 0.05),
+                  background: theme.palette.background.paperElevation2,
                 }}
               >
                 <Box
@@ -208,41 +221,33 @@ function Visualize() {
                 </Box>
               </PanelResizeHandle>
               <Panel>
-                <PanelGroup direction="vertical">
-                  <Panel defaultSize={40}>
+                <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <Box
+                    sx={{
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      backgroundColor: theme.palette.background.paper,
+                    }}
+                  >
+                    <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
+                      <Tab label="Code" />
+                      <Tab label="Data Panel" />
+                    </Tabs>
+                  </Box>
+                  <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
                     <FilterEditorWindow
                       code={code}
                       onChange={setCode}
                       onChangeResult={onEditorCodeRun}
                       customRequestSchema={filterRequestSchema}
                     />
-                  </Panel>
-                  <PanelResizeHandle
-                    style={{
-                      height: '10px',
-                      background: alpha(theme.palette.primary.main, 0.05),
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                      }}
-                    >
-                      &#8943;
+                  </TabPanel>
+                  <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
+                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>
+                      <PointPreview point={activePoint} />
                     </Box>
-                  </PanelResizeHandle>
-                  <Panel
-                    defaultSize={60}
-                    style={{
-                      overflowY: 'scroll',
-                    }}
-                  >
-                    {activePoint && <PointPreview point={activePoint} />}
-                  </Panel>
-                </PanelGroup>
+                  </TabPanel>
+                </Box>
               </Panel>
             </PanelGroup>
           </Grid>

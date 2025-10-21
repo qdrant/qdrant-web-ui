@@ -16,7 +16,7 @@ const StyledMain = styled('main')(({ theme }) => ({
   },
 
   '& *::-webkit-scrollbar-thumb': {
-    background: theme.palette.divider,
+    background: theme.palette.nativeScrollbarBg,
     borderRadius: '6px',
   },
 }));

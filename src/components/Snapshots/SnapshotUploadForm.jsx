@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { StepContent, Stepper, Typography, Box, StepLabel, Step, Paper, Button, TextField } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { Uppy } from '@uppy/core';
@@ -11,6 +12,36 @@ import { StyledStatusBar } from '../Uploader/StyledStatusBar';
 import '@uppy/core/dist/style.min.css';
 import '@uppy/drag-drop/dist/style.min.css';
 import '@uppy/status-bar/dist/style.min.css';
+
+const StyledStepIcon = styled(({ className, ...props }) => <div className={className} {...props} />)(
+  ({ theme, active, completed, error }) => {
+    let backgroundColor = theme.palette.grey[400];
+    if (error) {
+      backgroundColor = theme.palette.error.main;
+    } else if (active || completed) {
+      backgroundColor = theme.palette.primary.main;
+    }
+
+    return {
+      width: 12,
+      height: 12,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor,
+      color: theme.palette.common.white,
+      fontSize: '8px', // Smaller checkmark for 12px dot
+      transition: 'all 0.2s ease-in-out',
+      ...(completed && {
+        '&::before': {
+          content: '"✓"', // todo: do we need this?
+          fontSize: '8px',
+        },
+      }),
+    };
+  }
+);
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
@@ -136,12 +167,32 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
   return (
     <Box sx={{ ...sx }}>
-      <Stepper activeStep={activeStep} orientation="vertical">
+      <Stepper
+        activeStep={activeStep}
+        orientation="vertical"
+        sx={{
+          '& .MuiStepConnector-root, & .MuiStepContent-root': {
+            marginLeft: '0.3125rem',
+          },
+          '& .MuiCollapse-wrapperInner': {
+            paddingTop: '0.5rem',
+          },
+          '& .MuiStepLabel-root': {
+            fontSize: '1rem',
+            fontWeight: 400,
+            '& .MuiStepLabel-iconContainer': {
+              paddingRight: '1rem',
+            },
+          },
+        }}
+      >
         {/* Step 1 start - enter a collection name*/}
         <Step key={'Step 1 - enter a collection name'}>
-          <StepLabel>Step 1 - Enter a collection name</StepLabel>
+          <StepLabel slots={{ stepIcon: StyledStepIcon }}>Step 1 - Enter a collection name</StepLabel>
           <StepContent>
-            <Typography mb={2}>Can be new or existing</Typography>
+            <Typography mb={2} sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+              Can be new or existing
+            </Typography>
             <Box sx={{ mb: 2 }}>
               <TextField
                 error={formError}
@@ -170,7 +221,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
         {/* Step 2 start - upload a snapshot file*/}
         <Step key={'Step 2 - upload a snapshot file'}>
-          <StepLabel>Step 2 - Upload a snapshot file</StepLabel>
+          <StepLabel slots={{ stepIcon: StyledStepIcon }}>Step 2 - Upload a snapshot file</StepLabel>
           <StepContent>
             <Box sx={{ mb: 2 }}>
               {/* Here we have a drag and drop area*/}
