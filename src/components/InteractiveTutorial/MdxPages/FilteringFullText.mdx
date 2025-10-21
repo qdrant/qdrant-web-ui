@@ -100,6 +100,8 @@ POST /collections/star_charts/points/scroll
 
 You’ll notice this filter works, but if you change the phrase slightly, it won’t return results, since substring matching in unindexed text isn’t flexible enough for variations.
 
+**Note**: If your cluster is running on Qdrant Cloud, this query fails. On Qdrant Cloud, collections are configured to run in strict mode by default, which prevents querying unindexed fields. You'll learn how to index a field for text filtering next.
+
 ### Step 4: Index the description field
 
 To make filtering more powerful and flexible, we’ll index the `description` field. This will tokenize the text, allowing for more complex queries such as filtering for phrases like "cave colonies." We use a `word` tokenizer, and only tokens that are between 5 and 20 characters will be indexed.
@@ -121,7 +123,7 @@ PUT /collections/star_charts/index
 ### Step 5: Try the filter again
 
 After indexing, you can now run the filter again, but this time not searching for a phrase. 
-Now you will filter for all tokens "cave" AND "colonies" from the descriptions. 
+Now you will filter for all tokens "caves" AND "colonies" from the descriptions. 
 
 ```json withRunButton="true"
 POST /collections/star_charts/points/scroll
@@ -131,7 +133,7 @@ POST /collections/star_charts/points/scroll
       {
         "key": "description",
         "match": {
-          "text": "cave colonies"
+          "text": "caves colonies"
         }
       }
     ]
@@ -142,4 +144,4 @@ POST /collections/star_charts/points/scroll
 ```
 ## Summary
 
-Phrase search requires tokens to come in and exact sequence, and by indexing all words we are ignoring the sequence completely and filtering for relevant keywords.
+Full text filtering on an unindexed field performs a substring match by default, or results in an error on collections running in strict mode (the default on Qdrant Cloud). It's a best practice to index the field first. This enables more advanced full text queries, such as queries that ignore the word sequence completely.

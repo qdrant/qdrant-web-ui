@@ -166,15 +166,15 @@ PUT /collections/central_library/points
 
 ## Step 6: Group query results
 
-You can group query results by specific fields, such as `station`, to get an overview of each tenant's data. This query groups results by `station` and limits the number of groups and the number of points per group.
+You can group query results by specific fields, such as `group_id`, to get an overview of each tenant's data. This query groups results by `group_id` and limits the number of groups and the number of points per group.
 
-Run the following request to group the results by `station`:
+Run the following request to group the results by `group_id`:
 
 ```json withRunButton=true
 POST /collections/central_library/points/query/groups
 {
     "query": [0.01, 0.45, 0.6, 0.88],
-    "group_by": "station",  
+    "group_by": "group_id",  
     "limit": 5,  
     "group_size": 5,
     "with_payload": true  
