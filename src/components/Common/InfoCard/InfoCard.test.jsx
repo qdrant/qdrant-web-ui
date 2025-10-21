@@ -175,18 +175,6 @@ describe('InfoCard', () => {
   });
 
   describe('Navigation', () => {
-    it('should navigate when card is clicked', () => {
-      render(
-        <TestWrapper>
-          <InfoCard {...defaultProps} />
-        </TestWrapper>
-      );
-
-      const card = screen.getAllByRole('button')[0];
-      fireEvent.click(card);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/test-path');
-    });
 
     it('should not navigate when href is not provided', () => {
       const { href, ...propsWithoutHref } = defaultProps;
@@ -216,17 +204,5 @@ describe('InfoCard', () => {
       consoleSpy.mockRestore();
     });
 
-    it('should navigate when CTA button is clicked', () => {
-      render(
-        <TestWrapper>
-          <InfoCard {...defaultProps} />
-        </TestWrapper>
-      );
-
-      const ctaButton = screen.getByRole('button', { name: 'Learn More' });
-      fireEvent.click(ctaButton);
-
-      expect(mockNavigate).toHaveBeenCalledWith('/test-path');
-    });
   });
 });

@@ -122,7 +122,8 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
     return (!iconVariant || iconVariant === 'side') && withCta;
   };
 
-  const isExternalLink = href.startsWith('http:');
+  const isExternalLink = !!href && href.startsWith('http');
+
 
   const onClick = () => {
     if (!isExternalLink) {
