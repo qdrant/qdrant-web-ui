@@ -163,7 +163,6 @@ function Graph() {
     },
   });
 
-  console.log('activePoint', activePoint);
   useEffect(() => {
     if (activePoint != null && tabValue !== 1) {
       setTabValue(1);
