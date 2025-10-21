@@ -5,12 +5,38 @@ import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
 
   const handleCloseBanner = () => {
     setShowBanner(false);
+  };
+
+  const bannerContentLink = 'https://qdrant.tech/web-ui-banner.json';
+  const [bannerContent, setBannerContent] = useState(null);
+
+  useEffect(() => {
+    fetch(bannerContentLink)
+      .then((response) => response.json())
+      .then((data) => setBannerContent(data))
+      .catch((error) => console.error('Error fetching banner content:', error));
+  }, []);
+
+  const displayBannerContent = () => {
+    if (bannerContent) {
+      return (
+        <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
+          <Typography>
+            {bannerContent.message} &nbsp;
+            <Link target="_blank" href={bannerContent.link}>
+              {bannerContent.link_text}
+            </Link>
+          </Typography>
+        </AnnouncementBanner>
+      );
+    }
   };
 
   return (
@@ -25,16 +51,7 @@ const Welcome = () => {
         maxWidth: '1120px',
       }}
     >
-      <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
-        {/* todo: use api for announcements */}
-        <Typography>
-          Blend vector similarity with custom logic using Score Boosting Reranker. Blend vector similarity with custom
-          logic using Score Boosting Reranker. &nbsp;
-          <Link target="_blank" href="https://qdrant.tech/docs/">
-            Now available in Qdrant 1.14
-          </Link>
-        </Typography>
-      </AnnouncementBanner>
+      {displayBannerContent()}
 
       <Box component="header">
         <Typography
