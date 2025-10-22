@@ -16,6 +16,7 @@ import { useClient } from '../../context/client-context';
 export function ApiKeyDialog({ open, setOpen, onApply }) {
   const { settings, setSettings } = useClient();
   const [showApiKey, setShowApiKey] = React.useState(false);
+  const [error, setError] = React.useState(false);
 
   const handleClickShowApiKey = () => setShowApiKey((show) => !show);
 
@@ -26,10 +27,15 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
   const [apiKey, setApiKey] = React.useState('');
 
   const handleClose = () => {
+    setError(false);
     setOpen(false);
   };
 
   const handleApply = () => {
+    if (!apiKey) {
+      setError(true);
+      return;
+    }
     setSettings({ ...settings, apiKey });
     setOpen(false);
     onApply();
@@ -45,24 +51,34 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
           </DialogContentText>
           <TextField
             onChange={(e) => setApiKey(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleApply();
+              }
+            }}
             autoFocus
             id="name"
-            label="API Key"
+            placeholder="API Key"
+            error={error}
+            helperText={error ? 'API Key is required' : ''}
             type={showApiKey ? 'text' : 'password'}
             fullWidth
             variant="outlined"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowApiKey}
-                    onMouseDown={handleMouseDown}
-                  >
-                    {showApiKey ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowApiKey}
+                      onMouseDown={handleMouseDown}
+                    >
+                      {showApiKey ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
         </DialogContent>
