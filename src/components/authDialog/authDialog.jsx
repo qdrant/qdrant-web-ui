@@ -43,8 +43,8 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
 
   return (
     <div>
-      <Dialog 
-        open={open} 
+      <Dialog
+        open={open}
         onClose={handleClose}
         slotProps={{
           transition: {
@@ -53,8 +53,8 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
               if (input) {
                 input.focus();
               }
-            }
-          }
+            },
+          },
         }}
       >
         <DialogTitle>Set API Key</DialogTitle>
