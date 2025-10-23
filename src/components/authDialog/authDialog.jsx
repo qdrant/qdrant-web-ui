@@ -43,7 +43,20 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
 
   return (
     <div>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog 
+        open={open} 
+        onClose={handleClose}
+        slotProps={{
+          transition: {
+            onEntered: () => {
+              const input = document.getElementById('api-key-input');
+              if (input) {
+                input.focus();
+              }
+            }
+          }
+        }}
+      >
         <DialogTitle>Set API Key</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
@@ -58,7 +71,7 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
               }
             }}
             autoFocus
-            id="name"
+            id="api-key-input"
             placeholder="API Key"
             error={error}
             helperText={error ? 'API Key is required' : ''}
