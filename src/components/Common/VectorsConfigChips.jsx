@@ -1,10 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Chip, Link, styled } from '@mui/material';
+import { Box, Chip, Link, styled, Tooltip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Ellipsis } from 'lucide-react';
 
-const StyledChip = styled(Chip)(({ theme }) => ({
+const StyledChip = styled(({ title, ...props }) => (
+  <Tooltip title={title}>
+    <Chip {...props} />
+  </Tooltip>
+))(({ theme }) => ({
   height: '1.5rem',
   borderRadius: '0.5rem',
   fontSize: '0.8125rem',
@@ -35,22 +39,26 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
   };
 
   const renderVectorChips = (vectorName, vectorConfig) => {
+    console.log('vectorConfig', vectorConfig);
     const chips = [
-      <StyledChip key="name" label={vectorName || 'Default'} />,
-      <StyledChip key="size" label={vectorConfig.size} />,
-      <StyledChip key="distance" label={vectorConfig.distance} />,
+      <StyledChip key="name" label={vectorName || 'Default'} title={'Vector Name'} />,
+      <StyledChip key="size" label={vectorConfig.size} title={'Size'} />,
+      <StyledChip key="distance" label={vectorConfig.distance} title={'Distance'} />,
     ];
 
     // Add model chip if present
     if (vectorConfig.model) {
-      chips.push(<StyledChip key="model" label={vectorConfig.model} />);
+      chips.push(<StyledChip key="model" label={vectorConfig.model} title={'Model'} />);
     }
 
     return chips;
   };
 
   const renderSparseVectorChips = (vectorName) => {
-    return [<StyledChip key="name" label={vectorName} />, <StyledChip key="type" label="Sparse" />];
+    return [
+      <StyledChip key="name" label={vectorName} title={'Vector Name'} />,
+      <StyledChip key="type" label="Sparse" title={'Type'} />,
+    ];
   };
 
   const allChips = [];
@@ -97,6 +105,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
               <Ellipsis size={18} />
             </Box>
           }
+          title={'See all in Info section'}
           component={Link}
           onClick={handleEllipsisClick}
           sx={{
