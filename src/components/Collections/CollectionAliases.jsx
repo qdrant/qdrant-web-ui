@@ -188,20 +188,49 @@ AliasRow.propTypes = {
 
 const CreateAliasModal = ({ open, onClose, onCreate }) => {
   const [aliasName, setAliasName] = useState('');
+  const [error, setError] = useState(false);
+
+  const handleInputChange = (e) => {
+    if (e.target.value && error) {
+      setError(false);
+    }
+    setAliasName(e.target.value);
+  };
 
   const handleCreate = () => {
+    if (!aliasName) {
+      setError(true);
+      return;
+    }
     onCreate(aliasName);
+    setError(false);
     setAliasName('');
+  };
+
+  const handleClose = () => {
+    setError(false);
+    setAliasName('');
+    onClose();
   };
 
   return (
     <Dialog
       fullWidth
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="create-alias-title"
       data-testid="create-alias-dialog"
       role="dialog"
+      slotProps={{
+        transition: {
+          onEntered: () => {
+            const input = document.getElementById('alias-name-input');
+            if (input) {
+              input.focus();
+            }
+          },
+        },
+      }}
     >
       <DialogTitle sx={{ p: 3 }} id="create-alias-title">
         Create Collection Alias
@@ -210,9 +239,17 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
         <TextField
           id="alias-name-input"
           data-testid="alias-name-input"
-          label="Alias Name"
+          placeholder="Alias Name"
           value={aliasName}
-          onChange={(e) => setAliasName(e.target.value)}
+          onChange={handleInputChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleCreate();
+            }
+          }}
+          error={error}
+          helperText={error ? 'Alias name is required' : ''}
           autoFocus
           required
           margin="dense"
@@ -221,7 +258,7 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
         />
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
-        <Button variant="outlined" color="inherit" onClick={onClose}>
+        <Button variant="outlined" color="inherit" onClick={handleClose}>
           Cancel
         </Button>
         <Button variant="contained" disabled={!aliasName} onClick={handleCreate} data-testid="create-alias-button">

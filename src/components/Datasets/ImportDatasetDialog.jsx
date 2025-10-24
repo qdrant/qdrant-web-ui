@@ -4,14 +4,47 @@ import { Box, Button, Dialog, TextField, Typography } from '@mui/material';
 
 const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, setImporting, importing }) => {
   const [collectionName, setCollectionName] = useState('');
+  const [error, setError] = useState(false);
+
   const handleActionClick = () => {
+    if (!collectionName) {
+      setError(true);
+      return;
+    }
     actionHandler(fileName, collectionName, setImporting, importing);
-    onClose();
+    handleClose();
     setCollectionName('');
   };
 
+  const handleClose = () => {
+    setCollectionName('');
+    setError(false);
+    onClose();
+  };
+
+  const handleInputChange = (e) => {
+    if (e.target.value && error) {
+      setError(false);
+    }
+    setCollectionName(e.target.value);
+  };
+
   return (
-    <Dialog open={open} fullWidth={true}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth={true}
+      slotProps={{
+        transition: {
+          onEntered: () => {
+            const input = document.getElementById('collection-name-input');
+            if (input) {
+              input.focus();
+            }
+          },
+        },
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -27,10 +60,19 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
       </Box>
       <TextField
         sx={{ mx: 3, mb: 3 }}
+        id="collection-name-input"
         variant="outlined"
         placeholder="Collection Name"
         value={collectionName}
-        onChange={(e) => setCollectionName(e.target.value)}
+        error={error}
+        helperText={error ? 'Collection name is required' : ''}
+        onChange={handleInputChange}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleActionClick();
+          }
+        }}
       />
 
       <Box
@@ -41,7 +83,7 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
           py: 3,
         }}
       >
-        <Button sx={{ mr: 1 }} variant="outlined" color="inherit" onClick={onClose}>
+        <Button sx={{ mr: 1 }} variant="outlined" color="inherit" onClick={handleClose}>
           Cancel
         </Button>
         <Button variant="contained" onClick={handleActionClick} disabled={!collectionName}>
