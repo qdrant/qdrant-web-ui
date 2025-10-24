@@ -197,12 +197,25 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
               <TextField
                 error={formError}
                 id="collection-name"
-                label="Collection Name"
+                placeholder="Collection Name"
                 value={collectionName}
                 helperText={formError ? formMessage : ''}
                 onChange={handleTextChange}
                 fullWidth={true}
                 inputRef={textFieldRef}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (formError) {
+                      return;
+                    }
+                    if (!collectionName) {
+                      setFormError(true);
+                      return;
+                    }
+                    handleNext();
+                  }
+                }}
               />
             </Box>
             <Box sx={{ mb: 2 }}>
