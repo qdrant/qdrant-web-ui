@@ -13,35 +13,40 @@ import '@uppy/core/dist/style.min.css';
 import '@uppy/drag-drop/dist/style.min.css';
 import '@uppy/status-bar/dist/style.min.css';
 
-const StyledStepIcon = styled(({ className, ...props }) => <div className={className} {...props} />)(
-  ({ theme, active, completed, error }) => {
-    let backgroundColor = theme.palette.grey[400];
-    if (error) {
-      backgroundColor = theme.palette.error.main;
-    } else if (active || completed) {
-      backgroundColor = theme.palette.primary.main;
-    }
-
-    return {
-      width: 12,
-      height: 12,
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor,
-      color: theme.palette.common.white,
-      fontSize: '8px', // Smaller checkmark for 12px dot
-      transition: 'all 0.2s ease-in-out',
-      ...(completed && {
-        '&::before': {
-          content: '"✓"', // todo: do we need this?
-          fontSize: '8px',
-        },
-      }),
-    };
+const StyledStepIcon = styled(({ className, ...props }) => {
+  // Filter out the boolean props that shouldn't reach the DOM
+  const domProps = { ...props };
+  delete domProps.active;
+  delete domProps.completed;
+  delete domProps.error;
+  return <div className={className} {...domProps} />;
+})(({ theme, active, completed, error }) => {
+  let backgroundColor = theme.palette.grey[400];
+  if (error) {
+    backgroundColor = theme.palette.error.main;
+  } else if (active || completed) {
+    backgroundColor = theme.palette.primary.main;
   }
-);
+
+  return {
+    width: 12,
+    height: 12,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor,
+    color: theme.palette.common.white,
+    fontSize: '8px', // Smaller checkmark for 12px dot
+    transition: 'all 0.2s ease-in-out',
+    ...(completed && {
+      '&::before': {
+        content: '"✓"', // todo: do we need this?
+        fontSize: '8px',
+      },
+    }),
+  };
+});
 
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
