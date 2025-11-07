@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography } from '@mui/material';
+import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { Key } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
@@ -30,6 +30,8 @@ function HomeContent() {
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   const { client: qdrantClient } = useClient();
 
+  const [cloudInfo, setCloudInfo] = useState(null);
+
   async function getQdrantInfo() {
     try {
       const telemetry = await qdrantClient.api('service').telemetry();
@@ -49,8 +51,18 @@ function HomeContent() {
     }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     getQdrantInfo();
+
+    fetch('/cloud/cloudInfo.json')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to load cloud info: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => setCloudInfo(data))
+      .catch(error => console.error('Error fetching cloud info from file:', error));
   }, []);
 
   const OnApyKeyApply = () => {
@@ -72,7 +84,34 @@ function HomeContent() {
       >
         <Toolbar>
           <Logo width={200} />
-          <Box sx={{ flexGrow: 1 }}></Box>
+          {cloudInfo?.cluster_name ? (
+            <Box sx={{ flexGrow: 1, pl: '140px', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                cluster
+              </Typography>
+              <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                /
+              </Typography>
+              <Typography 
+              component={Link}
+              to={cloudInfo.cloud_backlink}
+              variant="body1"
+              sx={{ 
+                color: theme.palette.text.primary,
+                fontWeight: 500,
+                textDecoration: 'none',
+                '&:hover': { 
+                  textDecoration: 'underline',
+                  textDecorationThickness: '1px',
+                  textUnderlineOffset: '2px',
+                 },
+                }}>
+                {cloudInfo.cluster_name}
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ flexGrow: 1 }}></Box>
+          )}
           {/* <Button
             component={Link}
             to="https://qdrant.tech/cloud/" // todo: replace with the actual link
@@ -96,7 +135,7 @@ function HomeContent() {
           </Box>
         </Toolbar>
       </AppBar>
-      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
+      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} cloudInfo={cloudInfo} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet context={{ version }} />

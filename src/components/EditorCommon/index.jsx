@@ -56,7 +56,7 @@ const EditorCommon = ({ beforeMount, customHeight, ...props }) => {
   useEffect(() => {
     if (customHeight) {
       return;
-    }
+   }
     setEditorHeight(height - editorWrapper.current?.offsetTop);
   }, [height, editorWrapper]);
 

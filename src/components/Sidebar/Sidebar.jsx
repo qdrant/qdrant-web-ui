@@ -4,21 +4,43 @@ import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useClient } from '../../context/client-context';
-import { Rocket, SquareTerminal, RectangleEllipsis, FileCode, KeyRound, BookMarked } from 'lucide-react';
+import { 
+  Rocket,
+  SquareTerminal,
+  RectangleEllipsis,
+  FileCode,
+  KeyRound,
+  BookMarked,
+  CornerUpLeft,
+  CircleHelp,
+  HardDriveUpload
+} from 'lucide-react';
 import {
   DrawerHeader,
   Drawer,
   StyledListItemButton,
   StyledList,
-  StyledVersionListItem,
-  StyledVersionText,
-  StyledVersionList,
+  StyledSidebarFooterListItem,
+  StyledSidebarFooterText,
+  StyledSidebarFooterList,
 } from './SidebarStyled';
 import { Logo } from '../Logo';
 
-export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
+export default function Sidebar({ version, jwtEnabled, jwtVisible, cloudInfo }) {
   const { isRestricted } = useClient();
   const location = useLocation();
+  const [availableUpdate, setAvailableUpdate] = React.useState(null);
+
+  const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
+
+  const bannerContentLink = 'https://qdrant.tech/web-ui-banner.json';
+
+  React.useEffect(() => {
+    fetch(bannerContentLink)
+    .then((response) => response.json())
+    .then((data) => setAvailableUpdate(data.message))
+    .catch((error) => console.error('Error fetching banner content:', error));
+  }, []);
 
   return (
     <Drawer variant="permanent">
@@ -27,23 +49,83 @@ export default function Sidebar({ version, jwtEnabled, jwtVisible }) {
       </DrawerHeader>
       <Divider />
       <StyledList>
-        {!isRestricted && sidebarItem('Welcome', <Rocket size="16px" />, '/welcome', location)}
-        {sidebarItem('Console', <SquareTerminal size="16px" />, '/console', location)}
-        {sidebarItem('Collections', <RectangleEllipsis size="16px" />, '/collections', location)}
-        {!isRestricted && sidebarItem('Tutorial', <BookMarked size="16px" />, '/tutorial', location)}
+        {/* todo: what about isRestricted? */}
+        {cloudInfo?.cloud_backlink &&
+          <SidebarFooterItem
+           title="Back to Cloud"
+           icon={<CornerUpLeft size="16px" />} 
+          linkTo={cloudInfo.cloud_backlink}
+          active={isActive(cloudInfo.cloud_backlink)}
+          disabled={!cloudInfo?.cloud_backlink} />}
+        {!isRestricted && (
+          <>
+        <SidebarFooterItem 
+        title="Welcome"
+        icon={<Rocket size="16px" />}
+        linkTo="/welcome"
+        active={isActive('/welcome')}
+        disabled={false} />
+        <SidebarFooterItem
+        title="Console"
+        icon={<SquareTerminal size="16px" />}
+        linkTo="/console"
+        active={isActive('/console')}
+        disabled={false} />
+        <SidebarFooterItem 
+        title="Collections"
+        icon={<RectangleEllipsis size="16px" />}
+        linkTo="/collections"
+        active={isActive('/collections')}
+        disabled={false} />
+        </>
+      )}
+        {!isRestricted && (
+        <SidebarFooterItem 
+        title="Tutorial"
+        icon={<BookMarked size="16px" />}
+        linkTo="/tutorial"
+        active={isActive('/tutorial')}
+        disabled={false} />
+        )}
 
         {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
 
         {!isRestricted &&
-          jwtVisible &&
-          sidebarItem('Access Tokens', <KeyRound size="16px" />, '/jwt', location, jwtEnabled)}
+          jwtVisible && (
+          <SidebarFooterItem 
+          title="Access Tokens"
+          icon={<KeyRound size="16px" />}
+          linkTo="/jwt"
+          active={isActive('/jwt')}
+          disabled={!jwtEnabled} />
+        )}
       </StyledList>
 
-      <StyledVersionList>
-        <StyledVersionListItem>
-          <StyledVersionText variant="caption">Qdrant v{version}</StyledVersionText>
-        </StyledVersionListItem>
-      </StyledVersionList>
+      <StyledSidebarFooterList>
+        {cloudInfo?.support_url && (
+          <SidebarFooterItem 
+          title="Get Support"
+          icon={<CircleHelp size="16px" />}
+          linkTo={cloudInfo.support_url}
+          active={false}
+          disabled={false} />
+        )}
+
+         {availableUpdate && (
+         <SidebarFooterItem
+         title="Update Available"
+         icon={<HardDriveUpload size="16px" />}
+         linkTo={availableUpdate}
+         active={false}
+         disabled={false} />
+         )}
+      </StyledSidebarFooterList>
+
+      <StyledSidebarFooterList>
+        <StyledSidebarFooterListItem>
+          <StyledSidebarFooterText variant="caption">Qdrant v{version}</StyledSidebarFooterText>
+        </StyledSidebarFooterListItem>
+      </StyledSidebarFooterList>
     </Drawer>
   );
 }
@@ -69,8 +151,39 @@ function sidebarItem(title, icon, linkPath, location, enabled = true) {
   );
 }
 
+function SidebarFooterItem({ title, icon, linkTo, active = false, disabled = false }) {
+  return (
+<ListItem key={title} disablePadding sx={{ display: 'block' }}>
+      <StyledListItemButton component={Link} to={linkTo} disabled={disabled} isActive={active}>
+        <ListItemIcon
+          sx={{
+            minWidth: 0,
+            mr: 3,
+            justifyContent: 'center',
+          }}
+        >
+          {icon}
+        </ListItemIcon>
+        <ListItemText primary={title} />
+      </StyledListItemButton>
+    </ListItem>
+  );
+}
+
+SidebarFooterItem.propTypes = {
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.element.isRequired,
+  linkTo: PropTypes.string.isRequired,
+  active: PropTypes.bool,
+  disabled: PropTypes.bool,
+};
+
 Sidebar.propTypes = {
   version: PropTypes.string,
   jwtEnabled: PropTypes.bool,
   jwtVisible: PropTypes.bool,
+  cloudInfo: PropTypes.shape({
+    cloud_backlink: PropTypes.string,
+    support_url: PropTypes.string,
+  }),
 };
