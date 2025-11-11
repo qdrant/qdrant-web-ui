@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography, Button } from '@mui/material';
+import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { Key } from 'lucide-react';
+import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
-import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 
-import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
+import { TelemetryProvider, useAuthError } from '../context/telemetry-context';
+import { CloudInfoProvider, useCloudInfo } from '../context/cloud-info-context';
+import { ExternalInfoProvider } from '../context/external-info-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -22,36 +23,23 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 function HomeContent() {
   const theme = useTheme();
-  const [version, setVersion] = useState('???');
-  const [jwtEnabled, setJwtEnabled] = useState(false);
-  const [jwtVisible, setJwtVisible] = useState(true);
-  const { setMaxCollections } = useMaxCollections();
+  const { authError, clearAuthError } = useAuthError();
+  const { cloudInfo } = useCloudInfo();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-  const { client: qdrantClient } = useClient();
 
-  async function getQdrantInfo() {
-    try {
-      const telemetry = await qdrantClient.api('service').telemetry();
-      setVersion(telemetry.data.result.app.version);
-      setJwtEnabled(telemetry.data.result.app?.jwt_rbac || false);
-      setMaxCollections(telemetry.data.result.collections?.max_collections);
-
-      if (telemetry.data.result.app?.hide_jwt_dashboard) {
-        setJwtVisible(false);
-      }
-    } catch (error) {
-      if (error.status === 403 || error.status === 401) {
-        setApiKeyDialogOpen(true);
-      } else {
-        console.log('error', error);
-      }
+  useEffect(() => {
+    if (authError) {
+      setApiKeyDialogOpen(true);
     }
-  }
+  }, [authError]);
 
-  React.useEffect(() => {
-    getQdrantInfo();
-  }, []);
+  const handleDialogClose = (open) => {
+    setApiKeyDialogOpen(open);
+    if (!open) {
+      clearAuthError();
+    }
+  };
 
   const OnApyKeyApply = () => {
     // Reload the page to apply the new API Key
@@ -72,7 +60,51 @@ function HomeContent() {
       >
         <Toolbar>
           <Logo width={200} />
-          <Box sx={{ flexGrow: 1 }}></Box>
+          {cloudInfo?.cluster_name ? (
+            <Box sx={{ flexGrow: 1, pl: '140px', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                cluster
+              </Typography>
+              <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                /
+              </Typography>
+              <Typography
+                component={Link}
+                to={cloudInfo.cloud_backlink}
+                variant="body1"
+                sx={{
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    textDecorationThickness: '1px',
+                    textUnderlineOffset: '2px',
+                  },
+                }}
+              >
+                {cloudInfo.cluster_name}
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ flexGrow: 1 }}></Box>
+          )}
+
+          {cloudInfo?.scale_url && (
+            <Button
+              component={Link}
+              to={cloudInfo.scale_url}
+              target="_blank"
+              variant="contained"
+              color="primary"
+              size="small"
+              endIcon={<Rocket size={16} />}
+              sx={{ mr: 2 }}
+            >
+              Upgrade Cluster
+            </Button>
+          )}
+
           {/* <Button
             component={Link}
             to="https://qdrant.tech/cloud/" // todo: replace with the actual link
@@ -96,20 +128,24 @@ function HomeContent() {
           </Box>
         </Toolbar>
       </AppBar>
-      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} />
+      <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
-        <Outlet context={{ version }} />
+        <Outlet />
       </Box>
-      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
+      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} onApply={OnApyKeyApply} />
     </Box>
   );
 }
 
 export default function MiniDrawer() {
   return (
-    <MaxCollectionsProvider>
-      <HomeContent />
-    </MaxCollectionsProvider>
+    <TelemetryProvider>
+      <CloudInfoProvider>
+        <ExternalInfoProvider>
+          <HomeContent />
+        </ExternalInfoProvider>
+      </CloudInfoProvider>
+    </TelemetryProvider>
   );
 }

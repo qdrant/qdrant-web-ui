@@ -60,17 +60,24 @@ export const StyledList = styled(List)(() => ({
   alignSelf: 'stretch',
 }));
 
-export const StyledVersionListItem = styled(ListItem)(() => ({
+export const StyledSidebarFooterListItem = styled(ListItem)(() => ({
   display: 'flex',
-  padding: '8px 28px',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'flex-start',
-  gap: '8px',
+  padding: '0.5rem 0.75rem',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  gap: '0.75rem',
   alignSelf: 'stretch',
+  '& a': {
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline',
+      textDecorationThickness: '1px',
+      textUnderlineOffset: '2px',
+    },
+  },
 }));
 
-export const StyledVersionText = styled(Typography)(({ theme }) => ({
+export const StyledSidebarFooterText = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
   fontFamily: 'Mona Sans, sans-serif',
@@ -80,7 +87,8 @@ export const StyledVersionText = styled(Typography)(({ theme }) => ({
   lineHeight: '150%',
 }));
 
-export const StyledVersionList = styled(List)(({ theme }) => ({
+export const StyledSidebarFooterList = styled(List)(({ theme }) => ({
   marginTop: 'auto',
   borderTop: `1px solid ${theme.palette.divider}`,
+  padding: '1rem',
 }));

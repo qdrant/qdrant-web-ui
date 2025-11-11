@@ -8,7 +8,8 @@ import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
 import { compareSemver } from '../lib/common-helpers';
-import { useOutletContext } from 'react-router-dom';
+// import { useOutletContext } from 'react-router-dom';
+import { useVersion } from '../context/telemetry-context';
 import { useRouteAccess } from '../hooks/useRouteAccess';
 
 function Datasets() {
@@ -17,7 +18,7 @@ function Datasets() {
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
-  const { version } = useOutletContext();
+  const { version } = useVersion();
   const { isAccessDenied } = useRouteAccess();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ function Datasets() {
             // - `???` means we can't display the version, so we only allow unversioned datasets
             // - empty or underfined means the same as `???`
 
-            if (version || version === '???') {
+            if (version === '???' || version === null) {
               return false;
             }
 

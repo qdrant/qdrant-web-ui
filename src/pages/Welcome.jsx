@@ -5,38 +5,33 @@ import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode } from 'lucide-react';
-import { useEffect } from 'react';
+import { useExternalInfo } from '../context/external-info-context';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
+  const { banner } = useExternalInfo();
 
   const handleCloseBanner = () => {
     setShowBanner(false);
   };
 
-  const bannerContentLink = 'https://qdrant.tech/web-ui-banner.json';
-  const [bannerContent, setBannerContent] = useState(null);
-
-  useEffect(() => {
-    fetch(bannerContentLink)
-      .then((response) => response.json())
-      .then((data) => setBannerContent(data))
-      .catch((error) => console.error('Error fetching banner content:', error));
-  }, []);
-
   const displayBannerContent = () => {
-    if (bannerContent) {
-      return (
-        <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
-          <Typography>
-            {bannerContent.message} &nbsp;
-            <Link target="_blank" href={bannerContent.link}>
-              {bannerContent.link_text}
-            </Link>
-          </Typography>
-        </AnnouncementBanner>
-      );
+    if (!banner || !showBanner) {
+      return null;
     }
+
+    return (
+      <AnnouncementBanner show={showBanner} onClose={handleCloseBanner}>
+        <Typography>
+          {banner.message} &nbsp;
+          {banner.link && (
+            <Link target="_blank" href={banner.link}>
+              {banner.link_text}
+            </Link>
+          )}
+        </Typography>
+      </AnnouncementBanner>
+    );
   };
 
   return (
