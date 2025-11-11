@@ -1,7 +1,0 @@
-{
-  "cloud": "managed",
-  "scale_url": "https://cloud.qdrant.io/accounts/db3db48e-678f-463a-bf87-52ddc33ee788/clusters/61768340-a723-4a60-ab07-bbf74275ee0d/scale?template=standard",
-  "cluster_name": "example-cluster",
-  "cloud_backlink": "https://cloud.qdrant.io/accounts/db3db48e-678f-463a-bf87-52ddc33ee788/clusters/61768340-a723-4a60-ab07-bbf74275ee0d/overview",
-  "support_url": "https://qdrant.atlassian.net/servicedesk/customer/portal/1/group/103/create/100?summary=I+need+help+with+...&description=Describe+in+detail+what+you+need+help+with&customfield_10171=db3db48e-678f-463a-bf87-52ddc33ee788&customfield_10170=61768340-a723-4a60-ab07-bbf74275ee0d&customfield_10172=v1.15.5"
-}
