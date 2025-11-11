@@ -41,19 +41,7 @@ export function CloudInfoProvider({ children }) {
   }, [cloudInfoPath]);
 
   useEffect(() => {
-    let isActive = true;
-
-    const load = async () => {
-      await fetchCloudInfo();
-    };
-
-    if (isActive) {
-      load();
-    }
-
-    return () => {
-      isActive = false;
-    };
+    fetchCloudInfo();
   }, [fetchCloudInfo]);
 
   const value = useMemo(

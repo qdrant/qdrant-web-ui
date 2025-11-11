@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography } from '@mui/material';
+import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography, Button } from '@mui/material';
 import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { Key } from 'lucide-react';
+import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
@@ -89,6 +89,22 @@ function HomeContent() {
           ) : (
             <Box sx={{ flexGrow: 1 }}></Box>
           )}
+
+          {cloudInfo?.scale_url && (
+            <Button
+              component={Link}
+              to={cloudInfo.scale_url}
+              target="_blank"
+              variant="contained"
+              color="primary"
+              size="small"
+              endIcon={<Rocket size={16} />}
+              sx={{ mr: 2 }}
+            >
+              Upgrade Cluster
+            </Button>
+          )}
+
           {/* <Button
             component={Link}
             to="https://qdrant.tech/cloud/" // todo: replace with the actual link
