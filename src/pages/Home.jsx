@@ -8,7 +8,8 @@ import ColorModeToggle from '../components/Common/ColorModeToggle';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 
-import { TelemetryProvider, useVersion, useJwt, useAuthError } from '../context/telemetry-context';
+import { TelemetryProvider, useAuthError } from '../context/telemetry-context';
+import { CloudInfoProvider, useCloudInfo } from '../context/cloud-info-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -27,12 +28,10 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 function HomeContent() {
   const theme = useTheme();
-  const { version } = useVersion();
-  const { jwtEnabled, jwtVisible } = useJwt();
   const { authError, clearAuthError } = useAuthError();
+  const { cloudInfo } = useCloudInfo();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-  const [cloudInfo, setCloudInfo] = useState(null);
 
   useEffect(() => {
     if (authError) {
@@ -46,18 +45,6 @@ function HomeContent() {
       clearAuthError();
     }
   };
-
-  useEffect(() => {
-    fetch('/cloud/cloudInfo.json')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Failed to load cloud info: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => setCloudInfo(data))
-      .catch(error => console.error('Error fetching cloud info from file:', error));
-  }, []);
 
   const OnApyKeyApply = () => {
     // Reload the page to apply the new API Key
@@ -129,7 +116,7 @@ function HomeContent() {
           </Box>
         </Toolbar>
       </AppBar>
-      <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} cloudInfo={cloudInfo} />
+      <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
         <Outlet />
@@ -142,7 +129,9 @@ function HomeContent() {
 export default function MiniDrawer() {
   return (
     <TelemetryProvider>
-      <HomeContent />
+      <CloudInfoProvider>
+        <HomeContent />
+      </CloudInfoProvider>
     </TelemetryProvider>
   );
 }

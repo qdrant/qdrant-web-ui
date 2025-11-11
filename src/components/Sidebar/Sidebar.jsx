@@ -25,13 +25,16 @@ import {
   StyledSidebarFooterList,
 } from './SidebarStyled';
 import { Logo } from '../Logo';
-import { useVersion } from '../../context/telemetry-context';
+import { useVersion, useJwt } from '../../context/telemetry-context';
+import { useCloudInfo } from '../../context/cloud-info-context';
 
-export default function Sidebar({ jwtEnabled, jwtVisible, cloudInfo }) {
+export default function Sidebar() {
   const { version } = useVersion();
+  const { jwtEnabled, jwtVisible } = useJwt();
   const { isRestricted } = useClient();
   const location = useLocation();
   const [availableUpdate, setAvailableUpdate] = React.useState(null);
+  const { cloudInfo } = useCloudInfo();
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
@@ -181,11 +184,3 @@ SidebarFooterItem.propTypes = {
   disabled: PropTypes.bool,
 };
 
-Sidebar.propTypes = {
-  jwtEnabled: PropTypes.bool,
-  jwtVisible: PropTypes.bool,
-  cloudInfo: PropTypes.shape({
-    cloud_backlink: PropTypes.string,
-    support_url: PropTypes.string,
-  }),
-};
