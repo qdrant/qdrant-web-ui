@@ -10,7 +10,7 @@ import Sidebar from '../components/Sidebar/Sidebar';
 
 import { TelemetryProvider, useAuthError } from '../context/telemetry-context';
 import { CloudInfoProvider, useCloudInfo } from '../context/cloud-info-context';
-import { WebInfoProvider } from '../context/web-info-context';
+import { ExternalInfoProvider } from '../context/external-info-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -131,9 +131,9 @@ export default function MiniDrawer() {
   return (
     <TelemetryProvider>
       <CloudInfoProvider>
-        <WebInfoProvider>
+        <ExternalInfoProvider>
           <HomeContent />
-        </WebInfoProvider>
+        </ExternalInfoProvider>
       </CloudInfoProvider>
     </TelemetryProvider>
   );

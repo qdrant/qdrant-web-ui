@@ -5,11 +5,11 @@ import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode } from 'lucide-react';
-import { useWebInfo } from '../context/web-info-context';
+import { useExternalInfo } from '../context/external-info-context';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
-  const { banner } = useWebInfo();
+  const { banner } = useExternalInfo();
 
   const handleCloseBanner = () => {
     setShowBanner(false);

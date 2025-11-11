@@ -27,7 +27,7 @@ import {
 import { Logo } from '../Logo';
 import { useVersion, useJwt } from '../../context/telemetry-context';
 import { useCloudInfo } from '../../context/cloud-info-context';
-import { useWebInfo } from '../../context/web-info-context';
+import { useExternalInfo } from '../../context/external-info-context';
 import { isSemverGreater, buildReleaseLink } from '../../lib/common-helpers';
 
 export default function Sidebar() {
@@ -36,7 +36,7 @@ export default function Sidebar() {
   const { isRestricted } = useClient();
   const location = useLocation();
   const { cloudInfo } = useCloudInfo();
-  const { latestVersion: availableUpdate } = useWebInfo();
+  const { latestVersion: availableUpdate } = useExternalInfo();
   const isUpdateNewer = React.useMemo(
     () => isSemverGreater(availableUpdate, version),
     [availableUpdate, version],
