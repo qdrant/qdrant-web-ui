@@ -5,7 +5,7 @@ import { useClient } from './client-context';
 const TelemetryContext = createContext();
 
 export function TelemetryProvider({ children }) {
-  const [version, setVersion] = useState('???');
+  const [version, setVersion] = useState(null);
   const [maxCollections, setMaxCollections] = useState(null);
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);

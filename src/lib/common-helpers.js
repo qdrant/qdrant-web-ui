@@ -36,7 +36,7 @@ export const compareSemver = function (version1, version2) {
   return 0;
 };
 
-export const sanitizeSemver = (value) => {
+const sanitizeSemver = (value) => {
   if (value === undefined || value === null) {
     return null;
   }

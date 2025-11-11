@@ -43,6 +43,8 @@ export default function Sidebar() {
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
+  const anyLowerButtonVisible = cloudInfo?.support_url || (isUpdateNewer && updateLink);
+
   return (
     <Drawer variant="permanent">
       <DrawerHeader sx={{ justifyContent: 'start', paddingLeft: '24px', paddingRight: '24px' }}>
@@ -50,9 +52,8 @@ export default function Sidebar() {
       </DrawerHeader>
       <Divider />
       <StyledList>
-        {/* todo: what about isRestricted? */}
         {cloudInfo?.cloud_backlink && (
-          <SidebarFooterItem
+          <SidebarItem
             title="Back to Cloud"
             icon={<CornerUpLeft size="16px" />}
             linkTo={cloudInfo.cloud_backlink}
@@ -60,33 +61,33 @@ export default function Sidebar() {
             disabled={!cloudInfo?.cloud_backlink}
           />
         )}
+
         {!isRestricted && (
-          <>
-            <SidebarFooterItem
-              title="Welcome"
-              icon={<Rocket size="16px" />}
-              linkTo="/welcome"
-              active={isActive('/welcome')}
-              disabled={false}
-            />
-            <SidebarFooterItem
-              title="Console"
-              icon={<SquareTerminal size="16px" />}
-              linkTo="/console"
-              active={isActive('/console')}
-              disabled={false}
-            />
-            <SidebarFooterItem
-              title="Collections"
-              icon={<RectangleEllipsis size="16px" />}
-              linkTo="/collections"
-              active={isActive('/collections')}
-              disabled={false}
-            />
-          </>
+          <SidebarItem
+            title="Welcome"
+            icon={<Rocket size="16px" />}
+            linkTo="/welcome"
+            active={isActive('/welcome')}
+            disabled={false}
+          />
         )}
+        <SidebarItem
+          title="Console"
+          icon={<SquareTerminal size="16px" />}
+          linkTo="/console"
+          active={isActive('/console')}
+          disabled={false}
+        />
+        <SidebarItem
+          title="Collections"
+          icon={<RectangleEllipsis size="16px" />}
+          linkTo="/collections"
+          active={isActive('/collections')}
+          disabled={false}
+        />
+
         {!isRestricted && (
-          <SidebarFooterItem
+          <SidebarItem
             title="Tutorial"
             icon={<BookMarked size="16px" />}
             linkTo="/tutorial"
@@ -98,7 +99,7 @@ export default function Sidebar() {
         {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
 
         {!isRestricted && jwtVisible && (
-          <SidebarFooterItem
+          <SidebarItem
             title="Access Tokens"
             icon={<KeyRound size="16px" />}
             linkTo="/jwt"
@@ -108,31 +109,33 @@ export default function Sidebar() {
         )}
       </StyledList>
 
-      <StyledSidebarFooterList>
-        {cloudInfo?.support_url && (
-          <SidebarFooterItem
-            title="Get Support"
-            icon={<CircleHelp size="16px" />}
-            linkTo={cloudInfo.support_url}
-            active={false}
-            disabled={false}
-          />
-        )}
+      {anyLowerButtonVisible && (
+        <StyledSidebarFooterList>
+          {cloudInfo?.support_url && (
+            <SidebarItem
+              title="Get Support"
+              icon={<CircleHelp size="16px" />}
+              linkTo={cloudInfo.support_url}
+              active={false}
+              disabled={false}
+            />
+          )}
 
-        {isUpdateNewer && updateLink && (
-          <SidebarFooterItem
-            title="Update Available"
-            icon={<HardDriveUpload size="16px" />}
-            linkTo={updateLink}
-            active={false}
-            disabled={false}
-          />
-        )}
-      </StyledSidebarFooterList>
+          {isUpdateNewer && updateLink && (
+            <SidebarItem
+              title="Update Available"
+              icon={<HardDriveUpload size="16px" />}
+              linkTo={updateLink}
+              active={false}
+              disabled={false}
+            />
+          )}
+        </StyledSidebarFooterList>
+      )}
 
       <StyledSidebarFooterList>
         <StyledSidebarFooterListItem>
-          <StyledSidebarFooterText variant="caption">Qdrant v{version}</StyledSidebarFooterText>
+          <StyledSidebarFooterText variant="caption">Qdrant v{version || '???'}</StyledSidebarFooterText>
         </StyledSidebarFooterListItem>
       </StyledSidebarFooterList>
     </Drawer>
@@ -160,7 +163,7 @@ function sidebarItem(title, icon, linkPath, location, enabled = true) {
   );
 }
 
-function SidebarFooterItem({ title, icon, linkTo, active = false, disabled = false }) {
+function SidebarItem({ title, icon, linkTo, active = false, disabled = false }) {
   return (
     <ListItem key={title} disablePadding sx={{ display: 'block' }}>
       <StyledListItemButton component={Link} to={linkTo} disabled={disabled} isActive={active}>
@@ -179,7 +182,7 @@ function SidebarFooterItem({ title, icon, linkTo, active = false, disabled = fal
   );
 }
 
-SidebarFooterItem.propTypes = {
+SidebarItem.propTypes = {
   title: PropTypes.string.isRequired,
   icon: PropTypes.element.isRequired,
   linkTo: PropTypes.string.isRequired,

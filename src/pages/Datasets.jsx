@@ -37,7 +37,7 @@ function Datasets() {
             // - `???` means we can't display the version, so we only allow unversioned datasets
             // - empty or underfined means the same as `???`
 
-            if (version || version === '???') {
+            if (version === '???' || version === null) {
               return false;
             }
 
