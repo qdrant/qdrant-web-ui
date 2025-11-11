@@ -4,7 +4,7 @@ import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useClient } from '../../context/client-context';
-import { 
+import {
   Rocket,
   SquareTerminal,
   RectangleEllipsis,
@@ -13,7 +13,7 @@ import {
   BookMarked,
   CornerUpLeft,
   CircleHelp,
-  HardDriveUpload
+  HardDriveUpload,
 } from 'lucide-react';
 import {
   DrawerHeader,
@@ -37,15 +37,9 @@ export default function Sidebar() {
   const location = useLocation();
   const { cloudInfo } = useCloudInfo();
   const { latestVersion: availableUpdate } = useExternalInfo();
-  const isUpdateNewer = React.useMemo(
-    () => isSemverGreater(availableUpdate, version),
-    [availableUpdate, version],
-  );
+  const isUpdateNewer = React.useMemo(() => isSemverGreater(availableUpdate, version), [availableUpdate, version]);
 
-  const updateLink = React.useMemo(
-    () => buildReleaseLink(availableUpdate),
-    [availableUpdate],
-  );
+  const updateLink = React.useMemo(() => buildReleaseLink(availableUpdate), [availableUpdate]);
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
@@ -57,75 +51,83 @@ export default function Sidebar() {
       <Divider />
       <StyledList>
         {/* todo: what about isRestricted? */}
-        {cloudInfo?.cloud_backlink &&
+        {cloudInfo?.cloud_backlink && (
           <SidebarFooterItem
-           title="Back to Cloud"
-           icon={<CornerUpLeft size="16px" />} 
-          linkTo={cloudInfo.cloud_backlink}
-          active={isActive(cloudInfo.cloud_backlink)}
-          disabled={!cloudInfo?.cloud_backlink} />}
+            title="Back to Cloud"
+            icon={<CornerUpLeft size="16px" />}
+            linkTo={cloudInfo.cloud_backlink}
+            active={isActive(cloudInfo.cloud_backlink)}
+            disabled={!cloudInfo?.cloud_backlink}
+          />
+        )}
         {!isRestricted && (
           <>
-        <SidebarFooterItem 
-        title="Welcome"
-        icon={<Rocket size="16px" />}
-        linkTo="/welcome"
-        active={isActive('/welcome')}
-        disabled={false} />
-        <SidebarFooterItem
-        title="Console"
-        icon={<SquareTerminal size="16px" />}
-        linkTo="/console"
-        active={isActive('/console')}
-        disabled={false} />
-        <SidebarFooterItem 
-        title="Collections"
-        icon={<RectangleEllipsis size="16px" />}
-        linkTo="/collections"
-        active={isActive('/collections')}
-        disabled={false} />
-        </>
-      )}
+            <SidebarFooterItem
+              title="Welcome"
+              icon={<Rocket size="16px" />}
+              linkTo="/welcome"
+              active={isActive('/welcome')}
+              disabled={false}
+            />
+            <SidebarFooterItem
+              title="Console"
+              icon={<SquareTerminal size="16px" />}
+              linkTo="/console"
+              active={isActive('/console')}
+              disabled={false}
+            />
+            <SidebarFooterItem
+              title="Collections"
+              icon={<RectangleEllipsis size="16px" />}
+              linkTo="/collections"
+              active={isActive('/collections')}
+              disabled={false}
+            />
+          </>
+        )}
         {!isRestricted && (
-        <SidebarFooterItem 
-        title="Tutorial"
-        icon={<BookMarked size="16px" />}
-        linkTo="/tutorial"
-        active={isActive('/tutorial')}
-        disabled={false} />
+          <SidebarFooterItem
+            title="Tutorial"
+            icon={<BookMarked size="16px" />}
+            linkTo="/tutorial"
+            active={isActive('/tutorial')}
+            disabled={false}
+          />
         )}
 
         {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
 
-        {!isRestricted &&
-          jwtVisible && (
-          <SidebarFooterItem 
-          title="Access Tokens"
-          icon={<KeyRound size="16px" />}
-          linkTo="/jwt"
-          active={isActive('/jwt')}
-          disabled={!jwtEnabled} />
+        {!isRestricted && jwtVisible && (
+          <SidebarFooterItem
+            title="Access Tokens"
+            icon={<KeyRound size="16px" />}
+            linkTo="/jwt"
+            active={isActive('/jwt')}
+            disabled={!jwtEnabled}
+          />
         )}
       </StyledList>
 
       <StyledSidebarFooterList>
         {cloudInfo?.support_url && (
-          <SidebarFooterItem 
-          title="Get Support"
-          icon={<CircleHelp size="16px" />}
-          linkTo={cloudInfo.support_url}
-          active={false}
-          disabled={false} />
+          <SidebarFooterItem
+            title="Get Support"
+            icon={<CircleHelp size="16px" />}
+            linkTo={cloudInfo.support_url}
+            active={false}
+            disabled={false}
+          />
         )}
 
-         {isUpdateNewer && updateLink && (
-         <SidebarFooterItem
-         title="Update Available"
-         icon={<HardDriveUpload size="16px" />}
-        linkTo={updateLink}
-         active={false}
-         disabled={false} />
-         )}
+        {isUpdateNewer && updateLink && (
+          <SidebarFooterItem
+            title="Update Available"
+            icon={<HardDriveUpload size="16px" />}
+            linkTo={updateLink}
+            active={false}
+            disabled={false}
+          />
+        )}
       </StyledSidebarFooterList>
 
       <StyledSidebarFooterList>
@@ -160,7 +162,7 @@ function sidebarItem(title, icon, linkPath, location, enabled = true) {
 
 function SidebarFooterItem({ title, icon, linkTo, active = false, disabled = false }) {
   return (
-<ListItem key={title} disablePadding sx={{ display: 'block' }}>
+    <ListItem key={title} disablePadding sx={{ display: 'block' }}>
       <StyledListItemButton component={Link} to={linkTo} disabled={disabled} isActive={active}>
         <ListItemIcon
           sx={{
@@ -184,4 +186,3 @@ SidebarFooterItem.propTypes = {
   active: PropTypes.bool,
   disabled: PropTypes.bool,
 };
-

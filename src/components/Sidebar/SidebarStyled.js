@@ -69,11 +69,11 @@ export const StyledSidebarFooterListItem = styled(ListItem)(() => ({
   alignSelf: 'stretch',
   '& a': {
     textDecoration: 'none',
-    '&:hover': { 
+    '&:hover': {
       textDecoration: 'underline',
       textDecorationThickness: '1px',
       textUnderlineOffset: '2px',
-     },
+    },
   },
 }));
 

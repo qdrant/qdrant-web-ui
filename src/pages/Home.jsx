@@ -74,20 +74,21 @@ function HomeContent() {
               <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
                 /
               </Typography>
-              <Typography 
-              component={Link}
-              to={cloudInfo.cloud_backlink}
-              variant="body1"
-              sx={{ 
-                color: theme.palette.text.primary,
-                fontWeight: 500,
-                textDecoration: 'none',
-                '&:hover': { 
-                  textDecoration: 'underline',
-                  textDecorationThickness: '1px',
-                  textUnderlineOffset: '2px',
-                 },
-                }}>
+              <Typography
+                component={Link}
+                to={cloudInfo.cloud_backlink}
+                variant="body1"
+                sx={{
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    textDecorationThickness: '1px',
+                    textUnderlineOffset: '2px',
+                  },
+                }}
+              >
                 {cloudInfo.cluster_name}
               </Typography>
             </Box>

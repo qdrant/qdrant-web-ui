@@ -11,8 +11,7 @@ export function ExternalInfoProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const externalInfoPath = useMemo(() => {
-    const pathFromEnv =
-      import.meta.env?.VITE_EXTERNAL_INFO_PATH ?? import.meta.env?.VITE_WEB_INFO_PATH;
+    const pathFromEnv = import.meta.env?.VITE_EXTERNAL_INFO_PATH ?? import.meta.env?.VITE_WEB_INFO_PATH;
 
     if (typeof pathFromEnv === 'string' && pathFromEnv.trim().length > 0) {
       return pathFromEnv;
@@ -55,7 +54,7 @@ export function ExternalInfoProvider({ children }) {
       banner: externalInfo?.banner,
       latestVersion: externalInfo?.latest_version,
     }),
-    [externalInfo, error, isLoading, fetchExternalInfo],
+    [externalInfo, error, isLoading, fetchExternalInfo]
   );
 
   return <ExternalInfoContext.Provider value={value}>{children}</ExternalInfoContext.Provider>;

@@ -63,7 +63,7 @@ export function CloudInfoProvider({ children }) {
       isLoading,
       reload: fetchCloudInfo,
     }),
-    [cloudInfo, error, isLoading, fetchCloudInfo],
+    [cloudInfo, error, isLoading, fetchCloudInfo]
   );
 
   return <CloudInfoContext.Provider value={value}>{children}</CloudInfoContext.Provider>;
@@ -82,4 +82,3 @@ export function useCloudInfo() {
 
   return context;
 }
-

@@ -16,12 +16,10 @@ export const resizeObserverWithCallback = (callback) => {
  */
 export const compareSemver = function (version1, version2) {
   const parseVersion = (version) =>
-    version
-      .split('.')
-      .map((value) => {
-        const parsed = Number.parseInt(value, 10);
-        return Number.isNaN(parsed) ? 0 : parsed;
-      });
+    version.split('.').map((value) => {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    });
 
   const [major1 = 0, minor1 = 0, patch1 = 0] = parseVersion(version1);
   const [major2 = 0, minor2 = 0, patch2 = 0] = parseVersion(version2);
