@@ -10,6 +10,7 @@ import Sidebar from '../components/Sidebar/Sidebar';
 
 import { TelemetryProvider, useAuthError } from '../context/telemetry-context';
 import { CloudInfoProvider, useCloudInfo } from '../context/cloud-info-context';
+import { WebInfoProvider } from '../context/web-info-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -22,8 +23,8 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 // todo:
 // - [ ] use the path to cloud info json from env (adding falback)
-// - [ ] move fetch of cloud info json to a context
-// - [ ] move banner file fetch to a context
+// - [x] move fetch of cloud info json to a context
+// - [x] move banner file fetch to a context
 // - [ ] tests?
 
 function HomeContent() {
@@ -130,7 +131,9 @@ export default function MiniDrawer() {
   return (
     <TelemetryProvider>
       <CloudInfoProvider>
-        <HomeContent />
+        <WebInfoProvider>
+          <HomeContent />
+        </WebInfoProvider>
       </CloudInfoProvider>
     </TelemetryProvider>
   );

@@ -27,26 +27,60 @@ import {
 import { Logo } from '../Logo';
 import { useVersion, useJwt } from '../../context/telemetry-context';
 import { useCloudInfo } from '../../context/cloud-info-context';
+import { useWebInfo } from '../../context/web-info-context';
 
 export default function Sidebar() {
   const { version } = useVersion();
   const { jwtEnabled, jwtVisible } = useJwt();
   const { isRestricted } = useClient();
   const location = useLocation();
-  const [availableUpdate, setAvailableUpdate] = React.useState(null);
   const { cloudInfo } = useCloudInfo();
+  const { latestVersion: availableUpdate } = useWebInfo();
+
+  const normalizeVersion = (value) =>
+    value
+      ?.toString()
+      .trim()
+      .replace(/^v/i, '')
+      .split('.')
+      .map((part) => parseInt(part, 10))
+      .filter((part) => !Number.isNaN(part));
+
+  const isUpdateNewer = React.useMemo(() => {
+    if (!availableUpdate || !version) {
+      return false;
+    }
+
+    const nextParts = normalizeVersion(availableUpdate);
+    const currentParts = normalizeVersion(version);
+    const maxLength = Math.max(nextParts.length, currentParts.length);
+
+    for (let index = 0; index < maxLength; index += 1) {
+      const nextPart = nextParts[index] ?? 0;
+      const currentPart = currentParts[index] ?? 0;
+
+      if (nextPart > currentPart) {
+        return true;
+      }
+
+      if (nextPart < currentPart) {
+        return false;
+      }
+    }
+
+    return false;
+  }, [availableUpdate, version]);
+
+  const updateLink = React.useMemo(() => {
+    if (!availableUpdate) {
+      return null;
+    }
+
+    const sanitizedVersion = availableUpdate.startsWith('v') ? availableUpdate : `v${availableUpdate}`;
+    return `https://github.com/qdrant/qdrant/releases/tag/${sanitizedVersion}`;
+  }, [availableUpdate]);
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
-
-  const bannerContentLink = 'https://qdrant.tech/web-ui-info.json';
-
-  React.useEffect(() => {
-    fetch(bannerContentLink)
-    .then((response) => response.json())
-      // todo: compare latest version with current version from telemetry
-    .then((data) => setAvailableUpdate(data?.latest_version))
-    .catch((error) => console.error('Error fetching banner content:', error));
-  }, []);
 
   return (
     <Drawer variant="permanent">
@@ -117,11 +151,11 @@ export default function Sidebar() {
           disabled={false} />
         )}
 
-         {availableUpdate && (
+         {isUpdateNewer && updateLink && (
          <SidebarFooterItem
          title="Update Available"
          icon={<HardDriveUpload size="16px" />}
-         linkTo={availableUpdate}
+        linkTo={updateLink}
          active={false}
          disabled={false} />
          )}
