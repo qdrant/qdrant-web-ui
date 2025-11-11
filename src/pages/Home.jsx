@@ -21,12 +21,6 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
-// todo:
-// - [ ] use the path to cloud info json from env (adding falback)
-// - [x] move fetch of cloud info json to a context
-// - [x] move banner file fetch to a context
-// - [ ] tests?
-
 function HomeContent() {
   const theme = useTheme();
   const { authError, clearAuthError } = useAuthError();
