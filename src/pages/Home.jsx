@@ -5,11 +5,10 @@ import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { Key } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
-import { useClient } from '../context/client-context';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 
-import { MaxCollectionsProvider, useMaxCollections } from '../context/max-collections-context';
+import { TelemetryProvider, useVersion, useJwt, useAuthError } from '../context/telemetry-context';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -20,40 +19,35 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
+// todo:
+// - [ ] use the path to cloud info json from env (adding falback)
+// - [ ] move fetch of cloud info json to a context
+// - [ ] move banner file fetch to a context
+// - [ ] tests?
+
 function HomeContent() {
   const theme = useTheme();
-  const [version, setVersion] = useState('???');
-  const [jwtEnabled, setJwtEnabled] = useState(false);
-  const [jwtVisible, setJwtVisible] = useState(true);
-  const { setMaxCollections } = useMaxCollections();
+  const { version } = useVersion();
+  const { jwtEnabled, jwtVisible } = useJwt();
+  const { authError, clearAuthError } = useAuthError();
 
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-  const { client: qdrantClient } = useClient();
-
   const [cloudInfo, setCloudInfo] = useState(null);
 
-  async function getQdrantInfo() {
-    try {
-      const telemetry = await qdrantClient.api('service').telemetry();
-      setVersion(telemetry.data.result.app.version);
-      setJwtEnabled(telemetry.data.result.app?.jwt_rbac || false);
-      setMaxCollections(telemetry.data.result.collections?.max_collections);
-
-      if (telemetry.data.result.app?.hide_jwt_dashboard) {
-        setJwtVisible(false);
-      }
-    } catch (error) {
-      if (error.status === 403 || error.status === 401) {
-        setApiKeyDialogOpen(true);
-      } else {
-        console.log('error', error);
-      }
+  useEffect(() => {
+    if (authError) {
+      setApiKeyDialogOpen(true);
     }
-  }
+  }, [authError]);
+
+  const handleDialogClose = (open) => {
+    setApiKeyDialogOpen(open);
+    if (!open) {
+      clearAuthError();
+    }
+  };
 
   useEffect(() => {
-    getQdrantInfo();
-
     fetch('/cloud/cloudInfo.json')
       .then(res => {
         if (!res.ok) {
@@ -138,17 +132,17 @@ function HomeContent() {
       <Sidebar version={version} jwtEnabled={jwtEnabled} jwtVisible={jwtVisible} cloudInfo={cloudInfo} />
       <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
         <DrawerHeader />
-        <Outlet context={{ version }} />
+        <Outlet />
       </Box>
-      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={setApiKeyDialogOpen} onApply={OnApyKeyApply} />
+      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} onApply={OnApyKeyApply} />
     </Box>
   );
 }
 
 export default function MiniDrawer() {
   return (
-    <MaxCollectionsProvider>
+    <TelemetryProvider>
       <HomeContent />
-    </MaxCollectionsProvider>
+    </TelemetryProvider>
   );
 }

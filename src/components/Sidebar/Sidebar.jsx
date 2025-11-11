@@ -25,20 +25,23 @@ import {
   StyledSidebarFooterList,
 } from './SidebarStyled';
 import { Logo } from '../Logo';
+import { useVersion } from '../../context/telemetry-context';
 
-export default function Sidebar({ version, jwtEnabled, jwtVisible, cloudInfo }) {
+export default function Sidebar({ jwtEnabled, jwtVisible, cloudInfo }) {
+  const { version } = useVersion();
   const { isRestricted } = useClient();
   const location = useLocation();
   const [availableUpdate, setAvailableUpdate] = React.useState(null);
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
-  const bannerContentLink = 'https://qdrant.tech/web-ui-banner.json';
+  const bannerContentLink = 'https://qdrant.tech/web-ui-info.json';
 
   React.useEffect(() => {
     fetch(bannerContentLink)
     .then((response) => response.json())
-    .then((data) => setAvailableUpdate(data.message))
+      // todo: compare latest version with current version from telemetry
+    .then((data) => setAvailableUpdate(data?.latest_version))
     .catch((error) => console.error('Error fetching banner content:', error));
   }, []);
 
@@ -179,7 +182,6 @@ SidebarFooterItem.propTypes = {
 };
 
 Sidebar.propTypes = {
-  version: PropTypes.string,
   jwtEnabled: PropTypes.bool,
   jwtVisible: PropTypes.bool,
   cloudInfo: PropTypes.shape({

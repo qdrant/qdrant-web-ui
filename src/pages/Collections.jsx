@@ -8,7 +8,7 @@ import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
-import { useMaxCollections } from '../context/max-collections-context';
+import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
 function Collections() {

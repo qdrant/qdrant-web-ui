@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Link, Grid } from '@mui/material';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode } from 'lucide-react';
-import { useEffect } from 'react';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -14,13 +13,13 @@ const Welcome = () => {
     setShowBanner(false);
   };
 
-  const bannerContentLink = 'https://qdrant.tech/web-ui-banner.json';
+  const bannerContentLink = 'https://qdrant.tech/web-ui-info.json';
   const [bannerContent, setBannerContent] = useState(null);
 
   useEffect(() => {
     fetch(bannerContentLink)
       .then((response) => response.json())
-      .then((data) => setBannerContent(data))
+      .then((data) => setBannerContent(data.banner))
       .catch((error) => console.error('Error fetching banner content:', error));
   }, []);
 
