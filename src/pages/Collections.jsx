@@ -168,7 +168,7 @@ function Collections() {
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
               />
               {collections.length > PAGE_SIZE && (
-                <Box justifyContent="center" display="flex">
+                <Box justifyContent="center" display="flex" mt={3}>
                   <Pagination
                     shape={'rounded'}
                     count={Math.ceil(collections.length / PAGE_SIZE)}
