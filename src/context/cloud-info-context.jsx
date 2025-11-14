@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const CloudInfoContext = createContext();
 
-const DEFAULT_CLOUD_INFO_PATH = '/cloud/cloudInfo.json';
+const DEFAULT_CLOUD_INFO_PATH = '/cloud/data.json';
 
 export function CloudInfoProvider({ children }) {
   const [cloudInfo, setCloudInfo] = useState(null);
