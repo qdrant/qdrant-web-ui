@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import { getFullPath } from '../lib/common-helpers';
 
 const CloudInfoContext = createContext();
 
-const DEFAULT_CLOUD_INFO_PATH = '/cloud/data.json';
+const DEFAULT_CLOUD_INFO_PATH = getFullPath('/cloud/data.json');
 
 export function CloudInfoProvider({ children }) {
   const [cloudInfo, setCloudInfo] = useState(null);

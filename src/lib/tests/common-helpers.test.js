@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { compareSemver } from '../common-helpers';
+import { describe, it, expect, afterEach } from 'vitest';
+import { compareSemver, getFullPath } from '../common-helpers';
 
 describe('compareSemver', () => {
   it('should return 0 if the versions are equal', () => {
@@ -21,5 +21,38 @@ describe('compareSemver', () => {
     const version2 = '1.0.1';
     const result = compareSemver(version1, version2);
     expect(result).toEqual(-1);
+  });
+});
+
+describe('getFullPath', () => {
+  const originalBaseUrl = import.meta.env.BASE_URL;
+
+  afterEach(() => {
+    import.meta.env.BASE_URL = originalBaseUrl;
+  });
+
+  it('should handle path without leading slash with root base URL', () => {
+    import.meta.env.BASE_URL = '/';
+    expect(getFullPath('logo.svg')).toBe('/logo.svg');
+  });
+
+  it('should handle path with leading slash with root base URL', () => {
+    import.meta.env.BASE_URL = '/';
+    expect(getFullPath('/logo.svg')).toBe('/logo.svg');
+  });
+
+  it('should handle path without leading slash with subpath base URL', () => {
+    import.meta.env.BASE_URL = '/dashboard';
+    expect(getFullPath('logo.svg')).toBe('/dashboard/logo.svg');
+  });
+
+  it('should handle path with leading slash with subpath base URL', () => {
+    import.meta.env.BASE_URL = '/dashboard';
+    expect(getFullPath('/logo.svg')).toBe('/dashboard/logo.svg');
+  });
+
+  it('should handle base URL with trailing slash', () => {
+    import.meta.env.BASE_URL = '/dashboard/';
+    expect(getFullPath('logo.svg')).toBe('/dashboard/logo.svg');
   });
 });
