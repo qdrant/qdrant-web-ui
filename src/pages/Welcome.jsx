@@ -6,6 +6,7 @@ import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode } from 'lucide-react';
 import { useExternalInfo } from '../context/external-info-context';
+import { getFullPath } from '../lib/common-helpers';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -71,7 +72,7 @@ const Welcome = () => {
           description="Start building your app by creating a collection and inserting your vectors."
           buttonText="View Quickstart"
           linkTo="/tutorial/quickstart"
-          imgSrc="/assets/console.svg"
+          imgSrc={getFullPath('/assets/console.svg')}
         />
       </Box>
 
