@@ -78,3 +78,15 @@ export const buildReleaseLink = (version) => {
 
   return `https://github.com/qdrant/qdrant/releases/tag/v${normalized}`;
 };
+
+/**
+ * Builds a full path to a file, taking into account the base URL.
+ * @param {string} filePath - The file path (e.g., '/data/info.json' or 'logo.svg').
+ * @return {string} - The full path with the base URL prepended.
+ */
+export const getFullPath = (filePath) => {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const normalizedBase = baseUrl.replace(/\/?$/, '/');
+  const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+  return `${normalizedBase}${normalizedPath}`;
+};

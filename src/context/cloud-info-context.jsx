@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import { getFullPath } from '../lib/common-helpers';
+import { axiosInstance as axios } from '../common/axios';
 
 const CloudInfoContext = createContext();
 
-const DEFAULT_CLOUD_INFO_PATH = '/cloud/data.json';
+const DEFAULT_CLOUD_INFO_PATH = getFullPath('/cloud/data.json');
 
 export function CloudInfoProvider({ children }) {
   const [cloudInfo, setCloudInfo] = useState(null);
@@ -23,14 +25,8 @@ export function CloudInfoProvider({ children }) {
     setError(null);
 
     try {
-      const response = await fetch(cloudInfoPath);
-
-      if (!response.ok) {
-        throw new Error(`Failed to load cloud info: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setCloudInfo(data);
+      const response = await axios.get(cloudInfoPath);
+      setCloudInfo(response.data);
     } catch (err) {
       console.error('Error fetching cloud info:', err);
       setError(err);
