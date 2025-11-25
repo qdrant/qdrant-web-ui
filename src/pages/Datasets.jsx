@@ -25,7 +25,7 @@ function Datasets() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://snapshots.qdrant.io/manifest.json');
+        const response = await fetch('https://snapshots.qdrant.io/manifest-v1.16.0.json');
         const responseJson = await response.json();
         const datasets = responseJson
           .filter((dataset) => {
