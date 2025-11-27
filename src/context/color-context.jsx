@@ -22,7 +22,7 @@ export function ColorModeProvider({ children, initialMode }) {
     [colorMode]
   );
 
-useEffect(() => {
+  useEffect(() => {
     // Accept messages as: { "mode": "light"|"dark" } or { qdrantTheme: "light"|"dark" } or raw 'light'/'dark'
     const handleMessage = (event) => {
       let payload = event.data;
@@ -36,10 +36,7 @@ useEffect(() => {
       const mode = payload?.mode ?? payload?.qdrantTheme ?? payload;
       if (mode === 'light' || mode === 'dark') {
         setColorMode(mode);
-        event.source.postMessage(
-          `{ status: 'success', message: 'Color mode changed to ${mode}' }`,
-          event.origin
-        );
+        event.source.postMessage(`{ status: 'success', message: 'Color mode changed to ${mode}' }`, event.origin);
       }
     };
 
