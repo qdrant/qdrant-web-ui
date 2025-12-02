@@ -14,6 +14,7 @@ import CreateCollectionButton from '../components/Collections/CreateCollection/C
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
   const [collections, setCollections] = useState(null);
+  const [filteredCollections, setFilteredCollections] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const { client: qdrantClient } = useClient();
@@ -65,14 +66,14 @@ function Collections() {
     [qdrantClient, getErrorMessageWithApiKey]
   );
 
-  const getFilteredCollections = useCallback(
+  const getFilteredCollectionsCall = useCallback(
     async (query) => {
       try {
         if (!collections) return;
-        const filteredCollections = collections.filter((collection) => collection.name.match(query));
-        setCollections(filteredCollections);
+        const filtered = collections.filter((collection) => collection.name.match(query));
+        setFilteredCollections(filtered);
         const nextRawCollections = await Promise.all(
-          filteredCollections.map(async (collection) => {
+          filtered.map(async (collection) => {
             const collectionData = await qdrantClient.getCollection(collection.name);
             return {
               name: collection.name,
@@ -100,18 +101,20 @@ function Collections() {
     if (!searchQuery) {
       getCollectionsCall(currentPage);
     } else {
-      debouncedGetFilteredCollections(searchQuery);
+      debouncedGetFilteredCollectionsCall(searchQuery);
     }
   }, [searchQuery, currentPage, getCollectionsCall]);
 
-  const debouncedGetFilteredCollections = useMemo(
-    () => debounce(getFilteredCollections, 100),
-    [getFilteredCollections]
+  const debouncedGetFilteredCollectionsCall = useMemo(
+    () => debounce(getFilteredCollectionsCall, 100),
+    [getFilteredCollectionsCall]
   );
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
+
+  const displayCollections = searchQuery ? filteredCollections : collections;
 
   return (
     <>
@@ -126,7 +129,8 @@ function Collections() {
             }}
           >
             <Typography variant="h4" component={'h1'} sx={{ lineHeight: '1' }}>
-              Collections {maxCollections && collections ? `(${collections.length} / ${maxCollections})` : ''}
+              Collections{' '}
+              {maxCollections && displayCollections ? `(${displayCollections.length} / ${maxCollections})` : ''}
             </Typography>
           </Grid>
           <Grid
@@ -148,14 +152,14 @@ function Collections() {
               <Typography>⚠ Error: {errorMessage}</Typography>
             </Grid>
           )}
-          {!collections && !errorMessage && (
+          {!displayCollections && !errorMessage && (
             <Grid textAlign={'center'} size={12}>
               <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
               <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
               <Skeleton variant="rounded" height={70} animation="wave" sx={{ mb: 1 }} />
             </Grid>
           )}
-          {collections && !errorMessage && collections.length === 0 && (
+          {displayCollections && !errorMessage && displayCollections.length === 0 && (
             <Grid textAlign={'center'} mt={3} size={12}>
               <Typography> 📪 No collection is present</Typography>
             </Grid>
@@ -167,11 +171,11 @@ function Collections() {
                 collections={rawCollections}
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
               />
-              {collections.length > PAGE_SIZE && (
+              {displayCollections && displayCollections.length > PAGE_SIZE && (
                 <Box justifyContent="center" display="flex" mt={3}>
                   <Pagination
                     shape={'rounded'}
-                    count={Math.ceil(collections.length / PAGE_SIZE)}
+                    count={Math.ceil(displayCollections.length / PAGE_SIZE)}
                     page={currentPage}
                     onChange={handlePageChange}
                   />
