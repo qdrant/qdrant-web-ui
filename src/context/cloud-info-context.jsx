@@ -28,7 +28,6 @@ export function CloudInfoProvider({ children }) {
       const response = await axios.get(cloudInfoPath);
       setCloudInfo(response.data);
     } catch (err) {
-      console.error('Error fetching cloud info:', err);
       setError(err);
       setCloudInfo(null);
     } finally {

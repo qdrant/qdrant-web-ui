@@ -42,6 +42,9 @@ export function setupAxios(axios, { apiKey }) {
   ];
   axios.defaults.transformResponse = [
     function (data) {
+      if (!data) {
+        return data;
+      }
       return bigIntJSON.parse(data);
     },
   ];
