@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
 import { Grid, Typography, Box } from '@mui/material';
@@ -84,7 +83,6 @@ Legend.propTypes = {
 };
 
 const ClusterMonitor = ({ collectionName }) => {
-  const navigate = useNavigate();
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const [cluster, setCluster] = React.useState(null);
@@ -292,10 +290,6 @@ const ClusterMonitor = ({ collectionName }) => {
 
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
-
-  if (isRestricted) {
-    navigate(`/collections/${collectionName}`);
-  }
 
   if (!cluster || cluster.status !== 'enabled') {
     return (
