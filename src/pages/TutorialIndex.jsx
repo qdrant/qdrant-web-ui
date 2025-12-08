@@ -52,7 +52,7 @@ export const TutorialIndex = () => {
 
       <Box component="section">
         <Typography component="h2" variant="h6" mb="1rem">
-          Connect to your Project or Start with Samples 11
+          Connect to your Project or Start with Samples
         </Typography>
 
         <Grid container spacing={2}>
