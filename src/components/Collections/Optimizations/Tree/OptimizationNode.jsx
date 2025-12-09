@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography, LinearProgress, Collapse, IconButton } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme, alpha, keyframes } from '@mui/material/styles';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import yellow from '../../../../theme/colors/yellow';
+
+// Define a smooth, lightweight keyframe animation for the initial render
+const growWidth = keyframes`
+  from {
+    width: 0;
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+`;
 
 const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
   const theme = useTheme();
@@ -74,7 +85,14 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
           </Box>
           <Typography
             variant="body2"
-            sx={{ ml: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            sx={{ 
+              ml: 1, 
+              whiteSpace: 'nowrap', 
+              overflow: 'hidden', 
+              textOverflow: 'ellipsis', 
+              fontFamily: 'Menlo, monospace',
+              fontSize: '0.75rem',
+            }}
           >
             {node.name ||
               (level === 0 ? (
@@ -116,9 +134,14 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
                       height: 12,
                       borderRadius: 2,
                       bgcolor: alpha(barColor, 0.2), // Track is lighter version of bar color
+                      // Use a keyframe animation for the container width on mount
+                      animation: `${growWidth} 0.5s ease-out`,
+                      // Remove transition on width to prevent jank on re-renders,
+                      // or use it very carefully. Here, we prefer keyframe for initial render.
                       '& .MuiLinearProgress-bar': {
                         backgroundColor: barColor,
                         borderRadius: 2,
+                        transition: 'transform 0.3s linear', // Smoother, faster transition for fill updates
                       },
                     }}
                   />
@@ -139,7 +162,7 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
           <Box>
             {node.children.map((child, index) => (
               <OptimizationNode
-                key={index}
+                key={`${child.name}-${child.started_at}-${index}`}
                 node={child}
                 level={level + 1}
                 totalDuration={totalDuration}

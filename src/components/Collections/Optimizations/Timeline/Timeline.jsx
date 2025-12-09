@@ -5,7 +5,7 @@ import Chart from 'chart.js/auto';
 import { preprocess } from './preprocess';
 import { parseTime } from '../Tree/helpers';
 
-const Timeline = ({ data, requestTime, ...other }) => {
+const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -14,14 +14,21 @@ const Timeline = ({ data, requestTime, ...other }) => {
     return preprocess(data, requestTime);
   }, [data, requestTime]);
 
-  // Prepare chart data and options
-  const chartConfig = useMemo(() => {
+  // Use a ref for onSelect so we don't need to rebuild the chart just for callback changes
+  // though chart.js onClick option usually requires a stable reference or update
+  const onSelectRef = useRef(onSelect);
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+
+  // Prepare base chart config (data structure, labels, x-axis ranges)
+  // This depends only on the data, not selection
+  const chartBaseConfig = useMemo(() => {
     if (!timelineData || timelineData.length === 0) return null;
 
     const labels = timelineData.map(() => '');
     
     // Floating bars: [start, end]
-    // The x-axis will use these values.
     const floatingBars = timelineData.map((item) => {
       const start = parseTime(item.started_at);
       const end = parseTime(item.finished_at);
@@ -34,11 +41,9 @@ const Timeline = ({ data, requestTime, ...other }) => {
         {
           label: 'Optimizations',
           data: floatingBars,
-          backgroundColor: theme.palette.primary.main,
+          backgroundColor: [], // will be filled/updated later
           borderRadius: 4,
           barPercentage: 0.5,
-          // In Chart.js 3+, 'indexAxis: y' makes it horizontal bar chart
-          // data values for bars should be [min, max] for floating bars
         },
       ],
     };
@@ -47,6 +52,18 @@ const Timeline = ({ data, requestTime, ...other }) => {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
+      onClick: (event, elements) => {
+        if (!elements || elements.length === 0) {
+            onSelectRef.current && onSelectRef.current(null);
+            return;
+        }
+        const index = elements[0].index;
+        const selected = timelineData[index];
+        onSelectRef.current && onSelectRef.current(selected);
+      },
+      onHover: (event, chartElement) => {
+        event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
+      },
       scales: {
         x: {
           min: timelineData.length > 0 ? parseTime(timelineData[0].started_at) : undefined,
@@ -88,11 +105,11 @@ const Timeline = ({ data, requestTime, ...other }) => {
     };
 
     return { data: chartData, options };
-  }, [timelineData, theme]);
+  }, [timelineData, theme]); // removed selectedItem dependency
 
-  // Effect to manage Chart instance
+  // Effect to initialize Chart instance
   useEffect(() => {
-    if (!canvasRef.current || !chartConfig) return;
+    if (!canvasRef.current || !chartBaseConfig) return;
 
     // Destroy existing chart if it exists
     if (chartInstanceRef.current) {
@@ -102,9 +119,9 @@ const Timeline = ({ data, requestTime, ...other }) => {
     // Create new chart
     const ctx = canvasRef.current.getContext('2d');
     chartInstanceRef.current = new Chart(ctx, {
-      type: 'bar', // 'bar' with indexAxis: 'y' creates horizontal bar
-      data: chartConfig.data,
-      options: chartConfig.options,
+      type: 'bar',
+      data: chartBaseConfig.data,
+      options: chartBaseConfig.options,
     });
 
     // Cleanup on unmount
@@ -113,7 +130,27 @@ const Timeline = ({ data, requestTime, ...other }) => {
         chartInstanceRef.current.destroy();
       }
     };
-  }, [chartConfig]);
+  }, [chartBaseConfig]);
+
+  // Effect to update highlighting only without full re-render
+  useEffect(() => {
+    if (!chartInstanceRef.current || !timelineData) return;
+
+    const backgroundColors = timelineData.map((item) => {
+        const isSelected = selectedItem && 
+            item.started_at === selectedItem.started_at && 
+            item.finished_at === selectedItem.finished_at;
+            
+        if (isSelected) {
+             return theme.palette.primary.dark;
+        }
+        return theme.palette.primary.main;
+    });
+
+    // Update dataset colors
+    chartInstanceRef.current.data.datasets[0].backgroundColor = backgroundColors;
+    chartInstanceRef.current.update('none'); // 'none' mode prevents animation on update
+  }, [selectedItem, timelineData, theme]);
 
   return (
     <Card elevation={0} {...other}>
@@ -129,7 +166,7 @@ const Timeline = ({ data, requestTime, ...other }) => {
         }}
         />
       <CardContent sx={{ pt: 0, height: 400 }}>
-        {chartConfig ? (
+        {chartBaseConfig ? (
              <canvas ref={canvasRef} />
         ) : (
             'No data available'
@@ -142,6 +179,8 @@ const Timeline = ({ data, requestTime, ...other }) => {
 Timeline.propTypes = {
   data: PropTypes.object,
   requestTime: PropTypes.string,
+  onSelect: PropTypes.func,
+  selectedItem: PropTypes.object,
 };
 
 export default Timeline;
