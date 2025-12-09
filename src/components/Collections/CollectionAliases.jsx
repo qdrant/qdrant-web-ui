@@ -95,7 +95,7 @@ const CollectionAliases = ({ collectionName }) => {
   ));
 
   return (
-    <StyledTableContainer sx={{ mb: 5 }}>
+    <StyledTableContainer>
       <Table aria-label="aliases table">
         <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
           <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
