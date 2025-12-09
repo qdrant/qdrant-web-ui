@@ -27,7 +27,7 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
     if (!timelineData || timelineData.length === 0) return null;
 
     const labels = timelineData.map(() => '');
-    
+
     // Floating bars: [start, end]
     const floatingBars = timelineData.map((item) => {
       const start = parseTime(item.started_at);
@@ -54,8 +54,8 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
       maintainAspectRatio: false,
       onClick: (event, elements) => {
         if (!elements || elements.length === 0) {
-            onSelectRef.current && onSelectRef.current(null);
-            return;
+          onSelectRef.current && onSelectRef.current(null);
+          return;
         }
         const index = elements[0].index;
         const selected = timelineData[index];
@@ -72,9 +72,9 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
           },
           ticks: {
             color: theme.palette.text.secondary,
-            callback: function(value) {
-                return new Date(value).toLocaleTimeString();
-            }
+            callback: function (value) {
+              return new Date(value).toLocaleTimeString();
+            },
           },
         },
         y: {
@@ -82,21 +82,21 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
             display: false,
           },
           ticks: {
-             color: theme.palette.text.primary,
-          }
+            color: theme.palette.text.primary,
+          },
         },
       },
       plugins: {
         tooltip: {
-            callbacks: {
-                label: function(context) {
-                    const raw = context.raw; // [start, end]
-                    const start = new Date(raw[0]).toLocaleTimeString();
-                    const end = new Date(raw[1]).toLocaleTimeString();
-                    const duration = ((raw[1] - raw[0]) / 1000).toFixed(2);
-                    return `${start} - ${end} (${duration}s)`;
-                }
-            }
+          callbacks: {
+            label: function (context) {
+              const raw = context.raw; // [start, end]
+              const start = new Date(raw[0]).toLocaleTimeString();
+              const end = new Date(raw[1]).toLocaleTimeString();
+              const duration = ((raw[1] - raw[0]) / 1000).toFixed(2);
+              return `${start} - ${end} (${duration}s)`;
+            },
+          },
         },
         legend: {
           display: false,
@@ -137,14 +137,13 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
     if (!chartInstanceRef.current || !timelineData) return;
 
     const backgroundColors = timelineData.map((item) => {
-        const isSelected = selectedItem && 
-            item.started_at === selectedItem.started_at && 
-            item.finished_at === selectedItem.finished_at;
-            
-        if (isSelected) {
-             return theme.palette.primary.dark;
-        }
-        return theme.palette.primary.main;
+      const isSelected =
+        selectedItem && item.started_at === selectedItem.started_at && item.finished_at === selectedItem.finished_at;
+
+      if (isSelected) {
+        return theme.palette.primary.dark;
+      }
+      return theme.palette.primary.main;
     });
 
     // Update dataset colors
@@ -155,22 +154,18 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
   return (
     <Card elevation={0} {...other}>
       <CardHeader
-      title={'Timeline'}
-       variant="heading"
+        title={'Timeline'}
+        variant="heading"
         slotProps={{
-           title: {
+          title: {
             sx: {
-                pb: '0.4rem'
-            }
-           }
+              pb: '0.4rem',
+            },
+          },
         }}
-        />
+      />
       <CardContent sx={{ pt: 0, height: 400 }}>
-        {chartBaseConfig ? (
-             <canvas ref={canvasRef} />
-        ) : (
-            'No data available'
-        )}
+        {chartBaseConfig ? <canvas ref={canvasRef} /> : 'No data available'}
       </CardContent>
     </Card>
   );

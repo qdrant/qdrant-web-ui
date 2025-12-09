@@ -85,11 +85,11 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
           </Box>
           <Typography
             variant="body2"
-            sx={{ 
-              ml: 1, 
-              whiteSpace: 'nowrap', 
-              overflow: 'hidden', 
-              textOverflow: 'ellipsis', 
+            sx={{
+              ml: 1,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               fontFamily: 'Menlo, monospace',
               fontSize: '0.75rem',
             }}

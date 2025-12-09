@@ -10,10 +10,7 @@ import { parseTime } from '../Tree/helpers';
 export const preprocess = (data, requestTime) => {
   if (!data) return [];
 
-  const rawList = [
-    ...(data.ongoing || []),
-    ...(data.completed || []),
-  ];
+  const rawList = [...(data.ongoing || []), ...(data.completed || [])];
 
   return rawList
     .map((opt) => {
