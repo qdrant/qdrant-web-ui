@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { CreateCollectionForm } from 'create-collection-form';
@@ -5,16 +6,34 @@ import { AppBar, Dialog, Toolbar, Typography, IconButton, Box } from '@mui/mater
 import { ArrowLeft } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
-import { createCollection } from './create-collection.js';
+import { createCollection, getCreateCollectionConfiguration, createCollectionParams, createPayloadIndexParams } from './create-collection.js';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { Highlight, Prism } from 'prism-react-renderer';
 import DialogContent from '@mui/material/DialogContent';
 
 const convertToRequest = (outputData) => {
+
+  console.log(outputData);
+
   // todo: implement request conversion
-  console.log(typeof outputData);
-  return `POST /collections/${outputData.collection_name} \n` + JSON.stringify(outputData, null, 2);
+  const collectionName = outputData?.collection_name || '<name>';
+
+  const params = getCreateCollectionConfiguration(collectionName, outputData);
+  const collectionParams = createCollectionParams(params);
+  
+  let result = `PUT /collections/${collectionName} \n` + JSON.stringify(collectionParams, null, 2) + "\n";
+
+  if (params.payload_indexes) {
+    result += "\n// Payload Indexes";
+    for (const fieldConfig of params.payload_indexes) {
+      result += `\nPUT /collections/${collectionName}/payload_indexes \n`
+      const payloadIndexParams = createPayloadIndexParams(fieldConfig);
+      result += JSON.stringify(payloadIndexParams, null, 2) + "\n";
+    }
+  }
+
+  return result;
 };
 
 const renderJsonPreview = (outputData) => {
@@ -23,7 +42,7 @@ const renderJsonPreview = (outputData) => {
   return (
     <Box>
       <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>
-        Request:
+        Equivalent Requests
       </Typography>
       <Box>
         <Highlight Prism={Prism} code={request} language="json">
@@ -102,8 +121,8 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
       >
         <Toolbar
           sx={{
-            width: '848px',
-            maxWidth: '848px',
+            width: '100%',
+            maxWidth: { xs: '100%', lg: '1424px' },
             minHeight: '48px',
             px: 2,
             py: 0.5,
