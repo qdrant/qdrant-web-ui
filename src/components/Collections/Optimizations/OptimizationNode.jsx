@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Box,
-  Typography,
-  LinearProgress,
-  Collapse,
-  IconButton,
-} from '@mui/material';
+import { Box, Typography, LinearProgress, Collapse, IconButton } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import yellow from '../../../theme/colors/yellow';
@@ -23,30 +17,30 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
   // Calculate visual width percentage based on duration
   // Ensure at least a small width for visibility if duration is tiny but > 0
   const widthPercent = totalDuration ? Math.max((duration / totalDuration) * 100, 0.5) : 0;
-  
+
   // For the progress bar itself (the fill inside the allocated width):
   // If finished, it's 100% filled.
   // If not finished, we estimate progress based on done/total if available.
   // If no done/total, we keep it solid (100%) as we don't know how far along it is.
   let fillPercent = 100;
   if (!isFinished && node.total > 0 && node.done !== undefined) {
-      fillPercent = (node.done / node.total) * 100;
+    fillPercent = (node.done / node.total) * 100;
   }
 
   // Progress percentage text
   let progressText = '';
-  
+
   // Prioritize showing done/total if available and not finished
   if (!node.started_at) {
     progressText = 'pending';
   } else if (duration > 0) {
     // Show duration for everything else (even if not finished, but started)
     if (duration < 1000) {
-        progressText = `${Math.round(duration)}ms`;
+      progressText = `${Math.round(duration)}ms`;
     } else if (duration < 60000) {
-        progressText = `${(duration / 1000).toFixed(2)}s`;
+      progressText = `${(duration / 1000).toFixed(2)}s`;
     } else {
-        progressText = `${(duration / 60000).toFixed(2)}m`;
+      progressText = `${(duration / 60000).toFixed(2)}m`;
     }
   }
 
@@ -74,11 +68,7 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
           <Box sx={{ width: 24, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
             {hasChildren && (
               <IconButton size="small" onClick={handleToggle} sx={{ p: 0.5 }}>
-                {open ? (
-                  <ChevronDown size={20} />
-                ) : (
-                  <ChevronRight size={20} />
-                )}
+                {open ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
               </IconButton>
             )}
           </Box>
@@ -180,4 +170,3 @@ OptimizationNode.propTypes = {
 };
 
 export default OptimizationNode;
-

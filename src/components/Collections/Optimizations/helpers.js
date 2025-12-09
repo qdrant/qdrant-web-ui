@@ -31,7 +31,7 @@ export const enrichWithDuration = (nodes, maxTime) => {
 
     // Logic for leaf/task progress based duration estimation
     // If not finished, and we have done/total, we can estimate "progress duration"
-    // However, the prompt asks to "show done/total". 
+    // However, the prompt asks to "show done/total".
     // It also says "account for this in the summarized parents nodes".
     // This implies we need to sum up "done" and "total" for parents too if they don't have it.
 
@@ -52,28 +52,27 @@ export const enrichWithDuration = (nodes, maxTime) => {
 
     if (newNode.children && newNode.children.length > 0) {
       newNode.children = enrichWithDuration(newNode.children, maxTime);
-      
+
       // Sum children stats
-      newNode.children.forEach(child => {
-          if (child.total > 0) {
-              childrenSumDone += (child.done || 0);
-              childrenSumTotal += child.total;
-              hasChildrenWithProgress = true;
-          }
-          if (!isExplicitDuration) {
-             duration += (child.duration || 0);
-          }
+      newNode.children.forEach((child) => {
+        if (child.total > 0) {
+          childrenSumDone += child.done || 0;
+          childrenSumTotal += child.total;
+          hasChildrenWithProgress = true;
+        }
+        if (!isExplicitDuration) {
+          duration += child.duration || 0;
+        }
       });
     }
 
     // If node doesn't have own done/total, but children do, inherit the sum
     if (newNode.total === undefined && hasChildrenWithProgress) {
-        newNode.done = childrenSumDone;
-        newNode.total = childrenSumTotal;
+      newNode.done = childrenSumDone;
+      newNode.total = childrenSumTotal;
     }
 
     newNode.duration = duration;
     return newNode;
   });
 };
-
