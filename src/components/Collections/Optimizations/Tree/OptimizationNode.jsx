@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography, LinearProgress, Collapse, IconButton } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import yellow from '../../../theme/colors/yellow';
+import yellow from '../../../../theme/colors/yellow';
 
 const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
   const theme = useTheme();
