@@ -3,7 +3,7 @@ import { getBaseURL } from './utils';
 import { bigIntJSON } from './bigIntJSON';
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NODE_ENV === 'development' ? 'http://0.0.0.0:6333' : getBaseURL(),
+  baseURL: process.env.NODE_ENV === 'development' ? 'http://localhost:6333' : getBaseURL(),
   transformRequest: [
     function (data, headers) {
       if (data instanceof FormData) {
@@ -23,7 +23,7 @@ export const axiosInstance = axios.create({
 
 export function setupAxios(axios, { apiKey }) {
   if (process.env.NODE_ENV === 'development') {
-    axios.defaults.baseURL = 'http://0.0.0.0:6333';
+    axios.defaults.baseURL = 'http://localhost:6333';
   } else {
     axios.defaults.baseURL = getBaseURL();
   }

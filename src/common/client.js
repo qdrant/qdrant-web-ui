@@ -86,7 +86,7 @@ export default function qdrantClient({ apiKey }) {
   let url;
   let port = 6333;
   if (process.env.NODE_ENV === 'development') {
-    url = 'http://0.0.0.0:6333';
+    url = 'http://localhost:6333';
   } else {
     url = getBaseURL();
     if (window.location.port) {
