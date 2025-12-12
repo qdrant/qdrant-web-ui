@@ -1,15 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Box, Grid, Typography } from '@mui/material';
+import { Alert, Box, Grid, Typography, Link } from '@mui/material';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { useClient } from '../context/client-context';
 import JwtForm from '../components/JwtSection/JwtForm';
 import * as jose from 'jose';
+import { useSnackbar } from 'notistack';
 import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 
 async function getJwt(apiKey, token, setJwt) {
-  const jwt = await new jose.SignJWT(token).setProtectedHeader({ alg: 'HS256' }).sign(new TextEncoder().encode(apiKey));
-  setJwt(jwt);
+  try {
+    const jwt = await new jose.SignJWT(token)
+      .setProtectedHeader({ alg: 'HS256' })
+      .sign(new TextEncoder().encode(apiKey));
+    setJwt(jwt);
+  } catch (err) {
+    console.error('Error generating JWT:', err);
+    setJwt('');
+  }
 }
 
 function generateToken(globalAccess, manageAccess, expirationDays, configuredCollections, tokenValidatior) {
@@ -47,9 +55,20 @@ function Jwt() {
   const [tokenValidatior, setTokenValidatior] = useState({});
   const [apiKey, setApiKey] = useState('');
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const [jwt, setJwt] = useState('');
 
+  const canUseWebCrypto = window.isSecureContext;
+
   const token = generateToken(globalAccess, manageAccess, expirationDays, configuredCollections, tokenValidatior);
+
+  useEffect(() => {
+    if (!canUseWebCrypto) {
+      enqueueSnackbar('Advanced cryptographic features are not available in this context.', { variant: 'warning' });
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     if (apiKey && token) {
@@ -109,7 +128,22 @@ function Jwt() {
           setTokenValidatior={setTokenValidatior}
         />
 
-        <JwtTokenViewer jwt={jwt} token={token} />
+        {canUseWebCrypto === false ? (
+          <Alert severity="warning">
+            Advanced cryptographic features are not available in this context. Please use a secure context (HTTPS) to
+            enable JWT generation. Alternatively, you can generate the JWT token{' '}
+            <Link
+              href="https://qdrant.tech/documentation/guides/security/#generating-json-web-tokens"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              externally
+            </Link>{' '}
+            using your API key and the desired payload.
+          </Alert>
+        ) : (
+          <JwtTokenViewer jwt={jwt} token={token} />
+        )}
       </Box>
     </CenteredFrame>
   );

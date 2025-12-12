@@ -7,6 +7,11 @@ export const useCopyToClipboard = ({ successMessage = 'Copied to clipboard', dur
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
 
   const copyToClipboard = async (text) => {
+    if (window.isSecureContext === false) {
+      enqueueSnackbar('Clipboard access is not available in insecure contexts.', { variant: 'warning' });
+      return false;
+    }
+
     try {
       await navigator.clipboard.writeText(text);
       enqueueSnackbar(successMessage, successSnackbarOptions);
