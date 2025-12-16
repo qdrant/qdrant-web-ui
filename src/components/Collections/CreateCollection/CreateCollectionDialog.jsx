@@ -94,7 +94,6 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
     );
   };
 
-
   // This function has to return a promise that resolves to a value,
   // as it is used as `onFinish` prop for CreateCollectionForm.
   // otherwise, the form will not be cleared (for example, if an error occurs).

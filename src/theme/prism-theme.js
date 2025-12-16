@@ -29,17 +29,7 @@ export default function createPrismTheme(theme) {
         },
       },
       {
-        types: [
-          'entity',
-          'url',
-          'symbol',
-          'number',
-          'boolean',
-          'variable',
-          'constant',
-          'regex',
-          'inserted',
-        ],
+        types: ['entity', 'url', 'symbol', 'number', 'boolean', 'variable', 'constant', 'regex', 'inserted'],
         style: {
           color: lightGreen[300],
         },
@@ -71,4 +61,3 @@ export default function createPrismTheme(theme) {
     ],
   };
 }
-
