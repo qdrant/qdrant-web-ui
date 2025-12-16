@@ -6,14 +6,18 @@ import { AppBar, Dialog, Toolbar, Typography, IconButton, Box } from '@mui/mater
 import { ArrowLeft } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
-import { createCollection, getCreateCollectionConfiguration, createCollectionParams, createPayloadIndexParams } from './create-collection.js';
+import {
+  createCollection,
+  getCreateCollectionConfiguration,
+  createCollectionParams,
+  createPayloadIndexParams,
+} from './create-collection.js';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { Highlight, Prism } from 'prism-react-renderer';
 import DialogContent from '@mui/material/DialogContent';
 
 const convertToRequest = (outputData) => {
-
   console.log(outputData);
 
   // todo: implement request conversion
@@ -21,15 +25,15 @@ const convertToRequest = (outputData) => {
 
   const params = getCreateCollectionConfiguration(collectionName, outputData);
   const collectionParams = createCollectionParams(params);
-  
-  let result = `PUT /collections/${collectionName} \n` + JSON.stringify(collectionParams, null, 2) + "\n";
+
+  let result = `PUT /collections/${collectionName} \n` + JSON.stringify(collectionParams, null, 2) + '\n';
 
   if (params.payload_indexes) {
-    result += "\n// Payload Indexes";
+    result += '\n// Payload Indexes';
     for (const fieldConfig of params.payload_indexes) {
-      result += `\nPUT /collections/${collectionName}/payload_indexes \n`
+      result += `\nPUT /collections/${collectionName}/payload_indexes \n`;
       const payloadIndexParams = createPayloadIndexParams(fieldConfig);
-      result += JSON.stringify(payloadIndexParams, null, 2) + "\n";
+      result += JSON.stringify(payloadIndexParams, null, 2) + '\n';
     }
   }
 

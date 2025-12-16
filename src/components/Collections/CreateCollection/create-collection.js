@@ -186,7 +186,6 @@ function getVectorParams(denseVectorConfig, isMultitenant) {
 function getSparseVectorParams(sparseVectorConfig) {
   const { precision_tier: precisionTier = PrecisionTier.HIGH, use_idf: useIdf = false } = sparseVectorConfig;
   let datatype = null;
-  
 
   if (precisionTier === PrecisionTier.LOW) {
     datatype = 'uint8';
@@ -253,7 +252,7 @@ export function getCreateCollectionConfiguration(collectionName, configuration) 
 }
 
 export function createCollectionParams(params) {
-  const collectionParams = {}
+  const collectionParams = {};
 
   if (params.vectors_config) {
     collectionParams.vectors = params.vectors_config;
@@ -272,7 +271,7 @@ export function createPayloadIndexParams(params) {
     field_schema: {
       type: params.type,
       ...(params.params || {}),
-    }
+    },
   };
 }
 
