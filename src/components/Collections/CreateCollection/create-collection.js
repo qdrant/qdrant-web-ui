@@ -215,8 +215,12 @@ function getSparseVectorParams(sparseVectorConfig) {
 export function getCreateCollectionConfiguration(collectionName, configuration) {
   const isMultitenant = !!configuration.tenant_field;
 
-  if (configuration.tenant_field && configuration.payload_indexes) {
-    configuration.payload_indexes.push({
+  if (configuration.tenant_field) {
+    if (!configuration.payload_indexes) {
+      configuration.payload_indexes = [];
+    }
+
+    const tenantParams = {
       name: configuration.tenant_field.name,
       type: configuration.tenant_field.type,
       params: {
@@ -224,7 +228,8 @@ export function getCreateCollectionConfiguration(collectionName, configuration) 
         is_tenant: true,
         is_principal: true,
       },
-    });
+    };
+    configuration.payload_indexes.push(tenantParams);
   }
 
   const vectorsConfig = {};
