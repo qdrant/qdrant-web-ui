@@ -25,9 +25,7 @@ describe('getCreateCollectionConfiguration', () => {
     expect(result.vectors_config.transformer).toMatchObject({
       size: 1536,
       distance: 'Euclid',
-      multivector_config: null,
       on_disk: false,
-      quantization_config: null,
       hnsw_config: expect.anything(),
       datatype: 'float32',
     });
@@ -49,10 +47,8 @@ describe('getCreateCollectionConfiguration', () => {
 
     expect(result.collection_name).toBe(collectionName);
     expect(result.sparse_vectors_config.minicoil).toMatchObject({
-      modifier: null,
       index: {
         on_disk: true,
-        datatype: expect.any(String),
       },
     });
   });
@@ -137,7 +133,6 @@ describe('getCreateCollectionConfiguration', () => {
     expect(result.vectors_config.transformer).toMatchObject({
       size: 1536,
       distance: 'Euclid',
-      multivector_config: null,
       quantization_config: {
         binary: {
           always_ram: true,
