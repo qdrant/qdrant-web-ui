@@ -164,19 +164,27 @@ function getVectorParams(denseVectorConfig, isMultitenant) {
     }
   }
 
-  return {
+  const result = {
     size: size,
     distance,
-    multivector_config: multivectorConfig,
     on_disk: !originalInRam,
-    quantization_config: quantizationConfig,
     hnsw_config: hnswConfig,
     datatype,
   };
+
+  if (multivectorConfig) {
+    result.multivector_config = multivectorConfig;
+  }
+
+  if (quantizationConfig) {
+    result.quantization_config = quantizationConfig;
+  }
+
+  return result;
 }
 
 function getSparseVectorParams(sparseVectorConfig) {
-  const { precisionTier = PrecisionTier.HIGH, modifier = null } = sparseVectorConfig;
+  const { precision_tier: precisionTier = PrecisionTier.HIGH, use_idf: useIdf = false } = sparseVectorConfig;
   let datatype = null;
 
   if (precisionTier === PrecisionTier.LOW) {
@@ -184,23 +192,35 @@ function getSparseVectorParams(sparseVectorConfig) {
   } else if (precisionTier === PrecisionTier.MEDIUM) {
     datatype = 'float16';
   } else if (precisionTier === PrecisionTier.HIGH) {
-    datatype = 'float32';
+    datatype = null;
   }
 
-  return {
-    modifier,
+  const result = {
     index: {
       on_disk: true,
-      datatype,
     },
   };
+
+  if (datatype) {
+    result.index.datatype = datatype;
+  }
+
+  if (useIdf) {
+    result.modifier = 'idf';
+  }
+
+  return result;
 }
 
 export function getCreateCollectionConfiguration(collectionName, configuration) {
   const isMultitenant = !!configuration.tenant_field;
 
   if (configuration.tenant_field) {
-    configuration.payload_indexes.push({
+    if (!configuration.payload_indexes) {
+      configuration.payload_indexes = [];
+    }
+
+    const tenantParams = {
       name: configuration.tenant_field.name,
       type: configuration.tenant_field.type,
       params: {
@@ -208,7 +228,8 @@ export function getCreateCollectionConfiguration(collectionName, configuration) 
         is_tenant: true,
         is_principal: true,
       },
-    });
+    };
+    configuration.payload_indexes.push(tenantParams);
   }
 
   const vectorsConfig = {};
@@ -235,6 +256,30 @@ export function getCreateCollectionConfiguration(collectionName, configuration) 
   };
 }
 
+export function createCollectionParams(params) {
+  const collectionParams = {};
+
+  if (params.vectors_config) {
+    collectionParams.vectors = params.vectors_config;
+  }
+
+  if (params.sparse_vectors_config && Object.keys(params.sparse_vectors_config).length > 0) {
+    collectionParams.sparse_vectors = params.sparse_vectors_config;
+  }
+
+  return collectionParams;
+}
+
+export function createPayloadIndexParams(params) {
+  return {
+    field_name: params.name,
+    field_schema: {
+      type: params.type,
+      ...(params.params || {}),
+    },
+  };
+}
+
 export async function createCollection(qdrantClient, configuration, recreate = false) {
   const collectionName = configuration.collection_name;
 
@@ -251,21 +296,14 @@ export async function createCollection(qdrantClient, configuration, recreate = f
 
   const params = getCreateCollectionConfiguration(collectionName, configuration);
 
-  const createParams = {
-    vectors: params.vectors_config,
-    sparse_vectors: params.sparse_vectors_config,
-  };
+  const createParams = createCollectionParams(params);
 
   const collectionCreated = await qdrantClient.createCollection(params.collection_name, createParams);
 
   if (collectionCreated && params.payload_indexes) {
     for (const fieldConfig of params.payload_indexes) {
-      const fieldName = fieldConfig.name;
-      const fieldSchema = {
-        type: fieldConfig.type,
-        ...(fieldConfig.params || {}),
-      };
-      await qdrantClient.createPayloadIndex(collectionName, { field_name: fieldName, field_schema: fieldSchema });
+      const params = createPayloadIndexParams(fieldConfig);
+      await qdrantClient.createPayloadIndex(collectionName, params);
     }
   }
 
