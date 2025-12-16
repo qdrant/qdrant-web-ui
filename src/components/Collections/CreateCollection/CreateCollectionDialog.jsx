@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { CreateCollectionForm } from 'create-collection-form';
@@ -16,11 +15,9 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { Highlight, Prism } from 'prism-react-renderer';
 import DialogContent from '@mui/material/DialogContent';
+import createPrismTheme from '../../../theme/prism-theme';
 
 const convertToRequest = (outputData) => {
-  console.log(outputData);
-
-  // todo: implement request conversion
   const collectionName = outputData?.collection_name || '<name>';
 
   const params = getCreateCollectionConfiguration(collectionName, outputData);
@@ -40,49 +37,6 @@ const convertToRequest = (outputData) => {
   return result;
 };
 
-const renderJsonPreview = (outputData) => {
-  // todo: code should be converted to real request before displaying
-  const request = convertToRequest(outputData);
-  return (
-    <Box>
-      <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>
-        Equivalent Requests
-      </Typography>
-      <Box>
-        <Highlight Prism={Prism} code={request} language="json">
-          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-            <pre
-              className={className}
-              style={{
-                ...style,
-                backgroundColor: 'transparent',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-all',
-                fontSize: '12px',
-                marginTop: '8px',
-              }}
-            >
-              {tokens.map((line, i) => {
-                const lineProps = getLineProps({ line, key: i });
-                const { key: lineKey, ...restLineProps } = lineProps;
-                return (
-                  <div key={lineKey ?? i} {...restLineProps}>
-                    {line.map((token, tIdx) => {
-                      const tokenProps = getTokenProps({ token, key: tIdx });
-                      const { key: tokenKey, ...restTokenProps } = tokenProps;
-                      return <span key={tokenKey ?? tIdx} {...restTokenProps} />;
-                    })}
-                  </div>
-                );
-              })}
-            </pre>
-          )}
-        </Highlight>
-      </Box>
-    </Box>
-  );
-};
-
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
@@ -94,6 +48,52 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
     }
     return window;
   };
+
+  const customPrismTheme = createPrismTheme(theme);
+
+  const renderJsonPreview = (outputData) => {
+    const request = convertToRequest(outputData);
+
+    return (
+      <Box>
+        <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>
+          Equivalent Requests
+        </Typography>
+        <Box>
+          <Highlight Prism={Prism} theme={customPrismTheme} code={request} language="json">
+            {({ className, style, tokens, getLineProps, getTokenProps }) => (
+              <pre
+                className={className}
+                style={{
+                  ...style,
+                  backgroundColor: 'transparent',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                  fontSize: '12px',
+                  marginTop: '8px',
+                }}
+              >
+                {tokens.map((line, i) => {
+                  const lineProps = getLineProps({ line, key: i });
+                  const { key: lineKey, ...restLineProps } = lineProps;
+                  return (
+                    <div key={lineKey ?? i} {...restLineProps}>
+                      {line.map((token, tIdx) => {
+                        const tokenProps = getTokenProps({ token, key: tIdx });
+                        const { key: tokenKey, ...restTokenProps } = tokenProps;
+                        return <span key={tokenKey ?? tIdx} {...restTokenProps} />;
+                      })}
+                    </div>
+                  );
+                })}
+              </pre>
+            )}
+          </Highlight>
+        </Box>
+      </Box>
+    );
+  };
+
 
   // This function has to return a promise that resolves to a value,
   // as it is used as `onFinish` prop for CreateCollectionForm.
