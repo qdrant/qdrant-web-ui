@@ -1,6 +1,6 @@
 import { parseTime } from '../Tree/helpers';
 
-export const createChartConfig = (timelineData, theme, onSelectRef) => {
+export const createChartConfig = (timelineData, theme, onSelectRef, range) => {
   if (!timelineData || timelineData.length === 0) return null;
 
   const labels = timelineData.map(() => '');
@@ -30,6 +30,7 @@ export const createChartConfig = (timelineData, theme, onSelectRef) => {
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
+    animation: false,
     onClick: (event, elements) => {
       if (!elements || elements.length === 0) {
         onSelectRef.current && onSelectRef.current(null);
@@ -44,7 +45,8 @@ export const createChartConfig = (timelineData, theme, onSelectRef) => {
     },
     scales: {
       x: {
-        min: timelineData.length > 0 ? parseTime(timelineData[0].started_at) : undefined,
+        min: range ? range[0] : undefined,
+        max: range ? range[1] : undefined,
         grid: {
           color: theme.palette.divider,
         },
