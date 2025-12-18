@@ -43,6 +43,7 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
           data: floatingBars,
           backgroundColor: [], // will be filled/updated later
           borderRadius: 4,
+          borderSkipped: false, // Ensure all corners are rounded
           barPercentage: 0.5,
         },
       ],

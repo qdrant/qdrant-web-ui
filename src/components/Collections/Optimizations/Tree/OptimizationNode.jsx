@@ -160,9 +160,9 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
       {hasChildren && (
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box>
-            {node.children.map((child, index) => (
+            {node.children.map((child) => (
               <OptimizationNode
-                key={`${child.name}-${child.started_at}-${index}`}
+                key={`${child.name}-${child.started_at}`}
                 node={child}
                 level={level + 1}
                 totalDuration={totalDuration}

@@ -1,20 +1,24 @@
 import { parseTime } from '../Tree/helpers';
 
-// This file should convert raw API output of process optimizations into a timeline format
-// it should:
-// - keep only top level elements with started_at and finished_at
-// - remove all optimizations shorter than 1 second
-// - remove all optimizations with no children
-// - concider finished_at of ongoing operations as a time of API response
-
+/**
+ * Preprocess the data to be used in the timeline:
+ * - keep only top level elements with started_at and finished_at
+ * - remove all optimizations shorter than 1 second
+ * - remove all optimizations with no children
+ * - consider finished_at of ongoing operations as a time of API response
+ * @param {Object} data - The data to preprocess
+ * @param {number} requestTime - The time of the request
+ * @return {Array} The preprocessed data
+ */
 export const preprocess = (data, requestTime) => {
   if (!data) return [];
 
   const rawList = [...(data.ongoing || []), ...(data.completed || [])];
+  const MIN_DURATION = 1000;
 
   return rawList
     .map((opt) => {
-      // concider finished_at of ongoing operations as a time of API response
+      // consider finished_at of ongoing operations as a time of API response
       const finishedAt = opt.finished_at || requestTime;
       // calculate duration if missing (in seconds)
       let durationSec = opt.duration_sec;
@@ -31,7 +35,7 @@ export const preprocess = (data, requestTime) => {
 
       // remove all optimizations shorter than 1 second
       const duration = parseTime(opt.finished_at) - parseTime(opt.started_at);
-      if (duration < 1000) return false;
+      if (duration < MIN_DURATION) return false;
 
       // remove all optimizations with no children
       if (!opt.children || opt.children.length === 0) return false;

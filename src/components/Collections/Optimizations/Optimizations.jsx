@@ -2,7 +2,7 @@ import React, { memo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Box } from '@mui/material';
 import { MOCK_DATA } from './Tree/constants';
-import { MOCK_DATA as timelineData, MOCK_REQUEST_TIME as timelineRequestTime } from './Timeline/mock';
+import { MOCK_DATA as timelineData, MOCK_REQUEST_TIME as timelineRequestTime } from './Timeline/mock2';
 import Timeline from './Timeline/Timeline';
 import OptimizationsTree from './Tree/OptimizationsTree';
 

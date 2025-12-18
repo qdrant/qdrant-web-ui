@@ -29,6 +29,7 @@ export const enrichWithDuration = (nodes, maxTime) => {
     let duration = 0;
     let isExplicitDuration = false;
 
+    // todo: check if this is correct
     // Logic for leaf/task progress based duration estimation
     // If not finished, and we have done/total, we can estimate "progress duration"
     // However, the prompt asks to "show done/total".
