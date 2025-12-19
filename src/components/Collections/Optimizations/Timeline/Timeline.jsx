@@ -93,8 +93,12 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
   }, [selectedItem, filteredData, theme]);
 
   return (
-    <>
-      <Card elevation={0} {...other}>
+    <Box>
+      <Card elevation={0}
+            // sx={{
+            //   borderRadius: '0.5rem 0.5rem 0 0',
+            // }}
+            {...other}>
         <CardHeader
           title={'Timeline'}
           variant="heading"
