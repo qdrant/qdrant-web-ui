@@ -27,4 +27,3 @@ export const calculateActivityDensity = (data, minTime, maxTime, numPoints = 100
 
   return points;
 };
-

@@ -50,7 +50,12 @@ const OptimizationsTree = ({ data, ...other }) => {
         >
           {enrichedNodes.length > 0 ? (
             enrichedNodes.map((node) => (
-              <OptimizationNode key={`${node.name}-${node.started_at}`} node={node} totalDuration={totalDuration} maxTime={maxTime} />
+              <OptimizationNode
+                key={`${node.name}-${node.started_at}`}
+                node={node}
+                totalDuration={totalDuration}
+                maxTime={maxTime}
+              />
             ))
           ) : !data ? (
             <Typography variant="body2" color="text.secondary" align="center">
