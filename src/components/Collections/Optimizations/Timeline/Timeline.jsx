@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardHeader, CardContent, useTheme } from '@mui/material';
+import { Box, Card, CardHeader, CardContent, useTheme } from '@mui/material';
 import Chart from 'chart.js/auto';
 import { preprocess } from './preprocess';
 import { createChartConfig, calculateBackgroundColors } from './helpers';
@@ -109,9 +109,9 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
         <CardContent sx={{ pt: 0, height: 400 }}>
           {chartBaseConfig ? <canvas ref={canvasRef} /> : 'No data available'}
         </CardContent>
+        <TimelineNavigator data={timelineData} range={range} onRangeChange={setRange} />
       </Card>
-      <TimelineNavigator data={timelineData} range={range} onRangeChange={setRange} />
-    </>
+    </Box>
   );
 };
 

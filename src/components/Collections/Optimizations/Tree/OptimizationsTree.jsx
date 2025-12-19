@@ -18,7 +18,8 @@ const OptimizationsTree = ({ data, ...other }) => {
     const end = Math.max(max, requestTime);
 
     // Add a small buffer to max time if it equals min (e.g. single start event)
-    const totalDur = Math.max(end - min, 1000); // Ensure at least 1s duration if instant
+    const MIN_DURATION = 1000;
+    const totalDur = Math.max(end - min, MIN_DURATION); // Ensure at least 1s duration if instant
 
     const enriched = enrichWithDuration(data.result.ongoing, end);
 
@@ -48,8 +49,8 @@ const OptimizationsTree = ({ data, ...other }) => {
           }}
         >
           {enrichedNodes.length > 0 ? (
-            enrichedNodes.map((node, index) => (
-              <OptimizationNode key={index} node={node} totalDuration={totalDuration} maxTime={maxTime} />
+            enrichedNodes.map((node) => (
+              <OptimizationNode key={`${node.name}-${node.started_at}`} node={node} totalDuration={totalDuration} maxTime={maxTime} />
             ))
           ) : !data ? (
             <Typography variant="body2" color="text.secondary" align="center">
