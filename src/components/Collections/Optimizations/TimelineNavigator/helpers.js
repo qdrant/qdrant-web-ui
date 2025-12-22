@@ -13,16 +13,20 @@ export const calculateActivityDensity = (data, minTime, maxTime, numPoints = 100
   const points = [];
 
   for (let i = 0; i <= numPoints; i++) {
-    const time = minTime + i * step;
+    const rangeStart = minTime + i * step;
+    const rangeEnd = rangeStart + step;
     let count = 0;
     for (const item of data) {
       const start = parseTime(item.started_at);
       const end = parseTime(item.finished_at);
-      if (time >= start && time <= end) {
-        count++;
-      }
+      // Calculate overlap between [rangeStart, rangeEnd] and [start, end]
+      const overlapStart = Math.max(rangeStart, start);
+      const overlapEnd = Math.min(rangeEnd, end);
+      const overlapAmount = Math.max(0, overlapEnd - overlapStart);
+      // Weight by fraction of overlap within the sample range
+      count += overlapAmount / step;
     }
-    points.push({ x: time, y: count });
+    points.push({ x: rangeStart, y: count });
   }
 
   return points;

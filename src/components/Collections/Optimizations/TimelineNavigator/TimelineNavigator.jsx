@@ -13,14 +13,20 @@ const TimelineNavigator = ({ data, range, onRangeChange }) => {
 
   // Calculate min from data, max is current time
   const { minTime, maxTime } = useMemo(() => {
+    let min;
+    let max;
     if (!data || data.length === 0) {
-      return { minTime: 0, maxTime: Date.now() };
+      min = 0;
+      max = Date.now();
+    } else {
+      const startTimes = data.map((item) => parseTime(item.started_at));
+      min = Math.min(...startTimes);
+      max = Date.now();
+      const range = max - min;
+      min -= range * 0.02;
+      max += range * 0.02;
     }
-    const startTimes = data.map((item) => parseTime(item.started_at));
-    return {
-      minTime: Math.min(...startTimes),
-      maxTime: Date.now(),
-    };
+    return { minTime: min, maxTime: max };
   }, [data]);
 
   // Create area chart config showing activity density
