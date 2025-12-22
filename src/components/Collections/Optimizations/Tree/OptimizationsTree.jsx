@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import { Card, CardHeader, CardContent, Box, Typography } from '@mui/material';
 import { CopyButton } from '../../../Common/CopyButton';
 import OptimizationNode from './OptimizationNode';
-import { MOCK_REQUEST_TIME } from './constants';
-import { parseTime, getTreeTimeRange, enrichWithDuration } from './helpers';
+import { getTreeTimeRange, enrichWithDuration } from './helpers';
 
-const OptimizationsTree = ({ data, ...other }) => {
+const OptimizationsTree = ({ data, requestTime, ...other }) => {
   const { enrichedNodes, totalDuration, maxTime } = useMemo(() => {
     if (!data || !data.result || !data.result.ongoing) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
     const { min, max } = getTreeTimeRange(data.result.ongoing);
@@ -14,7 +13,6 @@ const OptimizationsTree = ({ data, ...other }) => {
     if (min === Infinity || max === -Infinity) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
 
     // Use mock request time as the global "current time" end for ongoing tasks
-    const requestTime = parseTime(MOCK_REQUEST_TIME);
     const end = Math.max(max, requestTime);
 
     // Add a small buffer to max time if it equals min (e.g. single start event)
@@ -62,7 +60,7 @@ const OptimizationsTree = ({ data, ...other }) => {
               Loading optimizations...
             </Typography>
           ) : (
-            <Typography variant="body2" color="text.secondary" align="center">
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ pt: 2 }}>
               No ongoing optimizations
             </Typography>
           )}
@@ -74,6 +72,7 @@ const OptimizationsTree = ({ data, ...other }) => {
 
 OptimizationsTree.propTypes = {
   data: PropTypes.object,
+  requestTime: PropTypes.number,
 };
 
 export default OptimizationsTree;

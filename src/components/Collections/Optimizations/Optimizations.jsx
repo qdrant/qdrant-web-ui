@@ -1,21 +1,26 @@
 import React, { memo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { axiosInstance as axios } from '../../../common/axios';
 import { Box } from '@mui/material';
-import { MOCK_DATA } from './Tree/constants';
-import { MOCK_DATA as timelineData, MOCK_REQUEST_TIME as timelineRequestTime } from './Timeline/mock2';
 import Timeline from './Timeline/Timeline';
 import OptimizationsTree from './Tree/OptimizationsTree';
 
 const Optimizations = ({ collectionName }) => {
   const [data, setData] = useState(null);
   const [selectedOptimization, setSelectedOptimization] = useState(null);
+  const [requestTime, setRequestTime] = useState(null);
 
   useEffect(() => {
-    // Mock API call
-    const timer = setTimeout(() => {
-      setData(MOCK_DATA);
-    }, 500);
-    return () => clearTimeout(timer);
+    // API call
+    axios
+      .get(`/collections/${collectionName}/optimizations?completed=true`)
+      .then((response) => {
+        setData(response.data);
+        setRequestTime(Date.now());
+      })
+      .catch((error) => {
+        console.error('Error fetching optimizations:', error);
+      });
   }, [collectionName]);
 
   const handleOptimizationSelect = (optimization) => {
@@ -29,12 +34,12 @@ const Optimizations = ({ collectionName }) => {
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <Timeline
-        data={timelineData}
-        requestTime={timelineRequestTime}
+        data={data?.result}
+        requestTime={requestTime}
         onSelect={handleOptimizationSelect}
         selectedItem={selectedOptimization?.result?.ongoing?.[0]}
       />
-      <OptimizationsTree data={selectedOptimization || data} />
+      <OptimizationsTree data={selectedOptimization || data} requestTime={requestTime} />
     </Box>
   );
 };

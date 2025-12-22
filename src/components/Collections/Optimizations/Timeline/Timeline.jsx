@@ -118,7 +118,7 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
 
 Timeline.propTypes = {
   data: PropTypes.object,
-  requestTime: PropTypes.string,
+  requestTime: PropTypes.number,
   onSelect: PropTypes.func,
   selectedItem: PropTypes.object,
 };

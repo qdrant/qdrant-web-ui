@@ -180,8 +180,8 @@ OptimizationNode.propTypes = {
   node: PropTypes.shape({
     name: PropTypes.string,
     children: PropTypes.array,
-    finished_at: PropTypes.string,
-    started_at: PropTypes.string,
+    finished_at: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    started_at: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     duration_sec: PropTypes.number,
     done: PropTypes.number,
     total: PropTypes.number,
