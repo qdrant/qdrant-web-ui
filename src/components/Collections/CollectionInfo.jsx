@@ -64,7 +64,7 @@ export const CollectionInfo = ({ collectionName }) => {
   };
 
   return (
-    <Box pt={2}>
+    <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases collectionName={collectionName} />
       <Card elevation={0}>
         <CardHeader
