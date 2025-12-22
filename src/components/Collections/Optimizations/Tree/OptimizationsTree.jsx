@@ -43,7 +43,8 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
           sx={{
             overflow: 'auto',
             borderRadius: 1,
-            p: 1,
+            pt: 2,
+            pr: 0.5,
           }}
         >
           {enrichedNodes.length > 0 ? (
@@ -60,7 +61,7 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
               Loading optimizations...
             </Typography>
           ) : (
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ pt: 2 }}>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ pt: 1 }}>
               No ongoing optimizations
             </Typography>
           )}

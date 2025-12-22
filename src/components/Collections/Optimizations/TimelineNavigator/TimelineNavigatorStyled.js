@@ -2,12 +2,13 @@ import { Box, Slider } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 
 export const NAVIGATOR_HEIGHT = 60;
+const BORDER_RADIUS = '0 0 0.5rem 0.5rem';
 
 export const NavigatorContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   height: NAVIGATOR_HEIGHT,
   background: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
+  borderRadius: BORDER_RADIUS,
 }));
 
 export const ChartContainer = styled(Box)({
@@ -16,6 +17,8 @@ export const ChartContainer = styled(Box)({
   left: 0,
   right: 0,
   bottom: 0,
+  borderRadius: BORDER_RADIUS,
+  overflow: 'hidden',
 });
 
 export const SliderWrapper = styled(Box)({
@@ -27,11 +30,13 @@ export const SliderWrapper = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   padding: '0',
+  borderRadius: BORDER_RADIUS,
 });
 
 export const RangeSlider = styled(Slider)(({ theme }) => ({
   height: '100%',
   padding: 0,
+
   '& .MuiSlider-thumb': {
     width: 8,
     height: NAVIGATOR_HEIGHT - 24,
@@ -49,9 +54,9 @@ export const RangeSlider = styled(Slider)(({ theme }) => ({
   },
   '& .MuiSlider-track': {
     borderRadius: 0,
-    border: `1px solid ${theme.palette.background.paper}`,
+    border: 0,
     inset: 0,
-    backgroundColor: `${alpha(theme.palette.primary.main, 0.3)}`,
+    backgroundColor: `${alpha(theme.palette.primary.main, 0.2)}`,
     maskImage: `linear-gradient(to right, 
       ${alpha(theme.palette.primary.main, 0.3)} 0%, ${alpha(theme.palette.primary.main, 0.3)} 100%, 
       transparent 100%, transparent 100%, 
