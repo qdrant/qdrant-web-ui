@@ -1,8 +1,6 @@
 import { parseTime } from '../Tree/helpers';
 
-export const createChartConfig = (timelineData, theme, onSelectRef, range) => {
-  if (!timelineData || timelineData.length === 0) return null;
-
+export const createChartConfig = (timelineData = [], theme, onSelectRef, range) => {
   const labels = timelineData.map(() => '');
 
   // Floating bars: [start, end]
