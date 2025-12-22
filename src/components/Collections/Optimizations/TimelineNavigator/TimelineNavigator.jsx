@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material';
 import Chart from 'chart.js/auto';
 import { parseTime } from '../Tree/helpers';
 import { calculateActivityDensity } from './helpers';
-import { NavigatorContainer, ChartContainer, SliderOverlay, RangeSlider } from './TimelineNavigatorStyled';
+import { NavigatorContainer, ChartContainer, SliderWrapper, RangeSlider } from './TimelineNavigatorStyled';
 
 const TimelineNavigator = ({ data, range, onRangeChange }) => {
   const theme = useTheme();
@@ -102,7 +102,7 @@ const TimelineNavigator = ({ data, range, onRangeChange }) => {
       <ChartContainer>
         <canvas ref={canvasRef} />
       </ChartContainer>
-      <SliderOverlay>
+      <SliderWrapper>
         <RangeSlider
           value={range || [minTime, maxTime]}
           onChange={handleSliderChange}
@@ -110,7 +110,7 @@ const TimelineNavigator = ({ data, range, onRangeChange }) => {
           max={maxTime}
           disableSwap
         />
-      </SliderOverlay>
+      </SliderWrapper>
     </NavigatorContainer>
   );
 };

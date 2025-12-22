@@ -1,16 +1,13 @@
 import { Box, Slider } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 
 export const NAVIGATOR_HEIGHT = 60;
 
 export const NavigatorContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   height: NAVIGATOR_HEIGHT,
-  // marginTop: theme.spacing(2),
   background: theme.palette.background.paper,
   borderRadius: theme.shape.borderRadius,
-  // todo: fix this (now used for overlay but cuts the slider thumb)
-  overflow: 'hidden',
 }));
 
 export const ChartContainer = styled(Box)({
@@ -21,8 +18,7 @@ export const ChartContainer = styled(Box)({
   bottom: 0,
 });
 
-// todo: fix this
-export const SliderOverlay = styled(Box)({
+export const SliderWrapper = styled(Box)({
   position: 'absolute',
   top: 0,
   left: 0,
@@ -34,6 +30,8 @@ export const SliderOverlay = styled(Box)({
 });
 
 export const RangeSlider = styled(Slider)(({ theme }) => ({
+  height: '100%',
+  padding: 0,
   '& .MuiSlider-thumb': {
     width: 8,
     height: NAVIGATOR_HEIGHT - 24,
@@ -50,11 +48,15 @@ export const RangeSlider = styled(Slider)(({ theme }) => ({
     },
   },
   '& .MuiSlider-track': {
-    height: NAVIGATOR_HEIGHT,
     borderRadius: 0,
-    background: 'transparent',
     border: `1px solid ${theme.palette.background.paper}`,
-    boxShadow: `0 0 0 9999px rgba(0, 0, 0, 0.5)`,
+    inset: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    maskImage: `linear-gradient(to right, 
+      ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%, 
+      transparent 100%, transparent 100%, 
+      ${alpha(theme.palette.background.paper, 0.5)} 100%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+    transform: 'translateY(0)',
   },
   '& .MuiSlider-rail': {
     opacity: 0,
