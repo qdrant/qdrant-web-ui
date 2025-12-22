@@ -6,6 +6,7 @@ import { preprocess } from './preprocess';
 import { createChartConfig, calculateBackgroundColors } from './helpers';
 import TimelineNavigator from '../TimelineNavigator/TimelineNavigator';
 import { parseTime } from '../Tree/helpers';
+import { calculateTimeRange } from '../TimelineNavigator/helpers';
 
 const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
   const theme = useTheme();
@@ -17,15 +18,12 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
     return preprocess(data, requestTime);
   }, [data, requestTime]);
 
-  // Set initial range to the last 24 hours
+  // Set initial range to the full available time range
   useEffect(() => {
     if (!timelineData || timelineData.length === 0) return;
 
-    const now = Date.now();
-    const oneDayAgo = now - 24 * 60 * 60 * 1000;
-    const minTime = Math.min(...timelineData.map((item) => parseTime(item.started_at)));
-
-    setRange([Math.max(minTime, oneDayAgo), now]);
+    const { minTime, maxTime } = calculateTimeRange(timelineData);
+    setRange([minTime, maxTime]);
   }, [timelineData]);
 
   // Filter data based on selected range
@@ -41,14 +39,11 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
   }, [timelineData, range]);
 
   // Use a ref for onSelect so we don't need to rebuild the chart just for callback changes
-  // though chart.js onClick option usually requires a stable reference or update
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
 
-  // Prepare base chart config (data structure, labels, x-axis ranges)
-  // This depends only on the data and range, not selection
   const chartBaseConfig = useMemo(() => {
     return createChartConfig(filteredData, theme, onSelectRef, range);
   }, [filteredData, theme, range]);

@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material';
 import Chart from 'chart.js/auto';
-import { parseTime } from '../Tree/helpers';
-import { calculateActivityDensity } from './helpers';
+import { calculateActivityDensity, calculateTimeRange } from './helpers';
 import { NavigatorContainer, ChartContainer, SliderWrapper, RangeSlider } from './TimelineNavigatorStyled';
 
 const TimelineNavigator = ({ data, range, onRangeChange }) => {
@@ -13,20 +12,10 @@ const TimelineNavigator = ({ data, range, onRangeChange }) => {
 
   // Calculate min from data, max is current time
   const { minTime, maxTime } = useMemo(() => {
-    let min;
-    let max;
     if (!data || data.length === 0) {
-      min = 0;
-      max = Date.now();
-    } else {
-      const startTimes = data.map((item) => parseTime(item.started_at));
-      min = Math.min(...startTimes);
-      max = Date.now();
-      const range = max - min;
-      min -= range * 0.02;
-      max += range * 0.02;
+      return { minTime: 0, maxTime: Date.now() };
     }
-    return { minTime: min, maxTime: max };
+    return calculateTimeRange(data);
   }, [data]);
 
   // Create area chart config showing activity density
