@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import * as druid from '@saehrimnir/druidjs';
+import { createUMAP } from 'embedding-atlas';
 import get from 'lodash/get';
 
 const MESSAGE_INTERVAL = 200;
@@ -21,7 +22,7 @@ function getVectorType(vector) {
   return 'unknown';
 }
 
-self.onmessage = function (e) {
+self.onmessage = async function (e) {
   let now = new Date().getTime();
 
   const params = e?.data?.params || {};
@@ -90,6 +91,45 @@ self.onmessage = function (e) {
       const transformedData = D.transform();
 
       self.postMessage({ result: getDataset(transformedData), error: null });
+    } else if (algorithm === 'UMAP') {
+      // For detailed implementation see:
+      // https://apple.github.io/embedding-atlas/algorithms.html#umap
+      const count = points.length;
+      const inputDim = data[0].length; // assume all vectors have the same dimension
+      const outputDim = 2;
+
+      const flatData = new Float32Array(count * inputDim);
+      for (let i = 0; i < count; i++) {
+        flatData.set(new Float32Array(data[i]), i * inputDim);
+      }
+
+      const umap = await createUMAP(count, inputDim, outputDim, flatData, {
+        metric: 'cosine', // do we need to make it configurable?
+      });
+
+      for (let i = 0; i < 500; i++) {
+        umap.run(i);
+        if (Date.now() - now > MESSAGE_INTERVAL) {
+          now = Date.now();
+          const reducedPoints = [];
+          // get embedding once before the loop
+          const embedding = umap.embedding;
+          for (let j = 0; j < count; j++) {
+            reducedPoints.push([embedding[j * outputDim], embedding[j * outputDim + 1]]);
+          }
+          self.postMessage({ result: getDataset(reducedPoints), error: null });
+        }
+      }
+
+      // final embedding
+      const reducedPoints = [];
+      const embedding = umap.embedding;
+      for (let j = 0; j < count; j++) {
+        reducedPoints.push([embedding[j * outputDim], embedding[j * outputDim + 1]]);
+      }
+
+      self.postMessage({ result: getDataset(reducedPoints), error: null });
+      umap.destroy();
     } else {
       const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
       const next = D.generator(); // default = 500 iterations
