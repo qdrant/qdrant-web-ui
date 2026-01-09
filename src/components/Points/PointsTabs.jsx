@@ -150,7 +150,12 @@ const PointsTabs = ({ collectionName, client }) => {
       {points && !errorMessage && (
         <>
           <Grid size={12}>
-            <PointsFilter onConditionChange={onConditionChange} conditions={conditions} payloadSchema={payloadSchema} />
+            <PointsFilter
+              onConditionChange={onConditionChange}
+              conditions={conditions}
+              payloadSchema={payloadSchema}
+              points={points}
+            />
           </Grid>
           {points.points?.map((point) => (
             <Grid key={point.id} size={12}>
