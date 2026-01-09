@@ -61,12 +61,12 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
               return timeString;
             }
 
-            const [minTime, maxTime] = range;
-            const rangeDuration = maxTime - minTime;
+            const [minTime] = range;
+            const now = Date.now();
             const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
 
-            // Check if range is less than a day
-            const isLessThanDay = rangeDuration < oneDay;
+            // Check if the earliest time of range is less than a day from now
+            const isLessThanDay = (now - minTime) < oneDay;
 
             // Show only time if range is less than a day
             if (isLessThanDay) {
