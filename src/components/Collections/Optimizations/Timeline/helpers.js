@@ -143,10 +143,23 @@ export const calculateBackgroundColors = (timelineData, selectedItem, theme) => 
   return timelineData.map((item) => {
     const isSelected =
       selectedItem && item.started_at === selectedItem.started_at && item.finished_at === selectedItem.finished_at;
+    const isOngoing = item.isOngoing === true;
 
     if (isSelected) {
+      // Selected ongoing optimizations use darker warning color (darker yellow)
+      if (isOngoing) {
+        return theme.palette.warning.dark;
+      }
+      // Selected completed optimizations use darker primary color
       return theme.palette.primary.dark;
     }
+    
+    // Use warning color for ongoing optimizations to make them stand out
+    if (isOngoing) {
+      return theme.palette.warning.main;
+    }
+    
+    // Completed optimizations use the standard primary color
     return theme.palette.primary.main;
   });
 };

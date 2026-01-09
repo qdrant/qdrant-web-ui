@@ -12,7 +12,10 @@ import { parseTime } from '../Tree/helpers';
 export const preprocess = (data, requestTime) => {
   if (!data) return [];
 
-  const rawList = [...(data.ongoing || []), ...(data.completed || [])];
+  // Mark ongoing optimizations and combine with completed ones
+  const ongoing = (data.ongoing || []).map((opt) => ({ ...opt, isOngoing: true }));
+  const completed = (data.completed || []).map((opt) => ({ ...opt, isOngoing: false }));
+  const rawList = [...ongoing, ...completed];
 
   return rawList
     .map((opt) => {
@@ -25,6 +28,7 @@ export const preprocess = (data, requestTime) => {
         // duration_sec in API is floating point seconds
         durationSec = ms / 1000;
       }
+      // Preserve ongoing status for visual distinction
       return { ...opt, finished_at: finishedAt, duration_sec: durationSec };
     })
     .filter((opt) => {
