@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography, LinearProgress, Collapse, IconButton } from '@mui/material';
+import { Box, Typography, LinearProgress, Collapse, IconButton, Tooltip } from '@mui/material';
 import { useTheme, alpha, keyframes } from '@mui/material/styles';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import yellow from '../../../../theme/colors/yellow';
@@ -38,14 +38,13 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
     fillPercent = (node.done / node.total) * 100;
   }
 
-  // Progress percentage text
+  // Progress percentage text - always show duration when available
   let progressText = '';
 
-  // Prioritize showing done/total if available and not finished
   if (!node.started_at) {
     progressText = 'pending';
   } else if (duration > 0) {
-    // Show duration for everything else (even if not finished, but started)
+    // Show duration for all tasks
     if (duration < 1000) {
       progressText = `${Math.round(duration)}ms`;
     } else if (duration < 60000) {
@@ -54,6 +53,10 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
       progressText = `${(duration / 60000).toFixed(2)}m`;
     }
   }
+
+  // Check if we have progress info (done/total) to display
+  const hasProgressInfo = !isFinished && node.total > 0 && node.done !== undefined;
+  const progressInfo = hasProgressInfo ? `${node.done}/${node.total}` : null;
 
   const handleToggle = () => {
     setOpen(!open);
@@ -83,26 +86,42 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
               </IconButton>
             )}
           </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              ml: 1,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              fontFamily: 'Menlo, monospace',
-              fontSize: '0.75rem',
-            }}
-          >
-            {node.name ||
-              (level === 0 ? (
-                'Optimizations'
-              ) : (
-                <Typography component="span" variant="body2" fontStyle="italic">
-                  default
-                </Typography>
-              ))}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                ml: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontFamily: 'Menlo, monospace',
+                fontSize: '0.75rem',
+              }}
+            >
+              {node.name ||
+                (level === 0 ? (
+                  'Optimizations'
+                ) : (
+                  <Typography component="span" variant="body2" fontStyle="italic">
+                    default
+                  </Typography>
+                ))}
+            </Typography>
+            {progressInfo && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontFamily: 'Menlo, monospace',
+                  fontSize: '0.7rem',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ({progressInfo})
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         {(duration > 0 || progressText) && (!hasChildren || !open) && (
@@ -126,25 +145,35 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
                 }}
               >
                 {progressText !== 'pending' && (
-                  <LinearProgress
-                    variant="determinate"
-                    value={fillPercent} // Fill based on done/total or 100%
-                    sx={{
-                      width: `${widthPercent}%`,
-                      height: 12,
-                      borderRadius: 2,
-                      bgcolor: alpha(barColor, 0.2), // Track is lighter version of bar color
-                      // Use a keyframe animation for the container width on mount
-                      animation: `${growWidth} 0.5s ease-out`,
-                      // Remove transition on width to prevent jank on re-renders,
-                      // or use it very carefully. Here, we prefer keyframe for initial render.
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: barColor,
+                  <Tooltip
+                    title={
+                      progressInfo
+                        ? `Progress: ${progressInfo}${progressText ? ` | Duration: ${progressText}` : ''}`
+                        : progressText
+                        ? `Duration: ${progressText}`
+                        : ''
+                    }
+                  >
+                    <LinearProgress
+                      variant="determinate"
+                      value={fillPercent} // Fill based on done/total or 100%
+                      sx={{
+                        width: `${widthPercent}%`,
+                        height: 12,
                         borderRadius: 2,
-                        transition: 'transform 0.3s linear', // Smoother, faster transition for fill updates
-                      },
-                    }}
-                  />
+                        bgcolor: alpha(barColor, 0.2), // Track is lighter version of bar color
+                        // Use a keyframe animation for the container width on mount
+                        animation: `${growWidth} 0.5s ease-out`,
+                        // Remove transition on width to prevent jank on re-renders,
+                        // or use it very carefully. Here, we prefer keyframe for initial render.
+                        '& .MuiLinearProgress-bar': {
+                          backgroundColor: barColor,
+                          borderRadius: 2,
+                          transition: 'transform 0.3s linear', // Smoother, faster transition for fill updates
+                        },
+                      }}
+                    />
+                  </Tooltip>
                 )}
               </Box>
             </Box>
