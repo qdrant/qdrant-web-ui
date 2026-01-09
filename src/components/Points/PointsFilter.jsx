@@ -38,6 +38,23 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const uniqConditions = (list) =>
     list.filter((item, index) => list.findIndex((candidate) => isSameCondition(candidate, item)) === index);
 
+  const parseSimilarInput = (rawInput) => {
+    const trimmedInput = (rawInput || '').trim();
+    if (!trimmedInput) {
+      return null;
+    }
+
+    const idMatch = trimmedInput.match(/^id\s*:\s*(.+)$/i);
+    const valuePart = (idMatch ? idMatch[1] : trimmedInput).trim();
+    if (!valuePart) {
+      return null;
+    }
+
+    // try to coerce numeric ids while preserving strings with non-numeric chars
+    const numericLike = valuePart.match(/^-?\d+(\.\d+)?$/) ? Number(valuePart) : valuePart;
+    return numericLike;
+  };
+
   const normalizeValueBySchema = (valueString, key) => {
     const schemaEntry = payloadSchema?.[key];
     if (!schemaEntry) {
@@ -97,14 +114,14 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   };
 
   const addSimilar = () => {
-    const trimmed = similarValue.trim();
-    if (!trimmed) {
+    const parsed = parseSimilarInput(similarValue);
+    if (parsed === null || parsed === undefined) {
       return;
     }
     const next = uniqConditions([
       ...similarConditions,
       ...payloadConditions,
-      { key: 'id', type: 'id', value: trimmed },
+      { key: 'id', type: 'id', value: parsed },
     ]);
     onConditionChange(next);
     setSimilarValue('');
