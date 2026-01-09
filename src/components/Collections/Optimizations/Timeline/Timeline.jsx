@@ -1,6 +1,8 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardHeader, CardContent, useTheme } from '@mui/material';
+import { Box, Card, CardHeader, CardContent, useTheme, IconButton, Tooltip } from '@mui/material';
+import { keyframes } from '@mui/material/styles';
+import { RefreshCw } from 'lucide-react';
 import Chart from 'chart.js/auto';
 import { preprocess } from './preprocess';
 import { createChartConfig, calculateBackgroundColors } from './helpers';
@@ -8,7 +10,16 @@ import TimelineNavigator from '../TimelineNavigator/TimelineNavigator';
 import { parseTime } from '../Tree/helpers';
 import { calculateTimeRange } from '../TimelineNavigator/helpers';
 
-const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Timeline = ({ data, requestTime, onSelect, selectedItem, onRefresh, isRefreshing, ...other }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -99,6 +110,27 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, ...other }) => {
         <CardHeader
           title={'Timeline'}
           variant="heading"
+          action={
+            onRefresh && (
+              <Tooltip title="Refresh data">
+                <IconButton
+                  onClick={onRefresh}
+                  disabled={isRefreshing}
+                  aria-label="Refresh optimizations data"
+                  sx={{
+                    color: 'text.primary',
+                  }}
+                >
+                  <RefreshCw
+                    size="1.25rem"
+                    style={{
+                      animation: isRefreshing ? `${spin} 1s linear infinite` : 'none',
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            )
+          }
           slotProps={{
             title: {
               sx: {
@@ -121,6 +153,8 @@ Timeline.propTypes = {
   requestTime: PropTypes.number,
   onSelect: PropTypes.func,
   selectedItem: PropTypes.object,
+  onRefresh: PropTypes.func,
+  isRefreshing: PropTypes.bool,
 };
 
 export default Timeline;
