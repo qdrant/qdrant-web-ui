@@ -3,10 +3,33 @@ import { parseTime } from '../Tree/helpers';
 export const createChartConfig = (timelineData = [], theme, onSelectRef, range) => {
   const labels = timelineData.map(() => '');
 
+  // Calculate time range for minimum bar width calculation
+  const timeRange = range
+    ? range[1] - range[0]
+    : timelineData.length > 0
+    ? Math.max(...timelineData.map((item) => parseTime(item.finished_at))) -
+      Math.min(...timelineData.map((item) => parseTime(item.started_at)))
+    : 0;
+
+  // Calculate minimum bar width: at least 0.1% of the time range, or 10ms, whichever is larger
+  // This ensures bars are always visible even when extremely short
+  const minBarWidth = Math.max(timeRange * 0.001, 10); // 0.1% of range or 10ms minimum
+
   // Floating bars: [start, end]
+  // Extend bars that are shorter than minimum width to ensure visibility
   const floatingBars = timelineData.map((item) => {
     const start = parseTime(item.started_at);
     const end = parseTime(item.finished_at);
+    const duration = end - start;
+
+    // If bar is shorter than minimum, extend it while keeping it centered
+    if (duration < minBarWidth) {
+      const center = (start + end) / 2;
+      const newStart = center - minBarWidth / 2;
+      const newEnd = center + minBarWidth / 2;
+      return [newStart, newEnd];
+    }
+
     return [start, end];
   });
 
@@ -94,10 +117,15 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
       tooltip: {
         callbacks: {
           label: function (context) {
-            const raw = context.raw; // [start, end]
-            const start = new Date(raw[0]).toLocaleTimeString();
-            const end = new Date(raw[1]).toLocaleTimeString();
-            const duration = ((raw[1] - raw[0]) / 1000).toFixed(2);
+            // Use original data to show actual duration, not extended width
+            const index = context.dataIndex;
+            const item = timelineData[index];
+            if (!item) return '';
+            
+            const start = new Date(parseTime(item.started_at)).toLocaleTimeString();
+            const end = new Date(parseTime(item.finished_at)).toLocaleTimeString();
+            const actualDuration = (parseTime(item.finished_at) - parseTime(item.started_at)) / 1000;
+            const duration = actualDuration.toFixed(2);
             return `${start} - ${end} (${duration}s)`;
           },
         },
