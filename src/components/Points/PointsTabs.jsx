@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import SimilarSerachfield from './SimilarSerachfield';
 import PointCard from './PointCard';
 import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
-import { normalizeVectorConfigObject } from '../../lib/qdrant-entities-helpers';
 import PointsFilter from './PointsFilter';
 
 const PointsTabs = ({ collectionName, client }) => {
@@ -19,7 +17,6 @@ const PointsTabs = ({ collectionName, client }) => {
   const [nextPageOffset, setNextPageOffset] = useState(null);
   const [usingVector, setUsingVector] = useState(null);
   const [payloadSchema, setPayloadSchema] = useState({});
-  const [vectors, setVectors] = useState([]);
 
   const onConditionChange = (conditions, usingVector) => {
     if (usingVector) {
@@ -41,21 +38,10 @@ const PointsTabs = ({ collectionName, client }) => {
   useEffect(() => {
     const getCollection = async () => {
       const collectionInfo = await qdrantClient.getCollection(collectionName);
-      const vectors = [];
-
-      const normalizedVectorsConfig = normalizeVectorConfigObject(collectionInfo);
-
-      Object.keys(normalizedVectorsConfig).map((key) => {
-        if (key !== '' && typeof normalizedVectorsConfig[key] === 'object') {
-          // not sure if check for object is needed
-          vectors.push(key);
-        }
-      });
-      setVectors(vectors);
       setPayloadSchema(collectionInfo.payload_schema);
     };
     getCollection();
-  }, []);
+  }, [collectionName, qdrantClient]);
 
   useEffect(() => {
     const getPoints = async () => {
@@ -146,16 +132,6 @@ const PointsTabs = ({ collectionName, client }) => {
   return (
     <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
-      {conditions && Object.keys(conditions).length > 0 && (
-        <Grid size={12}>
-          <SimilarSerachfield
-            conditions={conditions}
-            onConditionChange={onConditionChange}
-            vectors={vectors}
-            usingVector={usingVector}
-          />
-        </Grid>
-      )}
       {errorMessage && (
         <Grid textAlign={'center'} size={12}>
           <Typography>⚠ Error: {errorMessage}</Typography>
@@ -171,27 +147,26 @@ const PointsTabs = ({ collectionName, client }) => {
           <Typography>📪 No Points are present, {collectionName} is empty</Typography>
         </Grid>
       )}
-      {points &&
-        !errorMessage && (
-          <>
-            <Grid size={12}>
-              <PointsFilter points={points} />
-            </Grid>
-            {points.points?.map((point) => (
-          <Grid key={point.id} size={12}>
-            <PointCard
-              point={point}
-              onConditionChange={onConditionChange}
-              conditions={conditions}
-              collectionName={collectionName}
-              deletePoint={deletePoint}
-              payloadSchema={payloadSchema}
-              client={client}
-            />
+      {points && !errorMessage && (
+        <>
+          <Grid size={12}>
+            <PointsFilter onConditionChange={onConditionChange} conditions={conditions} payloadSchema={payloadSchema} />
           </Grid>
-        ))}
+          {points.points?.map((point) => (
+            <Grid key={point.id} size={12}>
+              <PointCard
+                point={point}
+                onConditionChange={onConditionChange}
+                conditions={conditions}
+                collectionName={collectionName}
+                deletePoint={deletePoint}
+                payloadSchema={payloadSchema}
+                client={client}
+              />
+            </Grid>
+          ))}
         </>
-        )}
+      )}
       <Grid textAlign={'center'} size={12}>
         <Button
           variant="outlined"
