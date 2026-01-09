@@ -89,7 +89,7 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
             const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
 
             // Check if the earliest time of range is less than a day from now
-            const isLessThanDay = (now - minTime) < oneDay;
+            const isLessThanDay = now - minTime < oneDay;
 
             // Show only time if range is less than a day
             if (isLessThanDay) {
@@ -121,7 +121,7 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
             const index = context.dataIndex;
             const item = timelineData[index];
             if (!item) return '';
-            
+
             const start = new Date(parseTime(item.started_at)).toLocaleTimeString();
             const end = new Date(parseTime(item.finished_at)).toLocaleTimeString();
             const actualDuration = (parseTime(item.finished_at) - parseTime(item.started_at)) / 1000;
@@ -153,12 +153,12 @@ export const calculateBackgroundColors = (timelineData, selectedItem, theme) => 
       // Selected completed optimizations use darker primary color
       return theme.palette.primary.dark;
     }
-    
+
     // Use warning color for ongoing optimizations to make them stand out
     if (isOngoing) {
       return theme.palette.warning.main;
     }
-    
+
     // Completed optimizations use the standard primary color
     return theme.palette.primary.main;
   });
