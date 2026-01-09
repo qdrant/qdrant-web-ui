@@ -51,7 +51,33 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
         ticks: {
           color: theme.palette.text.secondary,
           callback: function (value) {
-            return new Date(value).toLocaleTimeString();
+            const date = new Date(value);
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`;
+
+            if (!range) {
+              return timeString;
+            }
+
+            const [minTime, maxTime] = range;
+            const rangeDuration = maxTime - minTime;
+            const oneDay = 24 * 60 * 60 * 1000; // milliseconds in a day
+
+            // Check if range is less than a day
+            const isLessThanDay = rangeDuration < oneDay;
+
+            // Show only time if range is less than a day
+            if (isLessThanDay) {
+              return timeString;
+            }
+
+            // Otherwise show full date and time in ISO format
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day} ${timeString}`;
           },
         },
       },
