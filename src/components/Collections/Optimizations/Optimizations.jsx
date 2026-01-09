@@ -13,6 +13,8 @@ const Optimizations = ({ collectionName }) => {
 
   const fetchData = useCallback(() => {
     setIsRefreshing(true);
+    // Clear selected optimization when refreshing to show updated data
+    setSelectedOptimization(null);
     axios
       .get(`/collections/${collectionName}/optimizations?completed=true`)
       .then((response) => {
