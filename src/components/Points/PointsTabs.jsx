@@ -7,6 +7,7 @@ import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import { normalizeVectorConfigObject } from '../../lib/qdrant-entities-helpers';
+import PointsFilter from './PointsFilter';
 
 const PointsTabs = ({ collectionName, client }) => {
   const pageSize = 10;
@@ -171,8 +172,12 @@ const PointsTabs = ({ collectionName, client }) => {
         </Grid>
       )}
       {points &&
-        !errorMessage &&
-        points.points?.map((point) => (
+        !errorMessage && (
+          <>
+            <Grid size={12}>
+              <PointsFilter points={points} />
+            </Grid>
+            {points.points?.map((point) => (
           <Grid key={point.id} size={12}>
             <PointCard
               point={point}
@@ -185,6 +190,8 @@ const PointsTabs = ({ collectionName, client }) => {
             />
           </Grid>
         ))}
+        </>
+        )}
       <Grid textAlign={'center'} size={12}>
         <Button
           variant="outlined"
