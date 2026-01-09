@@ -54,8 +54,8 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
     }
   }
 
-  // Check if we have progress info (done/total) to display
-  const hasProgressInfo = !isFinished && node.total > 0 && node.done !== undefined;
+  // Check if we have progress info (done/total) to display - show even for finished steps
+  const hasProgressInfo = node.total > 0 && node.done !== undefined;
   const progressInfo = hasProgressInfo ? `${node.done}/${node.total}` : null;
 
   const handleToggle = () => {
