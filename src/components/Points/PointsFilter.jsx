@@ -1,11 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
-import { Box, Chip, Grid, InputBase } from '@mui/material';
+import { Box, Chip, Grid } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { Filter, Route } from 'lucide-react';
 
+// todo:
+// - [ ] refactor for better readability and maintainability
+// - [ ] fix the whole page re-render when the filter is changed
+// - [ ] optimize the performance of the filter
 const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, points }) => {
   const theme = useTheme();
   const [similarValue, setSimilarValue] = useState('');
@@ -24,6 +28,27 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   }, [points, payloadSchema]);
   const payloadOptions = useMemo(() => payloadKeyOptions.map((key) => `${key}:`), [payloadKeyOptions]);
   const filter = useMemo(() => createFilterOptions(), []);
+
+  const sharedTextFieldSx = useMemo(
+    () => ({
+      '& .MuiOutlinedInput-root': {
+        borderRadius: '8px',
+        padding: '6px 8px',
+        minHeight: 40,
+      },
+      '& .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.divider,
+      },
+      '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+      },
+      '& .MuiChip-root': {
+        height: 28,
+        borderRadius: '8px',
+      },
+    }),
+    [theme.palette.divider, theme.palette.primary.main]
+  );
 
   const getConditionLabel = (condition) => {
     if (condition.type === 'id') {
@@ -113,20 +138,6 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     return { key, value: normalizedValue };
   };
 
-  const addSimilar = () => {
-    const parsed = parseSimilarInput(similarValue);
-    if (parsed === null || parsed === undefined) {
-      return;
-    }
-    const next = uniqConditions([
-      ...similarConditions,
-      ...payloadConditions,
-      { key: 'id', type: 'id', value: parsed },
-    ]);
-    onConditionChange(next);
-    setSimilarValue('');
-  };
-
   const removeCondition = (conditionToDelete) => {
     const next = conditions.filter((condition) => !isSameCondition(condition, conditionToDelete));
     onConditionChange(next);
@@ -136,46 +147,74 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     <Box>
       <Grid container spacing={1}>
         <Grid size={{ xs: 12, md: 3 }}>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 0.5,
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: '8px',
-              px: 1,
-              py: 0.75,
-              minHeight: 40,
+          <Autocomplete
+            multiple
+            freeSolo
+            options={[]}
+            filterOptions={(options, state) => {
+              const filtered = filter(options, state);
+              if (state.inputValue !== '' && !filtered.includes(state.inputValue)) {
+                filtered.unshift(state.inputValue);
+              }
+              return filtered;
             }}
-          >
-            <Route size={16} color={theme.palette.text.secondary} />
-            {similarConditions.map((condition) => (
-              <Chip
-                key={`${condition.key}_${condition.value}`}
-                color="primary"
+            filterSelectedOptions
+            openOnFocus
+            clearOnBlur={false}
+            handleHomeEndKeys
+            isOptionEqualToValue={(option, value) => option === value}
+            value={similarConditions.map((condition) => getConditionLabel(condition))}
+            inputValue={similarValue}
+            onInputChange={(_event, newInputValue) => setSimilarValue(newInputValue)}
+            onChange={(_event, newValues) => {
+              const parsedConditions = newValues
+                .map((value) => parseSimilarInput(value))
+                .filter((v) => v !== null && v !== undefined)
+                .map((value) => ({ key: 'id', type: 'id', value }));
+
+              const next = uniqConditions([...parsedConditions, ...payloadConditions]);
+              onConditionChange(next);
+              setSimilarValue('');
+            }}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  key={`${option}_${index}`}
+                  label={option}
+                  size="small"
+                  color="primary"
+                  onDelete={() => {
+                    const parsed = parseSimilarInput(option);
+                    if (parsed === null || parsed === undefined) {
+                      return;
+                    }
+                    removeCondition({ key: 'id', type: 'id', value: parsed });
+                  }}
+                />
+              ))
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
                 size="small"
-                label={getConditionLabel(condition)}
-                onDelete={() => removeCondition(condition)}
+                placeholder="Similar to (id)"
+                slotProps={{
+                  input: {
+                    ...params.InputProps,
+                    startAdornment: (
+                      <>
+                        <Route size={16} color={theme.palette.text.secondary} style={{ marginRight: 4 }} />
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                  },
+                }}
+                sx={sharedTextFieldSx}
               />
-            ))}
-            <InputBase
-              value={similarValue}
-              onChange={(e) => setSimilarValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  addSimilar();
-                }
-              }}
-              placeholder="Similar to (id)"
-              sx={{
-                flex: 1,
-                minWidth: 80,
-                fontSize: '0.875rem',
-              }}
-            />
-          </Box>
+            )}
+          />
         </Grid>
         <Grid size={{ xs: 12, md: 9 }}>
           <Autocomplete
@@ -248,12 +287,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   },
                 }}
                 sx={{
-                  '& .MuiInputBase-root': {
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 0.5,
-                    padding: '6px 8px',
-                  },
+                  ...sharedTextFieldSx,
                 }}
               />
             )}
