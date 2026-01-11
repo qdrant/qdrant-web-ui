@@ -384,9 +384,7 @@ const ClusterMonitor = ({ collectionName }) => {
       }}
     >
       <Box sx={{ gridArea: '1 / 2 / 2 / 3', display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="subtitle1">
-          Cluster Nodes
-        </Typography>
+        <Typography variant="subtitle1">Cluster Nodes</Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {(() => {
             const hasOngoingResharding = cluster?.resharding_operations && cluster.resharding_operations.length > 0;
