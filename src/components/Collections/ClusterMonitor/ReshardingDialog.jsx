@@ -1,20 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Alert } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from '@mui/material';
 import { JsonViewer } from '@textea/json-viewer';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 
-const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false, collectionName }) => {
+const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false, collectionName, shardKeys = [] }) => {
   const theme = useTheme();
+  const [selectedShardKey, setSelectedShardKey] = useState('');
+
+  React.useEffect(() => {
+    // Reset selection when dialog opens/closes
+    if (!open) {
+      setSelectedShardKey('');
+    } else if (shardKeys.length > 0 && selectedShardKey === '') {
+      // Auto-select first shard key if shard keys are present and none is selected
+      setSelectedShardKey(shardKeys[0]);
+    }
+  }, [open, shardKeys]);
 
   if (!direction) {
     return null;
   }
 
   const isUp = direction === 'up';
+  const hasShardKeys = shardKeys.length > 0;
 
   // Format the request payload for display
   const requestPayload = {
@@ -23,10 +48,20 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
     },
   };
 
+  // Add shard_key if shard keys are present (required) or if selected
+  if (hasShardKeys && selectedShardKey !== '') {
+    requestPayload.start_resharding.shard_key = selectedShardKey === 'null' ? null : selectedShardKey;
+  }
+
   const requestString = JSON.stringify(requestPayload, null, 2);
 
   const handleConfirm = () => {
-    onConfirm(direction);
+    // If shard keys are present, shard key is required
+    if (hasShardKeys && selectedShardKey === '') {
+      return; // Don't proceed if required shard key is not selected
+    }
+    const shardKeyValue = selectedShardKey === '' ? null : selectedShardKey === 'null' ? null : selectedShardKey;
+    onConfirm(direction, shardKeyValue);
   };
 
   return (
@@ -115,12 +150,38 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary', mb: 2 }}>
             {isUp ? <ArrowUpward fontSize="small" /> : <ArrowDownward fontSize="small" />}
             <Typography variant="body2">
               Direction: <strong>{isUp ? 'Up (add shard)' : 'Down (remove shard)'}</strong>
             </Typography>
           </Box>
+
+          {hasShardKeys && (
+            <Box sx={{ mb: 2 }}>
+              <FormControl fullWidth required>
+                <InputLabel id="shard-key-select-label">Shard Key</InputLabel>
+                <Select
+                  labelId="shard-key-select-label"
+                  id="shard-key-select"
+                  value={selectedShardKey}
+                  label="Shard Key *"
+                  onChange={(e) => setSelectedShardKey(e.target.value)}
+                  disabled={loading}
+                  required
+                >
+                  {shardKeys.map((key) => (
+                    <MenuItem key={key} value={key}>
+                      {String(key)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                Select a shard key for this collection. This collection uses custom sharding.
+              </Typography>
+            </Box>
+          )}
         </Box>
       </DialogContent>
 
@@ -128,7 +189,12 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
         <Button onClick={onClose} disabled={loading}>
           Cancel
         </Button>
-        <Button onClick={handleConfirm} variant="contained" color="primary" disabled={loading}>
+        <Button
+          onClick={handleConfirm}
+          variant="contained"
+          color="primary"
+          disabled={loading || (hasShardKeys && selectedShardKey === '')}
+        >
           {loading ? 'Starting...' : `Confirm ${isUp ? 'Reshard Up' : 'Reshard Down'}`}
         </Button>
       </DialogActions>
@@ -143,6 +209,7 @@ ReshardingDialog.propTypes = {
   onConfirm: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   collectionName: PropTypes.string.isRequired,
+  shardKeys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
 };
 
 export default ReshardingDialog;

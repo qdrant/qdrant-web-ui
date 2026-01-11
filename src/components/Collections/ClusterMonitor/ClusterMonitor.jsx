@@ -182,14 +182,15 @@ const ClusterMonitor = ({ collectionName }) => {
 
       const newCluster = collectionClusterInfo.data.result;
       const localShards =
-        newCluster.local_shards.length &&
-        newCluster.local_shards.map((shard) => {
-          return {
-            ...shard,
-            peer_id: newCluster.peer_id,
-          };
-        });
-      newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
+        newCluster.local_shards && newCluster.local_shards.length > 0
+          ? newCluster.local_shards.map((shard) => {
+              return {
+                ...shard,
+                peer_id: newCluster.peer_id,
+              };
+            })
+          : [];
+      newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
 
       newCluster.peers = clusterInfo?.data?.result?.peers
         ? Object.keys(clusterInfo.data.result.peers)
@@ -248,15 +249,22 @@ const ClusterMonitor = ({ collectionName }) => {
     });
   };
 
-  const handleReshardingConfirm = async (direction) => {
+  const handleReshardingConfirm = async (direction, shardKey) => {
     setReshardingLoading(true);
 
     try {
-      await qdrantClient.updateCollectionCluster(collectionName, {
+      const requestPayload = {
         start_resharding: {
           direction,
         },
-      });
+      };
+
+      // Add shard_key if provided
+      if (shardKey !== null && shardKey !== undefined) {
+        requestPayload.start_resharding.shard_key = shardKey;
+      }
+
+      await qdrantClient.updateCollectionCluster(collectionName, requestPayload);
 
       enqueueSnackbar(
         `Resharding ${direction === 'up' ? 'up' : 'down'} initiated successfully`,
@@ -359,6 +367,18 @@ const ClusterMonitor = ({ collectionName }) => {
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
 
+  // Extract unique shard keys from all shards (must be before conditional return)
+  const shardKeys = React.useMemo(() => {
+    if (!cluster?.shards || cluster.shards.length === 0) return [];
+    const keys = new Set();
+    cluster.shards.forEach((shard) => {
+      if (shard && shard.shard_key != null) {
+        keys.add(shard.shard_key);
+      }
+    });
+    return Array.from(keys).sort();
+  }, [cluster?.shards]);
+
   if (!cluster || cluster.status !== 'enabled') {
     return (
       <Box>
@@ -390,8 +410,11 @@ const ClusterMonitor = ({ collectionName }) => {
             const hasOngoingResharding = cluster?.resharding_operations && cluster.resharding_operations.length > 0;
             const hasEnoughNodes = cluster?.peers?.length >= 2;
             const shardCount = cluster?.shard_count || 0;
+            const hasShards = cluster?.shards && cluster.shards.length > 0;
             const canReshardDown = shardCount > 1;
-            const isDisabled = !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading;
+            const canReshardUp = hasShards;
+            const isDisabled =
+              !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading || !canReshardUp;
             const isReshardDownDisabled = isDisabled || !canReshardDown;
 
             const tooltipContent = !reshardingEnabled ? (
@@ -407,6 +430,8 @@ const ClusterMonitor = ({ collectionName }) => {
                   Learn more
                 </Link>
               </Box>
+            ) : !hasShards ? (
+              'Cannot reshard up: collection has no shards'
             ) : !hasEnoughNodes ? (
               'Resharding requires at least 2 nodes in the cluster'
             ) : (
@@ -416,6 +441,8 @@ const ClusterMonitor = ({ collectionName }) => {
             const reshardDownTooltipContent =
               !canReshardDown && shardCount === 1
                 ? 'Cannot reshard down: collection already has the minimum of 1 shard'
+                : !hasShards
+                ? 'Cannot reshard down: collection has no shards'
                 : tooltipContent || 'Reshard down (remove shard)';
 
             // Show cancel button if resharding is ongoing
@@ -617,6 +644,7 @@ const ClusterMonitor = ({ collectionName }) => {
         onConfirm={handleReshardingConfirm}
         loading={reshardingLoading}
         collectionName={collectionName}
+        shardKeys={shardKeys}
       />
 
       {/* Add AbortReshardingDialog */}
