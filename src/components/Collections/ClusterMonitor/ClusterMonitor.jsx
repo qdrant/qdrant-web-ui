@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
-import { Grid, Typography, Box, Button, Tooltip } from '@mui/material';
+import { Grid, Typography, Box, Button, Tooltip, Link } from '@mui/material';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -17,6 +17,8 @@ import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
+import ReshardingDialog from './ReshardingDialog';
+import AbortReshardingDialog from './AbortReshardingDialog';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -102,6 +104,11 @@ const ClusterMonitor = ({ collectionName }) => {
   });
   const [transferLoading, setTransferLoading] = React.useState(false);
   const [reshardingLoading, setReshardingLoading] = React.useState(false);
+  const [reshardingDialog, setReshardingDialog] = React.useState({
+    open: false,
+    direction: null,
+  });
+  const [abortReshardingDialog, setAbortReshardingDialog] = React.useState(false);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -233,7 +240,15 @@ const ClusterMonitor = ({ collectionName }) => {
     setDragState({ isDragging: false, draggedSlot: null });
   };
 
-  const handleResharding = async (direction) => {
+  const handleResharding = (direction) => {
+    // Open confirmation dialog
+    setReshardingDialog({
+      open: true,
+      direction,
+    });
+  };
+
+  const handleReshardingConfirm = async (direction) => {
     setReshardingLoading(true);
 
     try {
@@ -248,6 +263,9 @@ const ClusterMonitor = ({ collectionName }) => {
         getSnackbarOptions('success', closeSnackbar, 2000)
       );
 
+      // Close dialog and refresh cluster info
+      setReshardingDialog({ open: false, direction: null });
+
       // Refresh cluster info to show updated state
       await refreshClusterInfo();
     } catch (err) {
@@ -261,7 +279,16 @@ const ClusterMonitor = ({ collectionName }) => {
     }
   };
 
-  const handleAbortResharding = async () => {
+  const handleReshardingDialogClose = () => {
+    setReshardingDialog({ open: false, direction: null });
+  };
+
+  const handleAbortResharding = () => {
+    // Open confirmation dialog
+    setAbortReshardingDialog(true);
+  };
+
+  const handleAbortReshardingConfirm = async () => {
     setReshardingLoading(true);
 
     try {
@@ -271,6 +298,9 @@ const ClusterMonitor = ({ collectionName }) => {
 
       enqueueSnackbar('Resharding operation aborted successfully', getSnackbarOptions('success', closeSnackbar, 2000));
 
+      // Close dialog and refresh cluster info
+      setAbortReshardingDialog(false);
+
       // Refresh cluster info to show updated state
       await refreshClusterInfo();
     } catch (err) {
@@ -279,6 +309,10 @@ const ClusterMonitor = ({ collectionName }) => {
     } finally {
       setReshardingLoading(false);
     }
+  };
+
+  const handleAbortReshardingDialogClose = () => {
+    setAbortReshardingDialog(false);
   };
 
   // Add global event listeners for drag cancellation
@@ -342,7 +376,7 @@ const ClusterMonitor = ({ collectionName }) => {
         gridTemplateColumns: '20px 1fr',
         gridTemplateRows: 'auto 1fr',
         gridColumnGap: '0.5rem',
-        gridRowGap: 0,
+        gridRowGap: '1rem',
         // breakpoints
         [theme.breakpoints.up('md')]: {
           gridTemplateColumns: '50px 1fr',
@@ -350,19 +384,32 @@ const ClusterMonitor = ({ collectionName }) => {
       }}
     >
       <Box sx={{ gridArea: '1 / 2 / 2 / 3', display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="subtitle1" mb={2}>
+        <Typography variant="subtitle1">
           Cluster Nodes
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1 }}>
           {(() => {
             const hasOngoingResharding = cluster?.resharding_operations && cluster.resharding_operations.length > 0;
             const hasEnoughNodes = cluster?.peers?.length >= 2;
             const isDisabled = !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading;
-            const tooltipText = !reshardingEnabled
-              ? 'Resharding is not enabled for this cluster'
-              : !hasEnoughNodes
-              ? 'Resharding requires at least 2 nodes in the cluster'
-              : '';
+            const tooltipContent = !reshardingEnabled ? (
+              <Box>
+                Resharding is not available.{' '}
+                <Link
+                  href="https://qdrant.tech/documentation/cloud/cluster-scaling/#resharding"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: 'inherit', textDecoration: 'underline' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Learn more
+                </Link>
+              </Box>
+            ) : !hasEnoughNodes ? (
+              'Resharding requires at least 2 nodes in the cluster'
+            ) : (
+              ''
+            );
 
             // Show cancel button if resharding is ongoing
             if (hasOngoingResharding) {
@@ -393,7 +440,7 @@ const ClusterMonitor = ({ collectionName }) => {
             // Show up/down buttons if no resharding is ongoing
             return (
               <>
-                <Tooltip title={tooltipText || 'Reshard up (add shard)'} placement="top">
+                <Tooltip title={tooltipContent || 'Reshard up (add shard)'} placement="top">
                   <span>
                     <Button
                       variant="outlined"
@@ -412,7 +459,7 @@ const ClusterMonitor = ({ collectionName }) => {
                     </Button>
                   </span>
                 </Tooltip>
-                <Tooltip title={tooltipText || 'Reshard down (remove shard)'} placement="top">
+                <Tooltip title={tooltipContent || 'Reshard down (remove shard)'} placement="top">
                   <span>
                     <Button
                       variant="outlined"
@@ -436,7 +483,7 @@ const ClusterMonitor = ({ collectionName }) => {
           })()}
         </Box>
       </Box>
-      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end' }}>
+      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
         <Legend dragState={dragState} />
       </Box>
       <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center' }}>
@@ -552,6 +599,25 @@ const ClusterMonitor = ({ collectionName }) => {
         transferRequest={transferDialog.transferRequest}
         onConfirm={handleTransferConfirm}
         loading={transferLoading}
+        collectionName={collectionName}
+      />
+
+      {/* Add ReshardingDialog */}
+      <ReshardingDialog
+        open={reshardingDialog.open}
+        onClose={handleReshardingDialogClose}
+        direction={reshardingDialog.direction}
+        onConfirm={handleReshardingConfirm}
+        loading={reshardingLoading}
+        collectionName={collectionName}
+      />
+
+      {/* Add AbortReshardingDialog */}
+      <AbortReshardingDialog
+        open={abortReshardingDialog}
+        onClose={handleAbortReshardingDialogClose}
+        onConfirm={handleAbortReshardingConfirm}
+        loading={reshardingLoading}
         collectionName={collectionName}
       />
     </Box>
