@@ -197,7 +197,7 @@ const ClusterMonitor = ({ collectionName }) => {
             .sort((a, b) => a - b)
         : [];
       newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
-      // resharding_operations is already included in newCluster from the API response
+      // shard_count and resharding_operations are already included in newCluster from the API response
       setCluster({ ...newCluster });
     } catch (err) {
       console.error('Error refreshing cluster info:', err);
@@ -389,7 +389,11 @@ const ClusterMonitor = ({ collectionName }) => {
           {(() => {
             const hasOngoingResharding = cluster?.resharding_operations && cluster.resharding_operations.length > 0;
             const hasEnoughNodes = cluster?.peers?.length >= 2;
+            const shardCount = cluster?.shard_count || 0;
+            const canReshardDown = shardCount > 1;
             const isDisabled = !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading;
+            const isReshardDownDisabled = isDisabled || !canReshardDown;
+
             const tooltipContent = !reshardingEnabled ? (
               <Box>
                 Resharding is not available.{' '}
@@ -408,6 +412,11 @@ const ClusterMonitor = ({ collectionName }) => {
             ) : (
               ''
             );
+
+            const reshardDownTooltipContent =
+              !canReshardDown && shardCount === 1
+                ? 'Cannot reshard down: collection already has the minimum of 1 shard'
+                : tooltipContent || 'Reshard down (remove shard)';
 
             // Show cancel button if resharding is ongoing
             if (hasOngoingResharding) {
@@ -457,14 +466,14 @@ const ClusterMonitor = ({ collectionName }) => {
                     </Button>
                   </span>
                 </Tooltip>
-                <Tooltip title={tooltipContent || 'Reshard down (remove shard)'} placement="top">
+                <Tooltip title={reshardDownTooltipContent} placement="top">
                   <span>
                     <Button
                       variant="outlined"
                       size="small"
                       startIcon={<ArrowDownward fontSize="small" />}
                       onClick={() => handleResharding('down')}
-                      disabled={isDisabled}
+                      disabled={isReshardDownDisabled}
                       aria-label="Reshard down"
                       sx={{
                         minWidth: 'auto',
