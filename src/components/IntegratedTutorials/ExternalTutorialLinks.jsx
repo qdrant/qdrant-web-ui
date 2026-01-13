@@ -45,7 +45,7 @@ const ExternalTutorialLinks = () => {
       </Typography>
       <Grid container spacing={2} sx={{ '& > .MuiGrid-root': { display: 'flex' } }}>
         {TUTORIALS.map((tutorial) => (
-          <Grid key={tutorial.href} size={{ xs: 12, md: 6, lg: 3 }}>
+          <Grid key={tutorial.href} size={{ xs: 12, md: 6, lg: 4 }}>
             <InfoCard
               icon={tutorial.icon}
               iconVariant="top"
