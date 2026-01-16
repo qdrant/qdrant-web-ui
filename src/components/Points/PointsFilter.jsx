@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Chip, Grid } from '@mui/material';
+import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
-import Popper from '@mui/material/Popper';
 import TextField from '@mui/material/TextField';
+import Editor from 'react-simple-code-editor';
 import { Filter, Route } from 'lucide-react';
 
 const StyledAutocompletePopper = styled(Popper)(() => ({
@@ -18,7 +18,7 @@ const StyledAutocompletePopper = styled(Popper)(() => ({
   },
 }));
 
-const AutocompletePopper = React.forwardRef(function AutocompletePopper(props, ref) {
+const SimilarAutocompletePopper = React.forwardRef(function SimilarAutocompletePopper(props, ref) {
   const { anchorEl, style, ...other } = props;
   const inputElement = anchorEl?.querySelector('input');
   const resolvedAnchorEl = inputElement || anchorEl;
@@ -26,26 +26,264 @@ const AutocompletePopper = React.forwardRef(function AutocompletePopper(props, r
   return <StyledAutocompletePopper {...other} ref={ref} anchorEl={resolvedAnchorEl} style={style} />;
 });
 
+const FilterInputContainer = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: '8px',
+  minHeight: 40,
+  padding: '6px 8px',
+  transition: 'border-color 0.15s ease-in-out',
+  cursor: 'text',
+  '&:hover': {
+    borderColor: theme.palette.text.primary,
+  },
+  '&:focus-within': {
+    borderColor: theme.palette.primary.main,
+    borderWidth: 2,
+    padding: '5px 7px', // Compensate for thicker border
+  },
+}));
+
+const FilterIcon = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginRight: 4,
+  color: theme.palette.text.secondary,
+  flexShrink: 0,
+}));
+
+const StyledFilterEditor = styled(Editor)(({ theme }) => ({
+  flex: 1,
+  fontFamily: theme.typography.fontFamily,
+  fontSize: '1rem',
+  lineHeight: 1.4375,
+  '& textarea': {
+    outline: 'none !important',
+    border: 'none !important',
+    padding: '0 !important',
+    background: 'transparent !important',
+    font: 'inherit !important',
+  },
+  '& pre': {
+    margin: '0 !important',
+    padding: '0 !important',
+    whiteSpace: 'pre-wrap !important',
+    wordBreak: 'break-word !important',
+    font: 'inherit !important',
+  },
+}));
+
+const FilterAutocompletePopper = styled(Popper)({
+  zIndex: 1300,
+});
+
+const AutocompleteList = styled(Paper)(({ theme }) => ({
+  maxHeight: 220,
+  overflow: 'auto',
+  marginTop: 4,
+  '& .MuiMenuItem-root': {
+    fontSize: '0.875rem',
+    padding: '6px 12px',
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.action.selected,
+    },
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+}));
+
 // todo:
 // - [ ] refactor for better readability and maintainability
 // - [ ] fix the whole page re-render when the filter is changed
 // - [ ] optimize the performance of the filter
 const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, points }) => {
   const theme = useTheme();
+  const filterContainerRef = useRef(null);
   const [similarValue, setSimilarValue] = useState('');
-  const [payloadValue, setPayloadValue] = useState('');
+  const [filterInputValue, setFilterInputValue] = useState('');
+  const [isFilterAutocompleteOpen, setIsFilterAutocompleteOpen] = useState(false);
+  const [isFilterFocused, setIsFilterFocused] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const filter = useMemo(() => createFilterOptions(), []);
 
   const similarConditions = useMemo(() => conditions.filter((condition) => condition.type === 'id'), [conditions]);
-
   const payloadConditions = useMemo(() => conditions.filter((condition) => condition.type === 'payload'), [conditions]);
+
+  // Build filter input value from payload conditions
+  const buildFilterInputFromConditions = useCallback((conditionsList) => {
+    return conditionsList
+      .map((condition) => {
+        const readableValue = condition.value === null ? 'null' : condition.value === '' ? '(empty)' : condition.value;
+        return `${condition.key}:${readableValue}`;
+      })
+      .join(' ');
+  }, []);
+
+  // Sync filter input when payload conditions change externally
+  useEffect(() => {
+    setFilterInputValue(buildFilterInputFromConditions(payloadConditions));
+  }, [payloadConditions, buildFilterInputFromConditions]);
+
+  // Extract the current word being typed for autocomplete
+  const getCurrentWord = useCallback((text, cursorPos) => {
+    const beforeCursor = text.slice(0, cursorPos);
+    const match = beforeCursor.match(/(\S+)$/);
+    return match ? match[1] : '';
+  }, []);
+
   const payloadKeyOptions = useMemo(() => {
     const keys = new Set();
     Object.keys(points?.payload_schema || {}).forEach((key) => keys.add(key));
     Object.keys(payloadSchema || {}).forEach((key) => keys.add(key));
     return [...keys];
   }, [points, payloadSchema]);
-  const payloadOptions = useMemo(() => payloadKeyOptions, [payloadKeyOptions]);
-  const filter = useMemo(() => createFilterOptions(), []);
+
+  // Get the current word at cursor position
+  const currentWord = useMemo(() => {
+    return getCurrentWord(filterInputValue, cursorPosition);
+  }, [filterInputValue, cursorPosition, getCurrentWord]);
+
+  // Get filtered autocomplete options based on current input
+  const filteredOptions = useMemo(() => {
+    // Don't show options if already typing a value (after colon)
+    if (currentWord.includes(':')) {
+      return [];
+    }
+
+    // Filter options based on current word
+    if (!currentWord) {
+      return payloadKeyOptions;
+    }
+
+    const loweredWord = currentWord.toLowerCase();
+    return payloadKeyOptions.filter((option) => option.toLowerCase().startsWith(loweredWord));
+  }, [currentWord, payloadKeyOptions]);
+
+  const normalizeValueBySchema = useCallback(
+    (valueString, key) => {
+      const schemaEntry = payloadSchema?.[key];
+      if (!schemaEntry) {
+        return valueString;
+      }
+
+      const dataType = schemaEntry.data_type;
+      const lowered = valueString?.toString().toLowerCase();
+
+      if (dataType === 'bool' && (lowered === 'true' || lowered === 'false')) {
+        return lowered === 'true';
+      }
+
+      if ((dataType === 'integer' || dataType === 'int') && valueString !== '') {
+        const numericValue = Number(valueString);
+        return Number.isNaN(numericValue) ? valueString : numericValue;
+      }
+
+      if (dataType === 'float' && valueString !== '') {
+        const floatValue = parseFloat(valueString);
+        return Number.isNaN(floatValue) ? valueString : floatValue;
+      }
+
+      return valueString;
+    },
+    [payloadSchema]
+  );
+
+  // Parse filter string into payload conditions array
+  const parseFilterString = useCallback(
+    (filterText) => {
+      const tokens = filterText.match(/\S+/g) || [];
+      const parsedConditions = [];
+
+      tokens.forEach((token) => {
+        const colonIndex = token.indexOf(':');
+        if (colonIndex === -1) {
+          return;
+        }
+
+        const key = token.slice(0, colonIndex).trim();
+        const rawValue = token.slice(colonIndex + 1).trim();
+
+        if (!key || !rawValue) {
+          return;
+        }
+
+        let value;
+        if (rawValue.toLowerCase() === 'null') {
+          value = null;
+        } else if (rawValue === '(empty)') {
+          value = '';
+        } else {
+          value = normalizeValueBySchema(rawValue, key);
+        }
+        parsedConditions.push({ key, type: 'payload', value });
+      });
+
+      return parsedConditions;
+    },
+    [normalizeValueBySchema]
+  );
+
+  const isSameCondition = (a, b) => a.key === b.key && a.type === b.type && a.value === b.value;
+
+  const uniqConditions = (list) =>
+    list.filter((item, index) => list.findIndex((candidate) => isSameCondition(candidate, item)) === index);
+
+  const getSimilarConditionLabel = (condition) => `id: ${condition.value}`;
+
+  const parseSimilarInput = (rawInput) => {
+    const trimmedInput = (rawInput || '').trim();
+    if (!trimmedInput) {
+      return null;
+    }
+
+    const idMatch = trimmedInput.match(/^id\s*:\s*(.+)$/i);
+    const valuePart = (idMatch ? idMatch[1] : trimmedInput).trim();
+    if (!valuePart) {
+      return null;
+    }
+
+    const numericLike = valuePart.match(/^-?\d+(\.\d+)?$/) ? Number(valuePart) : valuePart;
+    return numericLike;
+  };
+
+  const removeCondition = (conditionToDelete) => {
+    const next = conditions.filter((condition) => !isSameCondition(condition, conditionToDelete));
+    onConditionChange(next);
+  };
+
+  const handleSimilarChipEdit = (event, option) => {
+    if (event?.target?.closest?.('.MuiChip-deleteIcon')) {
+      return;
+    }
+    const parsed = parseSimilarInput(option);
+    if (parsed === null || parsed === undefined) {
+      return;
+    }
+    removeCondition({ key: 'id', type: 'id', value: parsed });
+    setSimilarValue(option);
+  };
+
+  const handleSimilarBackspaceEdit = (event) => {
+    if (event.key !== 'Backspace' || similarValue) {
+      return;
+    }
+
+    const lastCondition = similarConditions[similarConditions.length - 1];
+    if (!lastCondition) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const label = getSimilarConditionLabel(lastCondition);
+    removeCondition(lastCondition);
+    setSimilarValue(label);
+  };
 
   const sharedTextFieldSx = useMemo(
     () => ({
@@ -68,170 +306,154 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     [theme.palette.divider, theme.palette.primary.main]
   );
 
-  const getConditionLabel = (condition) => {
-    if (condition.type === 'id') {
-      return `id: ${condition.value}`;
-    }
-    const readableValue = condition.value === null ? 'null' : condition.value === '' ? '(empty)' : condition.value;
-    return `${condition.key}: ${readableValue}`;
-  };
+  // Select autocomplete option for filter
+  const selectFilterOption = useCallback(
+    (option) => {
+      const beforeCursor = filterInputValue.slice(0, cursorPosition);
+      const afterCursor = filterInputValue.slice(cursorPosition);
 
-  const isSameCondition = (a, b) => a.key === b.key && a.type === b.type && a.value === b.value;
+      const wordMatch = beforeCursor.match(/(\S*)$/);
+      const wordStart = wordMatch ? cursorPosition - wordMatch[1].length : cursorPosition;
 
-  const uniqConditions = (list) =>
-    list.filter((item, index) => list.findIndex((candidate) => isSameCondition(candidate, item)) === index);
+      const newInputValue = filterInputValue.slice(0, wordStart) + option + ':' + afterCursor.replace(/^\S*/, '');
+      setFilterInputValue(newInputValue);
+      setIsFilterAutocompleteOpen(false);
 
-  const parseSimilarInput = (rawInput) => {
-    const trimmedInput = (rawInput || '').trim();
-    if (!trimmedInput) {
-      return null;
-    }
+      setTimeout(() => {
+        const textarea = filterContainerRef.current?.querySelector('textarea');
+        if (textarea) {
+          const newCursorPos = wordStart + option.length + 1;
+          textarea.focus();
+          textarea.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
+        }
+      }, 0);
+    },
+    [filterInputValue, cursorPosition]
+  );
 
-    const idMatch = trimmedInput.match(/^id\s*:\s*(.+)$/i);
-    const valuePart = (idMatch ? idMatch[1] : trimmedInput).trim();
-    if (!valuePart) {
-      return null;
-    }
+  // Apply payload filters on Enter
+  const handleFilterKeyDown = useCallback(
+    (event) => {
+      if (isFilterAutocompleteOpen && filteredOptions.length > 0) {
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          setHighlightedIndex((prev) => (prev + 1) % filteredOptions.length);
+          return;
+        }
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          setHighlightedIndex((prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length);
+          return;
+        }
+        if (event.key === 'Enter' || event.key === 'Tab') {
+          event.preventDefault();
+          selectFilterOption(filteredOptions[highlightedIndex]);
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setIsFilterAutocompleteOpen(false);
+          return;
+        }
+      }
 
-    // try to coerce numeric ids while preserving strings with non-numeric chars
-    const numericLike = valuePart.match(/^-?\d+(\.\d+)?$/) ? Number(valuePart) : valuePart;
-    return numericLike;
-  };
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        const parsedPayloadConditions = parseFilterString(filterInputValue);
+        const uniquePayloadConditions = uniqConditions(parsedPayloadConditions);
+        const next = uniqConditions([...similarConditions, ...uniquePayloadConditions]);
+        onConditionChange(next);
+      }
+    },
+    [
+      filterInputValue,
+      parseFilterString,
+      onConditionChange,
+      similarConditions,
+      isFilterAutocompleteOpen,
+      filteredOptions,
+      highlightedIndex,
+      selectFilterOption,
+    ]
+  );
 
-  const normalizeValueBySchema = (valueString, key) => {
-    const schemaEntry = payloadSchema?.[key];
-    if (!schemaEntry) {
-      return valueString;
-    }
+  // Syntax highlighting function for the filter editor
+  const highlightCode = useCallback((code) => {
+    if (!code) return '';
 
-    const dataType = schemaEntry.data_type;
-    const lowered = valueString?.toString().toLowerCase();
+    const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
+    const keyColor = '#fcfdff';
+    const valueColor = '#1e88e5';
 
-    if (dataType === 'bool' && (lowered === 'true' || lowered === 'false')) {
-      return lowered === 'true';
-    }
+    return code.replace(regex, (match, key, value) => {
+      return `<span style="color:${keyColor};font-weight:500">${key}:</span><span style="color:${valueColor}">${value}</span>`;
+    });
+  }, []);
 
-    if ((dataType === 'integer' || dataType === 'int') && valueString !== '') {
-      const numericValue = Number(valueString);
-      return Number.isNaN(numericValue) ? valueString : numericValue;
-    }
+  const handleFilterValueChange = useCallback((newValue) => {
+    setFilterInputValue(newValue);
+    setHighlightedIndex(0);
+    // Cursor position will be updated via onSelect/onClick handlers
+    // For typing, assume cursor is at the end of the new value
+    setCursorPosition(newValue.length);
+  }, []);
 
-    if (dataType === 'float' && valueString !== '') {
-      const floatValue = parseFloat(valueString);
-      return Number.isNaN(floatValue) ? valueString : floatValue;
-    }
-
-    return valueString;
-  };
-
-  const parsePayloadInput = (rawInput) => {
-    const trimmedInput = (rawInput || '').trim();
-    if (!trimmedInput) {
-      return null;
-    }
-
-    const [rawKey, ...rawValueParts] = trimmedInput.split(':');
-    const key = rawKey.trim();
-
-    if (!key) {
-      return null;
-    }
-
-    const rawValue = rawValueParts.join(':').trim();
-
-    if (rawValueParts.length === 0) {
-      // no value provided – treat as empty check
-      return { key, value: '' };
-    }
-
-    if (rawValue.toLowerCase() === 'null') {
-      return { key, value: null };
-    }
-
-    if (rawValue === '(empty)') {
-      return { key, value: '' };
-    }
-
-    const normalizedValue = normalizeValueBySchema(rawValue, key);
-    return { key, value: normalizedValue };
-  };
-
-  const removeCondition = (conditionToDelete) => {
-    const next = conditions.filter((condition) => !isSameCondition(condition, conditionToDelete));
-    onConditionChange(next);
-  };
-
-  const handleChipEdit = (event, option, parseInput, setInputValue, type) => {
-    if (event?.target?.closest?.('.MuiChip-deleteIcon')) {
+  // Auto-show/hide autocomplete based on current word (only when focused)
+  useEffect(() => {
+    if (!isFilterFocused) {
+      setIsFilterAutocompleteOpen(false);
       return;
     }
-    const parsed = parseInput(option);
-    if (!parsed) {
-      return;
+    // Show autocomplete when not typing a value (no colon in current word)
+    const shouldShow = !currentWord.includes(':') && payloadKeyOptions.length > 0;
+    setIsFilterAutocompleteOpen(shouldShow);
+  }, [currentWord, payloadKeyOptions.length, isFilterFocused]);
+
+  const handleFilterClickAway = useCallback(() => {
+    setIsFilterAutocompleteOpen(false);
+    setIsFilterFocused(false);
+  }, []);
+
+  const handleFilterFocus = useCallback(() => {
+    setIsFilterFocused(true);
+  }, []);
+
+  // Update cursor position when clicking inside the editor
+  const handleFilterClick = useCallback(() => {
+    const textarea = filterContainerRef.current?.querySelector('textarea');
+    if (textarea) {
+      // Use setTimeout to get cursor position after click is processed
+      setTimeout(() => {
+        setCursorPosition(textarea.selectionStart);
+        setHighlightedIndex(0);
+      }, 0);
     }
-    const condition =
-      type === 'id'
-        ? { key: 'id', type: 'id', value: parsed }
-        : { key: parsed.key, type: 'payload', value: parsed.value };
-
-    removeCondition(condition);
-    setInputValue(option);
-  };
-
-  const handleBackspaceEdit = (event, type, inputValue) => {
-    if (event.key !== 'Backspace' || inputValue) {
-      return;
-    }
-
-    const list = type === 'id' ? similarConditions : payloadConditions;
-    const lastCondition = list[list.length - 1];
-    if (!lastCondition) {
-      return;
-    }
-
-    event.preventDefault();
-    event.stopPropagation();
-
-    const label = getConditionLabel(lastCondition);
-    removeCondition(lastCondition);
-    if (type === 'id') {
-      setSimilarValue(label);
-    } else {
-      setPayloadValue(label);
-    }
-  };
+  }, []);
 
   return (
     <Box>
       <Grid container spacing={1}>
+        {/* Similar search field (with chips) */}
         <Grid size={{ xs: 12, md: 3 }}>
           <Autocomplete
             multiple
             freeSolo
             options={[]}
-            filterOptions={(options, state) => {
-              return filter(options, state);
-            }}
+            filterOptions={(options, state) => filter(options, state)}
             filterSelectedOptions
             openOnFocus
             clearOnBlur={false}
             handleHomeEndKeys
             isOptionEqualToValue={(option, value) => option === value}
-            PopperComponent={AutocompletePopper}
+            PopperComponent={SimilarAutocompletePopper}
             slotProps={{
               popper: {
                 placement: 'bottom-start',
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [0, 4],
-                    },
-                  },
-                ],
+                modifiers: [{ name: 'offset', options: { offset: [0, 4] } }],
               },
             }}
-            value={similarConditions.map((condition) => getConditionLabel(condition))}
+            value={similarConditions.map((condition) => getSimilarConditionLabel(condition))}
             inputValue={similarValue}
             onInputChange={(_event, newInputValue) => setSimilarValue(newInputValue)}
             onChange={(_event, newValues) => {
@@ -252,7 +474,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   label={option}
                   size="small"
                   color="primary"
-                  onClick={(event) => handleChipEdit(event, option, parseSimilarInput, setSimilarValue, 'id')}
+                  onClick={(event) => handleSimilarChipEdit(event, option)}
                   onDelete={() => {
                     const parsed = parseSimilarInput(option);
                     if (parsed === null || parsed === undefined) {
@@ -278,7 +500,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                         {params.InputProps.startAdornment}
                       </>
                     ),
-                    onKeyDown: (event) => handleBackspaceEdit(event, 'id', similarValue),
+                    onKeyDown: handleSimilarBackspaceEdit,
                   },
                 }}
                 sx={sharedTextFieldSx}
@@ -286,94 +508,47 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             )}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 9 }}>
-          <Autocomplete
-            multiple
-            freeSolo
-            options={payloadOptions}
-            filterOptions={(options, state) => {
-              return filter(options, state);
-            }}
-            filterSelectedOptions
-            openOnFocus
-            clearOnBlur={false}
-            handleHomeEndKeys
-            isOptionEqualToValue={(option, value) => option === value}
-            PopperComponent={AutocompletePopper}
-            slotProps={{
-              popper: {
-                placement: 'bottom-start',
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [0, 4],
-                    },
-                  },
-                ],
-              },
-            }}
-            value={payloadConditions.map((condition) => getConditionLabel(condition))}
-            inputValue={payloadValue}
-            onInputChange={(_event, newInputValue) => setPayloadValue(newInputValue)}
-            onChange={(event, newValues, reason) => {
-              const lastValue = newValues[newValues.length - 1];
-              if ((reason === 'selectOption' || reason === 'createOption') && lastValue) {
-                setPayloadValue(`${lastValue}:`);
-                return;
-              }
 
-              const parsedConditions = newValues
-                .map((value) => parsePayloadInput(value))
-                .filter(Boolean)
-                .map((parsed) => ({ key: parsed.key, type: 'payload', value: parsed.value }));
-              const next = uniqConditions([...similarConditions, ...parsedConditions]);
-              onConditionChange(next);
-              setPayloadValue('');
-            }}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  key={`${option}_${index}`}
-                  label={option}
-                  size="small"
-                  color="primary"
-                  onClick={(event) => handleChipEdit(event, option, parsePayloadInput, setPayloadValue, 'payload')}
-                  onDelete={() => {
-                    const parsed = parsePayloadInput(option);
-                    if (!parsed) {
-                      return;
-                    }
-                    removeCondition({ key: parsed.key, type: 'payload', value: parsed.value });
-                  }}
+        {/* Payload filter field (GitHub-style with syntax highlighting) */}
+        <Grid size={{ xs: 12, md: 9 }}>
+          <ClickAwayListener onClickAway={handleFilterClickAway}>
+            <Box sx={{ position: 'relative' }}>
+              <FilterInputContainer ref={filterContainerRef}>
+                <FilterIcon>
+                  <Filter size={16} />
+                </FilterIcon>
+                <StyledFilterEditor
+                  value={filterInputValue}
+                  onValueChange={handleFilterValueChange}
+                  highlight={highlightCode}
+                  placeholder="Filter by payload (key:value key:value)"
+                  onKeyDown={handleFilterKeyDown}
+                  onFocus={handleFilterFocus}
+                  onClick={handleFilterClick}
+                  padding={0}
                 />
-              ))
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
-                placeholder="Filter by payload (key:value)"
-                slotProps={{
-                  input: {
-                    ...params.InputProps,
-                    startAdornment: (
-                      <>
-                        <Filter size={16} color={theme.palette.text.secondary} style={{ marginRight: 4 }} />
-                        {params.InputProps.startAdornment}
-                      </>
-                    ),
-                    onKeyDown: (event) => handleBackspaceEdit(event, 'payload', payloadValue),
-                  },
-                }}
-                sx={{
-                  ...sharedTextFieldSx,
-                }}
-              />
-            )}
-          />
+              </FilterInputContainer>
+              <FilterAutocompletePopper
+                open={isFilterAutocompleteOpen && filteredOptions.length > 0}
+                anchorEl={filterContainerRef.current}
+                placement="bottom-start"
+                modifiers={[{ name: 'offset', options: { offset: [0, 4] } }]}
+              >
+                <AutocompleteList>
+                  {filteredOptions.map((option, index) => (
+                    <MenuItem
+                      key={option}
+                      selected={index === highlightedIndex}
+                      onClick={() => selectFilterOption(option)}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                    >
+                      {option}
+                    </MenuItem>
+                  ))}
+                </AutocompleteList>
+              </FilterAutocompletePopper>
+            </Box>
+          </ClickAwayListener>
         </Grid>
       </Grid>
     </Box>
@@ -385,12 +560,12 @@ PointsFilter.propTypes = {
   payloadSchema: PropTypes.object,
   points: PropTypes.shape({
     payload_schema: PropTypes.object,
-    points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })).isRequired,
+    points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })),
   }),
   onConditionChange: PropTypes.func.isRequired,
 };
 
-AutocompletePopper.propTypes = {
+SimilarAutocompletePopper.propTypes = {
   anchorEl: PropTypes.shape({
     getBoundingClientRect: PropTypes.func,
     querySelector: PropTypes.func,
