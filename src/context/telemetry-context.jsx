@@ -10,6 +10,7 @@ export function TelemetryProvider({ children }) {
   const [jwtEnabled, setJwtEnabled] = useState(false);
   const [jwtVisible, setJwtVisible] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [reshardingEnabled, setReshardingEnabled] = useState(false);
   const { client: qdrantClient } = useClient();
 
   useEffect(() => {
@@ -19,6 +20,7 @@ export function TelemetryProvider({ children }) {
         setVersion(telemetry.data.result.app.version);
         setJwtEnabled(telemetry.data.result.app?.jwt_rbac || false);
         setMaxCollections(telemetry.data.result.collections?.max_collections);
+        setReshardingEnabled(telemetry.data.result.cluster?.resharding_enabled || false);
 
         if (telemetry.data.result.app?.hide_jwt_dashboard) {
           setJwtVisible(false);
@@ -46,6 +48,7 @@ export function TelemetryProvider({ children }) {
         jwtVisible,
         authError,
         clearAuthError: () => setAuthError(null),
+        reshardingEnabled,
       }}
     >
       {children}

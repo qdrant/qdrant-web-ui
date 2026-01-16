@@ -5,6 +5,7 @@ import { ArcherContainer } from 'react-archer';
 import { Grid, Typography, Box } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
+import { useTelemetry } from '../../../context/telemetry-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
@@ -13,6 +14,9 @@ import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
+import ReshardingDialog from './ReshardingDialog';
+import AbortReshardingDialog from './AbortReshardingDialog';
+import ReshardingButtons from './ReshardingButtons';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -85,6 +89,7 @@ Legend.propTypes = {
 const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
+  const { reshardingEnabled } = useTelemetry();
   const [cluster, setCluster] = React.useState(null);
   const [dragState, setDragState] = React.useState({
     isDragging: false,
@@ -96,6 +101,12 @@ const ClusterMonitor = ({ collectionName }) => {
     transferRequest: null,
   });
   const [transferLoading, setTransferLoading] = React.useState(false);
+  const [reshardingLoading, setReshardingLoading] = React.useState(false);
+  const [reshardingDialog, setReshardingDialog] = React.useState({
+    open: false,
+    direction: null,
+  });
+  const [abortReshardingDialog, setAbortReshardingDialog] = React.useState(false);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -159,6 +170,40 @@ const ClusterMonitor = ({ collectionName }) => {
     setDragState({ isDragging: false, draggedSlot: null });
   };
 
+  // Helper function to refresh cluster info
+  const refreshClusterInfo = async () => {
+    try {
+      const clusterInfo = await axios.get(`/cluster`);
+      const collectionClusterInfo = await qdrantClient
+        .api('cluster')
+        .collectionClusterInfo({ collection_name: collectionName });
+
+      const newCluster = collectionClusterInfo.data.result;
+      const localShards =
+        newCluster.local_shards && newCluster.local_shards.length > 0
+          ? newCluster.local_shards.map((shard) => {
+              return {
+                ...shard,
+                peer_id: newCluster.peer_id,
+              };
+            })
+          : [];
+      newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
+
+      newCluster.peers = clusterInfo?.data?.result?.peers
+        ? Object.keys(clusterInfo.data.result.peers)
+            .map((peerId) => parseInt(peerId))
+            .sort((a, b) => a - b)
+        : [];
+      newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
+      // shard_count and resharding_operations are already included in newCluster from the API response
+      setCluster({ ...newCluster });
+    } catch (err) {
+      console.error('Error refreshing cluster info:', err);
+      throw err;
+    }
+  };
+
   const handleTransferConfirm = async (transferRequest) => {
     setTransferLoading(true);
 
@@ -177,37 +222,7 @@ const ClusterMonitor = ({ collectionName }) => {
       setTransferDialog({ open: false, transferRequest: null });
 
       // Refresh cluster info to show updated state
-      const fetchClusterInfo = async () => {
-        try {
-          const clusterInfo = await axios.get(`/cluster`);
-          const collectionClusterInfo = await qdrantClient
-            .api('cluster')
-            .collectionClusterInfo({ collection_name: collectionName });
-
-          const newCluster = collectionClusterInfo.data.result;
-          const localShards =
-            newCluster.local_shards.length &&
-            newCluster.local_shards.map((shard) => {
-              return {
-                ...shard,
-                peer_id: newCluster.peer_id,
-              };
-            });
-          newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
-
-          newCluster.peers = clusterInfo?.data?.result?.peers
-            ? Object.keys(clusterInfo.data.result.peers)
-                .map((peerId) => parseInt(peerId))
-                .sort((a, b) => a - b)
-            : [];
-          newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
-          setCluster({ ...newCluster });
-        } catch (err) {
-          console.error('Error refreshing cluster info:', err);
-        }
-      };
-
-      fetchClusterInfo();
+      await refreshClusterInfo();
     } catch (err) {
       console.error('Error moving shard:', err);
       enqueueSnackbar(`Failed to transfer shard: ${err.message}`, getSnackbarOptions('error', closeSnackbar));
@@ -222,6 +237,88 @@ const ClusterMonitor = ({ collectionName }) => {
 
   const handleDragCancel = () => {
     setDragState({ isDragging: false, draggedSlot: null });
+  };
+
+  const handleResharding = (direction) => {
+    // Open confirmation dialog
+    setReshardingDialog({
+      open: true,
+      direction,
+    });
+  };
+
+  const handleReshardingConfirm = async (direction, shardKey) => {
+    setReshardingLoading(true);
+
+    try {
+      const requestPayload = {
+        start_resharding: {
+          direction,
+        },
+      };
+
+      // Add shard_key if provided
+      if (shardKey !== null && shardKey !== undefined) {
+        requestPayload.start_resharding.shard_key = shardKey;
+      }
+
+      await qdrantClient.updateCollectionCluster(collectionName, requestPayload);
+
+      enqueueSnackbar(
+        `Resharding ${direction} initiated successfully`,
+        getSnackbarOptions('success', closeSnackbar, 2000)
+      );
+
+      // Close dialog and refresh cluster info
+      setReshardingDialog({ open: false, direction: null });
+
+      // Refresh cluster info to show updated state
+      await refreshClusterInfo();
+    } catch (err) {
+      console.error(`Error starting resharding ${direction}:`, err);
+      enqueueSnackbar(
+        `Failed to start resharding ${direction}: ${err.message}`,
+        getSnackbarOptions('error', closeSnackbar)
+      );
+    } finally {
+      setReshardingLoading(false);
+    }
+  };
+
+  const handleReshardingDialogClose = () => {
+    setReshardingDialog({ open: false, direction: null });
+  };
+
+  const handleAbortResharding = () => {
+    // Open confirmation dialog
+    setAbortReshardingDialog(true);
+  };
+
+  const handleAbortReshardingConfirm = async () => {
+    setReshardingLoading(true);
+
+    try {
+      await qdrantClient.updateCollectionCluster(collectionName, {
+        abort_resharding: {},
+      });
+
+      enqueueSnackbar('Resharding operation aborted successfully', getSnackbarOptions('success', closeSnackbar, 2000));
+
+      // Close dialog and refresh cluster info
+      setAbortReshardingDialog(false);
+
+      // Refresh cluster info to show updated state
+      await refreshClusterInfo();
+    } catch (err) {
+      console.error('Error aborting resharding:', err);
+      enqueueSnackbar(`Failed to abort resharding: ${err.message}`, getSnackbarOptions('error', closeSnackbar));
+    } finally {
+      setReshardingLoading(false);
+    }
+  };
+
+  const handleAbortReshardingDialogClose = () => {
+    setAbortReshardingDialog(false);
   };
 
   // Add global event listeners for drag cancellation
@@ -259,30 +356,7 @@ const ClusterMonitor = ({ collectionName }) => {
       }
 
       try {
-        const clusterInfo = await axios.get(`/cluster`);
-
-        const collectionClusterInfo = await qdrantClient
-          .api('cluster')
-          .collectionClusterInfo({ collection_name: collectionName });
-
-        const newCluster = collectionClusterInfo.data.result;
-        const localShards =
-          newCluster.local_shards.length &&
-          newCluster.local_shards.map((shard) => {
-            return {
-              ...shard,
-              peer_id: newCluster.peer_id,
-            };
-          });
-        newCluster.shards = [...(localShards || []), ...(newCluster.remote_shards || [])];
-
-        newCluster.peers = clusterInfo?.data?.result?.peers
-          ? Object.keys(clusterInfo.data.result.peers)
-              .map((peerId) => parseInt(peerId))
-              .sort((a, b) => a - b)
-          : [];
-        newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
-        setCluster({ ...newCluster });
+        await refreshClusterInfo();
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
@@ -290,6 +364,18 @@ const ClusterMonitor = ({ collectionName }) => {
 
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
+
+  // Extract unique shard keys from all shards (must be before conditional return)
+  const shardKeys = React.useMemo(() => {
+    if (!cluster?.shards || cluster.shards.length === 0) return [];
+    const keys = new Set();
+    cluster.shards.forEach((shard) => {
+      if (shard && shard.shard_key != null) {
+        keys.add(shard.shard_key);
+      }
+    });
+    return Array.from(keys).sort();
+  }, [cluster?.shards]);
 
   if (!cluster || cluster.status !== 'enabled') {
     return (
@@ -308,22 +394,30 @@ const ClusterMonitor = ({ collectionName }) => {
         gridTemplateColumns: '20px 1fr',
         gridTemplateRows: 'auto 1fr',
         gridColumnGap: '0.5rem',
-        gridRowGap: 0,
+        gridRowGap: '1rem',
         // breakpoints
         [theme.breakpoints.up('md')]: {
           gridTemplateColumns: '50px 1fr',
         },
       }}
     >
-      <Box sx={{ gridArea: '1 / 2 / 2 / 3' }}>
-        <Typography variant="subtitle1" mb={2}>
-          Cluster Nodes
-        </Typography>
+      <Box sx={{ gridArea: '1 / 2 / 2 / 3', display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Typography variant="subtitle1">Cluster Nodes</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <ReshardingButtons
+            cluster={cluster}
+            reshardingEnabled={reshardingEnabled}
+            reshardingLoading={reshardingLoading}
+            transferLoading={transferLoading}
+            onResharding={handleResharding}
+            onAbortResharding={handleAbortResharding}
+          />
+        </Box>
       </Box>
-      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', justifyContent: 'end' }}>
+      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
         <Legend dragState={dragState} />
       </Box>
-      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center' }}>
+      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center', marginTop: '1rem' }}>
         <Typography
           variant="subtitle1"
           sx={{ writingMode: 'vertical-lr', textAlign: 'center', transform: 'rotate(180deg)' }}
@@ -436,6 +530,26 @@ const ClusterMonitor = ({ collectionName }) => {
         transferRequest={transferDialog.transferRequest}
         onConfirm={handleTransferConfirm}
         loading={transferLoading}
+        collectionName={collectionName}
+      />
+
+      {/* Add ReshardingDialog */}
+      <ReshardingDialog
+        open={reshardingDialog.open}
+        onClose={handleReshardingDialogClose}
+        direction={reshardingDialog.direction}
+        onConfirm={handleReshardingConfirm}
+        loading={reshardingLoading}
+        collectionName={collectionName}
+        shardKeys={shardKeys}
+      />
+
+      {/* Add AbortReshardingDialog */}
+      <AbortReshardingDialog
+        open={abortReshardingDialog}
+        onClose={handleAbortReshardingDialogClose}
+        onConfirm={handleAbortReshardingConfirm}
+        loading={reshardingLoading}
         collectionName={collectionName}
       />
     </Box>
