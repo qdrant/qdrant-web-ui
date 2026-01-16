@@ -28,8 +28,7 @@ const ReshardingButtons = ({
   const hasShards = cluster?.shards && cluster.shards.length > 0;
   const canReshardDown = shardCount > 1;
   const canReshardUp = hasShards;
-  const isDisabled =
-    !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading || !canReshardUp;
+  const isDisabled = !reshardingEnabled || !hasEnoughNodes || reshardingLoading || transferLoading || !canReshardUp;
   const isReshardDownDisabled = isDisabled || !canReshardDown;
 
   const tooltipContent = !reshardingEnabled ? (
