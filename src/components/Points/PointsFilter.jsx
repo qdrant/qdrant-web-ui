@@ -40,13 +40,11 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const payloadConditions = useMemo(() => conditions.filter((condition) => condition.type === 'payload'), [conditions]);
   const payloadKeyOptions = useMemo(() => {
     const keys = new Set();
-    points?.points?.forEach((point) => {
-      Object.keys(point?.payload || {}).forEach((key) => keys.add(key));
-    });
+    Object.keys(points?.payload_schema || {}).forEach((key) => keys.add(key));
     Object.keys(payloadSchema || {}).forEach((key) => keys.add(key));
     return [...keys];
   }, [points, payloadSchema]);
-  const payloadOptions = useMemo(() => payloadKeyOptions.map((key) => `${key}:`), [payloadKeyOptions]);
+  const payloadOptions = useMemo(() => payloadKeyOptions, [payloadKeyOptions]);
   const filter = useMemo(() => createFilterOptions(), []);
 
   const sharedTextFieldSx = useMemo(
@@ -163,6 +161,46 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     onConditionChange(next);
   };
 
+  const handleChipEdit = (event, option, parseInput, setInputValue, type) => {
+    if (event?.target?.closest?.('.MuiChip-deleteIcon')) {
+      return;
+    }
+    const parsed = parseInput(option);
+    if (!parsed) {
+      return;
+    }
+    const condition =
+      type === 'id'
+        ? { key: 'id', type: 'id', value: parsed }
+        : { key: parsed.key, type: 'payload', value: parsed.value };
+
+    removeCondition(condition);
+    setInputValue(option);
+  };
+
+  const handleBackspaceEdit = (event, type, inputValue) => {
+    if (event.key !== 'Backspace' || inputValue) {
+      return;
+    }
+
+    const list = type === 'id' ? similarConditions : payloadConditions;
+    const lastCondition = list[list.length - 1];
+    if (!lastCondition) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const label = getConditionLabel(lastCondition);
+    removeCondition(lastCondition);
+    if (type === 'id') {
+      setSimilarValue(label);
+    } else {
+      setPayloadValue(label);
+    }
+  };
+
   return (
     <Box>
       <Grid container spacing={1}>
@@ -214,6 +252,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   label={option}
                   size="small"
                   color="primary"
+                  onClick={(event) => handleChipEdit(event, option, parseSimilarInput, setSimilarValue, 'id')}
                   onDelete={() => {
                     const parsed = parseSimilarInput(option);
                     if (parsed === null || parsed === undefined) {
@@ -239,6 +278,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                         {params.InputProps.startAdornment}
                       </>
                     ),
+                    onKeyDown: (event) => handleBackspaceEdit(event, 'id', similarValue),
                   },
                 }}
                 sx={sharedTextFieldSx}
@@ -278,8 +318,8 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             onInputChange={(_event, newInputValue) => setPayloadValue(newInputValue)}
             onChange={(event, newValues, reason) => {
               const lastValue = newValues[newValues.length - 1];
-              if ((reason === 'selectOption' || reason === 'createOption') && lastValue && lastValue.endsWith(':')) {
-                setPayloadValue(`${lastValue} `);
+              if ((reason === 'selectOption' || reason === 'createOption') && lastValue) {
+                setPayloadValue(`${lastValue}:`);
                 return;
               }
 
@@ -299,6 +339,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   label={option}
                   size="small"
                   color="primary"
+                  onClick={(event) => handleChipEdit(event, option, parsePayloadInput, setPayloadValue, 'payload')}
                   onDelete={() => {
                     const parsed = parsePayloadInput(option);
                     if (!parsed) {
@@ -324,6 +365,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                         {params.InputProps.startAdornment}
                       </>
                     ),
+                    onKeyDown: (event) => handleBackspaceEdit(event, 'payload', payloadValue),
                   },
                 }}
                 sx={{
@@ -342,6 +384,7 @@ PointsFilter.propTypes = {
   conditions: PropTypes.array,
   payloadSchema: PropTypes.object,
   points: PropTypes.shape({
+    payload_schema: PropTypes.object,
     points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })).isRequired,
   }),
   onConditionChange: PropTypes.func.isRequired,
