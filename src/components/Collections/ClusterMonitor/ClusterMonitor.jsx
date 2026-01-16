@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
 import { Grid, Typography, Box, Button, Tooltip, Link } from '@mui/material';
-import ArrowUpward from '@mui/icons-material/ArrowUpward';
-import ArrowDownward from '@mui/icons-material/ArrowDownward';
-import CancelIcon from '@mui/icons-material/Cancel';
+import { ArrowUp, ArrowDown, X } from 'lucide-react';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { useTelemetry } from '../../../context/telemetry-context';
@@ -267,7 +265,7 @@ const ClusterMonitor = ({ collectionName }) => {
       await qdrantClient.updateCollectionCluster(collectionName, requestPayload);
 
       enqueueSnackbar(
-        `Resharding ${direction === 'up' ? 'up' : 'down'} initiated successfully`,
+        `Resharding ${direction} initiated successfully`,
         getSnackbarOptions('success', closeSnackbar, 2000)
       );
 
@@ -279,7 +277,7 @@ const ClusterMonitor = ({ collectionName }) => {
     } catch (err) {
       console.error(`Error starting resharding ${direction}:`, err);
       enqueueSnackbar(
-        `Failed to start resharding ${direction === 'up' ? 'up' : 'down'}: ${err.message}`,
+        `Failed to start resharding ${direction}: ${err.message}`,
         getSnackbarOptions('error', closeSnackbar)
       );
     } finally {
@@ -454,7 +452,7 @@ const ClusterMonitor = ({ collectionName }) => {
                       variant="outlined"
                       size="small"
                       color="error"
-                      startIcon={<CancelIcon fontSize="small" />}
+                      startIcon={<X size={18} />}
                       onClick={handleAbortResharding}
                       disabled={reshardingLoading || transferLoading}
                       aria-label="Cancel resharding"
@@ -479,7 +477,7 @@ const ClusterMonitor = ({ collectionName }) => {
                     <Button
                       variant="outlined"
                       size="small"
-                      startIcon={<ArrowUpward fontSize="small" />}
+                      startIcon={<ArrowUp size={18} />}
                       onClick={() => handleResharding('up')}
                       disabled={isDisabled}
                       aria-label="Reshard up"
@@ -498,7 +496,7 @@ const ClusterMonitor = ({ collectionName }) => {
                     <Button
                       variant="outlined"
                       size="small"
-                      startIcon={<ArrowDownward fontSize="small" />}
+                      startIcon={<ArrowDown size={18} />}
                       onClick={() => handleResharding('down')}
                       disabled={isReshardDownDisabled}
                       aria-label="Reshard down"
@@ -520,7 +518,7 @@ const ClusterMonitor = ({ collectionName }) => {
       <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
         <Legend dragState={dragState} />
       </Box>
-      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center' }}>
+      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center', marginTop: '1rem' }}>
         <Typography
           variant="subtitle1"
           sx={{ writingMode: 'vertical-lr', textAlign: 'center', transform: 'rotate(180deg)' }}
