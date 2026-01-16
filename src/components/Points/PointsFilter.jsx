@@ -58,20 +58,23 @@ const StyledFilterEditor = styled(Editor)(({ theme }) => ({
   flex: 1,
   fontFamily: theme.typography.fontFamily,
   fontSize: '1rem',
-  lineHeight: 1.4375,
-  '& textarea': {
-    outline: 'none !important',
-    border: 'none !important',
-    padding: '0 !important',
-    background: 'transparent !important',
-    font: 'inherit !important',
-  },
-  '& pre': {
+  fontWeight: 400,
+  lineHeight: '23px',
+  letterSpacing: '0.5px',
+  '& textarea, & pre': {
+    fontFamily: 'inherit !important',
+    fontSize: 'inherit !important',
+    fontWeight: 'inherit !important',
+    lineHeight: 'inherit !important',
+    letterSpacing: 'inherit !important',
     margin: '0 !important',
     padding: '0 !important',
+    border: 'none !important',
+    outline: 'none !important',
+    background: 'transparent !important',
     whiteSpace: 'pre-wrap !important',
     wordBreak: 'break-word !important',
-    font: 'inherit !important',
+    wordSpacing: 'normal !important',
   },
 }));
 
@@ -81,11 +84,14 @@ const FilterAutocompletePopper = styled(Popper)({
 
 const AutocompleteList = styled(Paper)(({ theme }) => ({
   maxHeight: 220,
+  minWidth: 300,
   overflow: 'auto',
   marginTop: 4,
   '& .MuiMenuItem-root': {
-    fontSize: '0.875rem',
-    padding: '6px 12px',
+    fontFamily: 'monospace',
+    fontSize: '0.8125rem',
+    padding: '4px 12px',
+    minHeight: 'auto',
     '&.Mui-selected': {
       backgroundColor: theme.palette.action.selected,
     },
@@ -146,6 +152,33 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const currentWord = useMemo(() => {
     return getCurrentWord(filterInputValue, cursorPosition);
   }, [filterInputValue, cursorPosition, getCurrentWord]);
+
+  // Calculate the starting position of the current word for popper positioning
+  const currentWordStart = useMemo(() => {
+    const beforeCursor = filterInputValue.slice(0, cursorPosition);
+    const wordMatch = beforeCursor.match(/(\S*)$/);
+    return wordMatch ? cursorPosition - wordMatch[1].length : cursorPosition;
+  }, [filterInputValue, cursorPosition]);
+
+  // Calculate horizontal offset for autocomplete popper (position at word start)
+  const popperOffset = useMemo(() => {
+    if (!filterContainerRef.current) return [0, 4];
+
+    // Get the text before the current word
+    const textBeforeWord = filterInputValue.slice(0, currentWordStart);
+
+    // Measure the width of text before the word using a canvas
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    // Match the editor's font
+    ctx.font = '1rem system-ui, -apple-system, sans-serif';
+    const textWidth = ctx.measureText(textBeforeWord).width;
+
+    // Add offset for the filter icon (approximately 24px for icon + margin)
+    const iconOffset = 28;
+
+    return [textWidth + iconOffset, 4];
+  }, [filterInputValue, currentWordStart]);
 
   // Get filtered autocomplete options based on current input
   const filteredOptions = useMemo(() => {
@@ -385,9 +418,13 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
     const keyColor = '#fcfdff';
     const valueColor = '#1e88e5';
+    const valueBgColor = 'rgba(30, 136, 229, 0.15)';
 
     return code.replace(regex, (match, key, value) => {
-      return `<span style="color:${keyColor};font-weight:500">${key}:</span><span style="color:${valueColor}">${value}</span>`;
+      const valueSpan = value
+        ? `<span style="color:${valueColor};background:${valueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
+        : '';
+      return `<span style="color:${keyColor};font-weight:500">${key}:</span>${valueSpan}`;
     });
   }, []);
 
@@ -532,7 +569,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                 open={isFilterAutocompleteOpen && filteredOptions.length > 0}
                 anchorEl={filterContainerRef.current}
                 placement="bottom-start"
-                modifiers={[{ name: 'offset', options: { offset: [0, 4] } }]}
+                modifiers={[{ name: 'offset', options: { offset: popperOffset } }]}
               >
                 <AutocompleteList>
                   {filteredOptions.map((option, index) => (
