@@ -172,11 +172,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             freeSolo
             options={[]}
             filterOptions={(options, state) => {
-              const filtered = filter(options, state);
-              if (state.inputValue !== '' && !filtered.includes(state.inputValue)) {
-                filtered.unshift(state.inputValue);
-              }
-              return filtered;
+              return filter(options, state);
             }}
             filterSelectedOptions
             openOnFocus
@@ -256,11 +252,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             freeSolo
             options={payloadOptions}
             filterOptions={(options, state) => {
-              const filtered = filter(options, state);
-              if (state.inputValue !== '' && !filtered.includes(state.inputValue)) {
-                filtered.unshift(state.inputValue);
-              }
-              return filtered;
+              return filter(options, state);
             }}
             filterSelectedOptions
             openOnFocus
