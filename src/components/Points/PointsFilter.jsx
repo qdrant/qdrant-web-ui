@@ -1,10 +1,30 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Box, Chip, Grid } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
+import Popper from '@mui/material/Popper';
 import TextField from '@mui/material/TextField';
 import { Filter, Route } from 'lucide-react';
+
+const StyledAutocompletePopper = styled(Popper)(() => ({
+  width: 'fit-content !important',
+  maxWidth: '80vw',
+  '& .MuiAutocomplete-paper': {
+    maxHeight: 240,
+  },
+  '& .MuiAutocomplete-listbox': {
+    maxHeight: 220,
+  },
+}));
+
+const AutocompletePopper = React.forwardRef(function AutocompletePopper(props, ref) {
+  const { anchorEl, style, ...other } = props;
+  const inputElement = anchorEl?.querySelector('input');
+  const resolvedAnchorEl = inputElement || anchorEl;
+
+  return <StyledAutocompletePopper {...other} ref={ref} anchorEl={resolvedAnchorEl} style={style} />;
+});
 
 // todo:
 // - [ ] refactor for better readability and maintainability
@@ -163,6 +183,20 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             clearOnBlur={false}
             handleHomeEndKeys
             isOptionEqualToValue={(option, value) => option === value}
+            PopperComponent={AutocompletePopper}
+            slotProps={{
+              popper: {
+                placement: 'bottom-start',
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, 4],
+                    },
+                  },
+                ],
+              },
+            }}
             value={similarConditions.map((condition) => getConditionLabel(condition))}
             inputValue={similarValue}
             onInputChange={(_event, newInputValue) => setSimilarValue(newInputValue)}
@@ -233,6 +267,20 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             clearOnBlur={false}
             handleHomeEndKeys
             isOptionEqualToValue={(option, value) => option === value}
+            PopperComponent={AutocompletePopper}
+            slotProps={{
+              popper: {
+                placement: 'bottom-start',
+                modifiers: [
+                  {
+                    name: 'offset',
+                    options: {
+                      offset: [0, 4],
+                    },
+                  },
+                ],
+              },
+            }}
             value={payloadConditions.map((condition) => getConditionLabel(condition))}
             inputValue={payloadValue}
             onInputChange={(_event, newInputValue) => setPayloadValue(newInputValue)}
@@ -305,6 +353,14 @@ PointsFilter.propTypes = {
     points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })).isRequired,
   }),
   onConditionChange: PropTypes.func.isRequired,
+};
+
+AutocompletePopper.propTypes = {
+  anchorEl: PropTypes.shape({
+    getBoundingClientRect: PropTypes.func,
+    querySelector: PropTypes.func,
+  }),
+  style: PropTypes.object,
 };
 
 export default PointsFilter;
