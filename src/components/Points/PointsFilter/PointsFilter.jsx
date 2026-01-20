@@ -122,25 +122,29 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const similarConditions = useMemo(() => conditions.filter((condition) => condition.type === 'id'), [conditions]);
   const payloadConditions = useMemo(() => conditions.filter((condition) => condition.type === 'payload'), [conditions]);
 
-  // Reset expanded state when similarity field is cleared
-  useEffect(() => {
-    if (similarConditions.length === 0 && isSimilarExpanded) {
-      setIsSimilarExpanded(false);
-    }
-  }, [similarConditions.length, isSimilarExpanded]);
-
   const getSimilarConditionLabel = (condition) => `id: ${condition.value}`;
 
-  // Calculate visible chips count (show at least 3, or all if expanded)
+  // Calculate visible chips count (show at least 2, or all if expanded)
   const similarConditionLabels = useMemo(
     () => similarConditions.map((condition) => getSimilarConditionLabel(condition)),
     [similarConditions]
   );
   const maxVisibleChips = 2;
+
+  // Auto-expand when chips don't fit in one line, auto-collapse when they do
+  useEffect(() => {
+    if (similarConditionLabels.length === 0) {
+      setIsSimilarExpanded(false);
+    } else if (similarConditionLabels.length > maxVisibleChips) {
+      setIsSimilarExpanded(true);
+    } else if (similarConditionLabels.length <= maxVisibleChips) {
+      setIsSimilarExpanded(false);
+    }
+  }, [similarConditionLabels.length, maxVisibleChips]);
+
   const visibleChipsCount = isSimilarExpanded
     ? similarConditionLabels.length
     : Math.min(maxVisibleChips, similarConditionLabels.length);
-  const hiddenChipsCount = similarConditionLabels.length - visibleChipsCount;
 
   // Build filter input value from payload conditions
   const buildFilterInputFromConditions = useCallback((conditionsList) => {
@@ -356,11 +360,8 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         height: 28,
         borderRadius: '8px',
       },
-      '& .MuiAutocomplete-clearIndicator': {
-        backgroundColor: theme.palette.divider,
-      },
     }),
-    [theme.palette.divider, theme.palette.primary.main, theme.palette.background.paper]
+    [theme.palette.divider, theme.palette.primary.main]
   );
 
   // Select autocomplete option for filter
@@ -573,47 +574,6 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   <span key={`${option}_${index}`}>{chip}</span>
                 );
               });
-
-              if (hiddenChipsCount > 0 && !isSimilarExpanded) {
-                chips.push(
-                  <Chip
-                    key="more-chip"
-                    label={`+${hiddenChipsCount} more`}
-                    size="small"
-                    sx={{
-                      maxHeight: '24px !important',
-                      marginRight: 0.5,
-                      cursor: 'pointer',
-                    }}
-                    color="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsSimilarExpanded(true);
-                    }}
-                  />
-                );
-              }
-
-              if (isSimilarExpanded && similarConditionLabels.length > maxVisibleChips) {
-                chips.push(
-                  <Chip
-                    key="less-chip"
-                    label="Show less"
-                    size="small"
-                    sx={{
-                      maxHeight: '24px !important',
-                      marginRight: 0.5,
-                      cursor: 'pointer',
-                    }}
-                    color="primary"
-                    variant="outlined"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsSimilarExpanded(false);
-                    }}
-                  />
-                );
-              }
 
               return chips;
             }}
