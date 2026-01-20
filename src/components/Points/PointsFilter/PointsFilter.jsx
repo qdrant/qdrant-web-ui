@@ -87,6 +87,13 @@ const StyledFilterEditor = styled(Editor)(({ theme }) => ({
     whiteSpace: 'pre-wrap !important',
     wordBreak: 'break-word !important',
     wordSpacing: 'normal !important',
+    '&::placeholder': {
+      color: theme.palette.text.disabled,
+      opacity: 1,
+      fontFamily: 'inherit !important',
+      fontSize: 'inherit !important',
+      fontWeight: 'inherit !important',
+    },
   },
 }));
 
@@ -115,10 +122,8 @@ const AutocompleteList = styled(Paper)(({ theme }) => ({
 
 // todo:
 // - [ ] refactor for better readability and maintainability
-// - [ ] fix the whole page re-render when the filter is changed
 // - [ ] optimize the performance of the filter
-// - [ ] add a clear all button to the filter input
-// - [ ] should Find Similar add or replace the condition?
+
 const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, points }) => {
   const theme = useTheme();
   const filterContainerRef = useRef(null);
@@ -372,8 +377,12 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         height: 28,
         borderRadius: '8px',
       },
+      '& .MuiOutlinedInput-input::placeholder': {
+        color: theme.palette.text.disabled,
+        opacity: 1,
+      },
     }),
-    [theme.palette.divider, theme.palette.primary.main]
+    [theme.palette.divider, theme.palette.primary.main, theme.palette.text.disabled]
   );
 
   // Select autocomplete option for filter
