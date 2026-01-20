@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip, alpha } from '@mui/material';
+import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip, Tooltip, alpha } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Editor from 'react-simple-code-editor';
@@ -116,10 +116,31 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const [isFilterFocused, setIsFilterFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [isSimilarExpanded, setIsSimilarExpanded] = useState(false);
   const filter = useMemo(() => createFilterOptions(), []);
 
   const similarConditions = useMemo(() => conditions.filter((condition) => condition.type === 'id'), [conditions]);
   const payloadConditions = useMemo(() => conditions.filter((condition) => condition.type === 'payload'), [conditions]);
+
+  // Reset expanded state when similarity field is cleared
+  useEffect(() => {
+    if (similarConditions.length === 0 && isSimilarExpanded) {
+      setIsSimilarExpanded(false);
+    }
+  }, [similarConditions.length, isSimilarExpanded]);
+
+  const getSimilarConditionLabel = (condition) => `id: ${condition.value}`;
+
+  // Calculate visible chips count (show at least 3, or all if expanded)
+  const similarConditionLabels = useMemo(
+    () => similarConditions.map((condition) => getSimilarConditionLabel(condition)),
+    [similarConditions]
+  );
+  const maxVisibleChips = 2;
+  const visibleChipsCount = isSimilarExpanded
+    ? similarConditionLabels.length
+    : Math.min(maxVisibleChips, similarConditionLabels.length);
+  const hiddenChipsCount = similarConditionLabels.length - visibleChipsCount;
 
   // Build filter input value from payload conditions
   const buildFilterInputFromConditions = useCallback((conditionsList) => {
@@ -267,8 +288,6 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   const uniqConditions = (list) =>
     list.filter((item, index) => list.findIndex((candidate) => isSameCondition(candidate, item)) === index);
 
-  const getSimilarConditionLabel = (condition) => `id: ${condition.value}`;
-
   const parseSimilarInput = (rawInput) => {
     const trimmedInput = (rawInput || '').trim();
     if (!trimmedInput) {
@@ -337,8 +356,11 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         height: 28,
         borderRadius: '8px',
       },
+      '& .MuiAutocomplete-clearIndicator': {
+        backgroundColor: theme.palette.divider,
+      },
     }),
-    [theme.palette.divider, theme.palette.primary.main]
+    [theme.palette.divider, theme.palette.primary.main, theme.palette.background.paper]
   );
 
   // Select autocomplete option for filter
@@ -414,21 +436,24 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
   );
 
   // Syntax highlighting function for the filter editor
-  const highlightCode = useCallback((code) => {
-    if (!code) return '';
+  const highlightCode = useCallback(
+    (code) => {
+      if (!code) return '';
 
-    const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
-    const keyColor = theme.palette.text.primary;
-    const valueColor = theme.palette.primary.main;
-    const valueBgColor = alpha(theme.palette.primary.light, 0.15);
+      const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
+      const keyColor = theme.palette.text.primary;
+      const valueColor = theme.palette.primary.main;
+      const valueBgColor = alpha(theme.palette.primary.light, 0.15);
 
-    return code.replace(regex, (match, key, value) => {
-      const valueSpan = value
-        ? `<span style="color:${valueColor};background:${valueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
-        : '';
-      return `<span style="color:${keyColor};font-weight:500">${key}:</span>${valueSpan}`;
-    });
-  }, [theme]);
+      return code.replace(regex, (match, key, value) => {
+        const valueSpan = value
+          ? `<span style="color:${valueColor};background:${valueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
+          : '';
+        return `<span style="color:${keyColor};font-weight:500">${key}:</span>${valueSpan}`;
+      });
+    },
+    [theme]
+  );
 
   const handleFilterValueChange = useCallback((newValue) => {
     setFilterInputValue(newValue);
@@ -474,7 +499,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     <Box>
       <Grid container spacing={1}>
         {/* Similar search field (with chips) */}
-        <Grid size={{ xs: 12, md: 3 }}>
+        <Grid size={{ xs: 12, md: isSimilarExpanded ? 12 : 3 }}>
           <Autocomplete
             multiple
             freeSolo
@@ -505,28 +530,93 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
               onConditionChange(next);
               setSimilarValue('');
             }}
-            renderValue={(selected) =>
-              selected.map((option, index) => (
-                <Chip
-                  key={`${option}_${index}`}
-                  label={option}
-                  size="small"
-                  sx={{
-                    maxHeight: '24px !important',
-                    marginRight: index < selected.length - 1 ? 0.5 : 0,
-                  }}
-                  color="primary"
-                  onClick={(event) => handleSimilarChipEdit(event, option)}
-                  onDelete={() => {
-                    const parsed = parseSimilarInput(option);
-                    if (parsed === null || parsed === undefined) {
-                      return;
-                    }
-                    removeCondition({ key: 'id', type: 'id', value: parsed });
-                  }}
-                />
-              ))
-            }
+            renderValue={(selected) => {
+              const visibleChips = selected.slice(0, visibleChipsCount);
+              const chips = visibleChips.map((option, index) => {
+                const fullLabel = option;
+                const shouldTruncate = !isSimilarExpanded && fullLabel.length > 15;
+                const displayLabel = shouldTruncate ? `${fullLabel.slice(0, 12)}...` : fullLabel;
+                const hasMaxWidth = !isSimilarExpanded;
+                const showTooltip = shouldTruncate || (hasMaxWidth && fullLabel.length > 0);
+
+                const chip = (
+                  <Chip
+                    label={displayLabel}
+                    size="small"
+                    sx={{
+                      maxHeight: '24px !important',
+                      marginRight: 0.5,
+                      '& .MuiChip-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: isSimilarExpanded ? 'none' : '100px',
+                      },
+                    }}
+                    color="primary"
+                    onClick={(event) => handleSimilarChipEdit(event, option)}
+                    onDelete={() => {
+                      const parsed = parseSimilarInput(option);
+                      if (parsed === null || parsed === undefined) {
+                        return;
+                      }
+                      removeCondition({ key: 'id', type: 'id', value: parsed });
+                    }}
+                  />
+                );
+
+                return showTooltip ? (
+                  <Tooltip key={`${option}_${index}`} title={fullLabel} arrow>
+                    <span>{chip}</span>
+                  </Tooltip>
+                ) : (
+                  <span key={`${option}_${index}`}>{chip}</span>
+                );
+              });
+
+              if (hiddenChipsCount > 0 && !isSimilarExpanded) {
+                chips.push(
+                  <Chip
+                    key="more-chip"
+                    label={`+${hiddenChipsCount} more`}
+                    size="small"
+                    sx={{
+                      maxHeight: '24px !important',
+                      marginRight: 0.5,
+                      cursor: 'pointer',
+                    }}
+                    color="primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSimilarExpanded(true);
+                    }}
+                  />
+                );
+              }
+
+              if (isSimilarExpanded && similarConditionLabels.length > maxVisibleChips) {
+                chips.push(
+                  <Chip
+                    key="less-chip"
+                    label="Show less"
+                    size="small"
+                    sx={{
+                      maxHeight: '24px !important',
+                      marginRight: 0.5,
+                      cursor: 'pointer',
+                    }}
+                    color="primary"
+                    variant="outlined"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsSimilarExpanded(false);
+                    }}
+                  />
+                );
+              }
+
+              return chips;
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -546,14 +636,21 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                     onKeyDown: handleSimilarBackspaceEdit,
                   },
                 }}
-                sx={sharedTextFieldSx}
+                sx={{
+                  ...sharedTextFieldSx,
+                  '& .MuiOutlinedInput-root': {
+                    ...sharedTextFieldSx['& .MuiOutlinedInput-root'],
+                    flexWrap: isSimilarExpanded ? 'wrap' : 'nowrap',
+                    overflow: isSimilarExpanded ? 'visible' : 'hidden',
+                  },
+                }}
               />
             )}
           />
         </Grid>
 
         {/* Payload filter field (GitHub-style with syntax highlighting) */}
-        <Grid size={{ xs: 12, md: 9 }}>
+        <Grid size={{ xs: 12, md: isSimilarExpanded ? 12 : 9 }}>
           <ClickAwayListener onClickAway={handleFilterClickAway}>
             <Box sx={{ position: 'relative' }}>
               <FilterInputContainer ref={filterContainerRef}>
