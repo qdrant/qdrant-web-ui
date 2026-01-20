@@ -105,6 +105,8 @@ const AutocompleteList = styled(Paper)(({ theme }) => ({
 // - [ ] refactor for better readability and maintainability
 // - [ ] fix the whole page re-render when the filter is changed
 // - [ ] optimize the performance of the filter
+// - [ ] add a clear all button to the filter input
+// - [ ] should Find Similar add or replace the condition?
 const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, points }) => {
   const theme = useTheme();
   const filterContainerRef = useRef(null);
@@ -503,13 +505,16 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
               onConditionChange(next);
               setSimilarValue('');
             }}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
+            renderValue={(selected) =>
+              selected.map((option, index) => (
                 <Chip
-                  {...getTagProps({ index })}
                   key={`${option}_${index}`}
                   label={option}
                   size="small"
+                  sx={{
+                    maxHeight: '24px !important',
+                    marginRight: index < selected.length - 1 ? 0.5 : 0,
+                  }}
                   color="primary"
                   onClick={(event) => handleSimilarChipEdit(event, option)}
                   onDelete={() => {
@@ -530,6 +535,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                 placeholder="Similar to (id)"
                 slotProps={{
                   input: {
+                    sx: { paddingTop: '4px !important', paddingBottom: '4px !important' },
                     ...params.InputProps,
                     startAdornment: (
                       <>
