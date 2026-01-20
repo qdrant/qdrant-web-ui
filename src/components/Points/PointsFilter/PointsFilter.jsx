@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip, Tooltip, alpha } from '@mui/material';
+import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip, Tooltip, IconButton, alpha } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Editor from 'react-simple-code-editor';
-import { Filter, Route } from 'lucide-react';
+import { Filter, Route, X } from 'lucide-react';
 
 const StyledAutocompletePopper = styled(Popper)(() => ({
   width: 'fit-content !important',
@@ -52,6 +52,18 @@ const FilterIcon = styled(Box)(({ theme }) => ({
   marginRight: 4,
   color: theme.palette.text.secondary,
   flexShrink: 0,
+}));
+
+const ClearButton = styled(IconButton)(({ theme }) => ({
+  padding: '4px',
+  marginLeft: '4px',
+  marginRight: '-4px',
+  color: theme.palette.action.active,
+  flexShrink: 0,
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    color: theme.palette.action.active,
+  },
 }));
 
 const StyledFilterEditor = styled(Editor)(({ theme }) => ({
@@ -464,6 +476,15 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     setCursorPosition(newValue.length);
   }, []);
 
+  const handleClearFilter = useCallback(() => {
+    setFilterInputValue('');
+    setCursorPosition(0);
+    setHighlightedIndex(0);
+    // Clear payload conditions
+    const next = uniqConditions([...similarConditions]);
+    onConditionChange(next);
+  }, [similarConditions, onConditionChange]);
+
   // Auto-show/hide autocomplete based on current word (only when focused)
   useEffect(() => {
     if (!isFilterFocused) {
@@ -627,6 +648,11 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
                   onClick={handleFilterClick}
                   padding={0}
                 />
+                {filterInputValue && (
+                  <ClearButton onClick={handleClearFilter} size="small" title="Clear filter">
+                    <X size={18} />
+                  </ClearButton>
+                )}
               </FilterInputContainer>
               <FilterAutocompletePopper
                 open={isFilterAutocompleteOpen && filteredOptions.length > 0}

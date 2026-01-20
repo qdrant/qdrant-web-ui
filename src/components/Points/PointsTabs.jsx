@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import PointCard from './PointCard';
+import PointCardSkeleton from './PointCardSkeleton';
 import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
@@ -17,6 +18,7 @@ const PointsTabs = ({ collectionName, client }) => {
   const [nextPageOffset, setNextPageOffset] = useState(null);
   const [usingVector, setUsingVector] = useState(null);
   const [payloadSchema, setPayloadSchema] = useState({});
+  const [requestCount, setRequestCount] = useState(0);
 
   const onConditionChange = (conditions, usingVector) => {
     if (usingVector) {
@@ -24,7 +26,7 @@ const PointsTabs = ({ collectionName, client }) => {
     }
     setOffset(null);
     setConditions(conditions);
-    setPoints({ points: [] });
+    setPoints(null);
   };
 
   const deletePoint = (collectionName, pointIds) => {
@@ -45,6 +47,7 @@ const PointsTabs = ({ collectionName, client }) => {
 
   useEffect(() => {
     const getPoints = async () => {
+      setRequestCount((prev) => prev + 1);
       if (conditions.length !== 0) {
         const recommendationIds = [];
         const filters = [];
@@ -97,7 +100,7 @@ const PointsTabs = ({ collectionName, client }) => {
               with_vector: true,
             });
             setPoints({
-              points: [...(points?.points || []), ...(newPoints?.points || [])],
+              points: offset ? [...(points?.points || []), ...(newPoints?.points || [])] : newPoints?.points || [],
             });
             setNextPageOffset(newPoints?.next_page_offset);
             setErrorMessage(null);
@@ -106,6 +109,8 @@ const PointsTabs = ({ collectionName, client }) => {
           const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
           message && setErrorMessage(message);
           setPoints({});
+        } finally {
+          setRequestCount((prev) => prev - 1);
         }
       } else {
         try {
@@ -116,7 +121,7 @@ const PointsTabs = ({ collectionName, client }) => {
             with_payload: true,
           });
           setPoints({
-            points: [...(points?.points || []), ...(newPoints?.points || [])],
+            points: offset ? [...(points?.points || []), ...(newPoints?.points || [])] : newPoints?.points || [],
           });
           setNextPageOffset(newPoints?.next_page_offset);
           setErrorMessage(null);
@@ -124,11 +129,15 @@ const PointsTabs = ({ collectionName, client }) => {
           const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
           message && setErrorMessage(message);
           setPoints({});
+        } finally {
+          setRequestCount((prev) => prev - 1);
         }
       }
     };
     getPoints();
   }, [collectionName, offset, conditions]);
+  const isLoading = !points && !errorMessage && requestCount > 0;
+
   return (
     <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
@@ -137,26 +146,40 @@ const PointsTabs = ({ collectionName, client }) => {
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
-      {!points && !errorMessage && (
-        <Grid textAlign={'center'} size={12} role="progressbar" aria-label="Loading Points">
-          <Typography> 🔃 Loading...</Typography>
+      {!isLoading && !errorMessage && (
+        <Grid size={12}>
+          <PointsFilter
+            onConditionChange={onConditionChange}
+            conditions={conditions}
+            payloadSchema={payloadSchema}
+            points={points}
+          />
         </Grid>
       )}
-      {points && !errorMessage && points.points?.length === 0 && (
-        <Grid textAlign={'center'} size={12} role="alert" aria-label="No Points">
-          <Typography>📪 No Points are present, {collectionName} is empty</Typography>
-        </Grid>
-      )}
-      {points && !errorMessage && (
+      {isLoading && (
         <>
           <Grid size={12}>
             <PointsFilter
               onConditionChange={onConditionChange}
               conditions={conditions}
               payloadSchema={payloadSchema}
-              points={points}
+              points={null}
             />
           </Grid>
+          {Array.from({ length: pageSize }).map((_, index) => (
+            <Grid key={`skeleton-${index}`} size={12}>
+              <PointCardSkeleton />
+            </Grid>
+          ))}
+        </>
+      )}
+      {points && !errorMessage && requestCount === 0 && points.points?.length === 0 && (
+        <Grid textAlign={'center'} size={12} role="alert" aria-label="No Points">
+          <Typography>📪 No Points are present, {collectionName} is empty</Typography>
+        </Grid>
+      )}
+      {points && !errorMessage && points.points?.length > 0 && (
+        <>
           {points.points?.map((point) => (
             <Grid key={point.id} size={12}>
               <PointCard
