@@ -5,7 +5,7 @@ import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
 import { Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
-import PointsFilter from './PointsFilter';
+import PointsFilter from './PointsFilter/PointsFilter';
 
 const PointsTabs = ({ collectionName, client }) => {
   const pageSize = 10;

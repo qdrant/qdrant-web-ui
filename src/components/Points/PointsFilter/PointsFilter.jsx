@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip } from '@mui/material';
+import { Box, Grid, Paper, MenuItem, Popper, ClickAwayListener, Chip, alpha } from '@mui/material';
 import Autocomplete, { createFilterOptions } from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Editor from 'react-simple-code-editor';
@@ -416,9 +416,9 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
     if (!code) return '';
 
     const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
-    const keyColor = '#fcfdff';
-    const valueColor = '#1e88e5';
-    const valueBgColor = 'rgba(30, 136, 229, 0.15)';
+    const keyColor = theme.palette.text.primary;
+    const valueColor = theme.palette.primary.main;
+    const valueBgColor = alpha(theme.palette.primary.light, 0.15);
 
     return code.replace(regex, (match, key, value) => {
       const valueSpan = value
@@ -426,7 +426,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         : '';
       return `<span style="color:${keyColor};font-weight:500">${key}:</span>${valueSpan}`;
     });
-  }, []);
+  }, [theme]);
 
   const handleFilterValueChange = useCallback((newValue) => {
     setFilterInputValue(newValue);
