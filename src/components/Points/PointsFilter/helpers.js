@@ -115,6 +115,16 @@ export const normalizeValueBySchema = (valueString, key, payloadSchema) => {
 };
 
 /**
+ * Normalize filter input by removing whitespace after colons
+ * Transforms "key: value" to "key:value"
+ * @param {string} filterText - Filter text to normalize
+ * @return {string} Normalized filter text
+ */
+export const normalizeFilterInput = (filterText) => {
+  return filterText.replace(/:\s+/g, ':');
+};
+
+/**
  * Parse filter string into payload conditions array
  * @param {string} filterText - Filter text to parse
  * @param {Object} payloadSchema - Schema object for value normalization

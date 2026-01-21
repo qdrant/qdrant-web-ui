@@ -16,6 +16,7 @@ import {
   getCurrentWord,
   getCurrentWordStart,
   calculatePopperOffset,
+  normalizeFilterInput,
   parseFilterString,
   buildFilterInputFromConditions,
   uniqConditions,
@@ -155,7 +156,12 @@ const PayloadFilterField = memo(function PayloadFilterField({
 
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        const parsedPayloadConditions = parseFilterString(inputValue, payloadSchema);
+        // Normalize input by removing whitespace after colons (e.g., "key: value" → "key:value")
+        const normalizedInput = normalizeFilterInput(inputValue);
+        if (normalizedInput !== inputValue) {
+          setInputValue(normalizedInput);
+        }
+        const parsedPayloadConditions = parseFilterString(normalizedInput, payloadSchema);
         const uniquePayloadConditions = uniqConditions(parsedPayloadConditions);
         const next = uniqConditions([...similarConditions, ...uniquePayloadConditions]);
         onConditionChange(next);
