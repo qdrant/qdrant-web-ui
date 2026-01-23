@@ -146,7 +146,8 @@ const PointsTabs = ({ collectionName, client }) => {
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
-      {!isLoading && !errorMessage && (
+      {/* Always render the same PointsFilter instance to preserve filter input state */}
+      {!errorMessage && (
         <Grid size={12}>
           <PointsFilter
             onConditionChange={onConditionChange}
@@ -158,14 +159,6 @@ const PointsTabs = ({ collectionName, client }) => {
       )}
       {isLoading && (
         <>
-          <Grid size={12}>
-            <PointsFilter
-              onConditionChange={onConditionChange}
-              conditions={conditions}
-              payloadSchema={payloadSchema}
-              points={null}
-            />
-          </Grid>
           {Array.from({ length: pageSize }).map((_, index) => (
             <Grid key={`skeleton-${index}`} size={12}>
               <PointCardSkeleton />
