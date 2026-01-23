@@ -13,7 +13,8 @@ const PointsTabs = ({ collectionName, client }) => {
   const [points, setPoints] = useState(null);
   const [offset, setOffset] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [conditions, setConditions] = useState([]);
+  const [similarIds, setSimilarIds] = useState([]);
+  const [filters, setFilters] = useState([]);
   const qdrantClient = client ? client : useClient().client;
   const [nextPageOffset, setNextPageOffset] = useState(null);
   const [usingVector, setUsingVector] = useState(null);
@@ -21,13 +22,23 @@ const PointsTabs = ({ collectionName, client }) => {
   const [payloadValues, setPayloadValues] = useState({});
   const [requestCount, setRequestCount] = useState(0);
 
-  const onConditionChange = (conditions, usingVector) => {
-    if (usingVector) {
-      setUsingVector(usingVector);
+  const onSimilarIdsChange = (ids, vectorName) => {
+    if (vectorName !== undefined) {
+      setUsingVector(vectorName);
     }
     setOffset(null);
-    setConditions(conditions);
+    setSimilarIds(ids);
     setPoints(null);
+  };
+
+  const onFiltersChange = (newFilters) => {
+    setOffset(null);
+    setFilters(newFilters);
+    setPoints(null);
+  };
+
+  const onFindSimilar = (pointId, vectorName) => {
+    onSimilarIdsChange([pointId], vectorName);
   };
 
   const deletePoint = (collectionName, pointIds) => {
@@ -71,76 +82,54 @@ const PointsTabs = ({ collectionName, client }) => {
   useEffect(() => {
     const getPoints = async () => {
       setRequestCount((prev) => prev + 1);
-      if (conditions.length !== 0) {
-        const recommendationIds = [];
-        const filters = [];
-        conditions.forEach((condition) => {
-          if (condition.type === 'id') {
-            recommendationIds.push(condition.value);
-          } else if (condition.type === 'payload') {
-            if (condition.value === null || condition.value === undefined) {
-              filters.push({
-                is_null: {
-                  key: condition.key,
-                },
-              });
-            } else if (condition.value === '') {
-              filters.push({
-                is_empty: {
-                  key: condition.key,
-                },
-              });
-            } else if (payloadSchema[condition.key] && payloadSchema[condition.key].data_type === 'text') {
-              filters.push({ key: condition.key, match: { text: condition.value } });
-            } else {
-              filters.push({ key: condition.key, match: { value: condition.value } });
-            }
-          }
-        });
-        try {
-          if (recommendationIds.length !== 0) {
-            const newPoints = await qdrantClient.query(collectionName, {
-              query: {
-                recommend: {
-                  positive: recommendationIds,
-                }
-              },
-              limit: pageSize + (offset || 0),
-              with_payload: true,
-              with_vector: true,
-              using: usingVector,
-              filter: {
-                must: filters,
-              },
-            });
-            setNextPageOffset(newPoints.points.length);
-            setPoints(newPoints);
-            setErrorMessage(null);
-          } else if (filters.length !== 0) {
-            const newPoints = await qdrantClient.scroll(collectionName, {
-              offset,
-              filter: {
-                must: filters,
-              },
-              limit: pageSize,
-              with_payload: true,
-              with_vector: true,
-            });
-            setPoints({
-              points: offset ? [...(points?.points || []), ...(newPoints?.points || [])] : newPoints?.points || [],
-            });
-            setNextPageOffset(newPoints?.next_page_offset);
-            setErrorMessage(null);
-          }
-        } catch (error) {
-          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
-          message && setErrorMessage(message);
-          setPoints({});
-        } finally {
-          setRequestCount((prev) => prev - 1);
+
+      // Build filter conditions from payload filters
+      const filterConditions = filters.map((filter) => {
+        if (filter.value === null || filter.value === undefined) {
+          return { is_null: { key: filter.key } };
+        } else if (filter.value === '') {
+          return { is_empty: { key: filter.key } };
+        } else if (payloadSchema[filter.key] && payloadSchema[filter.key].data_type === 'text') {
+          return { key: filter.key, match: { text: filter.value } };
+        } else {
+          return { key: filter.key, match: { value: filter.value } };
         }
-      } else {
-        try {
+      });
+
+      try {
+        if (similarIds.length > 0) {
+          // Similarity search with optional filters
+          const newPoints = await qdrantClient.query(collectionName, {
+            query: {
+              recommend: {
+                positive: similarIds,
+              },
+            },
+            limit: pageSize + (offset || 0),
+            with_payload: true,
+            with_vector: true,
+            using: usingVector,
+            filter: filterConditions.length > 0 ? { must: filterConditions } : undefined,
+          });
+          setNextPageOffset(newPoints.points.length);
+          setPoints(newPoints);
+          setErrorMessage(null);
+        } else if (filterConditions.length > 0) {
+          // Filter-only search
+          const newPoints = await qdrantClient.scroll(collectionName, {
+            offset,
+            filter: { must: filterConditions },
+            limit: pageSize,
+            with_payload: true,
+            with_vector: true,
+          });
+          setPoints({
+            points: offset ? [...(points?.points || []), ...(newPoints?.points || [])] : newPoints?.points || [],
+          });
+          setNextPageOffset(newPoints?.next_page_offset);
+          setErrorMessage(null);
+        } else {
+          // No filters - scroll all
           const newPoints = await qdrantClient.scroll(collectionName, {
             offset,
             limit: pageSize,
@@ -152,17 +141,17 @@ const PointsTabs = ({ collectionName, client }) => {
           });
           setNextPageOffset(newPoints?.next_page_offset);
           setErrorMessage(null);
-        } catch (error) {
-          const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
-          message && setErrorMessage(message);
-          setPoints({});
-        } finally {
-          setRequestCount((prev) => prev - 1);
         }
+      } catch (error) {
+        const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
+        message && setErrorMessage(message);
+        setPoints({});
+      } finally {
+        setRequestCount((prev) => prev - 1);
       }
     };
     getPoints();
-  }, [collectionName, offset, conditions]);
+  }, [collectionName, offset, similarIds, filters]);
   const isLoading = !points && !errorMessage && requestCount > 0;
 
   return (
@@ -177,8 +166,10 @@ const PointsTabs = ({ collectionName, client }) => {
       {!errorMessage && (
         <Grid size={12}>
           <PointsFilter
-            onConditionChange={onConditionChange}
-            conditions={conditions}
+            similarIds={similarIds}
+            filters={filters}
+            onSimilarIdsChange={onSimilarIdsChange}
+            onFiltersChange={onFiltersChange}
             payloadSchema={payloadSchema}
             payloadValues={payloadValues}
             points={points}
@@ -205,8 +196,7 @@ const PointsTabs = ({ collectionName, client }) => {
             <Grid key={point.id} size={12}>
               <PointCard
                 point={point}
-                onConditionChange={onConditionChange}
-                conditions={conditions}
+                onFindSimilar={onFindSimilar}
                 collectionName={collectionName}
                 deletePoint={deletePoint}
                 payloadSchema={payloadSchema}

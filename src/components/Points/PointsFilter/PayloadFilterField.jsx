@@ -19,16 +19,15 @@ import {
   normalizeFilterInput,
   parseFilterString,
   buildFilterInputFromConditions,
-  uniqConditions,
+  uniqFilters,
 } from './helpers';
 
 const PayloadFilterField = memo(function PayloadFilterField({
-  payloadConditions,
-  similarConditions,
+  filters,
+  onFiltersChange,
   payloadSchema,
   payloadKeyOptions,
   payloadValues = {},
-  onConditionChange,
 }) {
   const theme = useTheme();
   const containerRef = useRef(null);
@@ -39,10 +38,10 @@ const PayloadFilterField = memo(function PayloadFilterField({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState(0);
 
-  // Sync filter input when payload conditions change externally
+  // Sync filter input when filters change externally
   useEffect(() => {
-    setInputValue(buildFilterInputFromConditions(payloadConditions));
-  }, [payloadConditions]);
+    setInputValue(buildFilterInputFromConditions(filters));
+  }, [filters]);
 
   // Get the current word at cursor position
   const currentWord = useMemo(() => getCurrentWord(inputValue, cursorPosition), [inputValue, cursorPosition]);
@@ -227,22 +226,12 @@ const PayloadFilterField = memo(function PayloadFilterField({
         if (normalizedInput !== inputValue) {
           setInputValue(normalizedInput);
         }
-        const parsedPayloadConditions = parseFilterString(normalizedInput, payloadSchema);
-        const uniquePayloadConditions = uniqConditions(parsedPayloadConditions);
-        const next = uniqConditions([...similarConditions, ...uniquePayloadConditions]);
-        onConditionChange(next);
+        const parsedFilters = parseFilterString(normalizedInput, payloadSchema);
+        const uniqueFilters = uniqFilters(parsedFilters);
+        onFiltersChange(uniqueFilters);
       }
     },
-    [
-      inputValue,
-      payloadSchema,
-      onConditionChange,
-      similarConditions,
-      isAutocompleteOpen,
-      filteredOptions,
-      highlightedIndex,
-      selectOption,
-    ]
+    [inputValue, payloadSchema, onFiltersChange, isAutocompleteOpen, filteredOptions, highlightedIndex, selectOption]
   );
 
   const handleValueChange = useCallback(
@@ -251,21 +240,21 @@ const PayloadFilterField = memo(function PayloadFilterField({
       setHighlightedIndex(0);
       setCursorPosition(newValue.length);
 
-      // Clear all filters when input becomes empty
+      // Clear filters when input becomes empty
       if (!newValue.trim()) {
-        onConditionChange([]);
+        onFiltersChange([]);
       }
     },
-    [onConditionChange]
+    [onFiltersChange]
   );
 
   const handleClear = useCallback(() => {
     setInputValue('');
     setCursorPosition(0);
     setHighlightedIndex(0);
-    // Clear all filters
-    onConditionChange([]);
-  }, [onConditionChange]);
+    // Clear filters
+    onFiltersChange([]);
+  }, [onFiltersChange]);
 
   const handleClickAway = useCallback(() => {
     setIsAutocompleteOpen(false);
@@ -334,12 +323,11 @@ const PayloadFilterField = memo(function PayloadFilterField({
 });
 
 PayloadFilterField.propTypes = {
-  payloadConditions: PropTypes.array.isRequired,
-  similarConditions: PropTypes.array.isRequired,
+  filters: PropTypes.array.isRequired,
+  onFiltersChange: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object,
   payloadKeyOptions: PropTypes.array.isRequired,
   payloadValues: PropTypes.object,
-  onConditionChange: PropTypes.func.isRequired,
 };
 
 export default PayloadFilterField;

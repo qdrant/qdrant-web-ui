@@ -12,7 +12,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 import { Divider } from '@mui/material';
 
 const PointCard = (props) => {
-  const { onConditionChange /* , conditions */ } = props;
+  const { onFindSimilar } = props;
   const [point, setPoint] = React.useState(props.point);
   const [loading, setLoading] = React.useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
@@ -93,7 +93,7 @@ const PointCard = (props) => {
         )}
         <Divider />
         <CardContent sx={{ padding: '1rem' }}>
-          {point?.vector && <Vectors point={point} onConditionChange={onConditionChange} />}
+          {point?.vector && <Vectors point={point} onFindSimilar={onFindSimilar} />}
         </CardContent>
       </Card>
       <ConfirmationDialog
@@ -112,8 +112,7 @@ const PointCard = (props) => {
 
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
-  onConditionChange: PropTypes.func.isRequired,
-  conditions: PropTypes.array.isRequired,
+  onFindSimilar: PropTypes.func.isRequired,
   collectionName: PropTypes.string.isRequired, // use params instead?
   deletePoint: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object.isRequired,

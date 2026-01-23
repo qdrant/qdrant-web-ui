@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { Route } from 'lucide-react';
 
 import { StyledAutocompletePopper, getSharedTextFieldSx } from './StyledPointsFilter';
-import { getSimilarConditionLabel, parseSimilarInput, isSameCondition, uniqConditions } from './helpers';
+import { parseSimilarInput } from './helpers';
 
 const MAX_VISIBLE_CHIPS = 2;
 
@@ -29,10 +29,12 @@ SimilarAutocompletePopper.propTypes = {
 
 const filter = createFilterOptions();
 
+// Convert ID to display label
+const idToLabel = (id) => String(id);
+
 const SimilarSearchField = memo(function SimilarSearchField({
-  similarConditions,
-  payloadConditions,
-  onConditionChange,
+  similarIds,
+  onSimilarIdsChange,
   isExpanded,
   onExpandChange,
 }) {
@@ -41,32 +43,27 @@ const SimilarSearchField = memo(function SimilarSearchField({
 
   const sharedTextFieldSx = useMemo(() => getSharedTextFieldSx(theme), [theme]);
 
-  const conditionLabels = useMemo(
-    () => similarConditions.map((condition) => getSimilarConditionLabel(condition)),
-    [similarConditions]
-  );
+  const idLabels = useMemo(() => similarIds.map(idToLabel), [similarIds]);
 
   // Auto-expand/collapse based on chip count
   useEffect(() => {
-    if (conditionLabels.length === 0) {
+    if (idLabels.length === 0) {
       onExpandChange(false);
-    } else if (conditionLabels.length > MAX_VISIBLE_CHIPS) {
+    } else if (idLabels.length > MAX_VISIBLE_CHIPS) {
       onExpandChange(true);
-    } else if (conditionLabels.length <= MAX_VISIBLE_CHIPS) {
+    } else if (idLabels.length <= MAX_VISIBLE_CHIPS) {
       onExpandChange(false);
     }
-  }, [conditionLabels.length, onExpandChange]);
+  }, [idLabels.length, onExpandChange]);
 
-  const visibleChipsCount = isExpanded ? conditionLabels.length : Math.min(MAX_VISIBLE_CHIPS, conditionLabels.length);
+  const visibleChipsCount = isExpanded ? idLabels.length : Math.min(MAX_VISIBLE_CHIPS, idLabels.length);
 
-  const removeCondition = useCallback(
-    (conditionToDelete) => {
-      const next = [...similarConditions, ...payloadConditions].filter(
-        (condition) => !isSameCondition(condition, conditionToDelete)
-      );
-      onConditionChange(next);
+  const removeId = useCallback(
+    (idToRemove) => {
+      const next = similarIds.filter((id) => id !== idToRemove);
+      onSimilarIdsChange(next);
     },
-    [similarConditions, payloadConditions, onConditionChange]
+    [similarIds, onSimilarIdsChange]
   );
 
   const handleChipEdit = useCallback(
@@ -78,10 +75,10 @@ const SimilarSearchField = memo(function SimilarSearchField({
       if (parsed === null || parsed === undefined) {
         return;
       }
-      removeCondition({ key: 'id', type: 'id', value: parsed });
+      removeId(parsed);
       setInputValue(option);
     },
-    [removeCondition]
+    [removeId]
   );
 
   const handleBackspaceEdit = useCallback(
@@ -90,19 +87,19 @@ const SimilarSearchField = memo(function SimilarSearchField({
         return;
       }
 
-      const lastCondition = similarConditions[similarConditions.length - 1];
-      if (!lastCondition) {
+      const lastId = similarIds[similarIds.length - 1];
+      if (lastId === undefined) {
         return;
       }
 
       event.preventDefault();
       event.stopPropagation();
 
-      const label = getSimilarConditionLabel(lastCondition);
-      removeCondition(lastCondition);
+      const label = idToLabel(lastId);
+      removeId(lastId);
       setInputValue(label);
     },
-    [inputValue, similarConditions, removeCondition]
+    [inputValue, similarIds, removeId]
   );
 
   const handleInputChange = useCallback((_event, newInputValue) => {
@@ -111,16 +108,16 @@ const SimilarSearchField = memo(function SimilarSearchField({
 
   const handleChange = useCallback(
     (_event, newValues) => {
-      const parsedConditions = newValues
+      const parsedIds = newValues
         .map((value) => parseSimilarInput(value))
-        .filter((v) => v !== null && v !== undefined)
-        .map((value) => ({ key: 'id', type: 'id', value }));
+        .filter((v) => v !== null && v !== undefined);
 
-      const next = uniqConditions([...parsedConditions, ...payloadConditions]);
-      onConditionChange(next);
+      // Deduplicate IDs
+      const uniqueIds = [...new Set(parsedIds)];
+      onSimilarIdsChange(uniqueIds);
       setInputValue('');
     },
-    [payloadConditions, onConditionChange]
+    [onSimilarIdsChange]
   );
 
   const handleDeleteChip = useCallback(
@@ -129,9 +126,9 @@ const SimilarSearchField = memo(function SimilarSearchField({
       if (parsed === null || parsed === undefined) {
         return;
       }
-      removeCondition({ key: 'id', type: 'id', value: parsed });
+      removeId(parsed);
     },
-    [removeCondition]
+    [removeId]
   );
 
   const renderChips = useCallback(
@@ -227,7 +224,7 @@ const SimilarSearchField = memo(function SimilarSearchField({
           modifiers: [{ name: 'offset', options: { offset: [0, 4] } }],
         },
       }}
-      value={conditionLabels}
+      value={idLabels}
       inputValue={inputValue}
       onInputChange={handleInputChange}
       onChange={handleChange}
@@ -238,9 +235,8 @@ const SimilarSearchField = memo(function SimilarSearchField({
 });
 
 SimilarSearchField.propTypes = {
-  similarConditions: PropTypes.array.isRequired,
-  payloadConditions: PropTypes.array.isRequired,
-  onConditionChange: PropTypes.func.isRequired,
+  similarIds: PropTypes.array.isRequired,
+  onSimilarIdsChange: PropTypes.func.isRequired,
   isExpanded: PropTypes.bool.isRequired,
   onExpandChange: PropTypes.func.isRequired,
 };

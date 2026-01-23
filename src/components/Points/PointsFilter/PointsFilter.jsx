@@ -5,12 +5,16 @@ import { Box, Grid } from '@mui/material';
 import SimilarSearchField from './SimilarSearchField';
 import PayloadFilterField from './PayloadFilterField';
 
-const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, payloadValues = {}, points }) => {
+const PointsFilter = ({
+  similarIds = [],
+  filters = [],
+  onSimilarIdsChange,
+  onFiltersChange,
+  payloadSchema = {},
+  payloadValues = {},
+  points,
+}) => {
   const [isSimilarExpanded, setIsSimilarExpanded] = useState(false);
-
-  const similarConditions = useMemo(() => conditions.filter((condition) => condition.type === 'id'), [conditions]);
-
-  const payloadConditions = useMemo(() => conditions.filter((condition) => condition.type === 'payload'), [conditions]);
 
   const payloadKeyOptions = useMemo(() => {
     const keys = new Set();
@@ -29,9 +33,8 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         {/* Similar search field (with chips) */}
         <Grid size={{ xs: 12, md: isSimilarExpanded ? 12 : 3 }}>
           <SimilarSearchField
-            similarConditions={similarConditions}
-            payloadConditions={payloadConditions}
-            onConditionChange={onConditionChange}
+            similarIds={similarIds}
+            onSimilarIdsChange={onSimilarIdsChange}
             isExpanded={isSimilarExpanded}
             onExpandChange={handleExpandChange}
           />
@@ -40,12 +43,11 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
         {/* Payload filter field (with syntax highlighting) */}
         <Grid size={{ xs: 12, md: isSimilarExpanded ? 12 : 9 }}>
           <PayloadFilterField
-            payloadConditions={payloadConditions}
-            similarConditions={similarConditions}
+            filters={filters}
+            onFiltersChange={onFiltersChange}
             payloadSchema={payloadSchema}
             payloadKeyOptions={payloadKeyOptions}
             payloadValues={payloadValues}
-            onConditionChange={onConditionChange}
           />
         </Grid>
       </Grid>
@@ -54,14 +56,16 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
 };
 
 PointsFilter.propTypes = {
-  conditions: PropTypes.array,
+  similarIds: PropTypes.array,
+  filters: PropTypes.array,
+  onSimilarIdsChange: PropTypes.func.isRequired,
+  onFiltersChange: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object,
   payloadValues: PropTypes.object,
   points: PropTypes.shape({
     payload_schema: PropTypes.object,
     points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })),
   }),
-  onConditionChange: PropTypes.func.isRequired,
 };
 
 export default PointsFilter;

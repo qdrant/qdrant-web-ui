@@ -1,25 +1,18 @@
 /**
- * Check if two conditions are equal
- * @param {Object} a - First condition
- * @param {Object} b - Second condition
- * @return {boolean} True if conditions are equal
+ * Check if two filters are equal
+ * @param {Object} a - First filter
+ * @param {Object} b - Second filter
+ * @return {boolean} True if filters are equal
  */
-export const isSameCondition = (a, b) => a.key === b.key && a.type === b.type && a.value === b.value;
+export const isSameFilter = (a, b) => a.key === b.key && a.value === b.value;
 
 /**
- * Remove duplicate conditions from a list
- * @param {Array} list - List of conditions
+ * Remove duplicate filters from a list
+ * @param {Array} list - List of filters
  * @return {Array} List with duplicates removed
  */
-export const uniqConditions = (list) =>
-  list.filter((item, index) => list.findIndex((candidate) => isSameCondition(candidate, item)) === index);
-
-/**
- * Get display label for a similar condition
- * @param {Object} condition - The condition object
- * @return {string} Formatted label
- */
-export const getSimilarConditionLabel = (condition) => `id: ${condition.value}`;
+export const uniqFilters = (list) =>
+  list.filter((item, index) => list.findIndex((candidate) => isSameFilter(candidate, item)) === index);
 
 /**
  * Parse similar input string to extract value
@@ -125,14 +118,14 @@ export const normalizeFilterInput = (filterText) => {
 };
 
 /**
- * Parse filter string into payload conditions array
+ * Parse filter string into filters array
  * @param {string} filterText - Filter text to parse
  * @param {Object} payloadSchema - Schema object for value normalization
- * @return {Array} Array of parsed conditions
+ * @return {Array} Array of parsed filters { key, value }
  */
 export const parseFilterString = (filterText, payloadSchema) => {
   const tokens = filterText.match(/\S+/g) || [];
-  const parsedConditions = [];
+  const parsedFilters = [];
 
   tokens.forEach((token) => {
     const colonIndex = token.indexOf(':');
@@ -155,10 +148,10 @@ export const parseFilterString = (filterText, payloadSchema) => {
     } else {
       value = normalizeValueBySchema(rawValue, key, payloadSchema);
     }
-    parsedConditions.push({ key, type: 'payload', value });
+    parsedFilters.push({ key, value });
   });
 
-  return parsedConditions;
+  return parsedFilters;
 };
 
 /**

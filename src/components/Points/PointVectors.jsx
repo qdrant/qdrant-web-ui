@@ -25,7 +25,7 @@ const StyledButton = styled(Button)({
  * @returns {JSX.Element|null}
  * @constructor
  */
-const Vectors = memo(function Vectors({ point, onConditionChange }) {
+const Vectors = memo(function Vectors({ point, onFindSimilar }) {
   const { collectionName } = useParams();
   const navigate = useNavigate();
   if (!Object.getOwnPropertyDescriptor(point, 'vector')) {
@@ -116,13 +116,11 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
               >
                 Open graph
               </StyledButton>
-              {typeof onConditionChange !== 'function' ? null : (
+              {typeof onFindSimilar !== 'function' ? null : (
                 <StyledButton
                   variant="outlined"
                   size="small"
-                  onClick={() =>
-                    onConditionChange([{ key: 'id', type: 'id', value: point.id }], key === '' ? null : key)
-                  }
+                  onClick={() => onFindSimilar(point.id, key === '' ? null : key)}
                   sx={{
                     width: { xs: '100%', md: 'auto' },
                   }}
@@ -140,7 +138,7 @@ const Vectors = memo(function Vectors({ point, onConditionChange }) {
 
 Vectors.propTypes = {
   point: PropTypes.object.isRequired,
-  onConditionChange: PropTypes.func,
+  onFindSimilar: PropTypes.func,
 };
 
 export default Vectors;
