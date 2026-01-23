@@ -89,9 +89,7 @@ export const FilterAutocompletePopper = styled(Popper)({
 });
 
 export const AutocompleteList = styled(Paper)(({ theme }) => ({
-  maxHeight: 220,
   minWidth: 300,
-  overflow: 'auto',
   marginTop: 4,
   '& .MuiMenuItem-root': {
     fontFamily: 'monospace',

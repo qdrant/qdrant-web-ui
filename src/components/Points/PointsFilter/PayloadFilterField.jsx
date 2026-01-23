@@ -69,8 +69,20 @@ const PayloadFilterField = memo(function PayloadFilterField({
     };
   }, [currentWord]);
 
-  // Get filtered autocomplete options based on current input
+  // Get filtered autocomplete options based on current input (max 10 items)
+  // Sorted by length - shortest first (closest match)
   const filteredOptions = useMemo(() => {
+    const MAX_OPTIONS = 10;
+
+    // Sort by length (shortest first), then alphabetically (case-insensitive)
+    const sortByLengthAndAlpha = (a, b) => {
+      if (a.length !== b.length) {
+        return a.length - b.length;
+      }
+      // Alphabetical sort (case-insensitive)
+      return a.localeCompare(b, undefined, { sensitivity: 'base' });
+    };
+
     // If typing a value (after colon), autocomplete values
     if (isTypingValue) {
       const values = payloadValues[currentKey] || [];
@@ -78,30 +90,37 @@ const PayloadFilterField = memo(function PayloadFilterField({
         return [];
       }
       const loweredValuePart = currentValuePart.toLowerCase();
-      return values
-        .filter((value) => {
-          const stringValue = String(value).toLowerCase();
+
+
+      const filteredValues = values
+        .map((value) => String(value))
+        .filter((stringValue) => {
+          const lowered = stringValue.toLowerCase();
           // Hide if exact match (user already completed the value)
-          if (stringValue === loweredValuePart) {
+          if (lowered === loweredValuePart) {
             return false;
           }
-          return !currentValuePart || stringValue.startsWith(loweredValuePart);
+          return !currentValuePart || lowered.startsWith(loweredValuePart);
         })
-        .map((value) => String(value));
-    }
-
-    // Only show autocomplete after at least 1 character is typed
-    if (!currentWord) {
-      return [];
+        .sort(sortByLengthAndAlpha);
+      
+      return filteredValues.slice(0, MAX_OPTIONS);
     }
 
     // Autocomplete keys
     const loweredWord = currentWord.toLowerCase();
-    // Hide if exact match (user already completed the key)
-    return payloadKeyOptions.filter((option) => {
-      const loweredOption = option.toLowerCase();
-      return loweredOption.startsWith(loweredWord) && loweredOption !== loweredWord;
-    });
+    return payloadKeyOptions
+      .filter((option) => {
+        // Only show autocomplete after at least 1 character is typed
+        if (!currentWord) {
+          return false;
+        }
+        const loweredOption = option.toLowerCase();
+        // Hide if exact match (user already completed the key)
+        return loweredOption.startsWith(loweredWord) && loweredOption !== loweredWord;
+      })
+      .sort(sortByLengthAndAlpha)
+      .slice(0, MAX_OPTIONS);
   }, [currentWord, payloadKeyOptions, isTypingValue, currentKey, currentValuePart, payloadValues]);
 
   // Auto-show/hide autocomplete based on current word (only when focused)

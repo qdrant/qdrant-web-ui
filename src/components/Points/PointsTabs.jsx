@@ -99,8 +99,12 @@ const PointsTabs = ({ collectionName, client }) => {
         });
         try {
           if (recommendationIds.length !== 0) {
-            const newPoints = await qdrantClient.recommend(collectionName, {
-              positive: recommendationIds,
+            const newPoints = await qdrantClient.query(collectionName, {
+              query: {
+                recommend: {
+                  positive: recommendationIds,
+                }
+              },
               limit: pageSize + (offset || 0),
               with_payload: true,
               with_vector: true,
@@ -109,8 +113,8 @@ const PointsTabs = ({ collectionName, client }) => {
                 must: filters,
               },
             });
-            setNextPageOffset(newPoints.length);
-            setPoints({ points: newPoints });
+            setNextPageOffset(newPoints.points.length);
+            setPoints(newPoints);
             setErrorMessage(null);
           } else if (filters.length !== 0) {
             const newPoints = await qdrantClient.scroll(collectionName, {
