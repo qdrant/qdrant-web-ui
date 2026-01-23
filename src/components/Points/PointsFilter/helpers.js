@@ -4,7 +4,7 @@
  * @param {Object} b - Second filter
  * @return {boolean} True if filters are equal
  */
-export const isSameFilter = (a, b) => a.key === b.key && a.value === b.value;
+export const isSameFilter = (a, b) => a.key === b.key && a.value === b.value && !!a.isIdFilter === !!b.isIdFilter;
 
 /**
  * Remove duplicate filters from a list
@@ -44,6 +44,10 @@ export const parseSimilarInput = (rawInput) => {
 export const buildFilterInputFromConditions = (conditionsList) => {
   return conditionsList
     .map((condition) => {
+      // Handle ID filter specially
+      if (condition.isIdFilter) {
+        return `id:${condition.value}`;
+      }
       const readableValue = condition.value === null ? 'null' : condition.value === '' ? '(empty)' : condition.value;
       return `${condition.key}:${readableValue}`;
     })
@@ -118,10 +122,25 @@ export const normalizeFilterInput = (filterText) => {
 };
 
 /**
+ * Parse ID value from raw string (handles numeric and string IDs)
+ * @param {string} rawValue - Raw ID value string
+ * @return {number|string} Parsed ID value
+ */
+const parseIdValue = (rawValue) => {
+  // Try to parse as integer (Qdrant supports integer IDs)
+  const numericValue = Number(rawValue);
+  if (!Number.isNaN(numericValue) && Number.isInteger(numericValue)) {
+    return numericValue;
+  }
+  // Return as string (UUID or other string IDs)
+  return rawValue;
+};
+
+/**
  * Parse filter string into filters array
  * @param {string} filterText - Filter text to parse
  * @param {Object} payloadSchema - Schema object for value normalization
- * @return {Array} Array of parsed filters { key, value }
+ * @return {Array} Array of parsed filters { key, value, isIdFilter? }
  */
 export const parseFilterString = (filterText, payloadSchema) => {
   const tokens = filterText.match(/\S+/g) || [];
@@ -137,6 +156,12 @@ export const parseFilterString = (filterText, payloadSchema) => {
     const rawValue = token.slice(colonIndex + 1).trim();
 
     if (!key || !rawValue) {
+      return;
+    }
+
+    // Handle special 'id' filter for has_id condition
+    if (key.toLowerCase() === 'id') {
+      parsedFilters.push({ key: 'id', value: parseIdValue(rawValue), isIdFilter: true });
       return;
     }
 

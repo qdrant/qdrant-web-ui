@@ -144,12 +144,22 @@ const PayloadFilterField = memo(function PayloadFilterField({
       const keyColor = theme.palette.text.primary;
       const valueColor = theme.palette.primary.main;
       const valueBgColor = alpha(theme.palette.primary.light, 0.15);
+      // Special styling for id: filter
+      const idKeyColor = theme.palette.warning.main;
+      const idValueColor = theme.palette.warning.dark;
+      const idValueBgColor = alpha(theme.palette.warning.light, 0.2);
 
       return code.replace(regex, (match, key, value) => {
+        // Check if this is an ID filter
+        const isIdFilter = key.toLowerCase() === 'id';
+        const currentKeyColor = isIdFilter ? idKeyColor : keyColor;
+        const currentValueColor = isIdFilter ? idValueColor : valueColor;
+        const currentValueBgColor = isIdFilter ? idValueBgColor : valueBgColor;
+
         const valueSpan = value
-          ? `<span style="color:${valueColor};background:${valueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
+          ? `<span style="color:${currentValueColor};background:${currentValueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
           : '';
-        return `<span style="color:${keyColor};font-weight:500">${key}:</span>${valueSpan}`;
+        return `<span style="color:${currentKeyColor};font-weight:500">${key}:</span>${valueSpan}`;
       });
     },
     [theme]
@@ -286,7 +296,7 @@ const PayloadFilterField = memo(function PayloadFilterField({
             value={inputValue}
             onValueChange={handleValueChange}
             highlight={highlightCode}
-            placeholder="Filter by payload (key:value key:value)"
+            placeholder="Filter by payload (key:value) or point ID (id:123)"
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onClick={handleClick}

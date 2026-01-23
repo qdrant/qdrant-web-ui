@@ -84,7 +84,11 @@ const PointsTabs = ({ collectionName, client }) => {
       setRequestCount((prev) => prev + 1);
 
       // Build filter conditions from payload filters
-      const filterConditions = filters.map((filter) => {
+      // Separate ID filters from payload filters
+      const idFilters = filters.filter((f) => f.isIdFilter);
+      const payloadFilters = filters.filter((f) => !f.isIdFilter);
+
+      const filterConditions = payloadFilters.map((filter) => {
         if (filter.value === null || filter.value === undefined) {
           return { is_null: { key: filter.key } };
         } else if (filter.value === '') {
@@ -95,6 +99,11 @@ const PointsTabs = ({ collectionName, client }) => {
           return { key: filter.key, match: { value: filter.value } };
         }
       });
+
+      // Add has_id condition if ID filters are present
+      if (idFilters.length > 0) {
+        filterConditions.push({ has_id: idFilters.map((f) => f.value) });
+      }
 
       try {
         if (similarIds.length > 0) {
