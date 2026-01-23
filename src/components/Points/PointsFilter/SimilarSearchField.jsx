@@ -108,9 +108,7 @@ const SimilarSearchField = memo(function SimilarSearchField({
 
   const handleChange = useCallback(
     (_event, newValues) => {
-      const parsedIds = newValues
-        .map((value) => parseSimilarInput(value))
-        .filter((v) => v !== null && v !== undefined);
+      const parsedIds = newValues.map((value) => parseSimilarInput(value)).filter((v) => v !== null && v !== undefined);
 
       // Deduplicate IDs
       const uniqueIds = [...new Set(parsedIds)];

@@ -63,7 +63,7 @@ const PointsTabs = ({ collectionName, client }) => {
       if (keywordFields.length > 0) {
         const facetPromises = keywordFields.map(async (key) => {
           try {
-            const hits = await qdrantClient.facet(collectionName, {key, limit: 50});
+            const hits = await qdrantClient.facet(collectionName, { key, limit: 50 });
             return [key, hits.hits.map((hit) => hit.value)];
           } catch {
             // Silently ignore facet errors (e.g., if facet API is not available)

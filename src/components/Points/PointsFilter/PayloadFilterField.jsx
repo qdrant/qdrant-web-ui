@@ -90,7 +90,6 @@ const PayloadFilterField = memo(function PayloadFilterField({
       }
       const loweredValuePart = currentValuePart.toLowerCase();
 
-
       const filteredValues = values
         .map((value) => String(value))
         .filter((stringValue) => {
@@ -102,7 +101,7 @@ const PayloadFilterField = memo(function PayloadFilterField({
           return !currentValuePart || lowered.startsWith(loweredValuePart);
         })
         .sort(sortByLengthAndAlpha);
-      
+
       return filteredValues.slice(0, MAX_OPTIONS);
     }
 
