@@ -179,20 +179,27 @@ const PayloadFilterField = memo(function PayloadFilterField({
     ]
   );
 
-  const handleValueChange = useCallback((newValue) => {
-    setInputValue(newValue);
-    setHighlightedIndex(0);
-    setCursorPosition(newValue.length);
-  }, []);
+  const handleValueChange = useCallback(
+    (newValue) => {
+      setInputValue(newValue);
+      setHighlightedIndex(0);
+      setCursorPosition(newValue.length);
+
+      // Clear all filters when input becomes empty
+      if (!newValue.trim()) {
+        onConditionChange([]);
+      }
+    },
+    [onConditionChange]
+  );
 
   const handleClear = useCallback(() => {
     setInputValue('');
     setCursorPosition(0);
     setHighlightedIndex(0);
-    // Clear payload conditions
-    const next = uniqConditions([...similarConditions]);
-    onConditionChange(next);
-  }, [similarConditions, onConditionChange]);
+    // Clear all filters
+    onConditionChange([]);
+  }, [onConditionChange]);
 
   const handleClickAway = useCallback(() => {
     setIsAutocompleteOpen(false);
