@@ -154,6 +154,10 @@ export const parseFilterString = (filterText, payloadSchema) => {
   return parsedFilters;
 };
 
+// Cached canvas and context for text measurement
+let measureCanvas = null;
+let measureCtx = null;
+
 /**
  * Calculate horizontal offset for autocomplete popper positioning
  * @param {string} filterInputValue - Current filter input value
@@ -164,12 +168,15 @@ export const calculatePopperOffset = (filterInputValue, currentWordStart) => {
   // Get the text before the current word
   const textBeforeWord = filterInputValue.slice(0, currentWordStart);
 
-  // Measure the width of text before the word using a canvas
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  // Match the editor's font
-  ctx.font = '1rem system-ui, -apple-system, sans-serif';
-  const textWidth = ctx.measureText(textBeforeWord).width;
+  // Lazily create and cache the canvas for text measurement
+  if (!measureCanvas) {
+    measureCanvas = document.createElement('canvas');
+    measureCtx = measureCanvas.getContext('2d');
+    // Match the editor's font
+    measureCtx.font = '1rem system-ui, -apple-system, sans-serif';
+  }
+
+  const textWidth = measureCtx.measureText(textBeforeWord).width;
 
   // Add offset for the filter icon (approximately 24px for icon + margin)
   const iconOffset = 28;
