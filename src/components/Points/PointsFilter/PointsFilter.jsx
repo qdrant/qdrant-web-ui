@@ -5,7 +5,7 @@ import { Box, Grid } from '@mui/material';
 import SimilarSearchField from './SimilarSearchField';
 import PayloadFilterField from './PayloadFilterField';
 
-const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, points }) => {
+const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, payloadValues = {}, points }) => {
   const [isSimilarExpanded, setIsSimilarExpanded] = useState(false);
 
   const similarConditions = useMemo(() => conditions.filter((condition) => condition.type === 'id'), [conditions]);
@@ -44,6 +44,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
             similarConditions={similarConditions}
             payloadSchema={payloadSchema}
             payloadKeyOptions={payloadKeyOptions}
+            payloadValues={payloadValues}
             onConditionChange={onConditionChange}
           />
         </Grid>
@@ -55,6 +56,7 @@ const PointsFilter = ({ onConditionChange, conditions = [], payloadSchema = {}, 
 PointsFilter.propTypes = {
   conditions: PropTypes.array,
   payloadSchema: PropTypes.object,
+  payloadValues: PropTypes.object,
   points: PropTypes.shape({
     payload_schema: PropTypes.object,
     points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })),

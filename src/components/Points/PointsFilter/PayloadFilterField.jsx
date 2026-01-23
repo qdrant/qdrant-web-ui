@@ -27,6 +27,7 @@ const PayloadFilterField = memo(function PayloadFilterField({
   similarConditions,
   payloadSchema,
   payloadKeyOptions,
+  payloadValues = {},
   onConditionChange,
 }) {
   const theme = useTheme();
@@ -55,11 +56,38 @@ const PayloadFilterField = memo(function PayloadFilterField({
     return calculatePopperOffset(inputValue, currentWordStart);
   }, [inputValue, currentWordStart]);
 
+  // Determine if we're typing a key or value (based on colon position)
+  const { isTypingValue, currentKey, currentValuePart } = useMemo(() => {
+    const colonIndex = currentWord.indexOf(':');
+    if (colonIndex === -1) {
+      return { isTypingValue: false, currentKey: '', currentValuePart: '' };
+    }
+    return {
+      isTypingValue: true,
+      currentKey: currentWord.slice(0, colonIndex),
+      currentValuePart: currentWord.slice(colonIndex + 1),
+    };
+  }, [currentWord]);
+
   // Get filtered autocomplete options based on current input
   const filteredOptions = useMemo(() => {
-    // Don't show options if already typing a value (after colon)
-    if (currentWord.includes(':')) {
-      return [];
+    // If typing a value (after colon), autocomplete values
+    if (isTypingValue) {
+      const values = payloadValues[currentKey] || [];
+      if (values.length === 0) {
+        return [];
+      }
+      const loweredValuePart = currentValuePart.toLowerCase();
+      return values
+        .filter((value) => {
+          const stringValue = String(value).toLowerCase();
+          // Hide if exact match (user already completed the value)
+          if (stringValue === loweredValuePart) {
+            return false;
+          }
+          return !currentValuePart || stringValue.startsWith(loweredValuePart);
+        })
+        .map((value) => String(value));
     }
 
     // Only show autocomplete after at least 1 character is typed
@@ -67,9 +95,14 @@ const PayloadFilterField = memo(function PayloadFilterField({
       return [];
     }
 
+    // Autocomplete keys
     const loweredWord = currentWord.toLowerCase();
-    return payloadKeyOptions.filter((option) => option.toLowerCase().startsWith(loweredWord));
-  }, [currentWord, payloadKeyOptions]);
+    // Hide if exact match (user already completed the key)
+    return payloadKeyOptions.filter((option) => {
+      const loweredOption = option.toLowerCase();
+      return loweredOption.startsWith(loweredWord) && loweredOption !== loweredWord;
+    });
+  }, [currentWord, payloadKeyOptions, isTypingValue, currentKey, currentValuePart, payloadValues]);
 
   // Auto-show/hide autocomplete based on current word (only when focused)
   useEffect(() => {
@@ -77,10 +110,12 @@ const PayloadFilterField = memo(function PayloadFilterField({
       setIsAutocompleteOpen(false);
       return;
     }
-    // Show autocomplete when not typing a value (no colon in current word)
-    const shouldShow = !currentWord.includes(':') && payloadKeyOptions.length > 0;
+    // Show autocomplete when typing keys (before colon) or values (after colon with available options)
+    const hasKeyOptions = !isTypingValue && currentWord && payloadKeyOptions.length > 0;
+    const hasValueOptions = isTypingValue && (payloadValues[currentKey] || []).length > 0;
+    const shouldShow = hasKeyOptions || hasValueOptions;
     setIsAutocompleteOpen(shouldShow);
-  }, [currentWord, payloadKeyOptions.length, isFocused]);
+  }, [currentWord, payloadKeyOptions.length, isFocused, isTypingValue, currentKey, payloadValues]);
 
   // Syntax highlighting function
   const highlightCode = useCallback(
@@ -111,21 +146,33 @@ const PayloadFilterField = memo(function PayloadFilterField({
       const wordMatch = beforeCursor.match(/(\S*)$/);
       const wordStart = wordMatch ? cursorPosition - wordMatch[1].length : cursorPosition;
 
-      const newInputValue = inputValue.slice(0, wordStart) + option + ':' + afterCursor.replace(/^\S*/, '');
+      let newInputValue;
+      let newCursorPos;
+
+      if (isTypingValue) {
+        // Selecting a value - replace just the value part (after colon)
+        const keyWithColon = currentKey + ':';
+        newInputValue = inputValue.slice(0, wordStart) + keyWithColon + option + afterCursor.replace(/^\S*/, '');
+        newCursorPos = wordStart + keyWithColon.length + option.length;
+      } else {
+        // Selecting a key - add colon after
+        newInputValue = inputValue.slice(0, wordStart) + option + ':' + afterCursor.replace(/^\S*/, '');
+        newCursorPos = wordStart + option.length + 1;
+      }
+
       setInputValue(newInputValue);
       setIsAutocompleteOpen(false);
 
       setTimeout(() => {
         const textarea = containerRef.current?.querySelector('textarea');
         if (textarea) {
-          const newCursorPos = wordStart + option.length + 1;
           textarea.focus();
           textarea.setSelectionRange(newCursorPos, newCursorPos);
           setCursorPosition(newCursorPos);
         }
       }, 0);
     },
-    [inputValue, cursorPosition]
+    [inputValue, cursorPosition, isTypingValue, currentKey]
   );
 
   // Apply payload filters on Enter
@@ -272,6 +319,7 @@ PayloadFilterField.propTypes = {
   similarConditions: PropTypes.array.isRequired,
   payloadSchema: PropTypes.object,
   payloadKeyOptions: PropTypes.array.isRequired,
+  payloadValues: PropTypes.object,
   onConditionChange: PropTypes.func.isRequired,
 };
 

@@ -18,6 +18,7 @@ const PointsTabs = ({ collectionName, client }) => {
   const [nextPageOffset, setNextPageOffset] = useState(null);
   const [usingVector, setUsingVector] = useState(null);
   const [payloadSchema, setPayloadSchema] = useState({});
+  const [payloadValues, setPayloadValues] = useState({});
   const [requestCount, setRequestCount] = useState(0);
 
   const onConditionChange = (conditions, usingVector) => {
@@ -40,7 +41,29 @@ const PointsTabs = ({ collectionName, client }) => {
   useEffect(() => {
     const getCollection = async () => {
       const collectionInfo = await qdrantClient.getCollection(collectionName);
-      setPayloadSchema(collectionInfo.payload_schema);
+      const schema = collectionInfo.payload_schema || {};
+      setPayloadSchema(schema);
+
+      // Fetch facet values for keyword fields
+      const keywordFields = Object.entries(schema)
+        .filter(([, fieldInfo]) => fieldInfo.data_type === 'keyword')
+        .map(([key]) => key);
+
+      if (keywordFields.length > 0) {
+        const facetPromises = keywordFields.map(async (key) => {
+          try {
+            const hits = await qdrantClient.facet(collectionName, {key, limit: 50});
+            return [key, hits.hits.map((hit) => hit.value)];
+          } catch {
+            // Silently ignore facet errors (e.g., if facet API is not available)
+            return [key, []];
+          }
+        });
+
+        const facetResults = await Promise.all(facetPromises);
+        const values = Object.fromEntries(facetResults.filter(([, vals]) => vals.length > 0));
+        setPayloadValues(values);
+      }
     };
     getCollection();
   }, [collectionName, qdrantClient]);
@@ -153,6 +176,7 @@ const PointsTabs = ({ collectionName, client }) => {
             onConditionChange={onConditionChange}
             conditions={conditions}
             payloadSchema={payloadSchema}
+            payloadValues={payloadValues}
             points={points}
           />
         </Grid>
