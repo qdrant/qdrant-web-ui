@@ -62,9 +62,9 @@ const PayloadFilterField = memo(function PayloadFilterField({
       return [];
     }
 
-    // Filter options based on current word
+    // Only show autocomplete after at least 1 character is typed
     if (!currentWord) {
-      return payloadKeyOptions;
+      return [];
     }
 
     const loweredWord = currentWord.toLowerCase();
