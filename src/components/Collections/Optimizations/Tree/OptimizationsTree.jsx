@@ -5,10 +5,40 @@ import { CopyButton } from '../../../Common/CopyButton';
 import OptimizationNode from './OptimizationNode';
 import { getTreeTimeRange, enrichWithDuration } from './helpers';
 
+/**
+ * Extract optimization trees from the API response.
+ * Handles both:
+ * - Raw API response: running[].progress contains the tree
+ * - Preprocessed selection: running[] contains the tree data directly (spread from progress)
+ * @param {Object} data - The API response data
+ * @return {Array} Array of optimization tree nodes
+ */
+const extractOptimizationTrees = (data) => {
+  if (!data || !data.result) return [];
+
+  const running = data.result.running || [];
+
+  // Check if this is preprocessed data (has children directly) or raw API data (has progress field)
+  return running.map((opt) => {
+    // If this is raw API data, the tree is in the progress field
+    if (opt.progress && opt.progress.children) {
+      return opt.progress;
+    }
+    // If this is preprocessed data from timeline selection, the tree data is spread into the object
+    if (opt.children) {
+      return opt;
+    }
+    // Fallback: return the progress if it exists, otherwise the opt itself
+    return opt.progress || opt;
+  });
+};
+
 const OptimizationsTree = ({ data, requestTime, ...other }) => {
   const { enrichedNodes, totalDuration, maxTime } = useMemo(() => {
-    if (!data || !data.result || !data.result.ongoing) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
-    const { min, max } = getTreeTimeRange(data.result.ongoing);
+    const trees = extractOptimizationTrees(data);
+    if (trees.length === 0) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
+
+    const { min, max } = getTreeTimeRange(trees);
     // If we only have start times or empty, handle safely
     if (min === Infinity || max === -Infinity) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
 
@@ -19,14 +49,14 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
     const MIN_DURATION = 1000;
     const totalDur = Math.max(end - min, MIN_DURATION); // Ensure at least 1s duration if instant
 
-    const enriched = enrichWithDuration(data.result.ongoing, end);
+    const enriched = enrichWithDuration(trees, end);
 
     return {
       enrichedNodes: enriched,
       totalDuration: totalDur,
       maxTime: end,
     };
-  }, [data]);
+  }, [data, requestTime]);
 
   return (
     <Card elevation={0} {...other}>
@@ -62,7 +92,7 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
             </Typography>
           ) : (
             <Typography variant="body2" color="text.secondary" align="center" sx={{ pt: 1 }}>
-              No ongoing optimizations
+              No running optimizations
             </Typography>
           )}
         </Box>

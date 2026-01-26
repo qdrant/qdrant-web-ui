@@ -2,20 +2,42 @@ import { parseTime } from '../Tree/helpers';
 
 /**
  * Preprocess the data to be used in the timeline:
+ * - Extract progress tree from running/completed optimizations
  * - keep only top level elements with started_at and finished_at
  * - remove all optimizations with no children
  * - consider finished_at of ongoing operations as a time of API response
- * @param {Object} data - The data to preprocess
+ * @param {Object} data - The data to preprocess (new API format with running, completed, etc.)
  * @param {number} requestTime - The time of the request
  * @return {Array} The preprocessed data
  */
 export const preprocess = (data, requestTime) => {
   if (!data) return [];
 
-  // Mark ongoing optimizations and combine with completed ones
-  const ongoing = (data.ongoing || []).map((opt) => ({ ...opt, isOngoing: true }));
-  const completed = (data.completed || []).map((opt) => ({ ...opt, isOngoing: false }));
-  const rawList = [...ongoing, ...completed];
+  // New API format: running and completed contain optimization objects
+  // with progress field containing the tree structure
+  const running = (data.running || []).map((opt) => ({
+    // Spread the progress tree data as the main fields for timeline
+    ...opt.progress,
+    // Keep optimization metadata
+    uuid: opt.uuid,
+    optimizer: opt.optimizer,
+    status: opt.status,
+    segments: opt.segments,
+    isOngoing: true,
+  }));
+
+  const completed = (data.completed || []).map((opt) => ({
+    // Spread the progress tree data as the main fields for timeline
+    ...opt.progress,
+    // Keep optimization metadata
+    uuid: opt.uuid,
+    optimizer: opt.optimizer,
+    status: opt.status,
+    segments: opt.segments,
+    isOngoing: false,
+  }));
+
+  const rawList = [...running, ...completed];
 
   return rawList
     .map((opt) => {

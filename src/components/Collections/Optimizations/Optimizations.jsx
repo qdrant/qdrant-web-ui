@@ -2,6 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { Box } from '@mui/material';
+import ProgressGrid from './ProgressGrid/ProgressGrid';
 import Timeline from './Timeline/Timeline';
 import OptimizationsTree from './Tree/OptimizationsTree';
 
@@ -16,7 +17,7 @@ const Optimizations = ({ collectionName }) => {
     // Clear selected optimization when refreshing to show updated data
     setSelectedOptimization(null);
     axios
-      .get(`/collections/${collectionName}/optimizations?completed=true`)
+      .get(`/collections/${collectionName}/optimizations?with=queued,completed,idle_segments`)
       .then((response) => {
         setData(response.data);
         setRequestTime(Date.now());
@@ -35,7 +36,9 @@ const Optimizations = ({ collectionName }) => {
 
   const handleOptimizationSelect = (optimization) => {
     if (optimization) {
-      setSelectedOptimization({ result: { ongoing: [optimization] } });
+      // Wrap the selected optimization in the expected format for OptimizationsTree
+      // The optimization already has the progress tree spread into it from preprocess
+      setSelectedOptimization({ result: { running: [optimization] } });
     } else {
       setSelectedOptimization(null);
     }
@@ -43,11 +46,12 @@ const Optimizations = ({ collectionName }) => {
 
   return (
     <Box display="flex" flexDirection="column" gap={5}>
+      <ProgressGrid data={data?.result} />
       <Timeline
         data={data?.result}
         requestTime={requestTime}
         onSelect={handleOptimizationSelect}
-        selectedItem={selectedOptimization?.result?.ongoing?.[0]}
+        selectedItem={selectedOptimization?.result?.running?.[0]}
         onRefresh={fetchData}
         isRefreshing={isRefreshing}
       />
