@@ -68,11 +68,10 @@ export const calculateTotalPoints = (segments) => {
 
 /**
  * Allocate squares to segments proportionally based on their points_count.
- * Always returns exactly totalSquares squares.
- * Each square represents approximately 0.5% of the dataset (1/200).
- * Segments with < 0.5% may receive 0 squares.
+ * Each segment gets at least 1 square. If there are more segments than
+ * totalSquares, extra squares are added to ensure each segment is represented.
  * @param {Array} segments - Array of segments with { uuid, points_count, status }
- * @param {number} totalSquares - Total number of squares to allocate (default 200)
+ * @param {number} totalSquares - Minimum number of squares to allocate (default 200)
  * @return {Array} Array of square objects with { status, segmentUuid }
  */
 export const allocateSquares = (segments, totalSquares = 200) => {
@@ -82,35 +81,46 @@ export const allocateSquares = (segments, totalSquares = 200) => {
     return [];
   }
 
-  // Calculate exact proportions and use floor for initial allocation
-  const segmentAllocations = segments.map((segment) => {
-    const exactProportion = (segment.points_count / totalPoints) * totalSquares;
+  // Sort segments by size (points_count) descending
+  const sortedSegments = [...segments].sort((a, b) => b.points_count - a.points_count);
+
+  // Ensure we have at least as many squares as segments
+  const effectiveTotalSquares = Math.max(totalSquares, sortedSegments.length);
+
+  // Each segment gets at least 1 square, remaining squares distributed proportionally
+  const remainingSquares = effectiveTotalSquares - sortedSegments.length;
+
+  // Calculate exact proportions for remaining squares and use floor for initial allocation
+  const segmentAllocations = sortedSegments.map((segment) => {
+    const extraProportion = remainingSquares > 0 ? (segment.points_count / totalPoints) * remainingSquares : 0;
     return {
       segment,
-      floor: Math.floor(exactProportion),
-      remainder: exactProportion - Math.floor(exactProportion),
+      // Start with 1 square guaranteed, plus floor of proportional extra
+      allocated: 1 + Math.floor(extraProportion),
+      remainder: extraProportion - Math.floor(extraProportion),
     };
   });
 
-  // Calculate how many squares we've allocated with floor
-  const allocatedCount = segmentAllocations.reduce((sum, s) => sum + s.floor, 0);
+  // Calculate how many squares we've allocated so far
+  const allocatedCount = segmentAllocations.reduce((sum, s) => sum + s.allocated, 0);
 
   // Sort by remainder descending to distribute remaining squares fairly
   const sortedByRemainder = [...segmentAllocations].sort((a, b) => b.remainder - a.remainder);
 
   // Distribute remaining squares to segments with highest remainders
-  const remainingSquares = totalSquares - allocatedCount;
-  for (let i = 0; i < remainingSquares && i < sortedByRemainder.length; i++) {
-    sortedByRemainder[i].floor += 1;
+  const leftoverSquares = effectiveTotalSquares - allocatedCount;
+  for (let i = 0; i < leftoverSquares && i < sortedByRemainder.length; i++) {
+    sortedByRemainder[i].allocated += 1;
   }
 
   // Build the squares array
   const squares = [];
-  segmentAllocations.forEach(({ segment, floor }) => {
-    for (let i = 0; i < floor; i++) {
+  segmentAllocations.forEach(({ segment, allocated }) => {
+    for (let i = 0; i < allocated; i++) {
       squares.push({
         status: segment.status,
         segmentUuid: segment.uuid,
+        pointsCount: segment.points_count,
       });
     }
   });

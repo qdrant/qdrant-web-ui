@@ -1,14 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Card, CardHeader, CardContent, Tooltip, useTheme } from '@mui/material';
 import { extractSegmentsWithStatus, allocateSquares, getStatusColor, getStatusLabel } from './helpers';
 
-const TOTAL_SQUARES = 186; // With this number it looks nice on a full screen view
+const TOTAL_SQUARES = 172; // With this number it looks nice on a full screen view
 const SQUARE_SIZE = 10;
-const SQUARE_GAP = 2;
+const SQUARE_GAP = 3;
 
 const ProgressGrid = ({ data, ...other }) => {
   const theme = useTheme();
+  const [hoveredSegmentUuid, setHoveredSegmentUuid] = useState(null);
 
   const squares = useMemo(() => {
     if (!data) return [];
@@ -30,7 +31,7 @@ const ProgressGrid = ({ data, ...other }) => {
   return (
     <Card elevation={0} {...other}>
       <CardHeader
-        title="Collection Progress"
+        title="Optimization Progress"
         variant="heading"
         slotProps={{
           title: {
@@ -49,27 +50,29 @@ const ProgressGrid = ({ data, ...other }) => {
             pt: 2,
           }}
         >
-          {displaySquares.map((square, index) => (
-            <Tooltip
-              key={index}
-              title={square.status ? `${getStatusLabel(square.status)} - ${square.segmentUuid?.slice(0, 8)}...` : ''}
-              arrow
-              placement="top"
-            >
-              <Box
-                sx={{
-                  width: SQUARE_SIZE,
-                  height: SQUARE_SIZE,
-                  borderRadius: 0.5,
-                  backgroundColor: square.status ? getStatusColor(square.status, theme) : theme.palette.grey[200],
-                  transition: 'transform 0.1s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.2)',
-                  },
-                }}
-              />
-            </Tooltip>
-          ))}
+          {displaySquares.map((square, index) => {
+            const isHighlighted = hoveredSegmentUuid && square.segmentUuid === hoveredSegmentUuid;
+            return (
+              <Tooltip
+                key={index}
+                title={square.status ? `Segment - ${getStatusLabel(square.status)} - ${square.pointsCount?.toLocaleString()} points` : ''}
+                arrow
+                placement="top"
+              >
+                <Box
+                  onMouseEnter={() => square.segmentUuid && setHoveredSegmentUuid(square.segmentUuid)}
+                  onMouseLeave={() => setHoveredSegmentUuid(null)}
+                  sx={{
+                    width: SQUARE_SIZE,
+                    height: SQUARE_SIZE,
+                    borderRadius: isHighlighted ? '50%' : 0.5,
+                    backgroundColor: square.status ? getStatusColor(square.status, theme) : theme.palette.grey[200],
+                    transition: 'border-radius 0.1s ease-in-out',
+                  }}
+                />
+              </Tooltip>
+            );
+          })}
         </Box>
       </CardContent>
     </Card>
