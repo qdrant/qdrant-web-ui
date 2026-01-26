@@ -5,7 +5,7 @@ import { getFullPath } from '../../lib/common-helpers';
 
 const TUTORIALS = [
   {
-    icon: <img src={getFullPath('/assets/nextjs-logo.svg')} alt="Next.js logo" height={'24px'} />,
+    icon: <img src={getFullPath('/assets/python-logo.svg')} alt="Python logo" height={'24px'} />,
     title: '5 minute RAG with DeepSeek',
     description: 'Build a Retrieval-Augmented Generation (RAG) pipeline using Qdrant and DeepSeek.',
     href: 'https://qdrant.tech/documentation/rag-deepseek/',
