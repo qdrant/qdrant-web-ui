@@ -2,6 +2,7 @@ import React, { memo, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { Box } from '@mui/material';
+import ProgressGrid from './ProgressGrid/ProgressGrid';
 import Timeline from './Timeline/Timeline';
 import OptimizationsTree from './Tree/OptimizationsTree';
 
@@ -45,6 +46,7 @@ const Optimizations = ({ collectionName }) => {
 
   return (
     <Box display="flex" flexDirection="column" gap={5}>
+      <ProgressGrid data={data?.result} />
       <Timeline
         data={data?.result}
         requestTime={requestTime}
