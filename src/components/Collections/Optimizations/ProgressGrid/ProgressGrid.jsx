@@ -55,7 +55,11 @@ const ProgressGrid = ({ data, ...other }) => {
             return (
               <Tooltip
                 key={index}
-                title={square.status ? `Segment - ${getStatusLabel(square.status)} - ${square.pointsCount?.toLocaleString()} points` : ''}
+                title={
+                  square.status
+                    ? `Segment - ${getStatusLabel(square.status)} - ${square.pointsCount?.toLocaleString()} points`
+                    : ''
+                }
                 arrow
                 placement="top"
               >
