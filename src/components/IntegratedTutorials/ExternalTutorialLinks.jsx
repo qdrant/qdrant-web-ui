@@ -19,9 +19,8 @@ const TUTORIALS = [
   {
     icon: <img src={getFullPath('/assets/golang-logo.svg')} alt="Golang logo" height={'24px'} />,
     title: 'Build a high-performance e-commerce search engine',
-    description:
-      'Build and deploy your own neural search service to look through millions of products for an E-commerce site.',
-    href: 'https://qdrant.tech/documentation/beginner-tutorials/ecommerce-search/',
+    description: `Build and deploy your own neural search service to look through hundreds of thousands of products for an E-commerce site.`,
+    href: 'https://qdrant.tech/documentation/tutorials-search-engineering/ecommerce-search-golang/',
   },
   {
     icon: <img src={getFullPath('/assets/camel-ai-logo.svg')} alt="Camel-AI logo" height={'24px'} />,
