@@ -7,7 +7,7 @@ const TUTORIALS = [
   {
     icon: <img src={getFullPath('/assets/python-logo.svg')} alt="Python logo" height={'24px'} />,
     title: '5 minute RAG with DeepSeek',
-    description: 'Build a Retrieval-Augmented Generation (RAG) pipeline using Qdrant and DeepSeek.',
+    description: 'Ground your chatbot in fact-based knowledge using Retrieval-Augmented Generation.',
     href: 'https://qdrant.tech/documentation/rag-deepseek/',
   },
   {
