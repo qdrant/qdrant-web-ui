@@ -11,27 +11,27 @@ const TUTORIALS = [
     href: 'https://qdrant.tech/documentation/rag-deepseek/',
   },
   {
+    icon: <img src={getFullPath('/assets/qdrant-logo.svg')} alt="Qdrant logo" height={'24px'} />,
+    title: 'Hybrid Search with Qdrant',
+    description: 'Build your own keyword + semantic search service using Qdrant and FastEmbed.',
+    href: 'https://qdrant.tech/documentation/beginner-tutorials/hybrid-search-fastembed/',
+  },
+  {
     icon: <img src={getFullPath('/assets/fastapi-logo.svg')} alt="FastAPI logo" height={'24px'} />,
-    title: 'Build a Semantic Search Engine',
-    description: 'In 5 minutes you will build a semantic search engine for science fiction books.',
+    title: 'Basic Semantic Search Engine',
+    description: 'Build information retrieval based on semantic meaning in 5 minutes.',
     href: 'https://qdrant.tech/documentation/beginner-tutorials/search-beginners/',
   },
   {
     icon: <img src={getFullPath('/assets/camel-ai-logo.svg')} alt="Camel-AI logo" height={'24px'} />,
-    title: 'Agentic RAG discord bot with Camel-AI',
+    title: 'Agentic RAG discord bot',
     description: 'Develop a fully functional chatbot using Qdrant, CAMEL-AI, and OpenAI.',
     href: 'https://qdrant.tech/documentation/agentic-rag-camelai-discord/',
   },
   {
-    icon: <img src={getFullPath('/assets/qdrant-logo.svg')} alt="Qdrant logo" height={'24px'} />,
-    title: 'Build a Hybrid Search Service with FastEmbed and Qdrant',
-    description: 'Build and deploy your own hybrid search service to look companies on startups-list.com.',
-    href: 'https://qdrant.tech/documentation/beginner-tutorials/hybrid-search-fastembed/',
-  },
-  {
     icon: <img src={getFullPath('/assets/golang-logo.svg')} alt="Golang logo" height={'24px'} />,
-    title: 'Build a high-performance e-commerce search engine',
-    description: `Build and deploy your own neural search service to look through hundreds of thousands of products for an E-commerce site.`,
+    title: 'E-commerce Search Engine',
+    description: `Build and deploy high-performance semantic retrieval for thousands of products.`,
     href: 'https://qdrant.tech/documentation/tutorials-search-engineering/ecommerce-search-golang/',
   },
   {
