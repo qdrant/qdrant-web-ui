@@ -8,7 +8,6 @@ import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
-import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
 function Collections() {
@@ -20,8 +19,6 @@ function Collections() {
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
-
-  const { maxCollections } = useMaxCollections();
 
   const getErrorMessageWithApiKey = useCallback(
     (error) => {
@@ -129,8 +126,7 @@ function Collections() {
             }}
           >
             <Typography variant="h4" component={'h1'} sx={{ lineHeight: '1' }}>
-              Collections{' '}
-              {maxCollections && displayCollections ? `(${displayCollections.length} / ${maxCollections})` : ''}
+              Collections
             </Typography>
           </Grid>
           <Grid
