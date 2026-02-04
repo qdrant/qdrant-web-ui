@@ -71,7 +71,7 @@ export const TutorialIndex = () => {
               icon={FileCode}
               title="Load Sample Data"
               description={`Follow this tutorial to import a remote snapshot and explore vector search with real data in just a few steps.`}
-              href="/datasets"
+              href="/tutorial/loadcontent"
               showCta={false}
               sx={{ flexGrow: 1 }}
             />
