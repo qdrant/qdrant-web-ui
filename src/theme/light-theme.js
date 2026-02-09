@@ -111,53 +111,53 @@ const lightPalette = {
   alert: {
     light: {
       standardSuccess: {
-          backgroundColor: '#EDF7F5',
-          color: '#1E4641',
-        },
-        standardError: {
-          backgroundColor: '#FDEDED',
-          color: '#5F2120',
-        },
-        standardWarning: {
-          backgroundColor: '#FFF4E5',
-          color: '#663C00',
-        },
-        standardInfo: {
-          backgroundColor: '#E5F6FD',
-          color: '#014361',
-        },
-        filledSuccess: {
-          backgroundColor: '#00897B',
-          color: '#FFFFFF',
-        },
-        filledError: {
-          backgroundColor: '#D32F2F',
-          color: '#FFFFFF',
-        },
-        filledWarning: {
-          backgroundColor: '#EF6C00',
-          color: '#FFFFFF',
-        },
-        filledInfo: {
-          backgroundColor: '#0288D1',
-          color: '#FFFFFF',
-        },
-        outlinedSuccess: {
-          borderColor: '#1F978B',
-          color: '#1E4641',
-        },
-        outlinedError: {
-          borderColor: '#D32F2F',
-          color: '#5F2120',
-        },
-        outlinedWarning: {
-          borderColor: '#EF6C00',
-          color: '#663C00',
-        },
-        outlinedInfo: {
-          borderColor: '#0288D1',
-          color: '#014361',
-        },
+        backgroundColor: '#EDF7F5',
+        color: '#1E4641',
+      },
+      standardError: {
+        backgroundColor: '#FDEDED',
+        color: '#5F2120',
+      },
+      standardWarning: {
+        backgroundColor: '#FFF4E5',
+        color: '#663C00',
+      },
+      standardInfo: {
+        backgroundColor: '#E5F6FD',
+        color: '#014361',
+      },
+      filledSuccess: {
+        backgroundColor: '#00897B',
+        color: '#FFFFFF',
+      },
+      filledError: {
+        backgroundColor: '#D32F2F',
+        color: '#FFFFFF',
+      },
+      filledWarning: {
+        backgroundColor: '#EF6C00',
+        color: '#FFFFFF',
+      },
+      filledInfo: {
+        backgroundColor: '#0288D1',
+        color: '#FFFFFF',
+      },
+      outlinedSuccess: {
+        borderColor: '#1F978B',
+        color: '#1E4641',
+      },
+      outlinedError: {
+        borderColor: '#D32F2F',
+        color: '#5F2120',
+      },
+      outlinedWarning: {
+        borderColor: '#EF6C00',
+        color: '#663C00',
+      },
+      outlinedInfo: {
+        borderColor: '#0288D1',
+        color: '#014361',
+      },
     },
   },
   switchKnowFillDisabled: grey[100],
@@ -179,7 +179,7 @@ export const lightThemeOptions = {
     },
     MuiAlert: {
       styleOverrides: {
-        ...lightPalette.alert.light
+        ...lightPalette.alert.light,
       },
     },
   },
