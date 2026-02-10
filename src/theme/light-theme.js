@@ -108,13 +108,58 @@ const lightPalette = {
   alertErrorColor: '#5f2120ff',
   stepperConnector: grey[400],
   chipDefaultFocusFill: '#00000033',
-  alertErrorBackground: '#fdededff',
-  alertWarningColor: '#663c00ff',
-  alertWarningBackground: '#fff4e5ff',
-  alertInfoColor: '#014361ff',
-  alertInfoBackground: '#e5f6fdff',
-  alertSuccessColor: '#1e4641ff',
-  alertSuccessBackground: '#edf7f5ff',
+  alert: {
+    light: {
+      standardSuccess: {
+        backgroundColor: '#EDF7F5',
+        color: '#1E4641',
+      },
+      standardError: {
+        backgroundColor: '#FDEDED',
+        color: '#5F2120',
+      },
+      standardWarning: {
+        backgroundColor: '#FFF4E5',
+        color: '#663C00',
+      },
+      standardInfo: {
+        backgroundColor: '#E5F6FD',
+        color: '#014361',
+      },
+      filledSuccess: {
+        backgroundColor: '#00897B',
+        color: '#FFFFFF',
+      },
+      filledError: {
+        backgroundColor: '#D32F2F',
+        color: '#FFFFFF',
+      },
+      filledWarning: {
+        backgroundColor: '#EF6C00',
+        color: '#FFFFFF',
+      },
+      filledInfo: {
+        backgroundColor: '#0288D1',
+        color: '#FFFFFF',
+      },
+      outlinedSuccess: {
+        borderColor: '#1F978B',
+        color: '#1E4641',
+      },
+      outlinedError: {
+        borderColor: '#D32F2F',
+        color: '#5F2120',
+      },
+      outlinedWarning: {
+        borderColor: '#EF6C00',
+        color: '#663C00',
+      },
+      outlinedInfo: {
+        borderColor: '#0288D1',
+        color: '#014361',
+      },
+    },
+  },
   switchKnowFillDisabled: grey[100],
   nativeScrollbarBg: grey[200],
   divider: '#0000001f',
@@ -134,24 +179,7 @@ export const lightThemeOptions = {
     },
     MuiAlert: {
       styleOverrides: {
-        root: {
-          '&.MuiAlert-standardSuccess': {
-            backgroundColor: lightPalette.alertSuccessBackground,
-            color: lightPalette.alertSuccessColor,
-          },
-          '&.MuiAlert-standardInfo': {
-            backgroundColor: lightPalette.alertInfoBackground,
-            color: lightPalette.alertInfoColor,
-          },
-          '&.MuiAlert-standardWarning': {
-            backgroundColor: lightPalette.alertWarningBackground,
-            color: lightPalette.alertWarningColor,
-          },
-          '&.MuiAlert-standardError': {
-            backgroundColor: lightPalette.alertErrorBackground,
-            color: lightPalette.alertErrorColor,
-          },
-        },
+        ...lightPalette.alert.light,
       },
     },
   },
