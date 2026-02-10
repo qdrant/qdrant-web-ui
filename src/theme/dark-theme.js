@@ -134,6 +134,58 @@ const darkPalette = {
   alertErrorColor: '#f4c7c7ff',
   stepperConnector: grey[600],
   chipDefaultFocusFill: '#ffffff33',
+  alert: {
+    dark: {
+      standardSuccess: {
+        backgroundColor: '#1A2928',
+        color: '#CCE8E4',
+      },
+      standardError: {
+        backgroundColor: '#291414',
+        color: '#F4C7C7',
+      },
+      standardWarning: {
+        backgroundColor: '#291D0B',
+        color: '#FFE2B7',
+      },
+      standardInfo: {
+        backgroundColor: '#0C2029',
+        color: '#B8E7FB',
+      },
+      filledSuccess: {
+        backgroundColor: '#26A69A',
+        color: '#0B0F19',
+      },
+      filledError: {
+        backgroundColor: '#F44336',
+        color: '#FCFDFF',
+      },
+      filledWarning: {
+        backgroundColor: '#FFA726',
+        color: '#0B0F19',
+      },
+      filledInfo: {
+        backgroundColor: '#29B6F6',
+        color: '#0B0F19',
+      },
+      outlinedSuccess: {
+        borderColor: '#26A69A',
+        color: '#CCE8E4',
+      },
+      outlinedError: {
+        borderColor: '#F44336',
+        color: '#F4C7C7',
+      },
+      outlinedWarning: {
+        borderColor: '#FFA726',
+        color: '#FFE2B7',
+      },
+      outlinedInfo: {
+        borderColor: '#29B6F6',
+        color: '#B8E7FB',
+      },
+    },
+  },
   switchKnowFillDisabled: grey[600],
   nativeScrollbarBg: grey[700],
   divider: '#ffffff1f',
