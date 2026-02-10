@@ -1,4 +1,4 @@
-import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
+import { primary, blue, neutral, grey } from './colors';
 
 const darkPalette = {
   common: {
@@ -23,28 +23,54 @@ const darkPalette = {
     contrastText: neutral[950],
   },
   error: {
-    main: red[500],
-    dark: red[700],
-    light: red[300],
-    contrastText: neutral[1],
+    contrastText: '#FCFDFF',
+    main: '#F44336',
+    _states: {
+      hover: 'rgba(244, 67, 54, 0.08)',
+      selected: 'rgba(244, 67, 54, 0.16)',
+      focus: 'rgba(244, 67, 54, 0.12)',
+      focusVisible: 'rgba(244, 67, 54, 0.3)',
+      outlinedBorder: 'rgba(244, 67, 54, 0.5)',
+    },
   },
   warning: {
-    main: orange[400],
-    dark: orange[700],
-    light: orange[300],
-    contrastText: neutral[950],
+    contrastText: '#0B0F19',
+    contrast: '#111824',
+    main: '#FFA726',
+    dark: '#F57C00',
+    _states: {
+      hover: 'rgba(255, 167, 38, 0.08)',
+      selected: 'rgba(255, 167, 38, 0.16)',
+      focus: 'rgba(255, 167, 38, 0.12)',
+      focusVisible: 'rgba(255, 167, 38, 0.3)',
+      outlinedBorder: 'rgba(255, 167, 38, 0.5)',
+    },
   },
   info: {
-    main: lightBlue[400],
-    dark: lightBlue[700],
-    light: lightBlue[300],
-    contrastText: neutral[950],
+    contrast: '#111824',
+    contrastText: '#0B0F19',
+    main: '#29B6F6',
+    _states: {
+      hover: 'rgba(41, 182, 246, 0.08)',
+      selected: 'rgba(41, 182, 246, 0.16)',
+      focus: 'rgba(41, 182, 246, 0.12)',
+      focusVisible: 'rgba(41, 182, 246, 0.3)',
+      outlinedBorder: 'rgba(41, 182, 246, 0.5)',
+    },
   },
   success: {
-    main: teal[400],
-    dark: teal[700],
-    light: teal[300],
-    contrastText: neutral[950],
+    main: '#26A69A',
+    dark: '#00796B',
+    light: '#4DB6AC',
+    contrast: '#111824',
+    contrastText: '#0B0F19',
+    _states: {
+      hover: 'rgba(38, 166, 154, 0.08)',
+      selected: 'rgba(38, 166, 154, 0.16)',
+      focus: 'rgba(38, 166, 154, 0.12)',
+      focusVisible: 'rgba(38, 166, 154, 0.3)',
+      outlinedBorder: 'rgba(38, 166, 154, 0.5)',
+    },
   },
   action: {
     active: '#fcfdff8f',
@@ -108,58 +134,6 @@ const darkPalette = {
   alertErrorColor: '#f4c7c7ff',
   stepperConnector: grey[600],
   chipDefaultFocusFill: '#ffffff33',
-  alert: {
-    dark: {
-      standardSuccess: {
-        backgroundColor: '#1A2928',
-        color: '#CCE8E4',
-      },
-      standardError: {
-        backgroundColor: '#291414',
-        color: '#F4C7C7',
-      },
-      standardWarning: {
-        backgroundColor: '#291D0B',
-        color: '#FFE2B7',
-      },
-      standardInfo: {
-        backgroundColor: '#0C2029',
-        color: '#B8E7FB',
-      },
-      filledSuccess: {
-        backgroundColor: '#26A69A',
-        color: '#0B0F19',
-      },
-      filledError: {
-        backgroundColor: '#F44336',
-        color: '#FCFDFF',
-      },
-      filledWarning: {
-        backgroundColor: '#FFA726',
-        color: '#0B0F19',
-      },
-      filledInfo: {
-        backgroundColor: '#29B6F6',
-        color: '#0B0F19',
-      },
-      outlinedSuccess: {
-        borderColor: '#26A69A',
-        color: '#CCE8E4',
-      },
-      outlinedError: {
-        borderColor: '#F44336',
-        color: '#F4C7C7',
-      },
-      outlinedWarning: {
-        borderColor: '#FFA726',
-        color: '#FFE2B7',
-      },
-      outlinedInfo: {
-        borderColor: '#29B6F6',
-        color: '#B8E7FB',
-      },
-    },
-  },
   switchKnowFillDisabled: grey[600],
   nativeScrollbarBg: grey[700],
   divider: '#ffffff1f',

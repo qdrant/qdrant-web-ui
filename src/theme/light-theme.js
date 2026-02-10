@@ -1,4 +1,4 @@
-import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
+import { primary, blue, neutral, grey } from './colors';
 import { alpha } from '@mui/material/styles';
 
 const lightPalette = {
@@ -24,28 +24,51 @@ const lightPalette = {
     contrastText: neutral[1],
   },
   error: {
-    main: red[700],
-    dark: red[800],
-    light: red[400],
-    contrastText: neutral[1],
+    contrastText: '#FCFDFF',
+    main: '#D32F2F',
+    _states: {
+      hover: 'rgba(211, 47, 47, 0.04)',
+      selected: 'rgba(211, 47, 47, 0.08)',
+      focus: 'rgba(211, 47, 47, 0.12)',
+      focusVisible: 'rgba(211, 47, 47, 0.3)',
+      outlinedBorder: 'rgba(211, 47, 47, 0.5)',
+    },
   },
   warning: {
-    main: orange[800],
-    dark: orange[900],
-    light: orange[500],
-    contrastText: neutral[1],
+    contrastText: '#FCFDFF',
+    main: '#EF6C00',
+    dark: '#E65100',
+    _states: {
+      hover: 'rgba(239, 108, 0, 0.04)',
+      selected: 'rgba(239, 108, 0, 0.08)',
+      focus: 'rgba(239, 108, 0, 0.12)',
+      focusVisible: 'rgba(239, 108, 0, 0.3)',
+      outlinedBorder: 'rgba(239, 108, 0, 0.5)',
+    },
   },
   info: {
-    main: lightBlue[700],
-    dark: lightBlue[900],
-    light: lightBlue[500],
-    contrastText: neutral[1],
+    contrastText: '#FCFDFF',
+    main: '#0288D1',
+    _states: {
+      hover: 'rgba(2, 136, 209, 0.04)',
+      selected: 'rgba(2, 136, 209, 0.08)',
+      focus: 'rgba(2, 136, 209, 0.12)',
+      focusVisible: 'rgba(2, 136, 209, 0.3)',
+      outlinedBorder: 'rgba(2, 136, 209, 0.5)',
+    },
   },
   success: {
-    main: teal[600],
-    dark: teal[900],
-    light: teal[500],
-    contrastText: neutral[1],
+    main: '#00897B',
+    dark: '#004D40',
+    light: '#009688',
+    contrastText: '#FCFDFF',
+    _states: {
+      hover: 'rgba(0, 137, 123, 0.04)',
+      selected: 'rgba(0, 137, 123, 0.08)',
+      focus: 'rgba(0, 137, 123, 0.12)',
+      focusVisible: 'rgba(0, 137, 123, 0.3)',
+      outlinedBorder: 'rgba(0, 137, 123, 0.5)',
+    },
   },
   action: {
     active: '#0b0f198f',
@@ -108,58 +131,6 @@ const lightPalette = {
   alertErrorColor: '#5f2120ff',
   stepperConnector: grey[400],
   chipDefaultFocusFill: '#00000033',
-  alert: {
-    light: {
-      standardSuccess: {
-        backgroundColor: '#EDF7F5',
-        color: '#1E4641',
-      },
-      standardError: {
-        backgroundColor: '#FDEDED',
-        color: '#5F2120',
-      },
-      standardWarning: {
-        backgroundColor: '#FFF4E5',
-        color: '#663C00',
-      },
-      standardInfo: {
-        backgroundColor: '#E5F6FD',
-        color: '#014361',
-      },
-      filledSuccess: {
-        backgroundColor: '#00897B',
-        color: '#FFFFFF',
-      },
-      filledError: {
-        backgroundColor: '#D32F2F',
-        color: '#FFFFFF',
-      },
-      filledWarning: {
-        backgroundColor: '#EF6C00',
-        color: '#FFFFFF',
-      },
-      filledInfo: {
-        backgroundColor: '#0288D1',
-        color: '#FFFFFF',
-      },
-      outlinedSuccess: {
-        borderColor: '#1F978B',
-        color: '#1E4641',
-      },
-      outlinedError: {
-        borderColor: '#D32F2F',
-        color: '#5F2120',
-      },
-      outlinedWarning: {
-        borderColor: '#EF6C00',
-        color: '#663C00',
-      },
-      outlinedInfo: {
-        borderColor: '#0288D1',
-        color: '#014361',
-      },
-    },
-  },
   switchKnowFillDisabled: grey[100],
   nativeScrollbarBg: grey[200],
   divider: '#0000001f',
@@ -175,11 +146,6 @@ export const lightThemeOptions = {
             border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
           },
         }),
-      },
-    },
-    MuiAlert: {
-      styleOverrides: {
-        ...lightPalette.alert.light,
       },
     },
   },
