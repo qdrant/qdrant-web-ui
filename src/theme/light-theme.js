@@ -24,8 +24,10 @@ const lightPalette = {
     contrastText: neutral[1],
   },
   error: {
-    contrastText: '#FCFDFF',
-    main: '#D32F2F',
+    contrastText: '#fcfdff',
+    main: '#d32f2f',
+    dark: '#c62828',
+    light: '#ef5350',
     _states: {
       hover: 'rgba(211, 47, 47, 0.04)',
       selected: 'rgba(211, 47, 47, 0.08)',
@@ -35,9 +37,10 @@ const lightPalette = {
     },
   },
   warning: {
-    contrastText: '#FCFDFF',
-    main: '#EF6C00',
-    dark: '#E65100',
+    contrastText: '#fcfdff',
+    main: '#ef6c00',
+    dark: '#e65100',
+    light: '#ff9800',
     _states: {
       hover: 'rgba(239, 108, 0, 0.04)',
       selected: 'rgba(239, 108, 0, 0.08)',
@@ -47,8 +50,10 @@ const lightPalette = {
     },
   },
   info: {
-    contrastText: '#FCFDFF',
-    main: '#0288D1',
+    contrastText: '#fcfdff',
+    main: '#0288d1',
+    dark: '#01579b',
+    light: '#03a9f4',
     _states: {
       hover: 'rgba(2, 136, 209, 0.04)',
       selected: 'rgba(2, 136, 209, 0.08)',
@@ -58,10 +63,10 @@ const lightPalette = {
     },
   },
   success: {
-    main: '#00897B',
-    dark: '#004D40',
+    main: '#00897b',
+    dark: '#004d40',
     light: '#009688',
-    contrastText: '#FCFDFF',
+    contrastText: '#fcfdff',
     _states: {
       hover: 'rgba(0, 137, 123, 0.04)',
       selected: 'rgba(0, 137, 123, 0.08)',

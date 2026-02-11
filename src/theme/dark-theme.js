@@ -23,8 +23,10 @@ const darkPalette = {
     contrastText: neutral[950],
   },
   error: {
-    contrastText: '#FCFDFF',
-    main: '#F44336',
+    contrastText: '#fcfdff',
+    main: '#f44336',
+    dark: '#d32f2f',
+    light: '#e57373',
     _states: {
       hover: 'rgba(244, 67, 54, 0.08)',
       selected: 'rgba(244, 67, 54, 0.16)',
@@ -34,10 +36,10 @@ const darkPalette = {
     },
   },
   warning: {
-    contrastText: '#0B0F19',
-    contrast: '#111824',
-    main: '#FFA726',
-    dark: '#F57C00',
+    contrastText: '#fcfdff',
+    main: '#ffa726',
+    dark: '#f57c00',
+    light: '#ffb74d',
     _states: {
       hover: 'rgba(255, 167, 38, 0.08)',
       selected: 'rgba(255, 167, 38, 0.16)',
@@ -47,9 +49,10 @@ const darkPalette = {
     },
   },
   info: {
-    contrast: '#111824',
-    contrastText: '#0B0F19',
-    main: '#29B6F6',
+    contrastText: '#fcfdff',
+    main: '#29b6f6',
+    dark: '#0288d1',
+    light: '#4fc3f7',
     _states: {
       hover: 'rgba(41, 182, 246, 0.08)',
       selected: 'rgba(41, 182, 246, 0.16)',
@@ -59,11 +62,10 @@ const darkPalette = {
     },
   },
   success: {
-    main: '#26A69A',
-    dark: '#00796B',
-    light: '#4DB6AC',
-    contrast: '#111824',
-    contrastText: '#0B0F19',
+    main: '#26a69a',
+    dark: '#00796b',
+    light: '#4db6ac',
+    contrastText: '#fcfdff',
     _states: {
       hover: 'rgba(38, 166, 154, 0.08)',
       selected: 'rgba(38, 166, 154, 0.16)',
