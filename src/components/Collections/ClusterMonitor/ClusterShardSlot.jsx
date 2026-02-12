@@ -59,7 +59,7 @@ const Slot = ({
     }
 
     relations.push({
-      targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id || transfer.transfer.shard_id}`,
+      targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id ?? transfer.transfer.shard_id}`,
       targetAnchor: targetAnchorDirection,
       sourceAnchor: sourceAnchorDirection,
       style: {
