@@ -50,7 +50,18 @@ const Slot = ({
     let targetAnchorDirection;
     let sourceAnchorDirection;
 
-    if (transfer.transfer.to > transfer.transfer.from) {
+    const targetShardId = transfer.transfer.to_shard_id ?? transfer.transfer.shard_id;
+
+    if (transfer.transfer.to === transfer.transfer.from) {
+      // Same peer transfer — use top/bottom anchors to connect slots vertically
+      if (transfer.transfer.shard_id > targetShardId) {
+        sourceAnchorDirection = 'top';
+        targetAnchorDirection = 'bottom';
+      } else {
+        sourceAnchorDirection = 'bottom';
+        targetAnchorDirection = 'top';
+      }
+    } else if (transfer.transfer.to > transfer.transfer.from) {
       targetAnchorDirection = 'left';
       sourceAnchorDirection = 'right';
     } else {
