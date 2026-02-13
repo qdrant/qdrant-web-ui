@@ -1,4 +1,4 @@
-import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
+import { primary, blue, neutral, grey } from './colors';
 
 const darkPalette = {
   common: {
@@ -23,28 +23,56 @@ const darkPalette = {
     contrastText: neutral[950],
   },
   error: {
-    main: red[500],
-    dark: red[700],
-    light: red[300],
-    contrastText: neutral[1],
+    contrastText: '#fcfdff',
+    main: '#f44336',
+    dark: '#d32f2f',
+    light: '#e57373',
+    _states: {
+      hover: 'rgba(244, 67, 54, 0.08)',
+      selected: 'rgba(244, 67, 54, 0.16)',
+      focus: 'rgba(244, 67, 54, 0.12)',
+      focusVisible: 'rgba(244, 67, 54, 0.3)',
+      outlinedBorder: 'rgba(244, 67, 54, 0.5)',
+    },
   },
   warning: {
-    main: orange[400],
-    dark: orange[700],
-    light: orange[300],
-    contrastText: neutral[950],
+    contrastText: '#fcfdff',
+    main: '#ffa726',
+    dark: '#f57c00',
+    light: '#ffb74d',
+    _states: {
+      hover: 'rgba(255, 167, 38, 0.08)',
+      selected: 'rgba(255, 167, 38, 0.16)',
+      focus: 'rgba(255, 167, 38, 0.12)',
+      focusVisible: 'rgba(255, 167, 38, 0.3)',
+      outlinedBorder: 'rgba(255, 167, 38, 0.5)',
+    },
   },
   info: {
-    main: lightBlue[400],
-    dark: lightBlue[700],
-    light: lightBlue[300],
-    contrastText: neutral[950],
+    contrastText: '#fcfdff',
+    main: '#29b6f6',
+    dark: '#0288d1',
+    light: '#4fc3f7',
+    _states: {
+      hover: 'rgba(41, 182, 246, 0.08)',
+      selected: 'rgba(41, 182, 246, 0.16)',
+      focus: 'rgba(41, 182, 246, 0.12)',
+      focusVisible: 'rgba(41, 182, 246, 0.3)',
+      outlinedBorder: 'rgba(41, 182, 246, 0.5)',
+    },
   },
   success: {
-    main: teal[400],
-    dark: teal[700],
-    light: teal[300],
-    contrastText: neutral[950],
+    main: '#26a69a',
+    dark: '#00796b',
+    light: '#4db6ac',
+    contrastText: '#fcfdff',
+    _states: {
+      hover: 'rgba(38, 166, 154, 0.08)',
+      selected: 'rgba(38, 166, 154, 0.16)',
+      focus: 'rgba(38, 166, 154, 0.12)',
+      focusVisible: 'rgba(38, 166, 154, 0.3)',
+      outlinedBorder: 'rgba(38, 166, 154, 0.5)',
+    },
   },
   action: {
     active: '#fcfdff8f',
