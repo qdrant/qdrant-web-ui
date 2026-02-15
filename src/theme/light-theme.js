@@ -1,4 +1,4 @@
-import { primary, blue, red, orange, teal, neutral, lightBlue, grey } from './colors';
+import { primary, blue, neutral, grey } from './colors';
 import { alpha } from '@mui/material/styles';
 
 const lightPalette = {
@@ -24,28 +24,56 @@ const lightPalette = {
     contrastText: neutral[1],
   },
   error: {
-    main: red[700],
-    dark: red[800],
-    light: red[400],
-    contrastText: neutral[1],
+    contrastText: '#fcfdff',
+    main: '#d32f2f',
+    dark: '#c62828',
+    light: '#ef5350',
+    _states: {
+      hover: 'rgba(211, 47, 47, 0.04)',
+      selected: 'rgba(211, 47, 47, 0.08)',
+      focus: 'rgba(211, 47, 47, 0.12)',
+      focusVisible: 'rgba(211, 47, 47, 0.3)',
+      outlinedBorder: 'rgba(211, 47, 47, 0.5)',
+    },
   },
   warning: {
-    main: orange[800],
-    dark: orange[900],
-    light: orange[500],
-    contrastText: neutral[1],
+    contrastText: '#fcfdff',
+    main: '#ef6c00',
+    dark: '#e65100',
+    light: '#ff9800',
+    _states: {
+      hover: 'rgba(239, 108, 0, 0.04)',
+      selected: 'rgba(239, 108, 0, 0.08)',
+      focus: 'rgba(239, 108, 0, 0.12)',
+      focusVisible: 'rgba(239, 108, 0, 0.3)',
+      outlinedBorder: 'rgba(239, 108, 0, 0.5)',
+    },
   },
   info: {
-    main: lightBlue[700],
-    dark: lightBlue[900],
-    light: lightBlue[500],
-    contrastText: neutral[1],
+    contrastText: '#fcfdff',
+    main: '#0288d1',
+    dark: '#01579b',
+    light: '#03a9f4',
+    _states: {
+      hover: 'rgba(2, 136, 209, 0.04)',
+      selected: 'rgba(2, 136, 209, 0.08)',
+      focus: 'rgba(2, 136, 209, 0.12)',
+      focusVisible: 'rgba(2, 136, 209, 0.3)',
+      outlinedBorder: 'rgba(2, 136, 209, 0.5)',
+    },
   },
   success: {
-    main: teal[600],
-    dark: teal[900],
-    light: teal[500],
-    contrastText: neutral[1],
+    main: '#00897b',
+    dark: '#004d40',
+    light: '#009688',
+    contrastText: '#fcfdff',
+    _states: {
+      hover: 'rgba(0, 137, 123, 0.04)',
+      selected: 'rgba(0, 137, 123, 0.08)',
+      focus: 'rgba(0, 137, 123, 0.12)',
+      focusVisible: 'rgba(0, 137, 123, 0.3)',
+      outlinedBorder: 'rgba(0, 137, 123, 0.5)',
+    },
   },
   action: {
     active: '#0b0f198f',
