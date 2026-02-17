@@ -191,7 +191,7 @@ function Graph() {
                         <IconButton
                           sx={{ mr: 3 }}
                           size="small"
-                          onClick={() => navigate(`/collections/${params.collectionName}`)}
+                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
                         >
                           <ArrowBack />
                         </IconButton>

@@ -23,7 +23,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
   return (
     <StyledTableRow>
       <TableCell>
-        <Typography component={StyledLink} to={`/collections/${collection.name}`}>
+        <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
           {collection.name}
         </Typography>
         <Typography component={'p'} variant="caption" color="text.secondary">
@@ -34,7 +34,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
         <CollectionStatus status={collection.status} collectionName={collection.name} />
       </TableCell>
       <TableCell align="center">
-        <Typography component={StyledLink} to={`/collections/${collection.name}`}>
+        <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
           {collection.points_count}
         </Typography>
       </TableCell>
@@ -49,13 +49,13 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>
-          <MenuItem component={Link} to={`/collections/${collection.name}#snapshots`}>
+          <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}#snapshots`}>
             Take Snapshot
           </MenuItem>
-          <MenuItem component={Link} to={`/collections/${collection.name}/visualize`}>
+          <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/visualize`}>
             Visualize
           </MenuItem>
-          <MenuItem component={Link} to={`/collections/${collection.name}/graph`}>
+          <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/graph`}>
             Graph
           </MenuItem>
           <MenuItem onClick={() => setOpenDeleteDialog(true)} sx={{ color: theme.palette.error.main }}>
