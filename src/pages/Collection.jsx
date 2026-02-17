@@ -49,7 +49,11 @@ function Collection() {
                 {!isRestricted && <Tab label="Cluster" value={'cluster'} />}
                 {!isRestricted && <Tab label="Search Quality" value={'quality'} />}
                 {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
-                <Tab label="Visualize" component={Link} to={`/collections/${encodeURIComponent(collectionName)}/visualize`} />
+                <Tab
+                  label="Visualize"
+                  component={Link}
+                  to={`/collections/${encodeURIComponent(collectionName)}/visualize`}
+                />
                 <Tab label="Graph" component={Link} to={`/collections/${encodeURIComponent(collectionName)}/graph`} />
               </Tabs>
             </Box>
