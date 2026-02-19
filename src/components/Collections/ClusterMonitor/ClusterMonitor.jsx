@@ -444,7 +444,10 @@ const ClusterMonitor = ({ collectionName }) => {
             width: 'max-content',
           }}
         >
-          <ArcherContainer strokeColor={theme.palette.mode === 'dark' ? '#d4d9e6' : '#647cb9'} lineStyle={'angle'}>
+          <ArcherContainer
+            strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
+            lineStyle={'angle'}
+          >
             <Grid container spacing={2}>
               {cluster.peers?.map((peerId) => (
                 <Grid key={peerId} size={'grow'}>
