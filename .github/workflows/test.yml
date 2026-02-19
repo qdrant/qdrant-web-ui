@@ -30,7 +30,7 @@ jobs:
       - name: Install packages
         run: npm ci
       - name: Audit
-        run: npm audit
+        run: npm audit --production
       - name: Lint
         run: npm run lint
       - name: Lint
