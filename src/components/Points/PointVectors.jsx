@@ -42,7 +42,9 @@ const Vectors = memo(function Vectors({ point, onFindSimilar }) {
   }
 
   const handleNavigate = (key) => {
-    navigate(`/collections/${collectionName}/graph`, { state: { newInitNode: point, vectorName: key } });
+    navigate(`/collections/${encodeURIComponent(collectionName)}/graph`, {
+      state: { newInitNode: point, vectorName: key },
+    });
   };
 
   return (

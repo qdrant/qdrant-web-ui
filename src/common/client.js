@@ -43,7 +43,10 @@ export class QdrantClientExtended extends QdrantClient {
       headers['api-key'] = this.apiKey;
     }
 
-    const snapshotUrl = new URL(`/collections/${collectionName}/snapshots/${snapshotName}`, this.url).href;
+    const snapshotUrl = new URL(
+      `/collections/${encodeURIComponent(collectionName)}/snapshots/${encodeURIComponent(snapshotName)}`,
+      this.url
+    ).href;
 
     const request = new Request(snapshotUrl, {
       method: 'GET',
@@ -70,7 +73,7 @@ export class QdrantClientExtended extends QdrantClient {
    * @return {module:url.URL} - URL object for snapshot upload
    */
   getSnapshotUploadUrl(collectionName) {
-    return new URL(`collections/${collectionName}/snapshots/upload`, this.url);
+    return new URL(`collections/${encodeURIComponent(collectionName)}/snapshots/upload`, this.url);
   }
 
   /**

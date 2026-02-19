@@ -17,7 +17,7 @@ const Optimizations = ({ collectionName }) => {
     // Clear selected optimization when refreshing to show updated data
     setSelectedOptimization(null);
     axios
-      .get(`/collections/${collectionName}/optimizations?with=queued,completed,idle_segments`)
+      .get(`/collections/${encodeURIComponent(collectionName)}/optimizations?with=queued,completed,idle_segments`)
       .then((response) => {
         setData(response.data);
         setRequestTime(Date.now());

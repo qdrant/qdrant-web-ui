@@ -71,7 +71,7 @@ const CollectionStatus = ({ status, collectionName }) => (
   <StatusBadge
     status={status}
     component={Link}
-    to={`/collections/${collectionName}#info`}
+    to={`/collections/${encodeURIComponent(collectionName)}#info`}
     sx={{ textDecoration: 'none' }}
   >
     <div className="status-dot" />

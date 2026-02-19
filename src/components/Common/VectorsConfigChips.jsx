@@ -34,7 +34,7 @@ const VectorsConfigChips = ({ collectionConfigParams, collectionName, sx = {} })
 
   const handleEllipsisClick = () => {
     if (collectionName) {
-      navigate(`/collections/${collectionName}#info`);
+      navigate(`/collections/${encodeURIComponent(collectionName)}#info`);
     }
   };
 
