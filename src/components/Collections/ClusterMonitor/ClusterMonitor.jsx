@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
-import { Grid, Typography, Box } from '@mui/material';
+import { Grid, Typography, Box, LinearProgress } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { useTelemetry } from '../../../context/telemetry-context';
@@ -377,7 +377,15 @@ const ClusterMonitor = ({ collectionName }) => {
     return Array.from(keys).sort();
   }, [cluster?.shards]);
 
-  if (!cluster || cluster.status !== 'enabled') {
+  if (!cluster) {
+    return (
+      <Box>
+        <LinearProgress />
+      </Box>
+    );
+  }
+
+  if (cluster.status !== 'enabled') {
     return (
       <Box>
         <InfoBanner severity={'warning'} hideCloseButton={true}>
