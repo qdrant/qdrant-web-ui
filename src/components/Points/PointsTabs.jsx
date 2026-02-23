@@ -163,6 +163,15 @@ const PointsTabs = ({ collectionName, client }) => {
   }, [collectionName, offset, similarIds, filters]);
   const isLoading = !points && !errorMessage && requestCount > 0;
 
+  // Collection is empty when we have no filters/similar and scroll returned 0 points
+  const isCollectionEmpty =
+    points &&
+    !errorMessage &&
+    requestCount === 0 &&
+    points.points?.length === 0 &&
+    similarIds.length === 0 &&
+    filters.length === 0;
+
   return (
     <Grid container spacing={3} role="list" aria-label="Collection Points">
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
@@ -171,8 +180,8 @@ const PointsTabs = ({ collectionName, client }) => {
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
-      {/* Always render the same PointsFilter instance to preserve filter input state */}
-      {!errorMessage && (
+      {/* Hide filter only when collection is empty (isCollectionEmpty is false when there's an error or user has filters/similar) */}
+      {!isCollectionEmpty && (
         <Grid size={12}>
           <PointsFilter
             similarIds={similarIds}
@@ -194,9 +203,14 @@ const PointsTabs = ({ collectionName, client }) => {
           ))}
         </>
       )}
-      {points && !errorMessage && requestCount === 0 && points.points?.length === 0 && (
+      {points && !errorMessage && requestCount === 0 && points.points?.length === 0 && isCollectionEmpty && (
         <Grid textAlign={'center'} size={12} role="alert" aria-label="No Points">
           <Typography>📪 No Points are present, {collectionName} is empty</Typography>
+        </Grid>
+      )}
+      {points && !errorMessage && requestCount === 0 && points.points?.length === 0 && !isCollectionEmpty && (
+        <Grid textAlign={'center'} size={12} role="alert" aria-label="No matching points">
+          <Typography>Nothing matches the current filters</Typography>
         </Grid>
       )}
       {points && !errorMessage && points.points?.length > 0 && (
