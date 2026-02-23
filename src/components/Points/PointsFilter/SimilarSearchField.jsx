@@ -195,13 +195,16 @@ const SimilarSearchField = memo(function SimilarSearchField({
           ...sharedTextFieldSx,
           '& .MuiOutlinedInput-root': {
             ...sharedTextFieldSx['& .MuiOutlinedInput-root'],
-            flexWrap: isExpanded ? 'wrap' : 'nowrap',
-            overflow: isExpanded ? 'visible' : 'hidden',
+            flexWrap: 'wrap', // always wrap so input stays visible when no results (narrow column + chip)
+            overflow: 'visible',
+          },
+          '& .MuiOutlinedInput-input': {
+            minWidth: '120px', // ensure input is always visible/focusable when similarity returns no results
           },
         }}
       />
     ),
-    [theme.palette.text.secondary, sharedTextFieldSx, isExpanded, handleBackspaceEdit]
+    [theme.palette.text.secondary, sharedTextFieldSx, handleBackspaceEdit]
   );
 
   return (
