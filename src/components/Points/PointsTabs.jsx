@@ -180,8 +180,8 @@ const PointsTabs = ({ collectionName, client }) => {
           <Typography>⚠ Error: {errorMessage}</Typography>
         </Grid>
       )}
-      {/* Hide filter when collection is empty; show when we have points or when query returned no results (so user can change input) */}
-      {!errorMessage && !isCollectionEmpty && (
+      {/* Hide filter only when collection is empty; show on error so user can clear/fix invalid ID or filters */}
+      {(errorMessage || !isCollectionEmpty) && (
         <Grid size={12}>
           <PointsFilter
             similarIds={similarIds}
