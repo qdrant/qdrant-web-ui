@@ -5,12 +5,14 @@ import { Box } from '@mui/material';
 import ProgressGrid from './ProgressGrid/ProgressGrid';
 import Timeline from './Timeline/Timeline';
 import OptimizationsTree from './Tree/OptimizationsTree';
+import { useHighContrast } from '../../../hooks/useHighContrast';
 
 const Optimizations = ({ collectionName }) => {
   const [data, setData] = useState(null);
   const [selectedOptimization, setSelectedOptimization] = useState(null);
   const [requestTime, setRequestTime] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { highContrast, toggleHighContrast } = useHighContrast();
 
   const fetchData = useCallback(() => {
     setIsRefreshing(true);
@@ -46,7 +48,7 @@ const Optimizations = ({ collectionName }) => {
 
   return (
     <Box display="flex" flexDirection="column" gap={5}>
-      <ProgressGrid data={data?.result} />
+      <ProgressGrid data={data?.result} highContrast={highContrast} onToggleHighContrast={toggleHighContrast} />
       <Timeline
         data={data?.result}
         requestTime={requestTime}
@@ -54,8 +56,9 @@ const Optimizations = ({ collectionName }) => {
         selectedItem={selectedOptimization?.result?.running?.[0]}
         onRefresh={fetchData}
         isRefreshing={isRefreshing}
+        highContrast={highContrast}
       />
-      <OptimizationsTree data={selectedOptimization || data} requestTime={requestTime} />
+      <OptimizationsTree data={selectedOptimization || data} requestTime={requestTime} highContrast={highContrast} />
     </Box>
   );
 };

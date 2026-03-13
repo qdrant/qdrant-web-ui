@@ -16,7 +16,7 @@ const growWidth = keyframes`
   }
 `;
 
-const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
+const OptimizationNode = ({ node, level = 0, totalDuration, maxTime, highContrast }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
   const hasChildren = node.children && node.children.length > 0;
@@ -62,7 +62,9 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
     setOpen(!open);
   };
 
-  const barColor = isFinished ? theme.palette.success.main : yellow[700];
+  const barColor = highContrast
+    ? (isFinished ? '#0077BB' : '#EE7733')
+    : (isFinished ? theme.palette.success.main : yellow[700]);
 
   return (
     <Box>
@@ -196,6 +198,7 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
                 level={level + 1}
                 totalDuration={totalDuration}
                 maxTime={maxTime}
+                highContrast={highContrast}
               />
             ))}
           </Box>
@@ -219,6 +222,7 @@ OptimizationNode.propTypes = {
   level: PropTypes.number,
   totalDuration: PropTypes.number,
   maxTime: PropTypes.number,
+  highContrast: PropTypes.bool,
 };
 
 export default OptimizationNode;

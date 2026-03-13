@@ -139,11 +139,24 @@ export const createChartConfig = (timelineData = [], theme, onSelectRef, range) 
   return { data: chartData, options };
 };
 
-export const calculateBackgroundColors = (timelineData, selectedItem, theme) => {
+export const calculateBackgroundColors = (timelineData, selectedItem, theme, highContrast = false) => {
+  // High-contrast colorblind-friendly palette
+  const hcOngoing = '#EE7733'; // orange
+  const hcOngoingSelected = '#CC5500'; // dark orange
+  const hcCompleted = '#0077BB'; // blue
+  const hcCompletedSelected = '#004488'; // dark blue
+
   return timelineData.map((item) => {
     const isSelected =
       selectedItem && item.started_at === selectedItem.started_at && item.finished_at === selectedItem.finished_at;
     const isOngoing = item.isOngoing === true;
+
+    if (highContrast) {
+      if (isSelected) {
+        return isOngoing ? hcOngoingSelected : hcCompletedSelected;
+      }
+      return isOngoing ? hcOngoing : hcCompleted;
+    }
 
     if (isSelected) {
       // Selected ongoing optimizations use darker warning color (darker yellow)
