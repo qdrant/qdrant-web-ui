@@ -4,7 +4,7 @@ import PointCard from './PointCard';
 import PointCardSkeleton from './PointCardSkeleton';
 import { useClient } from '../../context/client-context';
 import { getErrorMessage } from '../../lib/get-error-message';
-import { Button, Grid, Typography } from '@mui/material';
+import { Alert, Button, Grid, Typography } from '@mui/material';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import PointsFilter from './PointsFilter/PointsFilter';
 
@@ -34,6 +34,15 @@ const PointsTabs = ({ collectionName, client }) => {
   const onFiltersChange = (newFilters) => {
     setOffset(null);
     setFilters(newFilters);
+    setPoints(null);
+  };
+
+  const handleClearFilters = () => {
+    setErrorMessage(null);
+    setOffset(null);
+    setSimilarIds([]);
+    setUsingVector(null);
+    setFilters([]);
     setPoints(null);
   };
 
@@ -153,6 +162,8 @@ const PointsTabs = ({ collectionName, client }) => {
         }
       } catch (error) {
         const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
+        console.log('error', error);
+        console.log('message', message);
         message && setErrorMessage(message);
         setPoints({});
       } finally {
@@ -165,24 +176,33 @@ const PointsTabs = ({ collectionName, client }) => {
 
   return (
     <Grid container spacing={3} role="list" aria-label="Collection Points">
+      {/* Always render PointsFilter so users can clear or change filters after an error */}
+      <Grid size={12}>
+        <PointsFilter
+          similarIds={similarIds}
+          filters={filters}
+          onSimilarIdsChange={onSimilarIdsChange}
+          onFiltersChange={onFiltersChange}
+          payloadSchema={payloadSchema}
+          payloadValues={payloadValues}
+          points={points}
+        />
+      </Grid>
       {errorMessage !== null && <ErrorNotifier {...{ message: errorMessage }} />}
       {errorMessage && (
-        <Grid textAlign={'center'} size={12}>
-          <Typography>⚠ Error: {errorMessage}</Typography>
-        </Grid>
-      )}
-      {/* Always render the same PointsFilter instance to preserve filter input state */}
-      {!errorMessage && (
         <Grid size={12}>
-          <PointsFilter
-            similarIds={similarIds}
-            filters={filters}
-            onSimilarIdsChange={onSimilarIdsChange}
-            onFiltersChange={onFiltersChange}
-            payloadSchema={payloadSchema}
-            payloadValues={payloadValues}
-            points={points}
-          />
+          <Alert
+            severity="error"
+            action={
+              filters.length > 0 ? (
+                <Button variant="outlined" size="small" color="inherit" onClick={handleClearFilters}>
+                  Clear Filters
+                </Button>
+              ) : undefined
+            }
+          >
+            {errorMessage}
+          </Alert>
         </Grid>
       )}
       {isLoading && (
@@ -215,17 +235,18 @@ const PointsTabs = ({ collectionName, client }) => {
           ))}
         </>
       )}
-      <Grid textAlign={'center'} size={12}>
-        <Button
-          variant="outlined"
-          disabled={!points || !nextPageOffset}
-          onClick={() => {
-            setOffset(nextPageOffset);
-          }}
-        >
-          Load More
-        </Button>
-      </Grid>
+      {points?.points?.length > 0 && nextPageOffset && (
+        <Grid textAlign={'center'} size={12}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setOffset(nextPageOffset);
+            }}
+          >
+            Load More
+          </Button>
+        </Grid>
+      )}
     </Grid>
   );
 };
