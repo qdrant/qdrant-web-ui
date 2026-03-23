@@ -162,8 +162,6 @@ const PointsTabs = ({ collectionName, client }) => {
         }
       } catch (error) {
         const message = getErrorMessage(error, { withApiKey: { apiKey: qdrantClient.getApiKey() } });
-        console.log('error', error);
-        console.log('message', message);
         message && setErrorMessage(message);
         setPoints({});
       } finally {
