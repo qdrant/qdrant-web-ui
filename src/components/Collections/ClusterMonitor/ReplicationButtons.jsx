@@ -3,13 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, IconButton, Button, Typography } from '@mui/material';
 import { Minus, Plus } from 'lucide-react';
 
-const ReplicationControl = ({
-  cluster,
-  replicationFactor,
-  replicationLoading,
-  transferLoading,
-  onApply,
-}) => {
+const ReplicationControl = ({ cluster, replicationFactor, replicationLoading, transferLoading, onApply }) => {
   const [localFactor, setLocalFactor] = useState(replicationFactor);
   const peerCount = cluster?.peers?.length || 0;
   const isLoading = replicationLoading || transferLoading;

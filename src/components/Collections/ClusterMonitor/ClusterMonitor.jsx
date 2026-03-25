@@ -336,10 +336,7 @@ const ClusterMonitor = ({ collectionName }) => {
       await qdrantClient.updateCollection(collectionName, {
         params: { replication_factor: newFactor },
       });
-      enqueueSnackbar(
-        `Replication factor updated to ${newFactor}`,
-        getSnackbarOptions('success', closeSnackbar, 2000)
-      );
+      enqueueSnackbar(`Replication factor updated to ${newFactor}`, getSnackbarOptions('success', closeSnackbar, 2000));
       await refreshClusterInfo();
     } catch (err) {
       console.error('Error updating replication factor:', err);
@@ -472,11 +469,7 @@ const ClusterMonitor = ({ collectionName }) => {
           />
           {isCloud && (
             <>
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ mx: 1 }}
-              />
+              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
               <ReplicationControl
                 cluster={cluster}
                 replicationFactor={replicationFactor}
