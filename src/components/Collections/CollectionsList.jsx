@@ -16,7 +16,7 @@ import ActionsMenu from '../Common/ActionsMenu';
 import CollectionStatus from './CollectionStatus';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
 
-const CollectionTableRow = ({ collection, getCollectionsCall }) => {
+const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection, isRefreshing }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
 
@@ -58,6 +58,9 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/graph`}>
             Graph
           </MenuItem>
+          <MenuItem onClick={() => refreshCollection(collection.name)} disabled={isRefreshing}>
+            Refresh
+          </MenuItem>
           <MenuItem onClick={() => setOpenDeleteDialog(true)} sx={{ color: theme.palette.error.main }}>
             Delete
           </MenuItem>
@@ -76,9 +79,11 @@ const CollectionTableRow = ({ collection, getCollectionsCall }) => {
 CollectionTableRow.propTypes = {
   collection: PropTypes.object.isRequired,
   getCollectionsCall: PropTypes.func.isRequired,
+  refreshCollection: PropTypes.func.isRequired,
+  isRefreshing: PropTypes.bool.isRequired,
 };
 
-const CollectionsList = ({ collections, getCollectionsCall }) => {
+const CollectionsList = ({ collections, getCollectionsCall, refreshCollection, isRefreshing }) => {
   return (
     <StyledTableContainer>
       <Table aria-label="simple table">
@@ -104,6 +109,8 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
                 key={collection.name}
                 collection={collection}
                 getCollectionsCall={getCollectionsCall}
+                refreshCollection={refreshCollection}
+                isRefreshing={isRefreshing}
               />
             ))}
         </StyledTableBody>
@@ -115,6 +122,8 @@ const CollectionsList = ({ collections, getCollectionsCall }) => {
 CollectionsList.propTypes = {
   collections: PropTypes.array.isRequired,
   getCollectionsCall: PropTypes.func.isRequired,
+  refreshCollection: PropTypes.func.isRequired,
+  isRefreshing: PropTypes.bool.isRequired,
 };
 
 export default CollectionsList;
