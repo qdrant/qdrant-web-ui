@@ -5,7 +5,6 @@ import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
-import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 
 import { TelemetryProvider, useAuthError } from '../context/telemetry-context';
@@ -28,6 +27,7 @@ function HomeContent() {
 
   const [isInIframe, setIsInIframe] = useState(false);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     setIsInIframe(window.self !== window.top);
@@ -66,7 +66,6 @@ function HomeContent() {
             }}
           >
             <Toolbar>
-              <Logo width={200} />
               {cloudInfo?.cluster_name ? (
                 <Box sx={{ flexGrow: 1, pl: '140px', display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
@@ -135,7 +134,7 @@ function HomeContent() {
               </Box>
             </Toolbar>
           </AppBar>
-          <Sidebar />
+          <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen((prev) => !prev)} />
         </>
       ) : (
         <></>
