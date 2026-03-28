@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box, Skeleton } from '@mui/material';
+import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip } from '@mui/material';
+import { keyframes } from '@mui/material/styles';
+import { RefreshCw } from 'lucide-react';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
@@ -11,12 +13,18 @@ import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
   const [collections, setCollections] = useState(null);
   const [filteredCollections, setFilteredCollections] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
@@ -110,6 +118,29 @@ function Collections() {
     [getFilteredCollectionsCall]
   );
 
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await getCollectionsCall(currentPage);
+    setIsRefreshing(false);
+  }, [getCollectionsCall, currentPage]);
+
+  const refreshCollection = useCallback(
+    async (collectionName) => {
+      setIsRefreshing(true);
+      try {
+        const collectionData = await qdrantClient.getCollection(collectionName);
+        setRawCollections((prev) => prev.map((c) => (c.name === collectionName ? { ...c, ...collectionData } : c)));
+        setErrorMessage(null);
+      } catch (error) {
+        const message = getErrorMessageWithApiKey(error);
+        message && setErrorMessage(message);
+      } finally {
+        setIsRefreshing(false);
+      }
+    },
+    [qdrantClient, getErrorMessageWithApiKey]
+  );
+
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
   };
@@ -128,9 +159,31 @@ function Collections() {
               md: 5,
             }}
           >
-            <Typography variant="h4" component={'h1'} sx={{ lineHeight: '1' }}>
+            <Typography
+              variant="h4"
+              component={'h1'}
+              sx={{ lineHeight: '1', display: 'flex', alignItems: 'center', gap: 1 }}
+            >
               Collections{' '}
               {maxCollections && displayCollections ? `(${displayCollections.length} / ${maxCollections})` : ''}
+              <Tooltip title="Refresh collections">
+                <span>
+                  <IconButton
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    size="small"
+                    aria-label="Refresh collections list"
+                    sx={{ color: 'text.primary' }}
+                  >
+                    <RefreshCw
+                      size="1.25rem"
+                      style={{
+                        animation: isRefreshing ? `${spin} 1s linear infinite` : 'none',
+                      }}
+                    />
+                  </IconButton>
+                </span>
+              </Tooltip>
             </Typography>
           </Grid>
           <Grid
@@ -170,6 +223,8 @@ function Collections() {
               <CollectionsList
                 collections={rawCollections}
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
+                refreshCollection={refreshCollection}
+                isRefreshing={isRefreshing}
               />
               {displayCollections && displayCollections.length > PAGE_SIZE && (
                 <Box justifyContent="center" display="flex" mt={3}>

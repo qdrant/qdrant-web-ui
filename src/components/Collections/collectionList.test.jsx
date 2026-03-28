@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import CollectionsList from './CollectionsList';
 import { describe, it, expect } from 'vitest';
@@ -9,6 +9,10 @@ vi.mock('../../context/client-context', () => ({
       deleteCollection: vi.fn().mockResolvedValue({}),
     },
   }),
+}));
+
+vi.mock('../Common/ActionsMenu', () => ({
+  default: ({ children }) => <div>{children}</div>,
 }));
 
 const COLLECTIONS = [
@@ -56,7 +60,12 @@ describe('CollectionsList', () => {
   it('should render CollectionsList with given data', () => {
     render(
       <MemoryRouter>
-        <CollectionsList collections={COLLECTIONS} getCollectionsCall={() => {}} />
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+        />
       </MemoryRouter>
     );
     expect(screen.getByText('Collection 1')).toBeInTheDocument();
@@ -66,7 +75,12 @@ describe('CollectionsList', () => {
   it('should render CollectionTableRow with given data', () => {
     render(
       <MemoryRouter>
-        <CollectionsList collections={COLLECTIONS} getCollectionsCall={() => {}} />
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+        />
       </MemoryRouter>
     );
     expect(screen.getByText('green')).toBeInTheDocument();
@@ -80,5 +94,52 @@ describe('CollectionsList', () => {
     expect(screen.getByText('32')).toBeInTheDocument();
     expect(screen.getByText('manhattan')).toBeInTheDocument();
     expect(screen.getByText('Aliases: alias1, alias2')).toBeInTheDocument();
+  });
+  it('should render Refresh menu item in actions menu', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getAllByText('Refresh')).toHaveLength(COLLECTIONS.length);
+  });
+
+  it('should call refreshCollection with collection name when Refresh is clicked', () => {
+    const mockRefresh = vi.fn();
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={mockRefresh}
+          isRefreshing={false}
+        />
+      </MemoryRouter>
+    );
+    const refreshButtons = screen.getAllByText('Refresh');
+    fireEvent.click(refreshButtons[0]);
+    expect(mockRefresh).toHaveBeenCalledWith(COLLECTIONS[0].name);
+  });
+
+  it('should disable Refresh menu item when isRefreshing is true', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={true}
+        />
+      </MemoryRouter>
+    );
+    const refreshButtons = screen.getAllByText('Refresh');
+    refreshButtons.forEach((btn) => {
+      expect(btn.closest('li')).toHaveAttribute('aria-disabled', 'true');
+    });
   });
 });
