@@ -28,7 +28,7 @@ const convertToRequest = (outputData) => {
   if (params.payload_indexes) {
     result += '\n// Payload Indexes';
     for (const fieldConfig of params.payload_indexes) {
-      result += `\nPUT /collections/${collectionName}/payload_indexes \n`;
+      result += `\nPUT /collections/${collectionName}/index \n`;
       const payloadIndexParams = createPayloadIndexParams(fieldConfig);
       result += JSON.stringify(payloadIndexParams, null, 2) + '\n';
     }
