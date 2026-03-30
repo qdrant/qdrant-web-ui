@@ -1,6 +1,7 @@
 import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Card, CardContent, CardHeader } from '@mui/material';
+import { Box, Button, Card, CardContent, CardHeader, IconButton, Tooltip } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
@@ -16,9 +17,7 @@ export const CollectionInfo = ({ collectionName }) => {
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
 
-  useEffect(() => {
-    fetchCollection();
-
+  const fetchClusterInfo = () => {
     if (isRestricted) {
       return;
     }
@@ -34,6 +33,15 @@ export const CollectionInfo = ({ collectionName }) => {
       .catch((err) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       });
+  };
+
+  const refreshAll = () => {
+    fetchCollection();
+    fetchClusterInfo();
+  };
+
+  useEffect(() => {
+    refreshAll();
   }, [collectionName]);
 
   const fetchCollection = () => {
@@ -91,6 +99,11 @@ export const CollectionInfo = ({ collectionName }) => {
                 Trigger optimizers
               </Button>
               <CopyButton text={bigIntJSON.stringify(collection)} />
+              <Tooltip title="Refresh collection info">
+                <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
+                  <RefreshIcon />
+                </IconButton>
+              </Tooltip>
             </Box>
           }
         />
