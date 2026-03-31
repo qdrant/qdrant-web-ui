@@ -87,7 +87,7 @@ const Welcome = () => {
               icon={BrainCircuit}
               title="Agent Skills"
               description={
-                "Download our AI Agent Skills, crafted by our team of experts to accelerate your development workflow."
+                'Download our AI Agent Skills, crafted by our team of experts to accelerate your development workflow.'
               }
               href="https://github.com/qdrant/skills"
               showCta={false}
@@ -109,7 +109,7 @@ const Welcome = () => {
               icon={FileCode}
               title="Sample Data"
               description={
-                "Easily import a remote data snapshot and explore vector search with real data in just a few steps."
+                'Easily import a remote data snapshot and explore vector search with real data in just a few steps.'
               }
               href="/datasets"
               showCta={false}
