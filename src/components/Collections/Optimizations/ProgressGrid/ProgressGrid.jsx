@@ -1,13 +1,20 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardHeader, CardContent, Tooltip, useTheme } from '@mui/material';
-import { extractSegmentsWithStatus, allocateSquares, getStatusColor, getStatusLabel } from './helpers';
+import { Box, Card, CardHeader, CardContent, Tooltip, Typography, IconButton, useTheme } from '@mui/material';
+import { Eye } from 'lucide-react';
+import {
+  extractSegmentsWithStatus,
+  allocateSquares,
+  getStatusColor,
+  getStatusLabel,
+  countSegmentsByStatus,
+} from './helpers';
 
 const TOTAL_SQUARES = 172; // With this number it looks nice on a full screen view
 const SQUARE_SIZE = 10;
 const SQUARE_GAP = 3;
 
-const ProgressGrid = ({ data, ...other }) => {
+const ProgressGrid = ({ data, highContrast, onToggleHighContrast, ...other }) => {
   const theme = useTheme();
   const [hoveredSegmentUuid, setHoveredSegmentUuid] = useState(null);
 
@@ -17,6 +24,8 @@ const ProgressGrid = ({ data, ...other }) => {
     const segments = extractSegmentsWithStatus(data);
     return allocateSquares(segments, TOTAL_SQUARES);
   }, [data]);
+
+  const counts = useMemo(() => countSegmentsByStatus(data), [data]);
 
   // Create empty squares if we have fewer than TOTAL_SQUARES
   const displaySquares = useMemo(() => {
@@ -33,6 +42,13 @@ const ProgressGrid = ({ data, ...other }) => {
       <CardHeader
         title="Optimization Progress"
         variant="heading"
+        action={
+          <Tooltip title={highContrast ? 'Switch to default colors' : 'Switch to colorblind-friendly colors'}>
+            <IconButton size="small" onClick={onToggleHighContrast} sx={{ opacity: highContrast ? 1 : 0.5 }}>
+              <Eye size={18} />
+            </IconButton>
+          </Tooltip>
+        }
         slotProps={{
           title: {
             sx: {
@@ -42,6 +58,23 @@ const ProgressGrid = ({ data, ...other }) => {
         }}
       />
       <CardContent sx={{ pt: 0, '&:last-child': { pb: 2 }, pl: 2, pr: 2 }}>
+        {counts.total > 0 && (
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              {counts.idle}/{counts.total} segments idle
+            </Typography>
+            {counts.running > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {counts.running} running
+              </Typography>
+            )}
+            {counts.queued > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {counts.queued} queued
+              </Typography>
+            )}
+          </Box>
+        )}
         <Box
           sx={{
             display: 'flex',
@@ -70,13 +103,39 @@ const ProgressGrid = ({ data, ...other }) => {
                     width: SQUARE_SIZE,
                     height: SQUARE_SIZE,
                     borderRadius: isHighlighted ? '50%' : 0.5,
-                    backgroundColor: square.status ? getStatusColor(square.status, theme) : theme.palette.grey[200],
+                    backgroundColor: square.status
+                      ? getStatusColor(square.status, theme, highContrast)
+                      : highContrast
+                        ? '#CCCCCC'
+                        : theme.palette.grey[200],
                     transition: 'border-radius 0.1s ease-in-out',
                   }}
                 />
               </Tooltip>
             );
           })}
+        </Box>
+        {/* Legend */}
+        <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
+          {[
+            { status: 'idle', label: 'Idle' },
+            { status: 'running', label: 'Running' },
+            { status: 'queued', label: 'Queued' },
+          ].map(({ status, label }) => (
+            <Box key={status} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 0.5,
+                  backgroundColor: getStatusColor(status, theme, highContrast),
+                }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {label}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       </CardContent>
     </Card>
@@ -85,6 +144,8 @@ const ProgressGrid = ({ data, ...other }) => {
 
 ProgressGrid.propTypes = {
   data: PropTypes.object,
+  highContrast: PropTypes.bool,
+  onToggleHighContrast: PropTypes.func,
 };
 
 export default ProgressGrid;

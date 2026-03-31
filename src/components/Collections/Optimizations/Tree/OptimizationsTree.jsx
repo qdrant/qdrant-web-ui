@@ -33,7 +33,7 @@ const extractOptimizationTrees = (data) => {
   });
 };
 
-const OptimizationsTree = ({ data, requestTime, ...other }) => {
+const OptimizationsTree = ({ data, requestTime, highContrast, ...other }) => {
   const { enrichedNodes, totalDuration, maxTime } = useMemo(() => {
     const trees = extractOptimizationTrees(data);
     if (trees.length === 0) return { enrichedNodes: [], totalDuration: 0, maxTime: 0 };
@@ -84,6 +84,7 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
                 node={node}
                 totalDuration={totalDuration}
                 maxTime={maxTime}
+                highContrast={highContrast}
               />
             ))
           ) : !data ? (
@@ -104,6 +105,7 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
 OptimizationsTree.propTypes = {
   data: PropTypes.object,
   requestTime: PropTypes.number,
+  highContrast: PropTypes.bool,
 };
 
 export default OptimizationsTree;

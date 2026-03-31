@@ -19,7 +19,7 @@ const spin = keyframes`
   }
 `;
 
-const Timeline = ({ data, requestTime, onSelect, selectedItem, onRefresh, isRefreshing, ...other }) => {
+const Timeline = ({ data, requestTime, onSelect, selectedItem, onRefresh, isRefreshing, highContrast, ...other }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -91,12 +91,12 @@ const Timeline = ({ data, requestTime, onSelect, selectedItem, onRefresh, isRefr
     if (!chart || !filteredData || !canvasRef.current) return;
     if (!chart.data?.datasets?.[0]) return;
 
-    const backgroundColors = calculateBackgroundColors(filteredData, selectedItem, theme);
+    const backgroundColors = calculateBackgroundColors(filteredData, selectedItem, theme, highContrast);
 
     // Update dataset colors
     chart.data.datasets[0].backgroundColor = backgroundColors;
     chart.update('none'); // 'none' mode prevents animation on update
-  }, [selectedItem, filteredData, theme]);
+  }, [selectedItem, filteredData, theme, highContrast]);
 
   return (
     <Box>
@@ -155,6 +155,7 @@ Timeline.propTypes = {
   selectedItem: PropTypes.object,
   onRefresh: PropTypes.func,
   isRefreshing: PropTypes.bool,
+  highContrast: PropTypes.bool,
 };
 
 export default Timeline;

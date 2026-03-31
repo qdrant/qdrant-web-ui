@@ -129,12 +129,36 @@ export const allocateSquares = (segments, totalSquares = 200) => {
 };
 
 /**
+ * High-contrast colorblind-friendly palette (orange/blue/gray).
+ * Chosen for deuteranopia/protanopia safe discrimination.
+ */
+const highContrastColors = {
+  idle: '#0077BB', // blue
+  running: '#EE7733', // orange
+  queued: '#888888', // gray
+  empty: '#CCCCCC', // light gray
+};
+
+/**
  * Get color for a segment status
  * @param {string} status - The segment status
  * @param {Object} theme - MUI theme object
+ * @param {boolean} highContrast - Whether to use colorblind-friendly palette
  * @return {string} The color for the status
  */
-export const getStatusColor = (status, theme) => {
+export const getStatusColor = (status, theme, highContrast = false) => {
+  if (highContrast) {
+    switch (status) {
+      case SegmentStatus.IDLE:
+        return highContrastColors.idle;
+      case SegmentStatus.QUEUED:
+        return highContrastColors.queued;
+      case SegmentStatus.RUNNING:
+        return highContrastColors.running;
+      default:
+        return highContrastColors.empty;
+    }
+  }
   switch (status) {
     case SegmentStatus.IDLE:
       return theme.palette.success.main;
@@ -145,6 +169,21 @@ export const getStatusColor = (status, theme) => {
     default:
       return theme.palette.grey[300];
   }
+};
+
+/**
+ * Count segments by status from API response data
+ * @param {Object} data - The API response result object
+ * @return {Object} Counts per status: { idle, running, queued, total }
+ */
+export const countSegmentsByStatus = (data) => {
+  if (!data) return { idle: 0, running: 0, queued: 0, total: 0 };
+
+  const idle = (data.idle_segments || []).length;
+  const running = (data.running || []).reduce((sum, opt) => sum + (opt.segments || []).length, 0);
+  const queued = (data.queued || []).reduce((sum, opt) => sum + (opt.segments || []).length, 0);
+
+  return { idle, running, queued, total: idle + running + queued };
 };
 
 /**
