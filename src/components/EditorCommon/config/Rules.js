@@ -1,10 +1,17 @@
 import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
-import openapi from '/openapi.json??url&raw';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
 const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/';
 
-const apiDocs = new OpenapiDocs(JSON.parse(openapi));
+let apiDocs = null;
+fetch(import.meta.env.BASE_URL + './openapi.json')
+  .then((response) => response.json())
+  .then((openapi) => {
+    apiDocs = new OpenapiDocs(openapi);
+  })
+  .catch((e) => {
+    console.error('Failed to load openapi.json', e);
+  });
 
 export const Rules = {
   Method,
@@ -99,7 +106,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
           },
         });
 
-        const terminal = apiDocs.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
+        const terminal = apiDocs?.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
         if (terminal) {
           const operationId = terminal.operationId.replaceAll('_', '-').toLowerCase();
           const tag = terminal.tags[0].toLowerCase();
