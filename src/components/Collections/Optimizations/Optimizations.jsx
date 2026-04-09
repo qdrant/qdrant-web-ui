@@ -8,6 +8,8 @@ import OptimizationsTree from './Tree/OptimizationsTree';
 
 /** Poll interval while at least one optimization is running and the tab is visible (2–5s range). */
 const POLL_ACTIVE_MS = 4000;
+/** Max delay between retries after a failed poll (exponential backoff cap). */
+const POLL_ERROR_RETRY_MAX_MS = 32000;
 
 function isRequestCanceled(error) {
   return error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError';
@@ -23,6 +25,7 @@ const Optimizations = ({ collectionName }) => {
   const pollTimeoutRef = useRef(null);
   const lastRunningRef = useRef(false);
   const mountedRef = useRef(true);
+  const pollErrorBackoffMsRef = useRef(POLL_ACTIVE_MS);
 
   const runFetch = useCallback(
     async ({ preserveSelection = false } = {}) => {
@@ -34,6 +37,7 @@ const Optimizations = ({ collectionName }) => {
       abortRef.current = ac;
 
       if (!preserveSelection) {
+        pollErrorBackoffMsRef.current = POLL_ACTIVE_MS;
         setIsRefreshing(true);
         setSelectedOptimization(null);
       }
@@ -52,6 +56,7 @@ const Optimizations = ({ collectionName }) => {
         const result = next?.result;
         const hasRunning = Array.isArray(result?.running) && result.running.length > 0;
         lastRunningRef.current = hasRunning;
+        pollErrorBackoffMsRef.current = POLL_ACTIVE_MS;
 
         clearTimeout(pollTimeoutRef.current);
         if (hasRunning && !document.hidden) {
@@ -63,6 +68,14 @@ const Optimizations = ({ collectionName }) => {
       } catch (error) {
         if (isRequestCanceled(error)) return;
         console.error('Error fetching optimizations:', error);
+        if (mountedRef.current && lastRunningRef.current && !document.hidden) {
+          const delay = pollErrorBackoffMsRef.current;
+          pollErrorBackoffMsRef.current = Math.min(pollErrorBackoffMsRef.current * 2, POLL_ERROR_RETRY_MAX_MS);
+          pollTimeoutRef.current = window.setTimeout(() => {
+            pollTimeoutRef.current = null;
+            void runFetch({ preserveSelection: true });
+          }, delay);
+        }
       } finally {
         if (!preserveSelection && mountedRef.current) {
           setIsRefreshing(false);

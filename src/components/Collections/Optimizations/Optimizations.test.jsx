@@ -17,6 +17,8 @@ const apiResponse = (running = []) => ({
 });
 
 describe('Optimizations polling', () => {
+  const originalHiddenDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden');
+
   beforeEach(() => {
     vi.useFakeTimers();
     getMock.mockReset();
@@ -24,6 +26,11 @@ describe('Optimizations polling', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    if (originalHiddenDescriptor) {
+      Object.defineProperty(document, 'hidden', originalHiddenDescriptor);
+    } else {
+      delete document.hidden;
+    }
   });
 
   it('polls while running is non-empty and stops when empty', async () => {
@@ -50,6 +57,31 @@ describe('Optimizations polling', () => {
     // Running is now empty – no further fetch after another interval.
     await act(async () => vi.advanceTimersByTime(8000));
     expect(getMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('resumes polling after a transient error while optimizations are running', async () => {
+    getMock
+      .mockResolvedValueOnce(apiResponse([{ id: 1 }]))
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce(apiResponse([{ id: 1 }]))
+      .mockResolvedValueOnce(apiResponse([]));
+
+    await act(async () => {
+      render(<Optimizations collectionName="test" />);
+    });
+    expect(getMock).toHaveBeenCalledTimes(1);
+
+    await act(async () => vi.advanceTimersByTime(4000));
+    expect(getMock).toHaveBeenCalledTimes(2);
+
+    await act(async () => vi.advanceTimersByTime(4000));
+    expect(getMock).toHaveBeenCalledTimes(3);
+
+    await act(async () => vi.advanceTimersByTime(4000));
+    expect(getMock).toHaveBeenCalledTimes(4);
+
+    await act(async () => vi.advanceTimersByTime(8000));
+    expect(getMock).toHaveBeenCalledTimes(4);
   });
 
   it('pauses polling when document is hidden and resumes on visibility', async () => {
