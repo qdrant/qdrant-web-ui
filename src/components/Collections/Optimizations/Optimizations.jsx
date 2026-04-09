@@ -26,10 +26,8 @@ const Optimizations = ({ collectionName }) => {
 
   const runFetch = useCallback(
     async ({ preserveSelection = false } = {}) => {
-      if (!preserveSelection) {
-        clearTimeout(pollTimeoutRef.current);
-        pollTimeoutRef.current = null;
-      }
+      clearTimeout(pollTimeoutRef.current);
+      pollTimeoutRef.current = null;
 
       abortRef.current?.abort();
       const ac = new AbortController();
