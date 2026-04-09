@@ -135,6 +135,18 @@ export const allocateSquares = (segments, totalSquares = 200) => {
  * @return {string} The color for the status
  */
 export const getStatusColor = (status, theme) => {
+  if (theme.palette.highContrast) {
+    switch (status) {
+      case SegmentStatus.IDLE:
+        return theme.palette.common.white;
+      case SegmentStatus.QUEUED:
+        return theme.palette.grey[500];
+      case SegmentStatus.RUNNING:
+        return theme.palette.warning.main;
+      default:
+        return theme.palette.text.secondary;
+    }
+  }
   switch (status) {
     case SegmentStatus.IDLE:
       return theme.palette.success.main;
@@ -145,6 +157,18 @@ export const getStatusColor = (status, theme) => {
     default:
       return theme.palette.grey[300];
   }
+};
+
+/**
+ * Background color for empty progress cells (adapts to theme / high-contrast).
+ * @param {Object} theme - MUI theme object
+ * @return {string} CSS color
+ */
+export const getEmptySquareColor = (theme) => {
+  if (theme.palette.highContrast) {
+    return theme.palette.background.default;
+  }
+  return theme.palette.grey[200];
 };
 
 /**

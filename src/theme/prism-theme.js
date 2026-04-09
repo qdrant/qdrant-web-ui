@@ -1,8 +1,14 @@
 import { lightGreen, deepOrange, blue } from './colors';
 
 // Creates a Prism theme object compatible with prism-react-renderer
-// Accepts MUI `theme` so colors can adapt to light/dark mode
+// Accepts MUI `theme` so colors can adapt to light/dark/high-contrast mode
 export default function createPrismTheme(theme) {
+  const hc = theme.palette.highContrast;
+  const commentColor = hc ? theme.palette.text.secondary : lightGreen[300];
+  const stringColor = hc ? '#FF9100' : deepOrange[300];
+  const keywordColor = hc ? theme.palette.text.primary : blue[500];
+  const valueColor = hc ? '#00E5FF' : lightGreen[300];
+
   return {
     plain: {
       color: theme.palette.text.primary,
@@ -12,14 +18,14 @@ export default function createPrismTheme(theme) {
       {
         types: ['comment', 'prolog', 'doctype', 'cdata'],
         style: {
-          color: lightGreen[300],
+          color: commentColor,
           fontStyle: 'italic',
         },
       },
       {
         types: ['string', 'attr-value'],
         style: {
-          color: deepOrange[300],
+          color: stringColor,
         },
       },
       {
@@ -31,7 +37,7 @@ export default function createPrismTheme(theme) {
       {
         types: ['entity', 'url', 'symbol', 'number', 'boolean', 'variable', 'constant', 'regex', 'inserted'],
         style: {
-          color: lightGreen[300],
+          color: valueColor,
         },
       },
       {
@@ -43,19 +49,19 @@ export default function createPrismTheme(theme) {
       {
         types: ['atrule', 'keyword', 'attr-name', 'selector'],
         style: {
-          color: blue[500],
+          color: keywordColor,
         },
       },
       {
         types: ['function', 'deleted', 'tag'],
         style: {
-          color: blue[500],
+          color: keywordColor,
         },
       },
       {
         types: ['function-variable'],
         style: {
-          color: lightGreen[300],
+          color: valueColor,
         },
       },
     ],

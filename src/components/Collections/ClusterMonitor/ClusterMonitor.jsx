@@ -8,10 +8,10 @@ import { useClient } from '../../../context/client-context';
 import { useTelemetry } from '../../../context/telemetry-context';
 import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
-import { CLUSTER_COLORS, CLUSTER_STYLES } from './constants';
+import { CLUSTER_COLORS, HIGH_CONTRAST_CLUSTER_COLORS } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
@@ -28,6 +28,7 @@ import ReplicationControl from './ReplicationButtons';
  */
 const Legend = ({ sx, dragState }) => {
   const theme = useTheme();
+  const colors = theme.palette.highContrast ? HIGH_CONTRAST_CLUSTER_COLORS : CLUSTER_COLORS;
 
   return (
     <Box
@@ -47,29 +48,29 @@ const Legend = ({ sx, dragState }) => {
         <Box display="flex" alignItems="center" gap={0.5}>
           <Circle
             size={'1rem'}
-            color={theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light}
+            color={theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light}
           />
           <Typography variant="caption">Empty</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={CLUSTER_COLORS.active} />
+          <Circle size={'1rem'} color={colors.active} />
           <Typography variant="caption">Active</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={CLUSTER_COLORS.dead} />
+          <Circle size={'1rem'} color={colors.dead} />
           <Typography variant="caption">Dead</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle size={'1rem'} color={CLUSTER_COLORS.default} />
+          <Circle size={'1rem'} color={colors.default} />
           <Typography variant="caption">Other</Typography>
         </Box>
         {dragState.isDragging && (
-          <Box display="flex" alignItems="center" gap={0.5} sx={{ ml: 2, pl: 2, borderLeft: '1px solid #ccc' }}>
+          <Box display="flex" alignItems="center" gap={0.5} sx={{ ml: 2, pl: 2, borderLeft: `1px solid ${theme.palette.divider}` }}>
             <Circle
               size={'1rem'}
-              color={theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light}
+              color={theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light}
               sx={{
-                border: CLUSTER_STYLES.dragAndDrop.awaiting.border,
+                border: `1px dashed ${theme.palette.common.white}`,
               }}
             />
             <Typography variant="caption">Drop Here</Typography>
@@ -547,7 +548,7 @@ const ClusterMonitor = ({ collectionName }) => {
               pointerEvents: 'none',
               transform: 'translate(-50%, -50%)',
               transition: 'none', // Disable transition for smooth cursor following
-              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.4))',
+              filter: `drop-shadow(0 8px 16px ${alpha(theme.palette.common.black, 0.4)})`,
             }}
           >
             <StyledShardSlot
@@ -558,7 +559,7 @@ const ClusterMonitor = ({ collectionName }) => {
                 height: '50px',
                 opacity: 0.9,
                 transform: 'scale(1.1) rotate(5deg)',
-                boxShadow: '0 6px 24px rgba(0,0,0,0.4)',
+                boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.4)}`,
               }}
             >
               <Typography
@@ -568,8 +569,8 @@ const ClusterMonitor = ({ collectionName }) => {
                   fontWeight: 'bold',
                   fontSize: '0.8rem',
                   lineHeight: 1,
-                  color: 'white',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                  color: theme.palette.common.white,
+                  textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.8)}`,
                 }}
               >
                 {dragState.draggedSlot.shard.shard_id}
@@ -581,8 +582,8 @@ const ClusterMonitor = ({ collectionName }) => {
                     textAlign: 'center',
                     fontSize: '0.6rem',
                     lineHeight: 1,
-                    color: 'rgba(255,255,255,0.8)',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    color: alpha(theme.palette.common.white, 0.8),
+                    textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.8)}`,
                   }}
                 >
                   {dragState.draggedSlot.shard.shard_key}

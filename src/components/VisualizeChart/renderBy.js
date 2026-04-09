@@ -3,7 +3,7 @@ import chroma from 'chroma-js';
 const SCORE_GRADIENT_COLORS = ['#EB5353', '#F9D923', '#36AE7C'];
 const BACKGROUND_COLOR = '#36A2EB';
 
-const PALLETE = [
+const DEFAULT_PALETTE = [
   '#3366CC',
   '#DC3912',
   '#FF9900',
@@ -26,18 +26,37 @@ const PALLETE = [
   '#651067',
 ];
 
-// const SELECTED_BORDER_COLOR = '#881177';
+/**
+ * Reduced high-contrast palette: white, orange (#FF9100), cyan (#00E5FF),
+ * and greys — chosen for distinguishability across all color vision types
+ * including achromatopsia (luminance: white 1.0 > cyan 0.64 > orange 0.42).
+ */
+const HIGH_CONTRAST_PALETTE = [
+  '#FFFFFF',
+  '#FF9100',
+  '#00E5FF',
+  '#C0C0C0',
+  '#FFB74D',
+  '#66EEFF',
+  '#808080',
+  '#CC7400',
+  '#00B8CC',
+  '#E0E0E0',
+];
 
-function colorByPayload(payloadValue, colored) {
+const HIGH_CONTRAST_SCORE_GRADIENT = ['#FF9100', '#FFFFFF', '#00E5FF'];
+const HIGH_CONTRAST_BACKGROUND_COLOR = '#FFFFFF';
+
+function colorByPayload(payloadValue, colored, palette) {
   if (colored[payloadValue]) {
     return colored[payloadValue];
   }
 
-  const nextColorIndex = Object.keys(colored).length % PALLETE.length;
+  const nextColorIndex = Object.keys(colored).length % palette.length;
 
-  colored[payloadValue] = PALLETE[nextColorIndex];
+  colored[payloadValue] = palette[nextColorIndex];
 
-  return PALLETE[nextColorIndex];
+  return palette[nextColorIndex];
 }
 
 // This function generates an array of colors for each point in the chart.
@@ -49,47 +68,46 @@ function colorByPayload(payloadValue, colored) {
 // - {"discover_score": { ... } }: color points based on the discover score
 // - {"query": { ... }}: color points based on the query score
 
-export function generateColorBy(points, colorBy = null) {
-  // Points example:
-  // [
-  //     { id: 0, payload: { field_name: 1 }, score: 0.5, vector: [0.1, 0.2, ....] },
-  //     { id: 1, payload: { field_name: 2 }, score: 0.6, vector: [0.3, 0.4, ....] },
-  //     ...
-  // ]
+export function generateColorBy(points, colorBy = null, { highContrast = false } = {}) {
+  const palette = highContrast ? HIGH_CONTRAST_PALETTE : DEFAULT_PALETTE;
+  const scoreGradient = highContrast ? HIGH_CONTRAST_SCORE_GRADIENT : SCORE_GRADIENT_COLORS;
+  const defaultBackground = highContrast ? HIGH_CONTRAST_BACKGROUND_COLOR : BACKGROUND_COLOR;
 
   if (!colorBy) {
-    return Array.from({ length: points.length }, () => BACKGROUND_COLOR); // Default color
+    return Array.from({ length: points.length }, () => defaultBackground);
   }
 
-  // If `colorBy` is a string, interpret as a field name
+  let resolvedColorBy = colorBy;
   if (typeof colorBy === 'string') {
-    colorBy = { payload: colorBy };
+    resolvedColorBy = { payload: colorBy };
   }
 
   function getNestedValue(obj, path) {
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   }
 
-  if (colorBy.payload) {
+  if (resolvedColorBy.payload) {
     const valuesToColor = {};
 
     return points.map((point) => {
-      const payloadValue = getNestedValue(point.payload, colorBy.payload);
-      return colorByPayload(payloadValue, valuesToColor);
+      const payloadValue = getNestedValue(point.payload, resolvedColorBy.payload);
+      return colorByPayload(payloadValue, valuesToColor, palette);
     });
   }
 
-  if (colorBy.query) {
+  if (resolvedColorBy.query) {
     const scores = points.map((point) => point.score);
     const minScore = Math.min(...scores);
     const maxScore = Math.max(...scores);
 
-    const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
+    const colorScale = chroma.scale(scoreGradient);
     return scores.map((score) => {
       const normalizedScore = (score - minScore) / (maxScore - minScore);
       return colorScale(normalizedScore).hex();
     });
   }
+
+  return Array.from({ length: points.length }, () => defaultBackground);
 }
 
 export function generateSizeBy(points) {

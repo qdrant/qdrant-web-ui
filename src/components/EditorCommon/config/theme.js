@@ -1,12 +1,23 @@
 import { red, blue, neutral } from '../../../theme/colors';
 
 export const getEditorTheme = (theme, themeName = 'custom-language-theme') => {
+  if (theme.palette.highContrast) {
+    return THEMES[themeName](theme).highContrast;
+  }
   if (theme.palette.mode === 'dark') {
     return THEMES[themeName](theme).dark;
-  } else {
-    return THEMES[themeName](theme).light;
   }
+  return THEMES[themeName](theme).light;
 };
+
+const HC_RULES = [
+  { token: 'keyword', foreground: '#FFFFFF' },
+  { token: 'string.key', foreground: '#FFFFFF' },
+  { token: 'string.value', foreground: '#00E5FF' },
+  { token: 'number', foreground: '#FF9100' },
+  { token: 'comment', foreground: '#C0C0C0', fontStyle: 'italic' },
+  { token: 'string', foreground: '#00E5FF' },
+];
 
 const THEMES = {
   'custom-language-theme': (theme) => ({
@@ -18,7 +29,6 @@ const THEMES = {
         { token: 'string.value', foreground: '#3794ff' },
         { token: 'number', foreground: '#098658' },
         { token: 'comment', foreground: '#6A9955' },
-
         { token: 'string', foreground: '#f14c4c' },
       ],
       colors: {
@@ -34,12 +44,19 @@ const THEMES = {
         { token: 'string.value', foreground: '#0451A5' },
         { token: 'number', foreground: '#098658' },
         { token: 'comment', foreground: '#008000' },
-
         { token: 'string', foreground: '#A31515' },
       ],
       colors: {
         'editor.foreground': '#000000',
         'editor.background': theme.palette.background.default,
+      },
+    },
+    highContrast: {
+      base: 'hc-black',
+      rules: HC_RULES,
+      colors: {
+        'editor.foreground': theme.palette.text.primary,
+        'editor.background': theme.palette.background.code,
       },
     },
   }),
@@ -54,7 +71,6 @@ const THEMES = {
           { token: 'string.value', foreground: blue[600] },
           { token: 'number', foreground: blue[600] },
           { token: 'comment', foreground: isDark ? neutral[500] : neutral[400] },
-
           { token: 'string', foreground: red[600] },
         ],
         colors: {
@@ -70,9 +86,16 @@ const THEMES = {
           { token: 'string.value', foreground: blue[600] },
           { token: 'number', foreground: blue[600] },
           { token: 'comment', foreground: isDark ? neutral[500] : neutral[400] },
-
           { token: 'string', foreground: red[600] },
         ],
+        colors: {
+          'editor.foreground': theme.palette.text.primary,
+          'editor.background': theme.palette.background.code,
+        },
+      },
+      highContrast: {
+        base: 'hc-black',
+        rules: HC_RULES,
         colors: {
           'editor.foreground': theme.palette.text.primary,
           'editor.background': theme.palette.background.code,

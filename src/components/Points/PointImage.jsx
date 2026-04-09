@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, CardMedia, Modal, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
 function PointImage({ data, sx }) {
+  const theme = useTheme();
   const [fullScreenImg, setFullScreenImg] = useState(null);
   const renderImages = () => {
     const images = [];
@@ -41,7 +43,7 @@ function PointImage({ data, sx }) {
                   height: '120px',
                   aspectRatio: '1/1',
                   wordWrap: 'break-word',
-                  border: '1px solid #ccc',
+                  border: `1px solid ${theme.palette.divider}`,
                   borderRadius: '5px',
                   ...sx,
                 }}
@@ -98,8 +100,8 @@ function PointImage({ data, sx }) {
               right: 0,
               padding: 1,
               cursor: 'pointer',
-              color: 'white',
-              backgroundColor: 'rgba(0,0,0,0.5)',
+              color: theme.palette.common.white,
+              backgroundColor: alpha(theme.palette.common.black, 0.5),
               borderRadius: '5px',
             }}
           >

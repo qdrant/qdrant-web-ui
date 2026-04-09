@@ -9,9 +9,16 @@ import { ColorModeProvider } from './context/color-context';
 
 function NewApp() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersHighContrast = useMediaQuery('(prefers-contrast: more)');
   const storedMode = localStorage.getItem('qdrant-web-ui-theme');
 
-  const resolvedMode = ['dark', 'light'].includes(storedMode) ? storedMode : prefersDarkMode ? 'dark' : 'light';
+  const resolvedMode = ['dark', 'light', 'high-contrast'].includes(storedMode)
+    ? storedMode
+    : prefersHighContrast
+      ? 'high-contrast'
+      : prefersDarkMode
+        ? 'dark'
+        : 'light';
 
   const routing = useRoutes(routes());
   useTitle('UI | Qdrant ');

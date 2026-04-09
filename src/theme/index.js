@@ -3,6 +3,7 @@ import { alpha } from '@mui/material/styles';
 import { deepmerge } from '@mui/utils';
 import { darkThemeOptions } from './dark-theme';
 import { lightThemeOptions } from './light-theme';
+import { highContrastThemeOptions } from './high-contrast-theme';
 
 const themeOptions = {
   typography: {
@@ -221,10 +222,26 @@ const themeOptions = {
 
 const baseTheme = createMuiTheme(themeOptions);
 
+const modeBranchOptions = {
+  dark: darkThemeOptions,
+  light: lightThemeOptions,
+  'high-contrast': highContrastThemeOptions,
+};
+
 export const createTheme = (config) => {
-  const theme = deepmerge(
-    deepmerge(baseTheme, config.palette.mode === 'dark' ? darkThemeOptions : lightThemeOptions),
-    config
-  );
+  const userMode = config?.palette?.mode ?? 'dark';
+  const branch = modeBranchOptions[userMode] ?? darkThemeOptions;
+  const muiPaletteMode = userMode === 'high-contrast' ? 'dark' : userMode === 'light' ? 'light' : 'dark';
+
+  const resolvedPalette = {
+    ...config.palette,
+    mode: muiPaletteMode,
+    ...(userMode === 'high-contrast' ? { highContrast: true } : { highContrast: false }),
+  };
+
+  const theme = deepmerge(deepmerge(baseTheme, branch), {
+    ...config,
+    palette: resolvedPalette,
+  });
   return createMuiTheme(theme);
 };

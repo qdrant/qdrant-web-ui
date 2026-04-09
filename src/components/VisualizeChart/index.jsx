@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { generateColorBy, generateSizeBy } from './renderBy';
 import { useTheme } from '@mui/material/styles';
+import { useColorModeContext } from '../../context/color-context';
 
 // Dark red
 const LIGHT_SELECTOR_COLOR = 'rgba(255, 0, 0, 0.5)';
@@ -19,7 +20,8 @@ function intoDatasets(
   data, // list of compressed coordinates
   colors, // list of colors for each point to be displayed
   sizes, // list of sizes for each point to be displayed
-  groupBy = null // payload field to group by
+  groupBy = null, // payload field to group by
+  pointBorderColor = DEFAULT_BORDER_COLOR
 ) {
   const defaultConfig = {
     pointHitRadius: 1,
@@ -35,7 +37,7 @@ function intoDatasets(
         offsets: Array.from({ length: data.length }, (_, i) => i),
         pointBackgroundColor: [...colors],
         // Use transparent border color for points
-        pointBorderColor: Array.from({ length: colors.length }, () => DEFAULT_BORDER_COLOR),
+        pointBorderColor: Array.from({ length: colors.length }, () => pointBorderColor),
         ...defaultConfig,
       },
     ];
@@ -66,7 +68,7 @@ function intoDatasets(
     groups[group].data.push(data[index]);
     groups[group].offsets.push(index);
     groups[group].pointBackgroundColor.push(colors[index]);
-    groups[group].pointBorderColor.push(DEFAULT_BORDER_COLOR);
+    groups[group].pointBorderColor.push(pointBorderColor);
     groups[group].pointRadius.push(sizes[index]);
   });
 
@@ -88,8 +90,12 @@ const VisualizeChart = ({
   let selectedPointLocation = null;
 
   const theme = useTheme();
+  const { colorMode } = useColorModeContext();
 
   function getSelectionColor() {
+    if (theme.palette.highContrast) {
+      return theme.palette.warning.main;
+    }
     return theme.palette.mode === 'light' ? LIGHT_SELECTOR_COLOR : DARK_SELECTOR_COLOR;
   }
 
@@ -108,13 +114,14 @@ const VisualizeChart = ({
     }));
 
     // This reference values should be used to rollback the color of the previously selected point
-    const pointColors = generateColorBy(points, colorBy);
+    const pointColors = generateColorBy(points, colorBy, { highContrast: theme.palette.highContrast });
     const sizes = generateSizeBy(points);
+    const pointBorderColor = theme.palette.highContrast ? 'rgba(255, 255, 255, 0.85)' : DEFAULT_BORDER_COLOR;
 
     const payloadField = typeof colorBy === 'string' ? colorBy : colorBy?.payload;
     const useLegend = !!payloadField;
 
-    const datasets = intoDatasets(points, data, pointColors, sizes, payloadField);
+    const datasets = intoDatasets(points, data, pointColors, sizes, payloadField, pointBorderColor);
 
     const handlePointHover = (chart) => {
       if (!chart.tooltip?._active) return;
@@ -160,7 +167,7 @@ const VisualizeChart = ({
           targetColor;
 
         chart.data.datasets[oldPointLocation.datasetIndex].pointBorderColor[oldPointLocation.pointIndex] =
-          DEFAULT_BORDER_COLOR;
+          pointBorderColor;
       }
 
       chart.data.datasets[datasetIndex].pointBackgroundColor[pointIndex] = getSelectionColor();
@@ -231,7 +238,7 @@ const VisualizeChart = ({
       } else if (m.data.result && m.data.result.length > 0) {
         const reducedPonts = m.data.result;
 
-        const datasets = intoDatasets(points, reducedPonts, pointColors, sizes, payloadField);
+        const datasets = intoDatasets(points, reducedPonts, pointColors, sizes, payloadField, pointBorderColor);
 
         datasets.forEach((dataset, index) => {
           myChart.data.datasets[index].data = dataset.data;
@@ -254,7 +261,7 @@ const VisualizeChart = ({
       myChart.destroy();
       worker.terminate();
     };
-  }, [requestResult]);
+  }, [requestResult, colorMode]);
 
   return (
     <>
