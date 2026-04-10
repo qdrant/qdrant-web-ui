@@ -5,6 +5,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
+import AccessibilityToggle from '../components/Common/AccessibilityToggle';
 import { Logo } from '../components/Logo';
 import Sidebar from '../components/Sidebar/Sidebar';
 
@@ -131,6 +132,7 @@ function HomeContent() {
                     <Key size={20} />
                   </IconButton>
                 </Tooltip>
+                <AccessibilityToggle />
                 <ColorModeToggle />
               </Box>
             </Toolbar>

@@ -62,7 +62,9 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
     setOpen(!open);
   };
 
-  const barColor = isFinished ? theme.palette.success.main : yellow[700];
+  const runningColor = theme.palette.highContrast ? theme.palette.warning.main : yellow[700];
+  const finishedColor = theme.palette.highContrast ? theme.palette.success.light : theme.palette.success.main;
+  const barColor = isFinished ? finishedColor : runningColor;
 
   return (
     <Box>

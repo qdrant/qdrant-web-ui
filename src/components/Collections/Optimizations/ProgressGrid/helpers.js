@@ -135,6 +135,21 @@ export const allocateSquares = (segments, totalSquares = 200) => {
  * @return {string} The color for the status
  */
 export const getStatusColor = (status, theme) => {
+  if (theme.palette.highContrast) {
+    switch (status) {
+      case SegmentStatus.IDLE:
+        return theme.palette.success.light;
+      case SegmentStatus.QUEUED:
+        // Radial gradient lines for QUEUED status (high-contrast)
+        return `repeating-radial-gradient(circle at 50% 50%, ${theme.palette.grey[300]}, ${theme.palette.grey[300]} 2px, ${theme.palette.grey[600]} 2px, ${theme.palette.grey[600]} 4px)`;
+
+      case SegmentStatus.RUNNING:
+        return `repeating-linear-gradient(135deg, ${theme.palette.warning.main}, ${theme.palette.warning.main} 3px, ${theme.palette.warning.dark} 3px, ${theme.palette.warning.dark} 6px)`;
+
+      default:
+        return theme.palette.common.white;
+    }
+  }
   switch (status) {
     case SegmentStatus.IDLE:
       return theme.palette.success.main;
@@ -145,6 +160,18 @@ export const getStatusColor = (status, theme) => {
     default:
       return theme.palette.grey[300];
   }
+};
+
+/**
+ * Background color for empty progress cells (adapts to theme / high-contrast).
+ * @param {Object} theme - MUI theme object
+ * @return {string} CSS color
+ */
+export const getEmptySquareColor = (theme) => {
+  if (theme.palette.highContrast) {
+    return theme.palette.background.default;
+  }
+  return theme.palette.grey[200];
 };
 
 /**

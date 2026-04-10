@@ -12,9 +12,11 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
 
 const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   display: 'flex',
-  width: '64px',
+  flex: '1 1 0',
+  minWidth: '48px',
+  maxWidth: '60px',
   height: '28px',
-  padding: '6px 21px',
+  padding: '6px 12px',
   justifyContent: 'center',
   alignItems: 'center',
   border: 'none',
@@ -43,8 +45,10 @@ export default function ColorModeToggle() {
     }
   };
 
+  const toggleValue = colorMode === 'high-contrast' ? 'dark' : colorMode;
+
   return (
-    <StyledToggleButtonGroup value={colorMode} exclusive onChange={handleModeChange} size="small">
+    <StyledToggleButtonGroup value={toggleValue} exclusive onChange={handleModeChange} size="small">
       <StyledToggleButton value="dark">
         <Tooltip title="Dark Mode">
           <StyledIcon>

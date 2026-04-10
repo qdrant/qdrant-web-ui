@@ -6,8 +6,20 @@ import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { debounce } from 'lodash';
 import { resizeObserverWithCallback } from '../../lib/common-helpers';
+import { useTheme } from '@mui/material/styles';
+
+const DEFAULT_GRAPH_COLORS = {
+  nodeClicked: '#e94',
+  nodeDefault: '#2cb',
+  nodeHighlightRing: '#817',
+  linkDefault: '#a6a6a6',
+};
 
 const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, sampleLinks }) => {
+  const theme = useTheme();
+  const graphColors = theme.palette.graphVisualization ?? DEFAULT_GRAPH_COLORS;
+  const graphColorsRef = useRef(graphColors);
+  graphColorsRef.current = graphColors;
   const graphRef = useRef(null);
   const { client: qdrantClient } = useClient();
   const { enqueueSnackbar } = useSnackbar();
@@ -43,7 +55,10 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, samp
     const elem = document.getElementById('graph');
     // eslint-disable-next-line new-cap
     graphRef.current = ForceGraph()(elem)
-      .nodeColor((node) => (node.clicked ? '#e94' : '#2cb'))
+      .nodeColor((node) => {
+        const gc = graphColorsRef.current;
+        return node.clicked ? gc.nodeClicked : gc.nodeDefault;
+      })
       .onNodeHover((node) => {
         if (!node) {
           elem.style.cursor = 'default';
@@ -60,14 +75,15 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, wrapperRef, samp
       })
       .nodeCanvasObject((node, ctx) => {
         if (!node) return;
+        const gc = graphColorsRef.current;
         // add ring for last hovered nodes
         ctx.beginPath();
         ctx.arc(node.x, node.y, NODE_R * 1.4, 0, 2 * Math.PI, false);
-        ctx.fillStyle = node.id === highlightedNode?.id ? '#817' : 'transparent';
+        ctx.fillStyle = node.id === highlightedNode?.id ? gc.nodeHighlightRing : 'transparent';
         ctx.fill();
       })
       .linkLabel('score')
-      .linkColor(() => '#a6a6a6');
+      .linkColor(() => graphColorsRef.current.linkDefault);
 
     graphRef.current.d3Force('charge').strength(-10);
   }, [initNode, options]);

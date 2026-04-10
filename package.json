@@ -101,6 +101,9 @@
     "vitest": "^3.1.2"
   },
   "node": {
-    "trustedDependencies": ["esbuild", "vitest"]
+    "trustedDependencies": [
+      "esbuild",
+      "vitest"
+    ]
   }
 }

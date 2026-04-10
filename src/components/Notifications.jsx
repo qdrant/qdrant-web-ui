@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { alpha, styled } from '@mui/material/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import { Bell } from 'lucide-react';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -191,6 +191,7 @@ export default function Notifications() {
 }
 
 function Notification({ issue }) {
+  const theme = useTheme();
   const [result, setResult] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -214,13 +215,13 @@ function Notification({ issue }) {
       sx={
         result
           ? {
-              background: 'rgba(0, 255, 0, 0.1)',
-              borderColor: 'rgba(0, 255, 0, 0.5) !important',
+              background: alpha(theme.palette.success.main, 0.12),
+              borderColor: `${alpha(theme.palette.success.main, 0.5)} !important`,
             }
           : error
           ? {
-              background: 'rgba(255, 0, 0, 0.1)',
-              borderColor: 'rgba(255, 0, 0, 0.5) !important',
+              background: alpha(theme.palette.error.main, 0.12),
+              borderColor: `${alpha(theme.palette.error.main, 0.5)} !important`,
             }
           : null
       }

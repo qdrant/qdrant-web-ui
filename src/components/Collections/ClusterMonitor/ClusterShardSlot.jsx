@@ -161,7 +161,7 @@ const Slot = ({
                 <br />
                 <TooltipRow label="Slot Id" value={id} />
                 <br />
-                <Typography variant="caption" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 'bold' }}>
                   Drop here to move shard
                 </Typography>
               </>

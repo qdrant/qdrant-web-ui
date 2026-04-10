@@ -1,20 +1,21 @@
-import { lighten, styled, alpha } from '@mui/material/styles';
-import { CLUSTER_COLORS, CLUSTER_STYLES } from '../constants';
+import { styled, alpha } from '@mui/material/styles';
+import { CLUSTER_COLORS, getHighContrastClusterColors } from '../constants';
 
 export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, isTransferring, sx }) => {
+  const colors = theme.palette.highContrast ? getHighContrastClusterColors(theme) : CLUSTER_COLORS;
   let color;
   switch (state) {
     case 'active':
-      color = CLUSTER_COLORS.active;
+      color = colors.active;
       break;
     case 'dead':
-      color = CLUSTER_COLORS.dead;
+      color = colors.dead;
       break;
     case 'empty':
-      color = theme.palette.mode === 'dark' ? CLUSTER_COLORS.empty.dark : CLUSTER_COLORS.empty.light;
+      color = theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light;
       break;
     default:
-      color = CLUSTER_COLORS.default;
+      color = colors.default;
   }
 
   const dragAndDropStyles = {};
@@ -27,7 +28,7 @@ export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, 
       dragAndDropStyles.filter = 'grayscale(0.3)';
       break;
     case 'awaiting':
-      dragAndDropStyles.border = CLUSTER_STYLES.dragAndDrop.awaiting.border;
+      dragAndDropStyles.border = `1px dashed ${theme.palette.common.white}`;
       dragAndDropStyles.backgroundColor = alpha(color, 0.8);
       dragAndDropStyles.cursor = state === 'empty' ? 'copy' : 'default';
       dragAndDropStyles['&:hover'] = {
@@ -57,7 +58,7 @@ export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, 
     cursor: state === 'active' && !isTransferring ? 'grab' : 'default',
     zIndex: 1,
     '& .MuiTypography-root': {
-      color: lighten(color, 0.8),
+      color: colors.textColor(color),
       position: 'relative',
       margin: '0 auto',
       zIndex: 2,
