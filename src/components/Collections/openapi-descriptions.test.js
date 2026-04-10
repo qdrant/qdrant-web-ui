@@ -143,7 +143,7 @@ describe('getDescriptionByPath', () => {
   describe('top-level fields', () => {
     it('returns description for a direct property', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['vectors_count'])).toBe(
-        'Approximate number of vectors in collection',
+        'Approximate number of vectors in collection'
       );
     });
 
@@ -159,13 +159,13 @@ describe('getDescriptionByPath', () => {
   describe('$ref resolution', () => {
     it('resolves $ref to an enum schema and returns its description', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['status'])).toBe(
-        'Green = all good, Yellow = optimization running',
+        'Green = all good, Yellow = optimization running'
       );
     });
 
     it('resolves $ref to a oneOf schema and returns its description', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['optimizer_status'])).toBe(
-        'Current state of the optimizer',
+        'Current state of the optimizer'
       );
     });
 
@@ -177,25 +177,25 @@ describe('getDescriptionByPath', () => {
   describe('nested paths through $ref', () => {
     it('follows config -> hnsw_config -> m', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'hnsw_config', 'm'])).toBe(
-        'Edges per node in HNSW graph',
+        'Edges per node in HNSW graph'
       );
     });
 
     it('follows config -> optimizer_config -> deleted_threshold', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'optimizer_config', 'deleted_threshold'])).toBe(
-        'Min fraction of deleted vectors to optimize',
+        'Min fraction of deleted vectors to optimize'
       );
     });
 
     it('follows config -> wal_config -> wal_capacity_mb', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'wal_config', 'wal_capacity_mb'])).toBe(
-        'WAL segment capacity in MB',
+        'WAL segment capacity in MB'
       );
     });
 
     it('follows config -> params -> shard_number', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'shard_number'])).toBe(
-        'Number of shards',
+        'Number of shards'
       );
     });
   });
@@ -203,19 +203,19 @@ describe('getDescriptionByPath', () => {
   describe('anyOf resolution', () => {
     it('resolves through anyOf to find VectorParams.size', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'vectors', 'size'])).toBe(
-        'Dimensionality of vectors',
+        'Dimensionality of vectors'
       );
     });
 
     it('resolves through anyOf to find VectorParams.distance ($ref to enum)', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'vectors', 'distance'])).toBe(
-        'Distance metric: Cosine, Euclid, Dot, or Manhattan',
+        'Distance metric: Cosine, Euclid, Dot, or Manhattan'
       );
     });
 
     it('resolves through anyOf to find VectorParams.on_disk', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'vectors', 'on_disk'])).toBe(
-        'Store vectors on disk',
+        'Store vectors on disk'
       );
     });
   });
@@ -223,7 +223,7 @@ describe('getDescriptionByPath', () => {
   describe('oneOf resolution', () => {
     it('resolves through oneOf to find error field', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['optimizer_status', 'error'])).toBe(
-        'Error message from optimizer',
+        'Error message from optimizer'
       );
     });
   });
@@ -231,13 +231,13 @@ describe('getDescriptionByPath', () => {
   describe('additionalProperties resolution', () => {
     it('resolves dynamic payload field keys via additionalProperties', () => {
       expect(getDescriptionByPath(schemas, 'CollectionInfo', ['payload_schema', 'my_field', 'data_type'])).toBe(
-        'Type of the payload field',
+        'Type of the payload field'
       );
     });
 
     it('resolves named vector keys via anyOf + additionalProperties', () => {
       expect(
-        getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'vectors', 'my_vector', 'size']),
+        getDescriptionByPath(schemas, 'CollectionInfo', ['config', 'params', 'vectors', 'my_vector', 'size'])
       ).toBe('Dimensionality of vectors');
     });
   });
