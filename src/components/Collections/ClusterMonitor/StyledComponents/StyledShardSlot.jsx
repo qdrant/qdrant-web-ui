@@ -1,8 +1,8 @@
-import { lighten, styled, alpha } from '@mui/material/styles';
-import { CLUSTER_COLORS, HIGH_CONTRAST_CLUSTER_COLORS } from '../constants';
+import { styled, alpha } from '@mui/material/styles';
+import { CLUSTER_COLORS, getHighContrastClusterColors } from '../constants';
 
 export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, isTransferring, sx }) => {
-  const colors = theme.palette.highContrast ? HIGH_CONTRAST_CLUSTER_COLORS : CLUSTER_COLORS;
+  const colors = theme.palette.highContrast ? getHighContrastClusterColors(theme) : CLUSTER_COLORS;
   let color;
   switch (state) {
     case 'active':
@@ -58,7 +58,7 @@ export const StyledShardSlot = styled('div')(({ theme, state, dragAndDropState, 
     cursor: state === 'active' && !isTransferring ? 'grab' : 'default',
     zIndex: 1,
     '& .MuiTypography-root': {
-      color: lighten(color, 0.8),
+      color: colors.textColor(color),
       position: 'relative',
       margin: '0 auto',
       zIndex: 2,

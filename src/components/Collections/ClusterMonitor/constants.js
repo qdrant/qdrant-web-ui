@@ -1,3 +1,4 @@
+import { lighten } from '@mui/material/styles';
 import { teal, red, orange, neutral } from '../../../theme/colors';
 
 export const CLUSTER_COLORS = {
@@ -8,17 +9,19 @@ export const CLUSTER_COLORS = {
     light: neutral['100'],
   },
   default: orange['400'],
+  textColor: (bgColor) => lighten(bgColor, 0.8),
 };
 
-export const HIGH_CONTRAST_CLUSTER_COLORS = {
-  active: '#00E5FF',
-  dead: '#FF9100',
+export const getHighContrastClusterColors = (theme) => ({
+  active: theme.palette.success.dark,
+  dead: theme.palette.error.light,
   empty: {
-    dark: '#1a1a1a',
-    light: '#1a1a1a',
+    dark: theme.palette.background.paper,
+    light: theme.palette.background.paper,
   },
-  default: '#808080',
-};
+  default: theme.palette.common.white,
+  textColor: (bgColor) => theme.palette.getContrastText(bgColor),
+});
 
 export const TOOLTIP_COLORS = {
   background: {

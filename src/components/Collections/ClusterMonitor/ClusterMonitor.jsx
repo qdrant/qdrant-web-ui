@@ -11,7 +11,7 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { alpha, useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import { Circle } from '../../Common/Circle';
-import { CLUSTER_COLORS, HIGH_CONTRAST_CLUSTER_COLORS } from './constants';
+import { CLUSTER_COLORS, getHighContrastClusterColors } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
@@ -28,7 +28,7 @@ import ReplicationControl from './ReplicationButtons';
  */
 const Legend = ({ sx, dragState }) => {
   const theme = useTheme();
-  const colors = theme.palette.highContrast ? HIGH_CONTRAST_CLUSTER_COLORS : CLUSTER_COLORS;
+  const colors = theme.palette.highContrast ? getHighContrastClusterColors(theme) : CLUSTER_COLORS;
 
   return (
     <Box
