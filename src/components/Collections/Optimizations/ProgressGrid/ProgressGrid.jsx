@@ -120,7 +120,7 @@ const ProgressGrid = ({ data, ...other }) => {
                     width: SQUARE_SIZE,
                     height: SQUARE_SIZE,
                     borderRadius: isHighlighted ? '50%' : 0.5,
-                    backgroundColor: square.status ? getStatusColor(square.status, theme) : theme.palette.grey[200],
+                    background: square.status ? getStatusColor(square.status, theme) : theme.palette.grey[200],
                     transition: 'border-radius 0.1s ease-in-out',
                   }}
                 />

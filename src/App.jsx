@@ -15,10 +15,10 @@ function NewApp() {
   const resolvedMode = ['dark', 'light', 'high-contrast'].includes(storedMode)
     ? storedMode
     : prefersHighContrast
-      ? 'high-contrast'
-      : prefersDarkMode
-        ? 'dark'
-        : 'light';
+    ? 'high-contrast'
+    : prefersDarkMode
+    ? 'dark'
+    : 'light';
 
   const routing = useRoutes(routes());
   useTitle('UI | Qdrant ');

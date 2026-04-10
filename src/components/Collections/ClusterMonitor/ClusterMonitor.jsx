@@ -46,10 +46,7 @@ const Legend = ({ sx, dragState }) => {
         }}
       >
         <Box display="flex" alignItems="center" gap={0.5}>
-          <Circle
-            size={'1rem'}
-            color={theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light}
-          />
+          <Circle size={'1rem'} color={theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light} />
           <Typography variant="caption">Empty</Typography>
         </Box>
         <Box display="flex" alignItems="center" gap={0.5}>
@@ -65,7 +62,12 @@ const Legend = ({ sx, dragState }) => {
           <Typography variant="caption">Other</Typography>
         </Box>
         {dragState.isDragging && (
-          <Box display="flex" alignItems="center" gap={0.5} sx={{ ml: 2, pl: 2, borderLeft: `1px solid ${theme.palette.divider}` }}>
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={0.5}
+            sx={{ ml: 2, pl: 2, borderLeft: `1px solid ${theme.palette.divider}` }}
+          >
             <Circle
               size={'1rem'}
               color={theme.palette.mode === 'dark' ? colors.empty.dark : colors.empty.light}
