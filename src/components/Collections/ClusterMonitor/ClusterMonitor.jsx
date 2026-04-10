@@ -2,10 +2,11 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
-import { Grid, Typography, Box, LinearProgress } from '@mui/material';
+import { Grid, Typography, Box, LinearProgress, Divider } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { useTelemetry } from '../../../context/telemetry-context';
+import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
@@ -17,6 +18,7 @@ import ShardTransferDialog from './ShardTransferDialog';
 import ReshardingDialog from './ReshardingDialog';
 import AbortReshardingDialog from './AbortReshardingDialog';
 import ReshardingButtons from './ReshardingButtons';
+import ReplicationControl from './ReplicationButtons';
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -90,7 +92,10 @@ const ClusterMonitor = ({ collectionName }) => {
   const theme = useTheme();
   const { client: qdrantClient, isRestricted } = useClient();
   const { reshardingEnabled } = useTelemetry();
+  const { cloudInfo } = useCloudInfo();
+  const isCloud = !!cloudInfo;
   const [cluster, setCluster] = React.useState(null);
+  const [replicationFactor, setReplicationFactor] = React.useState(1);
   const [dragState, setDragState] = React.useState({
     isDragging: false,
     draggedSlot: null,
@@ -107,6 +112,7 @@ const ClusterMonitor = ({ collectionName }) => {
     direction: null,
   });
   const [abortReshardingDialog, setAbortReshardingDialog] = React.useState(false);
+  const [replicationLoading, setReplicationLoading] = React.useState(false);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -173,10 +179,13 @@ const ClusterMonitor = ({ collectionName }) => {
   // Helper function to refresh cluster info
   const refreshClusterInfo = async () => {
     try {
-      const clusterInfo = await axios.get(`/cluster`);
-      const collectionClusterInfo = await qdrantClient
-        .api('cluster')
-        .collectionClusterInfo({ collection_name: collectionName });
+      const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
+        axios.get(`/cluster`),
+        qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName }),
+        qdrantClient.getCollection(collectionName),
+      ]);
+
+      setReplicationFactor(collectionInfo?.config?.params?.replication_factor ?? 1);
 
       const newCluster = collectionClusterInfo.data.result;
       const localShards =
@@ -321,6 +330,25 @@ const ClusterMonitor = ({ collectionName }) => {
     setAbortReshardingDialog(false);
   };
 
+  const handleReplicationApply = async (newFactor) => {
+    setReplicationLoading(true);
+    try {
+      await qdrantClient.updateCollection(collectionName, {
+        params: { replication_factor: newFactor },
+      });
+      enqueueSnackbar(`Replication factor updated to ${newFactor}`, getSnackbarOptions('success', closeSnackbar, 2000));
+      await refreshClusterInfo();
+    } catch (err) {
+      console.error('Error updating replication factor:', err);
+      enqueueSnackbar(
+        `Failed to update replication factor: ${err.message}`,
+        getSnackbarOptions('error', closeSnackbar)
+      );
+    } finally {
+      setReplicationLoading(false);
+    }
+  };
+
   // Add global event listeners for drag cancellation
   useEffect(() => {
     const handleGlobalClick = (e) => {
@@ -409,9 +437,28 @@ const ClusterMonitor = ({ collectionName }) => {
         },
       }}
     >
-      <Box sx={{ gridArea: '1 / 2 / 2 / 3', display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="subtitle1">Cluster Nodes</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box
+        sx={{
+          gridArea: '1 / 2 / 2 / 3',
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 1,
+          rowGap: 0.5,
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ mr: 1 }}>
+          Cluster Nodes
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            rowGap: 0.5,
+          }}
+        >
           <ReshardingButtons
             cluster={cluster}
             reshardingEnabled={reshardingEnabled}
@@ -420,6 +467,18 @@ const ClusterMonitor = ({ collectionName }) => {
             onResharding={handleResharding}
             onAbortResharding={handleAbortResharding}
           />
+          {isCloud && (
+            <>
+              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+              <ReplicationControl
+                cluster={cluster}
+                replicationFactor={replicationFactor}
+                replicationLoading={replicationLoading}
+                transferLoading={transferLoading}
+                onApply={handleReplicationApply}
+              />
+            </>
+          )}
         </Box>
       </Box>
       <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
