@@ -118,7 +118,7 @@ const NativeValueRenderer = ({ value }) => {
 };
 
 NativeValueRenderer.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
 };
 
 const DescriptionComment = ({ description, commentColor }) => {
@@ -162,7 +162,7 @@ const DescriptionValueComponent = ({ value, path }) => {
 };
 
 DescriptionValueComponent.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
   path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
 };
 
