@@ -92,7 +92,7 @@ export const CollectionInfo = ({ collectionName }) => {
       base0F: infoTheme.base0F,
       comment: infoTheme.base0D,
     }),
-    [infoTheme]
+    [infoTheme],
   );
 
   // Load OpenAPI schemas (deduped fetch, cached as singleton promise)
