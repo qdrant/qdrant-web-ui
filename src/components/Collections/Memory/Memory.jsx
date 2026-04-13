@@ -37,8 +37,8 @@ const Memory = ({ collectionName }) => {
       {showDisclaimer && (
         <InfoBanner severity="info" onClose={handleDismissDisclaimer}>
           <Typography>
-            RAM measurements are approximate. Actual memory usage can be up to 20% higher than reported due to
-            allocator overhead and runtime factors.
+            RAM measurements are approximate. Actual memory usage can be up to 20% higher than reported due to allocator
+            overhead and runtime factors.
           </Typography>
         </InfoBanner>
       )}
