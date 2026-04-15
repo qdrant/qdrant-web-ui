@@ -35,10 +35,13 @@ const VECTORS_NAMED = {
 
 describe('SearchQualityPannel', () => {
   beforeEach(() => {
+    const mockQueryPoints = vi.fn().mockResolvedValue({
+      data: { result: { points: [{ id: 1 }, { id: 2 }] }, status: 'ok', time: 0.005 },
+    });
     useClient.mockReturnValue({
       client: {
         scroll: vi.fn().mockResolvedValue({ points: [{ id: 1 }, { id: 2 }] }),
-        query: vi.fn().mockResolvedValue({ points: [{ id: 1 }, { id: 2 }] }),
+        api: vi.fn().mockReturnValue({ queryPoints: mockQueryPoints }),
       },
     });
   });
@@ -77,7 +80,7 @@ describe('SearchQualityPannel', () => {
     fireEvent.click(button);
     await waitFor(() => {
       expect(useClient().client.scroll).toHaveBeenCalled();
-      expect(useClient().client.query).toHaveBeenCalled();
+      expect(useClient().client.api).toHaveBeenCalled();
     });
   });
 

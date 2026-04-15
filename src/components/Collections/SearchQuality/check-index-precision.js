@@ -12,9 +12,8 @@ export const checkIndexPrecision = async (
   timeout = 20
 ) => {
   try {
-    const exactSearchtartTime = new Date().getTime();
-
-    const exact = await client.query(collectionName, {
+    const exact = await client.api().queryPoints({
+      collection_name: collectionName,
       limit: limit,
       with_payload: false,
       with_vectors: false,
@@ -27,11 +26,10 @@ export const checkIndexPrecision = async (
       timeout,
     });
 
-    const exactSearchElapsed = new Date().getTime() - exactSearchtartTime;
+    const exactSearchElapsed = Math.round(exact.data.time * 1000);
 
-    const searchStartTime = new Date().getTime();
-
-    const hnsw = await client.query(collectionName, {
+    const hnsw = await client.api().queryPoints({
+      collection_name: collectionName,
       timeout,
       limit: limit,
       with_payload: false,
@@ -42,10 +40,10 @@ export const checkIndexPrecision = async (
       using: vectorName,
     });
 
-    const searchElapsed = new Date().getTime() - searchStartTime;
+    const searchElapsed = Math.round(hnsw.data.time * 1000);
 
-    const exactIds = exact.points.map((item) => item.id);
-    const hnswIds = hnsw.points.map((item) => item.id);
+    const exactIds = exact.data.result.points.map((item) => item.id);
+    const hnswIds = hnsw.data.result.points.map((item) => item.id);
 
     const precision = exactIds.filter((id) => hnswIds.includes(id)).length / exactIds.length;
 
