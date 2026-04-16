@@ -25,7 +25,7 @@ const MemoryNode = ({ node, level = 0, maxBytes, mode = 'memory' }) => {
   const toInnerPct = (bytes) => (nodeBytes ? (bytes / nodeBytes) * 100 : 0);
   const ramInnerPct = toInnerPct(ram);
   const expectedInnerPct = toInnerPct(expected);
-  const expectedFillInnerPct = toInnerPct(expectedFill);  
+  const expectedFillInnerPct = toInnerPct(expectedFill);
   const extraFillInnerPct = toInnerPct(extraFill);
   const extraStartInnerPct = toInnerPct(ram + expected);
 
@@ -206,13 +206,7 @@ const MemoryNode = ({ node, level = 0, maxBytes, mode = 'memory' }) => {
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box>
             {node.children.map((child) => (
-              <MemoryNode
-                key={child.name}
-                node={child}
-                level={level + 1}
-                maxBytes={maxBytes}
-                mode={mode}
-              />
+              <MemoryNode key={child.name} node={child} level={level + 1} maxBytes={maxBytes} mode={mode} />
             ))}
           </Box>
         </Collapse>
