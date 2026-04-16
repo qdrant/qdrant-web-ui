@@ -239,7 +239,7 @@ const VisualizeChart = ({
 
         myChart.update();
       } else {
-        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
+        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occurred`, { variant: 'error' });
       }
     };
 
