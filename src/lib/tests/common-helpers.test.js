@@ -44,8 +44,26 @@ describe('formatGroupedDigits', () => {
     expect(formatGroupedDigits(undefined)).toBe('');
   });
 
-  it('should accept numeric strings', () => {
+  it('should accept numeric strings without Number() coercion', () => {
     expect(formatGroupedDigits('9876543')).toBe('9 876 543');
+    expect(formatGroupedDigits('1234.500')).toBe('1 234.500');
+    expect(formatGroupedDigits('  1234  ')).toBe('1 234');
+    expect(formatGroupedDigits('99999999999999999999')).toBe('99 999 999 999 999 999 999');
+  });
+
+  it('should leave scientific-notation strings unchanged', () => {
+    expect(formatGroupedDigits('1e3')).toBe('1e3');
+    expect(formatGroupedDigits('1E10')).toBe('1E10');
+  });
+
+  it('should return non-plain numeric strings unchanged', () => {
+    expect(formatGroupedDigits('12a34')).toBe('12a34');
+    expect(formatGroupedDigits('1.2.3')).toBe('1.2.3');
+    expect(formatGroupedDigits('hello')).toBe('hello');
+  });
+
+  it('should return empty string for whitespace-only strings', () => {
+    expect(formatGroupedDigits('   ')).toBe('');
   });
 
   it('should accept bigint', () => {

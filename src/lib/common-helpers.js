@@ -91,40 +91,51 @@ export const getFullPath = (filePath) => {
   return `${normalizedBase}${normalizedPath}`;
 };
 
+const SCIENTIFIC_NOTATION_STRING = /^[-+]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
+
+/**
+ * Group a trimmed plain decimal string (no exponent). Invalid shapes return `trim` unchanged.
+ * Example: `1234567.500` -> `1 234 567.500`.
+ * @param {string} trim
+ * @return {string}
+ */
+const formatPlainNumericString = (trim) => {
+  const match = trim.match(/^([+-]?)(\d*)(?:\.(\d*))?$/);
+  if (!match) return trim;
+
+  const [, sign, intRaw, frac] = match;
+  if (intRaw === '' && !frac) return trim; // lone sign, lone dot, or empty
+
+  const intPart = intRaw || '0'; // handle '.5' -> '0.5'
+  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const body = frac !== undefined ? `${grouped}.${frac}` : grouped;
+  return sign ? `${sign}${body}` : body;
+};
+
 /**
  * Group digits with spaces every three places in the integer part (e.g. 1234567 -> "1 234 567").
- * Fractional digits are kept as-is (e.g. 1234.56 -> "1 234.56"). Scientific notation is returned unchanged.
+ * For numbers, fractional digits follow `Number` stringification. String inputs are grouped on the
+ * literal integer digits (no `Number()`), so large integers and trailing fractional zeros are preserved;
+ * strings in scientific notation (e.g. `1e3`) are returned unchanged.
  * @param {number|string|bigint|null|undefined} value
  * @return {string}
  */
 export const formatGroupedDigits = (value) => {
-  if (value === null || value === undefined) {
-    return '';
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed === '') return '';
+    if (SCIENTIFIC_NOTATION_STRING.test(trimmed)) return trimmed;
+    return formatPlainNumericString(trimmed);
+  }
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) return String(value);
+    const raw = String(value);
+    if (raw.includes('e') || raw.includes('E')) return raw;
+    return formatPlainNumericString(raw);
   }
   if (typeof value === 'bigint') {
-    const negative = value < 0n;
-    const digits = (negative ? -value : value).toString();
-    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    return negative ? `-${grouped}` : grouped;
+    return formatPlainNumericString(String(value));
   }
-  const n = Number(value);
-  if (!Number.isFinite(n)) {
-    return String(value);
-  }
-  if (Number.isInteger(n)) {
-    const negative = n < 0;
-    const digits = String(Math.abs(n));
-    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    return negative ? `-${grouped}` : grouped;
-  }
-  const raw = n.toString();
-  if (raw.includes('e') || raw.includes('E')) {
-    return raw;
-  }
-  const negative = n < 0;
-  const absStr = String(Math.abs(n));
-  const [intPart, fracPart] = absStr.split('.');
-  const groupedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  const body = fracPart !== undefined ? `${groupedInt}.${fracPart}` : groupedInt;
-  return negative ? `-${body}` : body;
+  return String(value);
 };
