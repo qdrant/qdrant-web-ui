@@ -90,3 +90,41 @@ export const getFullPath = (filePath) => {
   const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
   return `${normalizedBase}${normalizedPath}`;
 };
+
+/**
+ * Group digits with spaces every three places in the integer part (e.g. 1234567 -> "1 234 567").
+ * Fractional digits are kept as-is (e.g. 1234.56 -> "1 234.56"). Scientific notation is returned unchanged.
+ * @param {number|string|bigint|null|undefined} value
+ * @return {string}
+ */
+export const formatGroupedDigits = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'bigint') {
+    const negative = value < 0n;
+    const digits = (negative ? -value : value).toString();
+    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return negative ? `-${grouped}` : grouped;
+  }
+  const n = Number(value);
+  if (!Number.isFinite(n)) {
+    return String(value);
+  }
+  if (Number.isInteger(n)) {
+    const negative = n < 0;
+    const digits = String(Math.abs(n));
+    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return negative ? `-${grouped}` : grouped;
+  }
+  const raw = n.toString();
+  if (raw.includes('e') || raw.includes('E')) {
+    return raw;
+  }
+  const negative = n < 0;
+  const absStr = String(Math.abs(n));
+  const [intPart, fracPart] = absStr.split('.');
+  const groupedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const body = fracPart !== undefined ? `${groupedInt}.${fracPart}` : groupedInt;
+  return negative ? `-${body}` : body;
+};
