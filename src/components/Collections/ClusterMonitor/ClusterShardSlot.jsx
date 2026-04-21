@@ -36,6 +36,7 @@ const Slot = ({
   currentPeerId,
   shard,
   transfer,
+  slotIndices,
   peersNumber,
   dragAndDropState,
   onSlotGrab,
@@ -53,8 +54,10 @@ const Slot = ({
     const targetShardId = transfer.transfer.to_shard_id ?? transfer.transfer.shard_id;
 
     if (transfer.transfer.to === transfer.transfer.from) {
-      // Same peer transfer — use top/bottom anchors to connect slots vertically
-      if (transfer.transfer.shard_id > targetShardId) {
+      // Same peer transfer — use top/bottom anchors based on visual row position
+      const sourceVisualIndex = slotIndices.indexOf(transfer.transfer.shard_id);
+      const targetVisualIndex = slotIndices.indexOf(targetShardId);
+      if (sourceVisualIndex > targetVisualIndex) {
         sourceAnchorDirection = 'top';
         targetAnchorDirection = 'bottom';
       } else {
@@ -226,6 +229,7 @@ Slot.propTypes = {
       to_shard_id: PropTypes.number,
     }),
   }),
+  slotIndices: PropTypes.arrayOf(PropTypes.number).isRequired,
   peersNumber: PropTypes.number,
   dragAndDropState: PropTypes.oneOf(['grabbed', 'awaiting', null]),
   onSlotGrab: PropTypes.func.isRequired,

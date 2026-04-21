@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
@@ -10,6 +10,7 @@ import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { alpha, useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
+import ClusterNodeSummary from './ClusterNodeSummary';
 import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS, getHighContrastClusterColors } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
@@ -116,6 +117,8 @@ const ClusterMonitor = ({ collectionName }) => {
   });
   const [abortReshardingDialog, setAbortReshardingDialog] = React.useState(false);
   const [replicationLoading, setReplicationLoading] = React.useState(false);
+  const [sortedByPeer, setSortedByPeer] = useState(null);
+  const archerContainerRef = useRef(null);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -408,6 +411,35 @@ const ClusterMonitor = ({ collectionName }) => {
     return Array.from(keys).sort();
   }, [cluster?.shards]);
 
+  const peers = cluster?.peers ?? [];
+
+  const slotIndices = useMemo(() => {
+    const shards = cluster?.shards ?? [];
+    if (shards.length === 0) return [];
+    const maxIdx = shards.reduce((max, s) => Math.max(max, s.shard_id), 0);
+    const minIdx = shards.reduce((min, s) => Math.min(min, s.shard_id), maxIdx);
+    const allIndices = Array.from({ length: maxIdx - minIdx + 1 }, (_, i) => minIdx + i);
+    if (sortedByPeer === null) return allIndices;
+    const filledIds = new Set(
+      shards.filter((s) => s.peer_id === sortedByPeer).map((s) => s.shard_id)
+    );
+    return [...allIndices].sort((a, b) => {
+      const aFilled = filledIds.has(a);
+      const bFilled = filledIds.has(b);
+      if (aFilled && !bFilled) return -1;
+      if (!aFilled && bFilled) return 1;
+      return a - b;
+    });
+  }, [cluster?.shards, sortedByPeer]);
+
+  const handleToggleSort = (peerId) => {
+    setSortedByPeer((prev) => (prev === peerId ? null : peerId));
+  };
+
+  useEffect(() => {
+    archerContainerRef.current?.refreshScreen();
+  }, [sortedByPeer]);
+
   if (!cluster) {
     return (
       <Box>
@@ -514,16 +546,30 @@ const ClusterMonitor = ({ collectionName }) => {
             width: 'max-content',
           }}
         >
+          <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
+            {peers.map((peerId) => (
+              <Grid key={`summary-${peerId}`} size="grow">
+                <ClusterNodeSummary
+                  peerId={peerId}
+                  cluster={cluster}
+                  isSortActive={sortedByPeer === peerId}
+                  onToggleSort={handleToggleSort}
+                />
+              </Grid>
+            ))}
+          </Grid>
           <ArcherContainer
+            ref={archerContainerRef}
             strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
             lineStyle={'angle'}
           >
-            <Grid container spacing={2}>
-              {cluster.peers?.map((peerId) => (
-                <Grid key={peerId} size={'grow'}>
+            <Grid container spacing={2} sx={{ alignItems: 'flex-start', mt: 1 }}>
+              {peers.map((peerId) => (
+                <Grid key={peerId} size="grow">
                   <ClusterNode
                     peerId={peerId}
                     cluster={cluster}
+                    slotIndices={slotIndices}
                     dragState={dragState}
                     onSlotGrab={handleSlotGrab}
                     onSlotDrop={handleSlotDrop}

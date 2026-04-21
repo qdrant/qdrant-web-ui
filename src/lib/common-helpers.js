@@ -91,6 +91,18 @@ export const getFullPath = (filePath) => {
   return `${normalizedBase}${normalizedPath}`;
 };
 
+/**
+ * Turn PascalCase or camelCase into a lowercase phrase with spaces between words.
+ * @param {string} value - Identifier-style string (e.g. Active, ReshardingScaleDown).
+ * @return {string} Phrase (e.g. "active", "resharding scale down").
+ */
+export const humanizePascalCase = (value) => {
+  return value
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
+    .toLowerCase();
+};
+
 const SCIENTIFIC_NOTATION_STRING = /^[-+]?(\d+\.?\d*|\.\d+)[eE][+-]?\d+$/;
 
 /**

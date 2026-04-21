@@ -1,37 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Box } from '@mui/material';
 import Slot from './ClusterShardSlot';
-import { StyledNode } from './StyledComponents/StyledNode';
 
-const ClusterNode = ({ peerId, cluster, dragState, onSlotGrab, onSlotDrop, onDragCancel }) => {
-  const maxSlotsIndex = cluster.shards.reduce((max, shard) => {
-    return Math.max(max, shard.shard_id);
-  }, 0);
-  const minSlotsIndex = cluster.shards.reduce((min, shard) => {
-    return Math.min(min, shard.shard_id);
-  }, maxSlotsIndex);
-
-  const numSlots = cluster.shards.length;
-
+const ClusterNode = ({ peerId, cluster, slotIndices, dragState, onSlotGrab, onSlotDrop, onDragCancel }) => {
   const shards = cluster.shards.filter((shard) => shard.peer_id === peerId);
+  const transfers = cluster.shard_transfers || [];
 
   return (
-    <StyledNode>
-      {(numSlots &&
-        Array.from({ length: maxSlotsIndex - minSlotsIndex + 1 }, (_, i) => {
-          const idx = minSlotsIndex + i;
+    <Box
+      sx={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.5rem',
+      }}
+    >
+      {slotIndices.length > 0 ? (
+        slotIndices.map((idx) => {
           const shard = shards.find((s) => s.shard_id === idx);
           let transfer;
           if (shard) {
-            const foundTransfer = cluster.shard_transfers.find(
-              (transfer) => transfer.shard_id === shard.shard_id && transfer.from === peerId
+            const foundTransfer = transfers.find(
+              (t) => t.shard_id === shard.shard_id && t.from === peerId
             );
-            transfer = {
-              transfer: foundTransfer,
-            };
+            transfer = { transfer: foundTransfer };
           }
 
-          // Determine drag and drop state for this slot
           let dragAndDropState = null;
           if (dragState.isDragging) {
             if (dragState.draggedSlot.peerId === peerId && dragState.draggedSlot.slotId === idx) {
@@ -48,6 +43,7 @@ const ClusterNode = ({ peerId, cluster, dragState, onSlotGrab, onSlotDrop, onDra
               currentPeerId={peerId}
               shard={shard}
               transfer={transfer}
+              slotIndices={slotIndices}
               peersNumber={cluster?.peers.length}
               dragAndDropState={dragAndDropState}
               onSlotGrab={onSlotGrab}
@@ -55,8 +51,11 @@ const ClusterNode = ({ peerId, cluster, dragState, onSlotGrab, onSlotDrop, onDra
               onDragCancel={onDragCancel}
             />
           );
-        })) || <div>No slots available</div>}
-    </StyledNode>
+        })
+      ) : (
+        <div>No slots available</div>
+      )}
+    </Box>
   );
 };
 
@@ -73,6 +72,7 @@ ClusterNode.propTypes = {
     ),
     peers: PropTypes.arrayOf(PropTypes.number),
   }).isRequired,
+  slotIndices: PropTypes.arrayOf(PropTypes.number).isRequired,
   dragState: PropTypes.shape({
     isDragging: PropTypes.bool.isRequired,
     draggedSlot: PropTypes.object,
