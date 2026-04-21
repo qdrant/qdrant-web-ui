@@ -10,6 +10,7 @@ import SearchQuality from '../components/Collections/SearchQuality/SearchQuality
 import { useClient } from '../context/client-context';
 import ClusterMonitor from '../components/Collections/ClusterMonitor/ClusterMonitor';
 import Optimizations from '../components/Collections/Optimizations/Optimizations';
+import Memory from '../components/Collections/Memory/Memory';
 
 function Collection() {
   const { collectionName } = useParams();
@@ -46,6 +47,7 @@ function Collection() {
                 <Tab label="Points" value={'points'} />
                 <Tab label="Info" value={'info'} />
                 {!isRestricted && <Tab label="Optimizations" value={'optimizations'} />}
+                {!isRestricted && <Tab label="Memory" value={'memory'} />}
                 {!isRestricted && <Tab label="Cluster" value={'cluster'} />}
                 {!isRestricted && <Tab label="Search Quality" value={'quality'} />}
                 {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
@@ -66,6 +68,7 @@ function Collection() {
             {!isRestricted && currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
             {currentTab === 'cluster' && <ClusterMonitor collectionName={collectionName} />}
             {!isRestricted && currentTab === 'optimizations' && <Optimizations collectionName={collectionName} />}
+            {!isRestricted && currentTab === 'memory' && <Memory collectionName={collectionName} />}
           </Grid>
         </Grid>
       </CenteredFrame>
