@@ -85,7 +85,7 @@ describe('CollectionsList', () => {
     );
     expect(screen.getByText('green')).toBeInTheDocument();
     expect(screen.getByText('yellow')).toBeInTheDocument();
-    expect(screen.getByText('1 000')).toBeInTheDocument();
+    expect(screen.getByText('1000')).toBeInTheDocument();
     expect(screen.getByText('500')).toBeInTheDocument();
     expect(screen.getByText('128')).toBeInTheDocument();
     expect(screen.getByText('cosine')).toBeInTheDocument();
