@@ -21,9 +21,7 @@ const ClusterNode = ({ peerId, cluster, slotIndices, dragState, onSlotGrab, onSl
           const shard = shards.find((s) => s.shard_id === idx);
           let transfer;
           if (shard) {
-            const foundTransfer = transfers.find(
-              (t) => t.shard_id === shard.shard_id && t.from === peerId
-            );
+            const foundTransfer = transfers.find((t) => t.shard_id === shard.shard_id && t.from === peerId);
             transfer = { transfer: foundTransfer };
           }
 
