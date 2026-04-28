@@ -179,7 +179,6 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
     const recalls = [];
     try {
       const sampleResult = await client.scroll(collectionName, {
-        filter: filter,
         with_payload: false,
         with_vector: false,
         limit: SAMPLE_SIZE,
