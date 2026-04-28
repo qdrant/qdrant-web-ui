@@ -19,16 +19,16 @@ import { CopyButton } from '../../Common/CopyButton';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import Typography from '@mui/material/Typography';
 import { SearchCheck } from 'lucide-react';
-import { checkIndexPrecision } from './check-index-precision';
+import { checkIndexRecall } from './check-index-precision';
 import { useClient } from '../../../context/client-context';
 import CodeEditorWindow from '../../FilterEditorWindow';
 
-const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInProgress }) => {
+const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, recall, isInProgress, isDisabled }) => {
   return (
     <TableRow data-testid="vector-row">
       <TableCell>
         <Typography variant="subtitle1" component={'span'} color="text.secondary">
-          {name == '' ? '—' : name}
+          {name == '' ? 'Default vector' : name}
         </Typography>
       </TableCell>
       <TableCell>
@@ -46,7 +46,7 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
         {!isInProgress && (
           <Box display="flex" alignItems="center" gap={1.5}>
             <Typography variant="subtitle1" component={'span'} color="text.secondary">
-              {precision ? `${precision * 100}%` : '—'}
+              {recall ? `${(recall * 100).toFixed(2)}%` : '—'}
             </Typography>
             <Button
               variant="contained"
@@ -54,6 +54,7 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, precision, isInP
               aria-label="Check index quality"
               data-testid="index-quality-check-button"
               onClick={onCheckIndexQuality}
+              disabled={isDisabled}
               startIcon={<SearchCheck size={18} />}
             >
               Check&nbsp;Index&nbsp;Quality
@@ -69,28 +70,31 @@ VectorTableRow.propTypes = {
   vectorObj: PropTypes.object,
   name: PropTypes.string,
   onCheckIndexQuality: PropTypes.func,
-  precision: PropTypes.number,
+  recall: PropTypes.number,
+  isDisabled: PropTypes.bool,
   isInProgress: PropTypes.bool,
 };
+
+const SAMPLE_SIZE = 100;
 
 const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
   const { client } = useClient();
   const vectorsNames = Object.keys(vectors);
-  const [precision, setPrecision] = useState(() => {
+  const [recall, setRecall] = useState(() => {
     if (vectorsNames) {
-      return vectorsNames.reduce((precision, name) => {
-        precision[name] = null;
-        return precision;
+      return vectorsNames.reduce((recall, name) => {
+        recall[name] = null;
+        return recall;
       }, {});
     }
     return null;
   });
 
   const [advancedMod, setAdvancedMod] = useState(false);
-  const [inProgress, setInProgress] = useState(false);
+  const [inProgressVector, setInProgressVector] = useState(null);
 
   const [code, setCode] = useState(`
-// Run this code to estimate search quality versus exact search
+// Run this code to estimate ANN recall versus exact search
 {
   "limit": 10,
 
@@ -169,27 +173,26 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   }
 
   const onCheckIndexQuality = async ({ using = '', limit = 10, params = null, filter = null, timeout }) => {
-    setInProgress(true);
+    setInProgressVector(using);
 
     clearLogsFoo && clearLogsFoo();
-    const precisions = [];
+    const recalls = [];
     try {
-      const scrollResult = await client.scroll(collectionName, {
+      const sampleResult = await client.scroll(collectionName, {
+        filter: filter,
         with_payload: false,
         with_vector: false,
-        limit,
+        limit: SAMPLE_SIZE,
       });
 
-      // todo: if exceeded timeout
-
-      const pointIds = scrollResult.points.map((point) => point.id);
+      const pointIds = sampleResult.points.map((point) => point.id);
       const total = pointIds.length;
 
-      loggingFoo && loggingFoo('Starting measuring quality on ' + total + ' requests for ' + using || '---');
+      loggingFoo && loggingFoo(`Starting measuring recall@${limit} on ${total} requests for: ${using || 'Default vector'}`);
 
       for (let idx = 0; idx < total; idx++) {
         const pointId = pointIds[idx];
-        const precision = await checkIndexPrecision(
+        const recall = await checkIndexRecall(
           client,
           collectionName,
           pointId,
@@ -202,31 +205,32 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
           limit,
           timeout
         );
-        if (precision) {
-          precisions.push(precision);
+        if (recall !== null && !isNaN(recall)) {
+          recalls.push(recall);
         }
       }
 
       // Round to 2 decimal places
       const round = (num) => Math.round((num + Number.EPSILON) * 10000) / 10000;
 
-      const avgPrecision = round(precisions.reduce((x, val) => x + val, 0) / precisions.length);
+      const avgRecall = round(recalls.reduce((x, val) => x + val, 0) / recalls.length);
+      // n-1 denominator: Bessel's correction for estimating population std dev from a sample
       const stdDev = round(
-        Math.sqrt(precisions.reduce((x, val) => x + (val - avgPrecision) ** 2, 0) / precisions.length)
+        Math.sqrt(recalls.reduce((x, val) => x + (val - avgRecall) ** 2, 0) / (recalls.length - 1))
       );
 
-      loggingFoo('Mean precision@' + limit + ' for collection: ' + avgPrecision + ' ± ' + stdDev);
+      loggingFoo('Mean recall@' + limit + ' for collection: ' + avgRecall + ' ± ' + stdDev);
 
-      setPrecision((prev) => {
+      setRecall((prev) => {
         return {
           ...prev,
-          [using]: avgPrecision,
+          [using]: avgRecall,
         };
       });
 
-      setInProgress(false);
+      setInProgressVector(null);
     } catch (e) {
-      setInProgress(false);
+      setInProgressVector(null);
       console.error(e);
       loggingFoo && loggingFoo(JSON.stringify(e));
     }
@@ -239,7 +243,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   return (
     <Card elevation={0} data-testid="vectors-info" {...other}>
       <CardHeader
-        title="Search Quality"
+        title="ANN Recall"
         variant="heading"
         sx={{
           flexGrow: 1,
@@ -286,7 +290,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
               </TableCell>
               <TableCell sx={{ width: '25%' }}>
                 <Typography variant="subtitle1" fontWeight={600}>
-                  Precision
+                  Recall
                 </Typography>
               </TableCell>
             </TableRow>
@@ -304,9 +308,10 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
                 vectorObj={vectors[vectorName]}
                 name={vectorName}
                 onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
-                precision={precision ? precision[vectorName] : null}
+                recall={recall ? recall[vectorName] : null}
                 key={vectorName}
-                isInProgress={inProgress}
+                isInProgress={inProgressVector === vectorName}
+                isDisabled={inProgressVector !== null && inProgressVector !== vectorName}
               />
             ))}
           </TableBody>

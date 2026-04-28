@@ -52,7 +52,7 @@ describe('SearchQualityPannel', () => {
         <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
       </MemoryRouter>
     );
-    expect(screen.getByText('Search Quality')).toBeInTheDocument();
+    expect(screen.getByText('ANN Recall')).toBeInTheDocument();
     expect(screen.getByText('512')).toBeInTheDocument();
     expect(screen.getByText('Cosine')).toBeInTheDocument();
   });
@@ -63,7 +63,7 @@ describe('SearchQualityPannel', () => {
         <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS_NAMED} />
       </MemoryRouter>
     );
-    expect(screen.getByText('Search Quality')).toBeInTheDocument();
+    expect(screen.getByText('ANN Recall')).toBeInTheDocument();
     expect(screen.getByText('text')).toBeInTheDocument();
     expect(screen.getByText('image')).toBeInTheDocument();
     expect(screen.getAllByText('512')).toHaveLength(2);
