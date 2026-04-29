@@ -187,7 +187,8 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       const pointIds = sampleResult.points.map((point) => point.id);
       const total = pointIds.length;
 
-      loggingFoo && loggingFoo(`Starting measuring recall@${limit} on ${total} requests for: ${using || 'Default vector'}`);
+      loggingFoo &&
+        loggingFoo(`Starting measuring recall@${limit} on ${total} requests for: ${using || 'Default vector'}`);
 
       for (let idx = 0; idx < total; idx++) {
         const pointId = pointIds[idx];
@@ -214,9 +215,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
 
       const avgRecall = round(recalls.reduce((x, val) => x + val, 0) / recalls.length);
       // n-1 denominator: Bessel's correction for estimating population std dev from a sample
-      const stdDev = round(
-        Math.sqrt(recalls.reduce((x, val) => x + (val - avgRecall) ** 2, 0) / (recalls.length - 1))
-      );
+      const stdDev = round(Math.sqrt(recalls.reduce((x, val) => x + (val - avgRecall) ** 2, 0) / (recalls.length - 1)));
 
       loggingFoo('Mean recall@' + limit + ' for collection: ' + avgRecall + ' ± ' + stdDev);
 
