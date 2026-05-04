@@ -47,7 +47,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, customRequestSchema,
   function onRun(codeText) {
     const data = codeParse(codeText);
     if (data.error) {
-      enqueueSnackbar(`Visualization Unsuccessful, error: ${JSON.stringify(data.error)}`, {
+      enqueueSnackbar(`Invalid JSON: ${JSON.stringify(data.error)}`, {
         variant: 'error',
       });
       return data;

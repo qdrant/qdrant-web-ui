@@ -1,4 +1,4 @@
-export const checkIndexPrecision = async (
+export const checkIndexRecall = async (
   client,
   collectionName,
   pointId,
@@ -11,6 +11,9 @@ export const checkIndexPrecision = async (
   limit = 10,
   timeout = 20
 ) => {
+  const exclusionFilter = { must_not: [{ has_id: [pointId] }] };
+  const queryFilter = filter ? { must: [filter, exclusionFilter] } : exclusionFilter;
+
   try {
     const exact = await client.api().queryPoints({
       collection_name: collectionName,
@@ -21,7 +24,7 @@ export const checkIndexPrecision = async (
       params: {
         exact: true,
       },
-      filter: filter,
+      filter: queryFilter,
       using: vectorName,
       timeout,
     });
@@ -36,7 +39,7 @@ export const checkIndexPrecision = async (
       with_vectors: false,
       query: pointId,
       params: params,
-      filter: filter,
+      filter: queryFilter,
       using: vectorName,
     });
 
@@ -45,28 +48,16 @@ export const checkIndexPrecision = async (
     const exactIds = exact.data.result.points.map((item) => item.id);
     const hnswIds = hnsw.data.result.points.map((item) => item.id);
 
-    const precision = exactIds.filter((id) => hnswIds.includes(id)).length / exactIds.length;
+    const recall = exactIds.filter((id) => hnswIds.includes(id)).length / exactIds.length;
 
     logFoo &&
       logFoo(
-        'Point ID ' +
-          idx +
-          '(' +
-          idx +
-          '/' +
-          total +
-          ') precision@' +
-          limit +
-          ': ' +
-          precision +
-          ' (search time exact: ' +
-          exactSearchElapsed +
-          'ms, regular: ' +
-          searchElapsed +
-          'ms)'
+        `Point ${pointId} (${
+          idx + 1
+        }/${total}) recall@${limit}: ${recall} (search time: "exact" ${exactSearchElapsed}ms; "regular" ${searchElapsed}ms)`
       );
 
-    return precision;
+    return recall;
   } catch (e) {
     console.error('Error: ', e);
     console.error('Skipping point: ', idx);

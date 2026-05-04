@@ -49,7 +49,7 @@ function Collection() {
                 {!isRestricted && <Tab label="Optimizations" value={'optimizations'} />}
                 {!isRestricted && <Tab label="Memory" value={'memory'} />}
                 {!isRestricted && <Tab label="Cluster" value={'cluster'} />}
-                {!isRestricted && <Tab label="Search Quality" value={'quality'} />}
+                {!isRestricted && <Tab label="ANN Recall" value={'quality'} />}
                 {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
                 <Tab
                   label="Visualize"
