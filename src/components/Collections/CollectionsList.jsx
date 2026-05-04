@@ -15,6 +15,7 @@ import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
 import CollectionStatus from './CollectionStatus';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
+import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 
 const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection, isRefreshing }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -35,7 +36,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection,
       </TableCell>
       <TableCell align="center">
         <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
-          {collection.points_count}
+          <CopyableGroupedNumber value={collection.points_count} />
         </Typography>
       </TableCell>
       <TableCell align="center">

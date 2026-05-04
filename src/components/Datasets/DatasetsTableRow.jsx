@@ -7,6 +7,7 @@ import { StyledTableRow } from '../Common/StyledTable';
 import { ArchiveRestore, Upload } from 'lucide-react';
 import ImportDatasetDialog from './ImportDatasetDialog';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
+import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 
 export const DatasetsTableRow = ({ dataset, importDataset }) => {
   const theme = useTheme();
@@ -83,7 +84,9 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
         <VectorsConfigChips collectionConfigParams={dataset} collectionName={dataset.name} />
       </TableCell>
 
-      <TableCell align="center">{dataset.vectorCount}</TableCell>
+      <TableCell align="center">
+        <CopyableGroupedNumber value={dataset.vectorCount} />
+      </TableCell>
       <TableCell align="center">
         <Tooltip title="Import Dataset" arrow placement={'top'}>
           <Button
