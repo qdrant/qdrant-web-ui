@@ -1,7 +1,23 @@
-export const getBaseURL = function () {
+const stripDashboardSuffix = (pathname) => {
+  if (!pathname){
+    return '/';
+  }
+
+  const normalized = pathname.replace(/\/+$/, '') || '/';
+  return normalized.replace(/\/dashboard$/, '') || '/';
+};
+
+export const getQdrantPrefix = function () {
   const url = new URL(window.location.href);
-  const pathname = url.pathname.replace(/dashboard$/, '');
-  return new URL(pathname, url.href).href;
+  const prefix = stripDashboardSuffix(url.pathname);
+  return prefix === '/' ? '' : prefix;
+};
+
+export const getBaseURL = function () {
+  const origin = window.location.origin || new URL(window.location.href).origin;
+  const prefix = getQdrantPrefix();
+  const normalizedPrefix = prefix ? `${prefix}/` : '/';
+  return new URL(normalizedPrefix, origin).href;
 };
 
 export const pumpFile = function (reader, callback, chunks = []) {

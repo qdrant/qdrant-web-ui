@@ -1,5 +1,5 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
-import { getBaseURL } from './utils';
+import { getQdrantPrefix } from './utils';
 
 /**
  * Extended QdrantClient class with additional methods
@@ -8,8 +8,8 @@ import { getBaseURL } from './utils';
  */
 export class QdrantClientExtended extends QdrantClient {
   #downloadController;
-  constructor({ url, apiKey, port }) {
-    super({ url, apiKey, port, checkCompatibility: false, headers: { 'x-inference-proxy': 'true' } });
+  constructor({ url, apiKey, port, prefix = '' }) {
+    super({ url, apiKey, port, prefix, checkCompatibility: false, headers: { 'x-inference-proxy': 'true' } });
 
     this.downloadSnapshot = this.downloadSnapshot.bind(this);
     this.getSnapshotUploadUrl = this.getSnapshotUploadUrl.bind(this);
@@ -19,7 +19,8 @@ export class QdrantClientExtended extends QdrantClient {
     this.url = url;
     this.apiKey = apiKey;
     this.port = port;
-
+    this.prefix = prefix;
+    
     this.#downloadController = new AbortController();
   }
 
@@ -44,7 +45,7 @@ export class QdrantClientExtended extends QdrantClient {
     }
 
     const snapshotUrl = new URL(
-      `/collections/${encodeURIComponent(collectionName)}/snapshots/${encodeURIComponent(snapshotName)}`,
+      `${this.prefix}/collections/${encodeURIComponent(collectionName)}/snapshots/${encodeURIComponent(snapshotName)}`,
       this.url
     ).href;
 
@@ -73,7 +74,7 @@ export class QdrantClientExtended extends QdrantClient {
    * @return {module:url.URL} - URL object for snapshot upload
    */
   getSnapshotUploadUrl(collectionName) {
-    return new URL(`collections/${encodeURIComponent(collectionName)}/snapshots/upload`, this.url);
+    return new URL(`${this.prefix}/collections/${encodeURIComponent(collectionName)}/snapshots/upload`, this.url);
   }
 
   /**
@@ -87,11 +88,13 @@ export class QdrantClientExtended extends QdrantClient {
 
 export default function qdrantClient({ apiKey }) {
   let url;
+  let prefix = ''
   let port = 6333;
   if (process.env.NODE_ENV === 'development') {
     url = 'http://localhost:6333';
   } else {
-    url = getBaseURL();
+    url = window.location.origin;
+    prefix = getQdrantPrefix();
     if (window.location.port) {
       port = window.location.port;
     } else {
@@ -107,6 +110,7 @@ export default function qdrantClient({ apiKey }) {
     url,
     apiKey,
     port,
+    prefix
   };
 
   return new QdrantClientExtended(options);
