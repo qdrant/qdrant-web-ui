@@ -51,7 +51,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection,
       <TableCell align="right">
         <ActionsMenu>
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}#snapshots`}>
-            Take Snapshot
+            Snapshots
           </MenuItem>
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/visualize`}>
             Visualize
