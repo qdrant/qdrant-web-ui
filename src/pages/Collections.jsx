@@ -24,10 +24,19 @@ import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 
+const PAGE_SIZE_STORAGE_KEY = 'qdrant-web-ui-collections-page-size';
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
+const DEFAULT_PAGE_SIZE = PAGE_SIZE_OPTIONS[0];
+
 const spin = keyframes`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 `;
+
+function getInitialPageSize() {
+  const stored = Number(localStorage.getItem(PAGE_SIZE_STORAGE_KEY));
+  return PAGE_SIZE_OPTIONS.includes(stored) ? stored : DEFAULT_PAGE_SIZE;
+}
 
 function Collections() {
   const [rawCollections, setRawCollections] = useState(null);
@@ -38,15 +47,12 @@ function Collections() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(() => {
-    const stored = localStorage.getItem('qdrant-web-ui-collections-page-size');
-    return stored ? Number(stored) : 5;
-  });
+  const [pageSize, setPageSize] = useState(getInitialPageSize);
 
   const handlePageSizeChange = (event) => {
     const newSize = event.target.value;
     setPageSize(newSize);
-    localStorage.setItem('qdrant-web-ui-collections-page-size', String(newSize));
+    localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(newSize));
     setCurrentPage(1);
   };
 
@@ -122,22 +128,28 @@ function Collections() {
     [collections, qdrantClient, getErrorMessageWithApiKey]
   );
 
-  useEffect(() => {
-    getCollectionsCall(currentPage);
-  }, [currentPage, getCollectionsCall]);
-
-  useEffect(() => {
-    if (!searchQuery) {
-      getCollectionsCall(currentPage);
-    } else {
-      debouncedGetFilteredCollectionsCall(searchQuery);
-    }
-  }, [searchQuery, currentPage, getCollectionsCall]);
-
   const debouncedGetFilteredCollectionsCall = useMemo(
     () => debounce(getFilteredCollectionsCall, 100),
     [getFilteredCollectionsCall]
   );
+
+  useEffect(() => {
+    if (!searchQuery) {
+      getCollectionsCall(currentPage);
+    }
+  }, [searchQuery, currentPage, getCollectionsCall]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      return;
+    }
+
+    debouncedGetFilteredCollectionsCall(searchQuery);
+
+    return () => {
+      debouncedGetFilteredCollectionsCall.cancel();
+    };
+  }, [searchQuery, debouncedGetFilteredCollectionsCall]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -220,10 +232,11 @@ function Collections() {
                 onChange={handlePageSizeChange}
                 inputProps={{ 'aria-label': 'Collections per page' }}
               >
-                <MenuItem value={5}>5</MenuItem>
-                <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={25}>25</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <MenuItem key={size} value={size}>
+                    {size}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
