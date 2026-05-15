@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip } from '@mui/material';
+import {
+  Typography,
+  Grid,
+  Pagination,
+  Box,
+  Skeleton,
+  IconButton,
+  Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+} from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import { RefreshCw } from 'lucide-react';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
@@ -27,7 +38,17 @@ function Collections() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 5;
+  const [pageSize, setPageSize] = useState(() => {
+    const stored = localStorage.getItem('qdrant-web-ui-collections-page-size');
+    return stored ? Number(stored) : 5;
+  });
+
+  const handlePageSizeChange = (event) => {
+    const newSize = event.target.value;
+    setPageSize(newSize);
+    localStorage.setItem('qdrant-web-ui-collections-page-size', String(newSize));
+    setCurrentPage(1);
+  };
 
   const { maxCollections } = useMaxCollections();
 
@@ -47,7 +68,7 @@ function Collections() {
         const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
         setCollections(sortedCollections);
 
-        const nextPageCollections = sortedCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+        const nextPageCollections = sortedCollections.slice((page - 1) * pageSize, page * pageSize);
 
         const nextRawCollections = await Promise.all(
           nextPageCollections.map(async (collection) => {
@@ -71,7 +92,7 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey]
+    [qdrantClient, getErrorMessageWithApiKey, pageSize]
   );
 
   const getFilteredCollectionsCall = useCallback(
@@ -187,12 +208,24 @@ function Collections() {
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: { md: 'end' }, gap: 2 }}
+            sx={{ display: 'flex', justifyContent: { md: 'end' }, gap: 2, alignItems: 'center' }}
             size={{
               xs: 12,
               md: 7,
             }}
           >
+            <FormControl size="small" sx={{ minWidth: 80 }}>
+              <Select
+                value={pageSize}
+                onChange={handlePageSizeChange}
+                inputProps={{ 'aria-label': 'Collections per page' }}
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={25}>25</MenuItem>
+                <MenuItem value={50}>50</MenuItem>
+              </Select>
+            </FormControl>
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
@@ -226,11 +259,11 @@ function Collections() {
                 refreshCollection={refreshCollection}
                 isRefreshing={isRefreshing}
               />
-              {displayCollections && displayCollections.length > PAGE_SIZE && (
+              {displayCollections && displayCollections.length > pageSize && (
                 <Box justifyContent="center" display="flex" mt={3}>
                   <Pagination
                     shape={'rounded'}
-                    count={Math.ceil(displayCollections.length / PAGE_SIZE)}
+                    count={Math.ceil(displayCollections.length / pageSize)}
                     page={currentPage}
                     onChange={handlePageChange}
                   />
