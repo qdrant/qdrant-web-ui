@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
@@ -67,16 +67,33 @@ const StatusBadge = styled(Box)(({ status, theme }) => {
   };
 });
 
+const getStatusTooltip = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'green':
+      return 'Collection is ready';
+    case 'yellow':
+      return 'Collection is optimizing';
+    case 'grey':
+      return 'Collection is pending optimization';
+    case 'red':
+      return 'An error occurred';
+    default:
+      return 'Unknown';
+  }
+};
+
 const CollectionStatus = ({ status, collectionName }) => (
-  <StatusBadge
-    status={status}
-    component={Link}
-    to={`/collections/${encodeURIComponent(collectionName)}#info`}
-    sx={{ textDecoration: 'none' }}
-  >
-    <div className="status-dot" />
-    <Typography className="status-text">{status}</Typography>
-  </StatusBadge>
+  <Tooltip title={getStatusTooltip(status)} placement="top">
+    <StatusBadge
+      status={status}
+      component={Link}
+      to={`/collections/${encodeURIComponent(collectionName)}#info`}
+      sx={{ textDecoration: 'none' }}
+    >
+      <div className="status-dot" />
+      <Typography className="status-text">{status}</Typography>
+    </StatusBadge>
+  </Tooltip>
 );
 
 CollectionStatus.propTypes = {
