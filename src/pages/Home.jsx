@@ -142,7 +142,7 @@ function HomeContent() {
       ) : (
         <></>
       )}
-      <Box component="main" sx={{ flexGrow: 1, overflow: 'hidden' }}>
+      <Box component="main" sx={{ flexGrow: 1, minWidth: 0, overflowX: 'clip' }}>
         {!isInIframe ? <DrawerHeader /> : <></>}
         <Outlet />
       </Box>

@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
-import { Grid, Typography, Box, LinearProgress, Divider } from '@mui/material';
+import { Typography, Box, LinearProgress, Divider } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
 import { useTelemetry } from '../../../context/telemetry-context';
@@ -10,6 +10,7 @@ import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { alpha, useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
+import ClusterNodeSummary from './ClusterNodeSummary';
 import { Circle } from '../../Common/Circle';
 import { CLUSTER_COLORS, getHighContrastClusterColors } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
@@ -116,6 +117,61 @@ const ClusterMonitor = ({ collectionName }) => {
   });
   const [abortReshardingDialog, setAbortReshardingDialog] = React.useState(false);
   const [replicationLoading, setReplicationLoading] = React.useState(false);
+  const [sortByPeer, setSortByPeer] = useState(null);
+  const archerContainerRef = useRef(null);
+  const summaryScrollRef = useRef(null);
+  const contentScrollRef = useRef(null);
+  const contentInnerRef = useRef(null);
+  const syncingRef = useRef(false);
+  const [contentInnerWidth, setContentInnerWidth] = useState(null);
+  const shardsCellRef = useRef(null);
+  const [isLongCluster, setIsLongCluster] = useState(false);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return undefined;
+
+    const contentEl = contentInnerRef.current;
+    const shardsEl = shardsCellRef.current;
+    let contentObserver;
+    let shardsObserver;
+
+    if (contentEl) {
+      contentObserver = new ResizeObserver((entries) => {
+        const w = entries[0]?.borderBoxSize?.[0]?.inlineSize ?? entries[0]?.contentRect?.width;
+        if (w > 0) setContentInnerWidth(w);
+      });
+      contentObserver.observe(contentEl);
+    }
+
+    if (shardsEl) {
+      shardsObserver = new ResizeObserver((entries) => {
+        const h = entries[0]?.contentRect?.height ?? 0;
+        setIsLongCluster(h > window.innerHeight * 0.8);
+      });
+      shardsObserver.observe(shardsEl);
+    }
+
+    if (!contentObserver && !shardsObserver) return undefined;
+
+    return () => {
+      contentObserver?.disconnect();
+      shardsObserver?.disconnect();
+    };
+  }, [cluster]);
+
+  const syncScroll = (toRef) => (e) => {
+    if (syncingRef.current) return;
+    const target = toRef.current;
+    if (!target) return;
+    syncingRef.current = true;
+    target.scrollLeft = e.currentTarget.scrollLeft;
+    requestAnimationFrame(() => {
+      syncingRef.current = false;
+    });
+  };
+
+  const onSummaryScroll = syncScroll(contentScrollRef);
+  const onContentScroll = syncScroll(summaryScrollRef);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -151,6 +207,10 @@ const ClusterMonitor = ({ collectionName }) => {
       // Check if we need to scroll left (mouse near left edge and can scroll left)
       if (mouseX < 50 && scrollLeft > 0) {
         clusterMonitor.scrollLeft = scrollLeft - scrollStep;
+      }
+
+      if (summaryScrollRef.current) {
+        summaryScrollRef.current.scrollLeft = clusterMonitor.scrollLeft;
       }
     }
   };
@@ -408,6 +468,34 @@ const ClusterMonitor = ({ collectionName }) => {
     return Array.from(keys).sort();
   }, [cluster?.shards]);
 
+  const peers = cluster?.peers ?? [];
+
+  const slotIndices = useMemo(() => {
+    const shards = cluster?.shards ?? [];
+    if (shards.length === 0) return [];
+    const maxIdx = shards.reduce((max, s) => Math.max(max, s.shard_id), 0);
+    const minIdx = shards.reduce((min, s) => Math.min(min, s.shard_id), maxIdx);
+    const allIndices = Array.from({ length: maxIdx - minIdx + 1 }, (_, i) => minIdx + i);
+    if (!sortByPeer) return allIndices;
+    const filledIds = new Set(shards.filter((s) => s.peer_id === sortByPeer.peerId).map((s) => s.shard_id));
+    const filledFirst = sortByPeer.direction === 'filled-first';
+    return [...allIndices].sort((a, b) => {
+      const aFilled = filledIds.has(a);
+      const bFilled = filledIds.has(b);
+      if (aFilled && !bFilled) return filledFirst ? -1 : 1;
+      if (!aFilled && bFilled) return filledFirst ? 1 : -1;
+      return filledFirst ? a - b : b - a;
+    });
+  }, [cluster?.shards, sortByPeer]);
+
+  const handleSetSort = (peerId, direction) => {
+    setSortByPeer(direction ? { peerId, direction } : null);
+  };
+
+  useEffect(() => {
+    archerContainerRef.current?.refreshScreen();
+  }, [sortByPeer]);
+
   if (!cluster) {
     return (
       <Box>
@@ -431,7 +519,7 @@ const ClusterMonitor = ({ collectionName }) => {
       sx={{
         display: 'grid',
         gridTemplateColumns: '20px 1fr',
-        gridTemplateRows: 'auto 1fr',
+        gridTemplateRows: 'auto auto',
         gridColumnGap: '0.5rem',
         gridRowGap: '1rem',
         // breakpoints
@@ -442,97 +530,184 @@ const ClusterMonitor = ({ collectionName }) => {
     >
       <Box
         sx={{
-          gridArea: '1 / 2 / 2 / 3',
+          gridColumn: '2 / -1',
+          gridRow: 1,
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: 1,
           rowGap: 0.5,
+          pb: 1,
+          minWidth: 0,
+          width: '100%',
+          boxSizing: 'border-box',
+          justifyContent: 'space-between',
+          borderBottom: (t) => `1px solid ${t.palette.divider}`,
         }}
       >
-        <Typography variant="subtitle1" sx={{ mr: 1 }}>
-          Cluster Nodes
-        </Typography>
         <Box
           sx={{
             display: 'flex',
-            gap: 1,
             alignItems: 'center',
             flexWrap: 'wrap',
+            gap: 1,
             rowGap: 0.5,
+            flex: 1,
+            minWidth: 0,
           }}
         >
-          <ReshardingButtons
-            cluster={cluster}
-            reshardingEnabled={reshardingEnabled}
-            reshardingLoading={reshardingLoading}
-            transferLoading={transferLoading}
-            onResharding={handleResharding}
-            onAbortResharding={handleAbortResharding}
-          />
-          {isCloud && (
-            <>
-              <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-              <ReplicationControl
-                cluster={cluster}
-                replicationFactor={replicationFactor}
-                replicationLoading={replicationLoading}
-                transferLoading={transferLoading}
-                onApply={handleReplicationApply}
-              />
-            </>
-          )}
+          <Typography variant="subtitle1" sx={{ mr: 1 }}>
+            Cluster Nodes
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              rowGap: 0.5,
+            }}
+          >
+            <ReshardingButtons
+              cluster={cluster}
+              reshardingEnabled={reshardingEnabled}
+              reshardingLoading={reshardingLoading}
+              transferLoading={transferLoading}
+              onResharding={handleResharding}
+              onAbortResharding={handleAbortResharding}
+            />
+            {isCloud && (
+              <>
+                <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+                <ReplicationControl
+                  cluster={cluster}
+                  replicationFactor={replicationFactor}
+                  replicationLoading={replicationLoading}
+                  transferLoading={transferLoading}
+                  onApply={handleReplicationApply}
+                />
+              </>
+            )}
+          </Box>
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0 }}>
+          <Legend dragState={dragState} />
         </Box>
       </Box>
-      <Box sx={{ gridArea: ' 1 / 3 / 2 / 6', display: 'flex', justifyContent: 'end', alignItems: 'center' }}>
-        <Legend dragState={dragState} />
-      </Box>
-      <Box sx={{ gridArea: '1 / 1 / 6 / 2', alignContent: 'center', marginTop: '1rem' }}>
+      <Box
+        ref={shardsCellRef}
+        sx={{
+          gridColumn: '1 / 2',
+          gridRow: '2 / -1',
+          minWidth: 0,
+          ...(!isLongCluster && {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }),
+        }}
+      >
         <Typography
           variant="subtitle1"
-          sx={{ writingMode: 'vertical-lr', textAlign: 'center', transform: 'rotate(180deg)' }}
+          sx={{
+            writingMode: 'vertical-lr',
+            textAlign: 'center',
+            transform: 'rotate(180deg)',
+            ...(isLongCluster && {
+              position: 'sticky',
+              top: 'calc(50vh - 1em)',
+            }),
+          }}
         >
           Shards
         </Typography>
       </Box>
       <Box
-        data-cluster-monitor
         sx={{
-          width: 'auto',
-          height: 'fit-content',
-          padding: '0.5rem 0.5rem 1.5rem 0.5rem',
-          overflowX: 'auto',
-          gridArea: '2 / 2 / 6 / 10',
-          '& svg': {
-            zIndex: 10,
-          },
+          gridColumn: '2 / -1',
+          gridRow: '2 / -1',
+          minWidth: 0,
+          width: '100%',
+          boxSizing: 'border-box',
         }}
       >
         <Box
+          ref={summaryScrollRef}
+          onScroll={onSummaryScroll}
           sx={{
-            minWidth: '100%',
-            width: 'max-content',
+            borderBottom: (t) => `1px solid ${t.palette.divider}`,
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+            px: '0.5rem',
+            py: '0.5rem',
           }}
         >
-          <ArcherContainer
-            strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
-            lineStyle={'angle'}
+          <Box
+            sx={{
+              minWidth: '100%',
+              width: contentInnerWidth ?? 'max-content',
+              display: 'grid',
+              gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
+              gap: 2,
+              alignItems: 'stretch',
+            }}
           >
-            <Grid container spacing={2}>
-              {cluster.peers?.map((peerId) => (
-                <Grid key={peerId} size={'grow'}>
-                  <ClusterNode
-                    peerId={peerId}
-                    cluster={cluster}
-                    dragState={dragState}
-                    onSlotGrab={handleSlotGrab}
-                    onSlotDrop={handleSlotDrop}
-                    onDragCancel={handleDragCancel}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </ArcherContainer>
+            {peers.map((peerId) => (
+              <Box key={`summary-${peerId}`} sx={{ minWidth: 0 }}>
+                <ClusterNodeSummary
+                  peerId={peerId}
+                  cluster={cluster}
+                  sortDirection={sortByPeer?.peerId === peerId ? sortByPeer.direction : null}
+                  onSetSort={handleSetSort}
+                />
+              </Box>
+            ))}
+          </Box>
+        </Box>
+        <Box
+          data-cluster-monitor
+          ref={contentScrollRef}
+          onScroll={onContentScroll}
+          sx={{
+            overflowX: 'auto',
+            padding: '0.5rem 0.5rem 1.5rem 0.5rem',
+            '& svg': {
+              zIndex: 10,
+            },
+          }}
+        >
+          <Box ref={contentInnerRef} sx={{ minWidth: '100%', width: 'max-content' }}>
+            <ArcherContainer
+              ref={archerContainerRef}
+              strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
+              lineStyle={'angle'}
+            >
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
+                  gap: 2,
+                  alignItems: 'flex-start',
+                  mt: 1,
+                }}
+              >
+                {peers.map((peerId) => (
+                  <Box key={peerId} sx={{ minWidth: 0 }}>
+                    <ClusterNode
+                      peerId={peerId}
+                      cluster={cluster}
+                      slotIndices={slotIndices}
+                      dragState={dragState}
+                      onSlotGrab={handleSlotGrab}
+                      onSlotDrop={handleSlotDrop}
+                      onDragCancel={handleDragCancel}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            </ArcherContainer>
+          </Box>
         </Box>
       </Box>
 
