@@ -128,25 +128,35 @@ const ClusterMonitor = ({ collectionName }) => {
   const [isLongCluster, setIsLongCluster] = useState(false);
 
   useEffect(() => {
-    const el = contentInnerRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver((entries) => {
-      const w = entries[0]?.borderBoxSize?.[0]?.inlineSize ?? entries[0]?.contentRect?.width;
-      if (w > 0) setContentInnerWidth(w);
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [cluster]);
+    if (typeof ResizeObserver === 'undefined') return undefined;
 
-  useEffect(() => {
-    const el = shardsCellRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return undefined;
-    const ro = new ResizeObserver((entries) => {
-      const h = entries[0]?.contentRect?.height ?? 0;
-      setIsLongCluster(h > window.innerHeight * 0.8);
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    const contentEl = contentInnerRef.current;
+    const shardsEl = shardsCellRef.current;
+    let contentObserver;
+    let shardsObserver;
+
+    if (contentEl) {
+      contentObserver = new ResizeObserver((entries) => {
+        const w = entries[0]?.borderBoxSize?.[0]?.inlineSize ?? entries[0]?.contentRect?.width;
+        if (w > 0) setContentInnerWidth(w);
+      });
+      contentObserver.observe(contentEl);
+    }
+
+    if (shardsEl) {
+      shardsObserver = new ResizeObserver((entries) => {
+        const h = entries[0]?.contentRect?.height ?? 0;
+        setIsLongCluster(h > window.innerHeight * 0.8);
+      });
+      shardsObserver.observe(shardsEl);
+    }
+
+    if (!contentObserver && !shardsObserver) return undefined;
+
+    return () => {
+      contentObserver?.disconnect();
+      shardsObserver?.disconnect();
+    };
   }, [cluster]);
 
   const syncScroll = (toRef) => (e) => {
