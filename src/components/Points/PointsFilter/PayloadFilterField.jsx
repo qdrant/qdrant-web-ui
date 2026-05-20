@@ -139,7 +139,8 @@ const PayloadFilterField = memo(function PayloadFilterField({
     (code) => {
       if (!code) return '';
 
-      const regex = /([a-zA-Z_][\w.]*):(\S*)/g;
+      // Negative lookahead (?!//) prevents matching URL schemes like https://
+      const regex = /([a-zA-Z_][\w.]*):(?!\/\/)(\S*)/g;
       const keyColor = theme.palette.text.primary;
       const valueColor = theme.palette.primary.main;
       const valueBgColor = alpha(theme.palette.primary.light, 0.15);
@@ -156,9 +157,9 @@ const PayloadFilterField = memo(function PayloadFilterField({
         const currentValueBgColor = isIdFilter ? idValueBgColor : valueBgColor;
 
         const valueSpan = value
-          ? `<span style="color:${currentValueColor};background:${currentValueBgColor};border-radius:2px;padding:0;margin:0;display:inline-block">${value}</span>`
+          ? `<span style="color:${currentValueColor};background:${currentValueBgColor};border-radius:2px;padding:0;margin:0">${value}</span>`
           : '';
-        return `<span style="color:${currentKeyColor};font-weight:500">${key}:</span>${valueSpan}`;
+        return `<span style="color:${currentKeyColor}">${key}:</span>${valueSpan}`;
       });
     },
     [theme]
