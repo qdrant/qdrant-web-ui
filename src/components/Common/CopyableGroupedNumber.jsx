@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Box } from '@mui/material';
 import { formatGroupedDigits } from '../../lib/common-helpers';
 
 const GROUP_FROM = 10_000;
@@ -31,7 +32,7 @@ const toPlainText = (value) => {
   return String(value);
 };
 
-export const CopyableGroupedNumber = ({ value, component: Component = 'span', ...rest }) => {
+export const CopyableGroupedNumber = ({ value, component = 'span', sx, ...rest }) => {
   const plain = toPlainText(value);
   const display = shouldFormatGrouped(value) ? formatGroupedDigits(value) : plain;
 
@@ -41,13 +42,14 @@ export const CopyableGroupedNumber = ({ value, component: Component = 'span', ..
   };
 
   return (
-    <Component onCopy={handleCopy} {...rest}>
+    <Box component={component} onCopy={handleCopy} sx={{ whiteSpace: 'nowrap', ...sx }} {...rest}>
       {display}
-    </Component>
+    </Box>
   );
 };
 
 CopyableGroupedNumber.propTypes = {
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string, PropTypes.bigint]),
   component: PropTypes.elementType,
+  sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func]),
 };
