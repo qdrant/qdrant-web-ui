@@ -28,6 +28,7 @@ const PayloadFilterField = memo(function PayloadFilterField({
   payloadSchema,
   payloadKeyOptions,
   payloadValues = {},
+  onRequestFacetValues,
 }) {
   const theme = useTheme();
   const containerRef = useRef(null);
@@ -120,6 +121,15 @@ const PayloadFilterField = memo(function PayloadFilterField({
       .sort(sortByLengthAndAlpha)
       .slice(0, MAX_OPTIONS);
   }, [currentWord, payloadKeyOptions, isTypingValue, currentKey, currentValuePart, payloadValues]);
+
+  // Lazily request facet values once the user starts entering a value for a
+  // field (i.e. has typed "key:"). Facet requests are expensive, so they are
+  // only fired on demand; PointsTabs dedupes and ignores non-keyword fields.
+  useEffect(() => {
+    if (isTypingValue && currentKey && onRequestFacetValues) {
+      onRequestFacetValues(currentKey);
+    }
+  }, [isTypingValue, currentKey, onRequestFacetValues]);
 
   // Auto-show/hide autocomplete based on current word (only when focused)
   useEffect(() => {
@@ -337,6 +347,7 @@ PayloadFilterField.propTypes = {
   payloadSchema: PropTypes.object,
   payloadKeyOptions: PropTypes.array.isRequired,
   payloadValues: PropTypes.object,
+  onRequestFacetValues: PropTypes.func,
 };
 
 export default PayloadFilterField;

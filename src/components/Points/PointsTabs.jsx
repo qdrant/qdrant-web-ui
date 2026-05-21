@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import PointCard from './PointCard';
 import PointCardSkeleton from './PointCardSkeleton';
@@ -21,6 +21,9 @@ const PointsTabs = ({ collectionName, client }) => {
   const [payloadSchema, setPayloadSchema] = useState({});
   const [payloadValues, setPayloadValues] = useState({});
   const [requestCount, setRequestCount] = useState(0);
+  // Tracks keyword fields whose facet values have already been requested,
+  // so we don't refire facet requests on every keystroke.
+  const requestedFacetsRef = useRef(new Set());
 
   const onSimilarIdsChange = (ids, vectorName) => {
     if (vectorName !== undefined) {
@@ -63,30 +66,40 @@ const PointsTabs = ({ collectionName, client }) => {
       const collectionInfo = await qdrantClient.getCollection(collectionName);
       const schema = collectionInfo.payload_schema || {};
       setPayloadSchema(schema);
-
-      // Fetch facet values for keyword fields
-      const keywordFields = Object.entries(schema)
-        .filter(([, fieldInfo]) => fieldInfo.data_type === 'keyword')
-        .map(([key]) => key);
-
-      if (keywordFields.length > 0) {
-        const facetPromises = keywordFields.map(async (key) => {
-          try {
-            const hits = await qdrantClient.facet(collectionName, { key, limit: 50 });
-            return [key, hits.hits.map((hit) => hit.value)];
-          } catch {
-            // Silently ignore facet errors (e.g., if facet API is not available)
-            return [key, []];
-          }
-        });
-
-        const facetResults = await Promise.all(facetPromises);
-        const values = Object.fromEntries(facetResults.filter(([, vals]) => vals.length > 0));
-        setPayloadValues(values);
-      }
+      // Reset lazily-loaded facet values when switching collections.
+      setPayloadValues({});
+      requestedFacetsRef.current = new Set();
     };
     getCollection();
   }, [collectionName, qdrantClient]);
+
+  // Lazily fetch facet values for a keyword field, on demand, when the user
+  // references that field in the filter input. Facet requests can be expensive
+  // on large collections, so we never fire them eagerly for the whole schema.
+  const fetchFacetValues = useCallback(
+    async (key) => {
+      if (!key || requestedFacetsRef.current.has(key)) {
+        return;
+      }
+      const fieldInfo = payloadSchema[key];
+      if (!fieldInfo || fieldInfo.data_type !== 'keyword') {
+        return;
+      }
+      requestedFacetsRef.current.add(key);
+      try {
+        const hits = await qdrantClient.facet(collectionName, { key, limit: 50 });
+        const values = hits.hits.map((hit) => hit.value);
+        if (values.length > 0) {
+          setPayloadValues((prev) => ({ ...prev, [key]: values }));
+        }
+      } catch {
+        // Silently ignore facet errors (e.g., if facet API is not available),
+        // and allow a retry on a later keystroke.
+        requestedFacetsRef.current.delete(key);
+      }
+    },
+    [collectionName, qdrantClient, payloadSchema]
+  );
 
   useEffect(() => {
     const getPoints = async () => {
@@ -183,6 +196,7 @@ const PointsTabs = ({ collectionName, client }) => {
           onFiltersChange={onFiltersChange}
           payloadSchema={payloadSchema}
           payloadValues={payloadValues}
+          onRequestFacetValues={fetchFacetValues}
           points={points}
         />
       </Grid>
