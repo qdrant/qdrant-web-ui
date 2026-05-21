@@ -12,6 +12,7 @@ const PointsFilter = ({
   onFiltersChange,
   payloadSchema = {},
   payloadValues = {},
+  onRequestFacetValues,
   points,
 }) => {
   const [isSimilarExpanded, setIsSimilarExpanded] = useState(false);
@@ -48,6 +49,7 @@ const PointsFilter = ({
             payloadSchema={payloadSchema}
             payloadKeyOptions={payloadKeyOptions}
             payloadValues={payloadValues}
+            onRequestFacetValues={onRequestFacetValues}
           />
         </Grid>
       </Grid>
@@ -62,6 +64,7 @@ PointsFilter.propTypes = {
   onFiltersChange: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object,
   payloadValues: PropTypes.object,
+  onRequestFacetValues: PropTypes.func,
   points: PropTypes.shape({
     payload_schema: PropTypes.object,
     points: PropTypes.arrayOf(PropTypes.shape({ payload: PropTypes.object })),
