@@ -55,24 +55,31 @@ export const ClearButton = styled(IconButton)(({ theme }) => ({
 
 export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
   flex: 1,
-  fontFamily: theme.typography.fontFamily,
-  fontSize: '1rem',
+  // Monospace avoids cumulative cursor drift from variable/proportional fonts in textarea vs pre
+  fontFamily: 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace',
+  fontSize: theme.typography.body1.fontSize,
   fontWeight: 400,
   lineHeight: '23px',
-  letterSpacing: '0.5px',
+  letterSpacing: 'normal',
+  fontFeatureSettings: 'normal',
+  fontVariantLigatures: 'none',
   '& textarea, & pre': {
     fontFamily: 'inherit !important',
     fontSize: 'inherit !important',
     fontWeight: 'inherit !important',
     lineHeight: 'inherit !important',
     letterSpacing: 'inherit !important',
+    fontFeatureSettings: 'inherit !important',
+    fontVariantLigatures: 'inherit !important',
     margin: '0 !important',
     padding: '0 !important',
     border: 'none !important',
     outline: 'none !important',
     background: 'transparent !important',
     whiteSpace: 'pre-wrap !important',
-    wordBreak: 'break-word !important',
+    // Match react-simple-code-editor defaults for consistent wrapping
+    wordBreak: 'keep-all !important',
+    overflowWrap: 'break-word !important',
     wordSpacing: 'normal !important',
     '&::placeholder': {
       color: theme.palette.text.disabled,

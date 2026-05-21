@@ -157,7 +157,7 @@ const PayloadFilterField = memo(function PayloadFilterField({
         const currentValueBgColor = isIdFilter ? idValueBgColor : valueBgColor;
 
         const valueSpan = value
-          ? `<span style="color:${currentValueColor};background:${currentValueBgColor};border-radius:2px;padding:0;margin:0">${value}</span>`
+          ? `<span style="color:${currentValueColor};background:${currentValueBgColor};border-radius:2px">${value}</span>`
           : '';
         return `<span style="color:${currentKeyColor}">${key}:</span>${valueSpan}`;
       });
