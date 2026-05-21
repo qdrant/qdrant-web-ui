@@ -1,8 +1,7 @@
 /**
  * Shared monospace font stack for filter and similar-search inputs
  */
-export const filterInputFontFamily =
-  'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
+export const filterInputFontFamily = 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
 
 /**
  * Check if two filters are equal
