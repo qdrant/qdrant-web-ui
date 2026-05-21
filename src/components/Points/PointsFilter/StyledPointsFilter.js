@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Box, IconButton, Paper, Popper } from '@mui/material';
 import Editor from 'react-simple-code-editor';
+import { filterInputFontFamily } from './helpers';
 
 export const StyledAutocompletePopper = styled(Popper)(() => ({
   width: 'fit-content !important',
@@ -53,16 +54,20 @@ export const ClearButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
-  flex: 1,
-  // Monospace avoids cumulative cursor drift from variable/proportional fonts in textarea vs pre
-  fontFamily: 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace',
+export const getFilterInputFontSx = (theme) => ({
+  fontFamily: filterInputFontFamily,
   fontSize: theme.typography.body1.fontSize,
   fontWeight: 400,
   lineHeight: '23px',
   letterSpacing: 'normal',
   fontFeatureSettings: 'normal',
   fontVariantLigatures: 'none',
+});
+
+export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
+  flex: 1,
+  // Monospace avoids cumulative cursor drift from variable/proportional fonts in textarea vs pre
+  ...getFilterInputFontSx(theme),
   '& textarea, & pre': {
     fontFamily: 'inherit !important',
     fontSize: 'inherit !important',
@@ -112,24 +117,37 @@ export const AutocompleteList = styled(Paper)(({ theme }) => ({
   },
 }));
 
-export const getSharedTextFieldSx = (theme) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '8px',
-    padding: '6px 8px',
-    minHeight: 40,
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: theme.palette.divider,
-  },
-  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: theme.palette.primary.main,
-  },
-  '& .MuiChip-root': {
-    height: 28,
-    borderRadius: '8px',
-  },
-  '& .MuiOutlinedInput-input::placeholder': {
-    color: theme.palette.text.disabled,
-    opacity: 1,
-  },
-});
+export const getSharedTextFieldSx = (theme) => {
+  const fontSx = getFilterInputFontSx(theme);
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      ...fontSx,
+      borderRadius: '8px',
+      padding: '6px 8px',
+      minHeight: 40,
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.divider,
+    },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.primary.main,
+    },
+    '& .MuiOutlinedInput-input, & .MuiInputBase-input': {
+      ...fontSx,
+    },
+    '& .MuiChip-root': {
+      ...fontSx,
+      height: 28,
+      borderRadius: '8px',
+    },
+    '& .MuiChip-label': {
+      ...fontSx,
+    },
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: theme.palette.text.disabled,
+      opacity: 1,
+      ...fontSx,
+    },
+  };
+};

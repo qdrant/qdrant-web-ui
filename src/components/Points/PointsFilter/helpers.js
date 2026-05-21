@@ -1,4 +1,10 @@
 /**
+ * Shared monospace font stack for filter and similar-search inputs
+ */
+export const filterInputFontFamily =
+  'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
+
+/**
  * Check if two filters are equal
  * @param {Object} a - First filter
  * @param {Object} b - Second filter
@@ -198,7 +204,7 @@ export const calculatePopperOffset = (filterInputValue, currentWordStart) => {
     measureCanvas = document.createElement('canvas');
     measureCtx = measureCanvas.getContext('2d');
     // Match the editor's font
-    measureCtx.font = '400 16px ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
+    measureCtx.font = `400 16px ${filterInputFontFamily}`;
   }
 
   const textWidth = measureCtx.measureText(textBeforeWord).width;
