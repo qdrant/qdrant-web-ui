@@ -198,7 +198,7 @@ export const calculatePopperOffset = (filterInputValue, currentWordStart) => {
     measureCanvas = document.createElement('canvas');
     measureCtx = measureCanvas.getContext('2d');
     // Match the editor's font
-    measureCtx.font = '1rem system-ui, -apple-system, sans-serif';
+    measureCtx.font = '400 16px ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
   }
 
   const textWidth = measureCtx.measureText(textBeforeWord).width;
