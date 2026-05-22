@@ -32,18 +32,33 @@ export const sortTree = (node, sortKey) => {
   return { ...node, children: sortedChildren };
 };
 
+const buildVectorSubs = (vector) => {
+  const subs = [];
+  if (vector.storage) subs.push({ name: 'storage', usage: vector.storage });
+  if (vector.index) subs.push({ name: 'index', usage: vector.index });
+  if (vector.quantized) subs.push({ name: 'quantized', usage: vector.quantized });
+  return subs;
+};
+
+const isDefaultUnnamedVector = (vector) => vector.name === '' || vector.name == null;
+
+const buildVectorGroupChildren = (vectors) => {
+  if (vectors.length === 1 && isDefaultUnnamedVector(vectors[0])) {
+    return buildVectorSubs(vectors[0]);
+  }
+
+  return vectors.map((vector) => {
+    const subs = buildVectorSubs(vector);
+    return { name: vector.name, usage: sumChildren(subs), children: subs };
+  });
+};
+
 export const buildMemoryTree = (result) => {
   if (!result) return null;
   const groups = [];
 
   if (result.vectors?.length) {
-    const children = result.vectors.map((v) => {
-      const subs = [];
-      if (v.storage) subs.push({ name: 'storage', usage: v.storage });
-      if (v.index) subs.push({ name: 'index', usage: v.index });
-      if (v.quantized) subs.push({ name: 'quantized', usage: v.quantized });
-      return { name: v.name, usage: sumChildren(subs), children: subs };
-    });
+    const children = buildVectorGroupChildren(result.vectors);
     groups.push({ name: 'Vectors', usage: sumChildren(children), children });
   }
 
