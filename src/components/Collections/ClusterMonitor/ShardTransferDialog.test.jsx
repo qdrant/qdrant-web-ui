@@ -20,6 +20,43 @@ beforeEach(() => {
   });
 });
 
+// Mock i18n to avoid translation issues in tests
+const translations = {
+  'cluster.transferShard': 'Transfer Shard',
+  'cluster.moveShardDescription': 'This action will move shard {{shardId}} from peer {{fromPeer}} to peer {{toPeer}}.',
+  'cluster.shardKey': ' Shard key: {{key}}',
+  'cluster.request': 'Request',
+  'cluster.shardDetails': 'Shard Details',
+  'cluster.id': 'ID',
+  'cluster.state': 'State',
+  'cluster.key': 'Key',
+  'cluster.fromPeer': 'From Peer',
+  'cluster.toPeer': 'To Peer',
+  'cluster.transferring': 'Transferring...',
+  'cluster.confirmTransfer': 'Confirm Transfer',
+  'cluster.cancelResharding': 'Cancel Resharding Operation',
+  'cluster.cancelReshardingConfirm': 'Are you sure you want to cancel the ongoing resharding operation for collection {{collectionName}}?',
+  'cluster.keepResharding': 'Keep Resharding',
+  'cluster.cancelReshardingAction': 'Cancel Resharding',
+  'cluster.canceling': 'Canceling...',
+  'delete.cancel': 'Cancel',
+};
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key, params) => {
+      let text = translations[key] || key;
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+          text = text.replaceAll(`{{${k}}}`, v);
+        });
+      }
+      return text;
+    },
+    i18n: { language: 'en' },
+  }),
+}));
+
 // Mock the CopyButton component
 vi.mock('../../Common/CopyButton', () => ({
   CopyButton: ({ text, tooltip, successMessage }) => (
