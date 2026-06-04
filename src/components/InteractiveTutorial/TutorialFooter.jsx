@@ -1,11 +1,14 @@
 import React from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import tutorialSubPages from './TutorialSubpages';
+import { getTutorialSubPages } from './TutorialSubpages';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 export const TutorialFooter = () => {
   const { pageSlug } = useParams();
+  const { t, i18n } = useTranslation();
+  const tutorialSubPages = getTutorialSubPages(i18n.language);
   const pageKeys = [...tutorialSubPages.map((p) => p[0])];
   let currentPageIndex = pageKeys.indexOf(pageSlug);
   const navigate = useNavigate();
@@ -35,7 +38,7 @@ export const TutorialFooter = () => {
         <Grid>
           {currentPageIndex >= 0 && (
             <Button sx={{ alignItems: 'flex-start' }} onClick={handlePrev} startIcon={<ArrowBack />}>
-              Previous
+              {t('tutorial.previous')}
             </Button>
           )}
         </Grid>
@@ -43,7 +46,7 @@ export const TutorialFooter = () => {
         <Grid>
           {currentPageIndex < pageKeys.length - 1 && (
             <Button sx={{ alignItems: 'flex-start' }} onClick={handleNext} endIcon={<ArrowForward />}>
-              Next
+              {t('tutorial.next')}
             </Button>
           )}
         </Grid>

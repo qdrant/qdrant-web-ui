@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Box, Button, Dialog, TextField, Typography } from '@mui/material';
 
 const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, setImporting, importing }) => {
+  const { t } = useTranslation();
   const [collectionName, setCollectionName] = useState('');
   const [error, setError] = useState(false);
 
@@ -52,7 +54,7 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
         }}
       >
         <div>
-          <Typography variant="h5">Import Dataset</Typography>
+          <Typography variant="h5">{t('datasets.importDatasetTitle')}</Typography>
           <Typography color="textSecondary" sx={{ mt: 2 }} variant="body1">
             {content}
           </Typography>
@@ -62,10 +64,10 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
         sx={{ mx: 3, mb: 3 }}
         id="collection-name-input"
         variant="outlined"
-        placeholder="Collection Name"
+        placeholder={t('datasets.collectionName')}
         value={collectionName}
         error={error}
-        helperText={error ? 'Collection name is required' : ''}
+        helperText={error ? t('datasets.collectionNameRequired') : ''}
         onChange={handleInputChange}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -84,10 +86,10 @@ const ImportDatasetDialog = ({ open, onClose, content, actionHandler, fileName, 
         }}
       >
         <Button sx={{ mr: 1 }} variant="outlined" color="inherit" onClick={handleClose}>
-          Cancel
+          {t('delete.cancel')}
         </Button>
         <Button variant="contained" onClick={handleActionClick} disabled={!collectionName}>
-          Import Dataset
+          {t('datasets.importDatasetButton')}
         </Button>
       </Box>
     </Dialog>

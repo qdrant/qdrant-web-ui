@@ -1,31 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Alert } from '@mui/material';
 
 const AbortReshardingDialog = ({ open, onClose, onConfirm, loading = false, collectionName }) => {
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Typography variant="h6" component="div">
-          Cancel Resharding Operation
+          {t('cluster.cancelResharding')}
         </Typography>
       </DialogTitle>
 
       <DialogContent>
         <Alert severity="warning" sx={{ mb: 2 }}>
           <Typography variant="body2">
-            Are you sure you want to cancel the ongoing resharding operation for collection{' '}
-            <strong>{collectionName}</strong>?
+            {t('cluster.cancelReshardingConfirm', { collectionName })}
           </Typography>
         </Alert>
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={loading}>
-          Keep Resharding
+          {t('cluster.keepResharding')}
         </Button>
         <Button onClick={onConfirm} variant="contained" color="error" disabled={loading}>
-          {loading ? 'Canceling...' : 'Cancel Resharding'}
+          {loading ? t('cluster.canceling') : t('cluster.cancelReshardingAction')}
         </Button>
       </DialogActions>
     </Dialog>

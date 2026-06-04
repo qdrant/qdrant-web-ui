@@ -217,6 +217,15 @@ const themeOptions = {
         },
       },
     },
+    MuiAutocomplete: {
+      styleOverrides: {
+        option: {
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+        },
+      },
+    },
   },
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
@@ -67,23 +68,26 @@ const StatusBadge = styled(Box)(({ status, theme }) => {
   };
 });
 
-const getStatusTooltip = (status) => {
+const getStatusTooltip = (status, t) => {
   switch (status?.toLowerCase()) {
     case 'green':
-      return 'Collection is ready';
+      return t('status.green');
     case 'yellow':
-      return 'Collection is optimizing';
+      return t('status.yellow');
     case 'grey':
-      return 'Collection is pending optimization';
+      return t('status.grey');
     case 'red':
-      return 'An error occurred';
+      return t('status.red');
     default:
-      return 'Unknown';
+      return t('status.unknown');
   }
 };
 
-const CollectionStatus = ({ status, collectionName }) => (
-  <Tooltip title={getStatusTooltip(status)} placement="top">
+const CollectionStatus = ({ status, collectionName }) => {
+  const { t } = useTranslation();
+
+  return (
+  <Tooltip title={getStatusTooltip(status, t)} placement="top">
     <StatusBadge
       status={status}
       component={Link}
@@ -94,7 +98,8 @@ const CollectionStatus = ({ status, collectionName }) => (
       <Typography className="status-text">{status}</Typography>
     </StatusBadge>
   </Tooltip>
-);
+  );
+};
 
 CollectionStatus.propTypes = {
   status: PropTypes.string.isRequired,

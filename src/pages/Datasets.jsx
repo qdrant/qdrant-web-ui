@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { Grid, Table, Typography, Alert } from '@mui/material';
 import { StyledTableContainer, StyledTableBody } from '../components/Common/StyledTable';
@@ -17,6 +18,7 @@ function Datasets() {
   const { client: qdrantClient } = useClient();
   const [isLoading, setIsLoading] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { t } = useTranslation();
   const errorSnackbarOptions = getSnackbarOptions('error', closeSnackbar);
   const { version } = useVersion();
   const { isAccessDenied } = useRouteAccess();
@@ -68,15 +70,15 @@ function Datasets() {
 
   const importDataset = async (fileName, collectionName, setImporting, importing) => {
     if (isAccessDenied) {
-      enqueueSnackbar('Access denied: You do not have permission to import datasets', errorSnackbarOptions);
+      enqueueSnackbar(t('datasets.accessDeniedImport'), errorSnackbarOptions);
       return;
     }
 
     if (importing) {
-      enqueueSnackbar('Importing in progress', errorSnackbarOptions);
+      enqueueSnackbar(t('datasets.importingInProgress'), errorSnackbarOptions);
       return;
     } else if (!collectionName) {
-      enqueueSnackbar('Collection name is required', errorSnackbarOptions);
+      enqueueSnackbar(t('datasets.collectionNameRequired'), errorSnackbarOptions);
       return;
     } else {
       setImporting(true);
@@ -85,7 +87,7 @@ function Datasets() {
         await qdrantClient.recoverSnapshot(collectionName, {
           location: `https://snapshots.qdrant.io/${fileName}`,
         });
-        enqueueSnackbar('Snapshot successfully imported', getSnackbarOptions('success', closeSnackbar, 2000));
+        enqueueSnackbar(t('datasets.snapshotImported'), getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (e) {
         enqueueSnackbar(e.message, errorSnackbarOptions);
       } finally {
@@ -103,23 +105,23 @@ function Datasets() {
       <CenteredFrame>
         <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
           <Grid size={12}>
-            <Typography variant="h4">Datasets</Typography>
+            <Typography variant="h4">{t('datasets.title')}</Typography>
           </Grid>
           {isAccessDenied && (
             <Grid size={12}>
               <Alert severity="warning">
-                You do not have permission to import datasets. Please contact your administrator.
+                {t('datasets.accessDenied')}
               </Alert>
             </Grid>
           )}
-          {isLoading && <div>Loading...</div>}
-          {!isLoading && datasets?.length === 0 && <div>No datasets found</div>}
+          {isLoading && <div>{t('datasets.loading')}</div>}
+          {!isLoading && datasets?.length === 0 && <div>{t('datasets.noDatasets')}</div>}
           {!isLoading && datasets?.length > 0 && (
             <Grid size={12}>
               <StyledTableContainer>
                 <Table aria-label="Datasets table">
                   <DatasetsHeader
-                    headers={['Name', 'Datasets&nbsp;size', 'Vectors Config', 'Vectors count', 'Actions']}
+                    headers={[t('datasets.name'), `${t('datasets.datasetsSize')}&nbsp;`, t('datasets.vectorsConfig'), t('datasets.vectorsCount'), t('datasets.actions')]}
                   />
 
                   <StyledTableBody>{tableRows}</StyledTableBody>

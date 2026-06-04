@@ -5,6 +5,7 @@ import { AppBar, Dialog, Toolbar, Typography, IconButton, Box } from '@mui/mater
 import { ArrowLeft } from 'lucide-react';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../../context/client-context';
+import { useTranslation } from 'react-i18next';
 import {
   createCollection,
   getCreateCollectionConfiguration,
@@ -40,6 +41,7 @@ const convertToRequest = (outputData) => {
 const CreateCollectionDialog = ({ open, handleClose }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
+  const { t } = useTranslation();
   const dialogRef = React.useRef();
 
   const getScrollableParent = () => {
@@ -57,7 +59,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
     return (
       <Box>
         <Typography variant="subtitle1" sx={{ fontWeight: '600' }}>
-          Equivalent Requests
+          {t('collections.equivalentRequests')}
         </Typography>
         <Box>
           <Highlight Prism={Prism} theme={customPrismTheme} code={request} language="json">
@@ -145,7 +147,7 @@ const CreateCollectionDialog = ({ open, handleClose }) => {
             variant="body1"
             component="div"
           >
-            Create New Collection
+            {t('collections.createNewCollection')}
           </Typography>
         </Toolbar>
       </AppBar>

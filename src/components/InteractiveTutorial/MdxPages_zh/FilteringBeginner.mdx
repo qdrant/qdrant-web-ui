@@ -1,0 +1,196 @@
+export const title = "基础过滤"
+
+# 基础过滤 - 子句与条件
+
+## 步骤 1：创建集合
+
+首先，创建一个名为 `terraforming` 的集合。每个 Point 将具有大小为 4 的向量，距离度量设置为 `Dot`：
+
+```json withRunButton="true"
+PUT collections/terraforming
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## 步骤 2：添加带向量和负载的 Point
+
+现在，向集合中添加 Point。每个 Point 包含一个 `id`、`vector` 和一个 `payload`，payload 包含各种属性，如 `land type`、`color`、`life presence` 和 `humidity`：
+
+```json withRunButton="true"
+PUT collections/terraforming/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": {"land": "forest", "color": "green", "life": true, "humidity": 40}
+    },
+    {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": {"land": "lake", "color": "blue", "life": true, "humidity": 100}
+    },
+    {
+      "id": 3,
+      "vector": [0.3, 0.4, 0.5, 0.6],
+      "payload": {"land": "steppe", "color": "green", "life": false, "humidity": 25}
+    },
+    {
+      "id": 4,
+      "vector": [0.4, 0.5, 0.6, 0.7],
+      "payload": {"land": "desert", "color": "red", "life": false, "humidity": 5}
+    },
+    {
+      "id": 5,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": {"land": "marsh", "color": "black", "life": true, "humidity": 90}
+    },
+    {
+      "id": 6,
+      "vector": [0.6, 0.7, 0.8, 0.9],
+      "payload": {"land": "cavern", "color": "black", "life": false, "humidity": 15}
+    }
+  ]
+}
+```
+
+## 步骤 3：过滤前先建立索引
+
+**注意：** 在过滤之前，应始终先建立索引。如果在创建索引之前使用过滤，Qdrant 将以非结构化方式搜索整个数据集，搜索性能会非常慢。
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "life",
+    "field_schema": "bool"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "color",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/terraforming/index
+{
+    "field_name": "humidity",
+    "field_schema": {
+       "type": "integer",
+        "range": true
+    }
+}
+```
+
+## 步骤 4：过滤示例
+
+### 精确匹配过滤
+
+此查询使用简单的 `match` 条件检索 `color` 为 `"black"` 的 Point：
+
+```json withRunButton="true"
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "color",
+        "match": {
+          "value": "black"
+        }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### 使用 `must` 子句组合过滤
+
+此示例返回 `life` 为 `true` 且 `color` 为 `"green"` 的 Point。这两个条件都必须满足才能返回结果。
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      { "key": "life", "match": { "value": true } },
+      { "key": "color", "match": { "value": "green" } }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### 使用 `should` 子句过滤
+
+这里过滤 `life` 为 `false` 且 `color` 为 `"black"` 的 Point。这些条件为 *should* 子句，意味着满足任一或两个条件的 Point 都会被返回：
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "should": [
+      {
+        "key": "life",
+        "match": { "value": false }
+      }, {
+        "key": "color",
+        "match": { "value": "black" }
+      }
+    ]
+  }
+}
+```
+
+### 使用 `must_not` 子句过滤
+
+此查询过滤掉所有 `life` 为 `false` 的 Point，匹配此条件的 Point 将被排除。
+
+```json withRunButton=true
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must_not": [
+      {
+       "key": "life",
+       "match": { "value": false }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+### 使用 `range` 条件过滤
+
+此查询根据 `humidity` 的范围过滤 Point。这里要求 `humidity` 值必须恰好为 40：
+
+```json withRunButton="true"
+POST collections/terraforming/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+       "key": "humidity",
+       "range": {
+         "gte": 40,
+         "lte": 40
+       }
+      }
+    ]
+  },
+  "limit": 3,
+  "with_payload": true
+}
+```

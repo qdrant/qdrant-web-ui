@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   Dialog,
@@ -25,6 +26,7 @@ import { StyledTableContainer, StyledTableHead, StyledTableBody, StyledTableRow 
 
 const CollectionAliases = ({ collectionName }) => {
   const { client: qdrantClient } = useClient();
+  const { t } = useTranslation();
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [aliasToDelete, setAliasToDelete] = useState('');
   const [aliases, setAliases] = useState([]);
@@ -51,7 +53,7 @@ const CollectionAliases = ({ collectionName }) => {
           actions: [{ delete_alias: { alias_name: aliasName } }],
         });
         setAliases((prev) => prev.filter((alias) => alias.alias_name !== aliasName));
-        enqueueSnackbar('Alias deleted successfully', getSnackbarOptions('success', closeSnackbar, 2000));
+        enqueueSnackbar(t('aliases.aliasDeleted'), getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
@@ -66,13 +68,13 @@ const CollectionAliases = ({ collectionName }) => {
 
       // if alias name already exists
       if (aliases.some((alias) => alias.alias_name === newAliasNameNormalized)) {
-        enqueueSnackbar('Alias name already exists', getSnackbarOptions('error', closeSnackbar, 2000));
+        enqueueSnackbar(t('aliases.aliasAlreadyExists'), getSnackbarOptions('error', closeSnackbar, 2000));
         setOpenCreateModal(false);
         return;
       }
       // if alias name is empty
       if (!newAliasNameNormalized) {
-        enqueueSnackbar('Alias name cannot be empty', getSnackbarOptions('error', closeSnackbar, 2000));
+        enqueueSnackbar(t('aliases.aliasNameEmpty'), getSnackbarOptions('error', closeSnackbar, 2000));
         return;
       }
 
@@ -82,7 +84,7 @@ const CollectionAliases = ({ collectionName }) => {
         });
         setAliases((prev) => [...prev, { alias_name: newAliasNameNormalized }]);
         setOpenCreateModal(false);
-        enqueueSnackbar('Alias created successfully', getSnackbarOptions('success', closeSnackbar, 2000));
+        enqueueSnackbar(t('aliases.aliasCreated'), getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
@@ -100,7 +102,7 @@ const CollectionAliases = ({ collectionName }) => {
         <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
           <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
             <TableCell sx={{ py: 1, borderBottom: 0 }}>
-              <Typography variant="h6">Aliases</Typography>
+              <Typography variant="h6">{t('aliases.title')}</Typography>
             </TableCell>
             <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
               <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -110,7 +112,7 @@ const CollectionAliases = ({ collectionName }) => {
                   sx={{ display: 'block', py: 0.75, mb: 0.2 }}
                   onClick={() => setOpenCreateModal(true)}
                 >
-                  Create alias
+                  {t('aliases.createAlias')}
                 </Button>
               </Box>
             </TableCell>
@@ -122,7 +124,7 @@ const CollectionAliases = ({ collectionName }) => {
             <StyledTableRow>
               <TableCell colSpan={2} width={'100%'} align="left">
                 <Typography variant="subtitle1" color="text.secondary">
-                  No aliases found
+                  {t('aliases.noAliases')}
                 </Typography>
               </TableCell>
             </StyledTableRow>
@@ -137,10 +139,10 @@ const CollectionAliases = ({ collectionName }) => {
       <ConfirmationDialog
         open={!!aliasToDelete}
         onClose={() => setAliasToDelete('')}
-        title={'Delete Alias'}
-        content={`Are you sure you want to delete the alias ${aliasToDelete}?`}
-        warning={`This action cannot be undone.`}
-        actionName={'Delete'}
+        title={t('aliases.deleteAlias')}
+        content={t('aliases.deleteAliasContent', { aliasName: aliasToDelete })}
+        warning={t('delete.cannotBeUndone')}
+        actionName={t('delete.delete')}
         actionHandler={() => {
           deleteAlias(aliasToDelete).catch((e) => console.error(e));
           setAliasToDelete('');
@@ -150,7 +152,9 @@ const CollectionAliases = ({ collectionName }) => {
   );
 };
 
-const AliasRow = ({ aliasName, onDelete }) => (
+const AliasRow = ({ aliasName, onDelete }) => {
+  const { t } = useTranslation();
+  return (
   <StyledTableRow>
     <TableCell>
       <Typography variant="subtitle1" color="text.secondary">
@@ -159,7 +163,7 @@ const AliasRow = ({ aliasName, onDelete }) => (
     </TableCell>
     <TableCell align="right">
       <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Tooltip title={'Delete alias'} placement={'left'}>
+        <Tooltip title={t('aliases.deleteAlias')} placement={'left'}>
           <Button
             variant="outlined"
             size="small"
@@ -173,13 +177,14 @@ const AliasRow = ({ aliasName, onDelete }) => (
             color="error"
             data-testid={`delete-alias-${aliasName}`}
           >
-            Delete
+            {t('delete.delete')}
           </Button>
         </Tooltip>
       </Box>
     </TableCell>
   </StyledTableRow>
-);
+  );
+};
 
 AliasRow.propTypes = {
   aliasName: PropTypes.string.isRequired,
@@ -187,6 +192,7 @@ AliasRow.propTypes = {
 };
 
 const CreateAliasModal = ({ open, onClose, onCreate }) => {
+  const { t } = useTranslation();
   const [aliasName, setAliasName] = useState('');
   const [error, setError] = useState(false);
 
@@ -233,13 +239,13 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
       }}
     >
       <DialogTitle sx={{ p: 3 }} id="create-alias-title">
-        Create Collection Alias
+        {t('aliases.createAliasTitle')}
       </DialogTitle>
       <DialogContent>
         <TextField
           id="alias-name-input"
           data-testid="alias-name-input"
-          placeholder="Alias Name"
+          placeholder={t('aliases.aliasName')}
           value={aliasName}
           onChange={handleInputChange}
           onKeyDown={(e) => {
@@ -249,7 +255,7 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
             }
           }}
           error={error}
-          helperText={error ? 'Alias name is required' : ''}
+          helperText={error ? t('aliases.aliasNameRequired') : ''}
           autoFocus
           required
           margin="dense"
@@ -259,10 +265,10 @@ const CreateAliasModal = ({ open, onClose, onCreate }) => {
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
         <Button variant="outlined" color="inherit" onClick={handleClose}>
-          Cancel
+          {t('delete.cancel')}
         </Button>
         <Button variant="contained" disabled={!aliasName} onClick={handleCreate} data-testid="create-alias-button">
-          Create
+          {t('aliases.create')}
         </Button>
       </DialogActions>
     </Dialog>

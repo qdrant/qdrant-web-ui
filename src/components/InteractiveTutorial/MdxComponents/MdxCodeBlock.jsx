@@ -5,6 +5,7 @@ import { bigIntJSON } from '../../../common/bigIntJSON';
 import { Box, Typography, useTheme } from '@mui/material';
 import { CodeBlock } from '../../Common/CodeBlock/CodeBlock';
 import CodeBlockResult from '../../Common/CodeBlock/CodeBlockResult';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Code block with syntax highlighting
@@ -14,6 +15,7 @@ import CodeBlockResult from '../../Common/CodeBlock/CodeBlockResult';
  */
 export const MdxCodeBlock = ({ children }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const className = children.props.className || '';
   const code = children.props.children.trim();
   const language = className.replace(/language-/, '');
@@ -52,7 +54,7 @@ export const MdxCodeBlock = ({ children }) => {
       {result && result !== '{}' && (
         <Box ref={resultRef} sx={{ mt: 2 }}>
           <Typography variant="subtitle1" mb={2}>
-            Result
+            {t('tutorial.result')}
           </Typography>
           <Box sx={{ borderRadius: '0.5rem', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
             <CodeBlockResult code={result} />

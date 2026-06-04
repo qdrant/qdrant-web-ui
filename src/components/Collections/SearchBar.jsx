@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Box, InputAdornment, OutlinedInput } from '@mui/material';
 import { Search } from 'lucide-react';
 import { alpha, useTheme } from '@mui/material/styles';
 
 function InputWithIcon({ value, setValue, actions }) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Box
@@ -19,7 +21,7 @@ function InputWithIcon({ value, setValue, actions }) {
         fullWidth
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search Collection"
+        placeholder={t('collections.searchCollection')}
         startAdornment={
           <InputAdornment position="start">
             <Search size={20} color={theme.palette.text.primary} />

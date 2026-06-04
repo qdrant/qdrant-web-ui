@@ -1,0 +1,34 @@
+export const title = '加载内容';
+
+# 从远程快照加载数据到集合
+
+在本教程中，我们将引导您从远程快照将数据加载到 Qdrant 集合中。
+
+## 步骤 1：将快照导入到集合
+
+首先，创建集合 `midjourney` 并将向量数据加载到其中。
+该集合将采用快照的参数，向量大小为 512，使用余弦距离测量相似性。
+
+```json withRunButton=true
+PUT /collections/midjourney/snapshots/recover
+{
+  "location": "http://snapshots.qdrant.io/midlib-v1.16.0.snapshot"
+}
+```
+
+请等待片刻，直到快照中的向量被添加到 `midjourney` 集合中。
+
+## 步骤 2：验证数据上传
+
+数据导入后，验证其是否已成功上传非常重要。您可以通过检查集合中的向量数（或 Point 数）来实现。
+
+运行以下请求获取向量数量：
+
+```json withRunButton=true
+POST /collections/midjourney/points/count
+```
+
+集合应包含 5,417 个数据 Point。
+
+### 步骤 3：打开集合界面
+您也可以[检查您的集合](/dashboard#/collections/midjourney/)来查看上传的数据。

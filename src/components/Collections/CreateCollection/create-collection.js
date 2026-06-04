@@ -69,6 +69,17 @@ const PrecisionTier = {
   HIGH: 'high',
 };
 
+const DistanceMap = {
+  '余弦相似度': 'Cosine',
+  '欧几里得距离': 'Euclid',
+  '点积': 'Dot',
+  '曼哈顿距离': 'Manhattan',
+};
+
+function normalizeDistance(distance) {
+  return DistanceMap[distance] || distance;
+}
+
 function getVectorParams(denseVectorConfig, isMultitenant) {
   const {
     size,
@@ -78,6 +89,8 @@ function getVectorParams(denseVectorConfig, isMultitenant) {
     storage_tier: storageTier = StorageTier.BALANCED,
     precision_tier: precisionTier = PrecisionTier.HIGH,
   } = denseVectorConfig;
+
+  const normalizedDistance = normalizeDistance(distance);
 
   let multivectorConfig = null;
   if (multivector) {
@@ -166,7 +179,7 @@ function getVectorParams(denseVectorConfig, isMultitenant) {
 
   const result = {
     size: size,
-    distance,
+    distance: normalizedDistance,
     on_disk: !originalInRam,
     hnsw_config: hnswConfig,
     datatype,

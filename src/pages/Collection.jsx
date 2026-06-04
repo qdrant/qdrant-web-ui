@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Typography, Grid, Tabs, Tab } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
@@ -16,6 +17,7 @@ function Collection() {
   const { collectionName } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState(location.hash.slice(1) || 'points');
   const { isRestricted } = useClient();
 
@@ -44,19 +46,19 @@ function Collection() {
                 aria-label="tabs"
                 aria-description="Collection tabs menu"
               >
-                <Tab label="Points" value={'points'} />
-                <Tab label="Info" value={'info'} />
-                {!isRestricted && <Tab label="Optimizations" value={'optimizations'} />}
-                {!isRestricted && <Tab label="Memory" value={'memory'} />}
-                {!isRestricted && <Tab label="Cluster" value={'cluster'} />}
-                {!isRestricted && <Tab label="ANN Recall" value={'quality'} />}
-                {!isRestricted && <Tab label="Snapshots" value={'snapshots'} />}
+                <Tab label={t('collection.points')} value={'points'} />
+                <Tab label={t('collection.info')} value={'info'} />
+                {!isRestricted && <Tab label={t('collection.optimizations')} value={'optimizations'} />}
+                {!isRestricted && <Tab label={t('collection.memory')} value={'memory'} />}
+                {!isRestricted && <Tab label={t('collection.cluster')} value={'cluster'} />}
+                {!isRestricted && <Tab label={t('collection.annRecall')} value={'quality'} />}
+                {!isRestricted && <Tab label={t('collection.snapshots')} value={'snapshots'} />}
                 <Tab
-                  label="Visualize"
+                  label={t('collection.visualize')}
                   component={Link}
                   to={`/collections/${encodeURIComponent(collectionName)}/visualize`}
                 />
-                <Tab label="Graph" component={Link} to={`/collections/${encodeURIComponent(collectionName)}/graph`} />
+                <Tab label={t('collection.graph')} component={Link} to={`/collections/${encodeURIComponent(collectionName)}/graph`} />
               </Tabs>
             </Box>
           </Grid>

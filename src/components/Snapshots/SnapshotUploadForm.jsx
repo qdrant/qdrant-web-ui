@@ -4,6 +4,7 @@ import { StepContent, Stepper, Typography, Box, StepLabel, Step, Paper, Button, 
 import { styled } from '@mui/material/styles';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import { Uppy } from '@uppy/core';
 import XHR from '@uppy/xhr-upload';
 import { StyledDragDrop } from '../Uploader/StyledDragDrop';
@@ -51,6 +52,7 @@ const StyledStepIcon = styled(({ className, ...props }) => {
 export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
   const { client: qdrantClient } = useClient();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const [activeStep, setActiveStep] = useState(0);
 
@@ -65,7 +67,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     const invalidChar = INVALID_CHARS.find((c) => value.includes(c));
 
     if (invalidChar !== undefined) {
-      return `Collection name cannot contain "${invalidChar}" char`;
+      return t('snapshots.upload.collectionNameInvalidChar', { char: invalidChar });
     } else {
       return null;
     }
@@ -97,7 +99,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
   uppy.on('upload-error', (_, error, response) => {
     const errorMessage = response?.body?.status?.error || error.message || 'Unknown error';
-    enqueueSnackbar(`Upload failed: ${errorMessage}`, {
+    enqueueSnackbar(t('snapshots.upload.uploadFailed', { message: errorMessage }), {
       variant: 'error',
       autoHideDuration: null,
       action: (key) => (
@@ -108,7 +110,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
             closeSnackbar(key);
           }}
         >
-          Dismiss
+          {t('common.dismiss')}
         </Button>
       ),
       anchorOrigin: {
@@ -150,9 +152,9 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
     setFormError(isTooShort || isTooLong || hasForbiddenSymbols);
     setFormMessage(
       isTooShort
-        ? 'Collection name is too short'
+        ? t('snapshots.upload.collectionNameTooShort')
         : isTooLong
-        ? 'Collection name is too long'
+        ? t('snapshots.upload.collectionNameTooLong')
         : hasForbiddenSymbolsMessage
     );
   };
@@ -193,16 +195,16 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
       >
         {/* Step 1 start - enter a collection name*/}
         <Step key={'Step 1 - enter a collection name'}>
-          <StepLabel slots={{ stepIcon: StyledStepIcon }}>Step 1 - Enter a collection name</StepLabel>
+          <StepLabel slots={{ stepIcon: StyledStepIcon }}>{t('snapshots.upload.step1Title')}</StepLabel>
           <StepContent>
             <Typography mb={2} sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
-              Can be new or existing
+              {t('snapshots.upload.step1Description')}
             </Typography>
             <Box sx={{ mb: 2 }}>
               <TextField
                 error={formError}
                 id="collection-name"
-                placeholder="Collection Name"
+                placeholder={t('snapshots.upload.collectionNamePlaceholder')}
                 value={collectionName}
                 helperText={formError ? formMessage : ''}
                 onChange={handleTextChange}
@@ -230,7 +232,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
                 sx={{ mt: 1, mr: 1 }}
                 disabled={!collectionName || formError}
               >
-                Continue
+                {t('createCollection.continue')}
               </Button>
             </Box>
           </StepContent>
@@ -239,7 +241,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
 
         {/* Step 2 start - upload a snapshot file*/}
         <Step key={'Step 2 - upload a snapshot file'}>
-          <StepLabel slots={{ stepIcon: StyledStepIcon }}>Step 2 - Upload a snapshot file</StepLabel>
+          <StepLabel slots={{ stepIcon: StyledStepIcon }}>{t('snapshots.upload.step2Title')}</StepLabel>
           <StepContent>
             <Box sx={{ mb: 2 }}>
               {/* Here we have a drag and drop area*/}
@@ -248,7 +250,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
             </Box>
             <Box mb={2}>
               <Button variant="contained" onClick={handleBack} sx={{ mt: 1, mr: 1 }}>
-                Back
+                {t('snapshots.upload.back')}
               </Button>
             </Box>
           </StepContent>
@@ -257,7 +259,7 @@ export const SnapshotUploadForm = ({ onSubmit, onComplete, sx }) => {
       </Stepper>
       {activeStep === 3 && (
         <Paper square elevation={0} sx={{ p: 3 }}>
-          <Typography>All steps completed - you&apos;re finished 🎉</Typography>
+          <Typography>{t('snapshots.upload.completed')}</Typography>
         </Paper>
       )}
     </Box>

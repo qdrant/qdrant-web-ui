@@ -3,63 +3,68 @@ import PropTypes from 'prop-types';
 import { Box, Grid, Typography } from '@mui/material';
 import InfoCard from '../Common/InfoCard/InfoCard';
 import { Filter, SlidersHorizontal, ScanText, VectorSquare, Grip, SearchCode, Network } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-const TUTORIAL_SECTIONS = {
-  vectorSearch: {
-    title: 'Vector Search',
-    tutorials: [
-      {
-        icon: Filter,
-        title: 'Filtering - Beginner',
-        description: 'Filter search results using basic payload conditions.',
-        href: '/tutorial/filteringbeginner',
-      },
-      {
-        icon: SlidersHorizontal,
-        title: 'Filtering - Advanced',
-        description: 'Try advanced filtering based on nested payload conditions.',
-        href: '/tutorial/filteringadvanced',
-      },
-      {
-        icon: ScanText,
-        title: 'Filtering - Full Text',
-        description: 'Search for substrings, tokens, or phrases within text fields.',
-        href: '/tutorial/filteringfulltext',
-      },
-      {
-        icon: VectorSquare,
-        title: 'Multivector Search',
-        description: 'Work with data represented by ColBERT multivectors.',
-        href: '/tutorial/multivectors',
-      },
-      {
-        icon: Grip,
-        title: 'Sparse Vector Search',
-        description: 'Use sparse vectors to get specific search results.',
-        href: '/tutorial/sparsevectors',
-      },
-      {
-        icon: SearchCode,
-        title: 'Hybrid Search',
-        description: 'Combine dense and sparse vectors for more accurate search results.',
-        href: '/tutorial/hybridsearch',
-      },
-    ],
-  },
-  multitenancy: {
-    title: 'Setup Guide',
-    tutorials: [
-      {
-        icon: Network,
-        title: 'Multitenancy',
-        description: 'Manage multiple users within a single collection.',
-        href: '/tutorial/multitenancy',
-      },
-    ],
-  },
+const useTutorialSections = () => {
+  const { t } = useTranslation();
+  return {
+    vectorSearch: {
+      title: t('tutorial.vectorSearch'),
+      tutorials: [
+        {
+          icon: Filter,
+          title: t('tutorial.filteringBeginner'),
+          description: t('tutorial.filteringBeginnerDesc'),
+          href: '/tutorial/filteringbeginner',
+        },
+        {
+          icon: SlidersHorizontal,
+          title: t('tutorial.filteringAdvanced'),
+          description: t('tutorial.filteringAdvancedDesc'),
+          href: '/tutorial/filteringadvanced',
+        },
+        {
+          icon: ScanText,
+          title: t('tutorial.filteringFullText'),
+          description: t('tutorial.filteringFullTextDesc'),
+          href: '/tutorial/filteringfulltext',
+        },
+        {
+          icon: VectorSquare,
+          title: t('tutorial.multivectorSearch'),
+          description: t('tutorial.multivectorSearchDesc'),
+          href: '/tutorial/multivectors',
+        },
+        {
+          icon: Grip,
+          title: t('tutorial.sparseVectorSearch'),
+          description: t('tutorial.sparseVectorSearchDesc'),
+          href: '/tutorial/sparsevectors',
+        },
+        {
+          icon: SearchCode,
+          title: t('tutorial.hybridSearch'),
+          description: t('tutorial.hybridSearchDesc'),
+          href: '/tutorial/hybridsearch',
+        },
+      ],
+    },
+    multitenancy: {
+      title: t('tutorial.setupGuide'),
+      tutorials: [
+        {
+          icon: Network,
+          title: t('tutorial.multitenancy'),
+          description: t('tutorial.multitenancyDesc'),
+          href: '/tutorial/multitenancy',
+        },
+      ],
+    },
+  };
 };
 
 const TutorialLinks = ({ sections = ['filtering', 'vectorSearch', 'multitenancy'], showTitle = true }) => {
+  const TUTORIAL_SECTIONS = useTutorialSections();
   const allTutorials = sections.reduce((acc, sectionKey) => {
     const section = TUTORIAL_SECTIONS[sectionKey];
     if (section) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
@@ -14,6 +15,7 @@ import { useClient } from '../../context/client-context';
 
 export const SnapshotsUpload = ({ onComplete, sx }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [open, setOpen] = React.useState(false);
   const { isRestricted } = useClient();
@@ -35,8 +37,8 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
       <Tooltip
         title={
           isRestricted
-            ? 'Access Denied: You do not have permission to upload snapshot. ' + 'Please contact your administrator.'
-            : 'Upload snapshot'
+            ? t('snapshots.accessDeniedUpload')
+            : t('snapshots.uploadSnapshot')
         }
         placement="left"
       >
@@ -47,7 +49,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
             startIcon={<UploadFile fontSize={'small'} />}
             disabled={isRestricted}
           >
-            Upload snapshot
+            {t('snapshots.uploadSnapshot')}
           </Button>
         </span>
       </Tooltip>
@@ -61,7 +63,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
         aria-labelledby="Snapshot upload dialog"
         aria-describedby="Snapshot upload dialog"
       >
-        <DialogTitle>Upload a Snapshot</DialogTitle>
+        <DialogTitle>{t('snapshots.uploadDialogTitle')}</DialogTitle>
         <DialogContent>
           <SnapshotUploadForm onSubmit={handleUpload} onComplete={onComplete} />
         </DialogContent>

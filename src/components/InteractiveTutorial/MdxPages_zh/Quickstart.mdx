@@ -1,0 +1,95 @@
+export const title = '快速入门';
+
+# 快速入门：向量搜索入门指南
+
+Qdrant 旨在找到数据集中近似最近的数据 Point。在本快速入门指南中，您将创建一个简单的数据库来跟踪太空殖民地，并根据其向量表示搜索最近的殖民地。
+
+<Alert severity="info">点击 **运行** 发送 API 请求。响应将显示在代码片段下方。<br/>您也可以编辑任意代码块并重新运行请求以查看不同的结果。</Alert>
+
+## 步骤 1：创建集合
+
+首先，我们将创建一个名为 `star_charts` 的集合来存储殖民数据。每个位置将由四维向量表示，我们将使用点积作为相似性搜索的距离度量。
+
+运行此命令创建集合：
+
+```json withRunButton=true
+PUT collections/star_charts
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## 步骤 2：将数据加载到集合中
+
+现在集合已设置好，让我们添加一些数据。每个位置都有一个向量和附加信息（负载），例如名称。
+
+运行此请求添加数据：
+
+```json withRunButton=true
+PUT collections/star_charts/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.05, 0.61, 0.76, 0.74],
+      "payload": {
+        "colony": "Mars"
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.19, 0.81, 0.75, 0.11],
+      "payload": {
+        "colony": "Jupiter"
+      }
+    },
+    {
+      "id": 3,
+      "vector": [0.36, 0.55, 0.47, 0.94],
+      "payload": {
+        "colony": "Venus"
+      }
+    },
+    {
+      "id": 4,
+      "vector": [0.18, 0.01, 0.85, 0.80],
+      "payload": {
+        "colony": "Moon"
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.24, 0.18, 0.22, 0.44],
+      "payload": {
+        "colony": "Pluto"
+      }
+    }
+  ]
+}
+```
+
+## 步骤 3：运行搜索查询
+
+现在，让我们搜索与表示空间位置的特定向量最近的三个殖民地。此查询将返回殖民及其负载信息。
+
+运行以下查询查找最近的殖民地：
+
+```json withRunButton=true
+POST collections/star_charts/points/search
+{
+  "vector": [0.2, 0.1, 0.9, 0.7],
+  "limit": 3,
+  "with_payload": true
+}
+```
+
+## 总结
+
+恭喜！🎉 您刚刚在银河坐标中完成了向量搜索！您已经成功地将空间数据添加到集合中，并根据向量表示执行了搜索以找到最近的位置。
+
+## 下一步
+
+在下一节中，您将探索创建复杂的过滤条件，以进一步优化星际探索的搜索！

@@ -3,11 +3,13 @@ import { Button, Tooltip } from '@mui/material';
 import CreateCollectionDialog from './CreateCollectionDialog';
 import AddIcon from '@mui/icons-material/Add';
 import { useClient } from '../../../context/client-context';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 const CreateCollectionButton = ({ onComplete }) => {
   const [open, setOpen] = useState(false);
   const { isRestricted } = useClient();
+  const { t } = useTranslation();
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -25,8 +27,8 @@ const CreateCollectionButton = ({ onComplete }) => {
       <Tooltip
         title={
           isRestricted
-            ? 'Access Denied: You do not have permission to create collections. Please contact your administrator.'
-            : 'Create collection'
+            ? t('collections.accessDeniedCreate')
+            : t('collections.createCollectionTooltip')
         }
         placement="left"
       >
@@ -37,9 +39,9 @@ const CreateCollectionButton = ({ onComplete }) => {
             startIcon={<AddIcon fontSize="small" />}
             onClick={handleOpen}
             disabled={isRestricted}
-            aria-label="Create Collection"
+            aria-label={t('collections.createCollection')}
           >
-            Create Collection
+            {t('collections.createCollection')}
           </Button>
         </span>
       </Tooltip>
