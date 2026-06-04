@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getBaseURL, pumpFile, updateProgress } from './utils';
+import { getBaseURL, getQdrantPrefix, pumpFile, updateProgress } from './utils';
 
 describe('utils', () => {
   describe('getBaseURL', () => {
@@ -27,6 +27,44 @@ describe('utils', () => {
       const result = 'http://localhost:63342/myapp/';
 
       expect(getBaseURL()).toEqual(result);
+    });
+
+    it('should return base url when pathname has trailing slash after dashboard', () => {
+      const window = {
+        location: {
+          href: 'https://example.com/myapp/dashboard/',
+          origin: 'https://example.com',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      const result = 'https://example.com/myapp/';
+
+      expect(getBaseURL()).toEqual(result);
+    });
+  });
+
+  describe('getQdrantPrefix', () => {
+    it('should derive prefix from dashboard URL', () => {
+      const window = {
+        location: {
+          href: 'https://example.com/instance1/dashboard',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getQdrantPrefix()).toEqual('/instance1');
+    });
+
+    it('should return empty prefix for root dashboard URL', () => {
+      const window = {
+        location: {
+          href: 'https://example.com/dashboard',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getQdrantPrefix()).toEqual('');
     });
   });
 

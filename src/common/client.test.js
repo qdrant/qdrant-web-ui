@@ -38,6 +38,24 @@ describe('QdrantClientExtended', () => {
       expect(actualRequest.headers.get('Content-Type')).toBe('application/gzip');
       expect(actualRequest.headers.get('api-key')).toBe(apiKey);
     });
+
+    it('fetch should include prefix in snapshot URL', async () => {
+      const fetch = vi.fn();
+      vi.stubGlobal('fetch', fetch);
+      const fetchSpy = vi.spyOn(global, 'fetch');
+
+      const client = new QdrantClientExtended({
+        url: 'https://example.com',
+        apiKey: 'test-api-key',
+        port: null,
+        prefix: '/qdrantinstance1',
+      });
+
+      await client.downloadSnapshot('demo', 'snapshot-a');
+
+      const [actualRequest] = fetchSpy.mock.calls[0];
+      expect(actualRequest.url).toBe('https://example.com/qdrantinstance1/collections/demo/snapshots/snapshot-a');
+    });
   });
 
   // test for getSnapshotUploadUrl
@@ -52,6 +70,19 @@ describe('QdrantClientExtended', () => {
 
       expect(client.getSnapshotUploadUrl('test').href).toBe(
         new URL('collections/test/snapshots/upload', 'http://localhost').href
+      );
+    });
+
+    it('should return prefixed url when prefix is configured', () => {
+      const client = new QdrantClientExtended({
+        url: 'https://example.com',
+        apiKey: 'test',
+        port: null,
+        prefix: '/qdrantinstance1',
+      });
+
+      expect(client.getSnapshotUploadUrl('test').href).toBe(
+        new URL('/qdrantinstance1/collections/test/snapshots/upload', 'https://example.com').href
       );
     });
   });
