@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import PointCard from './PointCard';
 import PointCardSkeleton from './PointCardSkeleton';
 import { useClient } from '../../context/client-context';
@@ -9,6 +10,7 @@ import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import PointsFilter from './PointsFilter/PointsFilter';
 
 const PointsTabs = ({ collectionName, client }) => {
+  const { t } = useTranslation();
   const pageSize = 10;
   const [points, setPoints] = useState(null);
   const [offset, setOffset] = useState(null);
@@ -208,7 +210,7 @@ const PointsTabs = ({ collectionName, client }) => {
             action={
               filters.length > 0 ? (
                 <Button variant="outlined" size="small" color="inherit" onClick={handleClearFilters}>
-                  Clear Filters
+                  {t('points.clearFilters')}
                 </Button>
               ) : undefined
             }
@@ -228,7 +230,7 @@ const PointsTabs = ({ collectionName, client }) => {
       )}
       {points && !errorMessage && requestCount === 0 && points.points?.length === 0 && (
         <Grid textAlign={'center'} size={12} role="alert" aria-label="No Points">
-          <Typography>📪 No Points are present, {collectionName} is empty</Typography>
+          <Typography>📪 {t('points.noPoints', { name: collectionName })}</Typography>
         </Grid>
       )}
       {points && !errorMessage && points.points?.length > 0 && (
@@ -255,7 +257,7 @@ const PointsTabs = ({ collectionName, client }) => {
               setOffset(nextPageOffset);
             }}
           >
-            Load More
+            {t('points.loadMore')}
           </Button>
         </Grid>
       )}

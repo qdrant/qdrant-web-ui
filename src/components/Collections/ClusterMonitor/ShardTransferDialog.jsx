@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Alert } from '@mui/material';
 import { JsonViewer } from '@textea/json-viewer';
 import { CopyButton } from '../../Common/CopyButton';
@@ -7,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 
 const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loading = false, collectionName }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   if (!transferRequest) {
     return null;
@@ -33,7 +35,7 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Typography variant="h6" component="div">
-          Transfer Shard
+          {t('cluster.transferShard')}
         </Typography>
       </DialogTitle>
 
@@ -41,20 +43,20 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
         <Box sx={{ mb: 3 }}>
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              This action will move shard {shard.shard_id} from peer {fromPeerId} to peer {toPeerId}.
-              {shard.shard_key && ` Shard key: ${shard.shard_key}`}
+              {t('cluster.moveShardDescription', { shardId: shard.shard_id, fromPeer: fromPeerId, toPeer: toPeerId })}
+              {shard.shard_key && t('cluster.shardKey', { key: shard.shard_key })}
             </Typography>
           </Alert>
 
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="subtitle2" fontWeight="bold">
-                Request
+                {t('cluster.request')}
               </Typography>
               <CopyButton
                 text={`POST collections/${collectionName}/cluster\n${requestString}`}
-                tooltip="Copy request to clipboard"
-                successMessage="Request copied to clipboard"
+                tooltip={t('cluster.copyRequest')}
+                successMessage={t('cluster.requestCopied')}
               />
             </Box>
 
@@ -95,7 +97,7 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
 
           <Box>
             <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1 }}>
-              Shard Details
+              {t('cluster.shardDetails')}
             </Typography>
             <Box
               sx={{
@@ -106,12 +108,12 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                ID:
+                {t('cluster.id')}:
               </Typography>
               <Typography variant="body2">{shard.shard_id}</Typography>
 
               <Typography variant="body2" color="text.secondary">
-                State:
+                {t('cluster.state')}:
               </Typography>
               <Typography
                 variant="body2"
@@ -126,7 +128,7 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
               {shard.shard_key && (
                 <>
                   <Typography variant="body2" color="text.secondary">
-                    Key:
+                    {t('cluster.key')}:
                   </Typography>
                   <Typography variant="body2" fontFamily="monospace">
                     {shard.shard_key}
@@ -135,12 +137,12 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
               )}
 
               <Typography variant="body2" color="text.secondary">
-                From Peer:
+                {t('cluster.fromPeer')}:
               </Typography>
               <Typography variant="body2">{fromPeerId}</Typography>
 
               <Typography variant="body2" color="text.secondary">
-                To Peer:
+                {t('cluster.toPeer')}:
               </Typography>
               <Typography variant="body2">{toPeerId}</Typography>
             </Box>
@@ -150,10 +152,10 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} disabled={loading}>
-          Cancel
+          {t('delete.cancel')}
         </Button>
         <Button onClick={handleConfirm} variant="contained" color="primary" disabled={loading}>
-          {loading ? 'Transferring...' : 'Confirm Transfer'}
+          {loading ? t('cluster.transferring') : t('cluster.confirmTransfer')}
         </Button>
       </DialogActions>
     </Dialog>

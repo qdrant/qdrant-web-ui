@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Box, Button, Card, CardContent, CardHeader, IconButton, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useClient } from '../../context/client-context';
@@ -20,6 +21,7 @@ import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { t } = useTranslation();
   const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
@@ -70,7 +72,7 @@ export const CollectionInfo = ({ collectionName }) => {
         optimizers_config: {},
       })
       .then(() => {
-        enqueueSnackbar('Optimizers triggered', getSnackbarOptions('success', closeSnackbar));
+        enqueueSnackbar(t('collection.optimizersTriggered'), getSnackbarOptions('success', closeSnackbar));
         fetchCollection();
       })
       .catch((err) => {
@@ -104,7 +106,7 @@ export const CollectionInfo = ({ collectionName }) => {
       <CollectionAliases collectionName={collectionName} />
       <Card elevation={0}>
         <CardHeader
-          title={'Collection Info'}
+          title={t('collection.collectionInfo')}
           variant="heading"
           sx={{
             flexGrow: 1,
@@ -124,10 +126,10 @@ export const CollectionInfo = ({ collectionName }) => {
                   mb: 0.2,
                 }}
               >
-                Trigger optimizers
+                {t('collection.triggerOptimizers')}
               </Button>
               <CopyButton text={bigIntJSON.stringify(collection)} />
-              <Tooltip title="Refresh collection info">
+              <Tooltip title={t('collection.refreshCollectionInfo')}>
                 <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
                   <RefreshIcon />
                 </IconButton>

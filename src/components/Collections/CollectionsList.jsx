@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import {
   StyledTableBody,
   StyledTableContainer,
@@ -20,6 +21,7 @@ import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection, isRefreshing }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <StyledTableRow>
@@ -28,7 +30,7 @@ const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection,
           {collection.name}
         </Typography>
         <Typography component={'p'} variant="caption" color="text.secondary">
-          {collection.aliases && collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
+          {collection.aliases && collection.aliases.length > 0 && `${t('collections.aliases')}: ${collection.aliases.join(', ')}`}
         </Typography>
       </TableCell>
       <TableCell>
@@ -51,19 +53,19 @@ const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection,
       <TableCell align="right">
         <ActionsMenu>
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}#snapshots`}>
-            Snapshots
+            {t('collection.snapshots')}
           </MenuItem>
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/visualize`}>
-            Visualize
+            {t('collection.visualize')}
           </MenuItem>
           <MenuItem component={Link} to={`/collections/${encodeURIComponent(collection.name)}/graph`}>
-            Graph
+            {t('collection.graph')}
           </MenuItem>
           <MenuItem onClick={() => refreshCollection(collection.name)} disabled={isRefreshing}>
-            Refresh
+            {t('collection.refreshCollectionInfo')}
           </MenuItem>
           <MenuItem onClick={() => setOpenDeleteDialog(true)} sx={{ color: theme.palette.error.main }}>
-            Delete
+            {t('delete.delete')}
           </MenuItem>
         </ActionsMenu>
         <DeleteDialog
@@ -85,21 +87,23 @@ CollectionTableRow.propTypes = {
 };
 
 const CollectionsList = ({ collections, getCollectionsCall, refreshCollection, isRefreshing }) => {
+  const { t } = useTranslation();
+
   return (
     <StyledTableContainer>
       <Table aria-label="simple table">
         <StyledTableHead>
           <TableRow>
-            <StyledHeaderCell width="25%">Name</StyledHeaderCell>
-            <StyledHeaderCell width="12%">Status</StyledHeaderCell>
-            <StyledHeaderCell align="center">Points (Approx)</StyledHeaderCell>
-            <StyledHeaderCell align="center">Segments</StyledHeaderCell>
-            <StyledHeaderCell align="center">Shards</StyledHeaderCell>
+            <StyledHeaderCell width="25%">{t('collections.name')}</StyledHeaderCell>
+            <StyledHeaderCell width="12%">{t('collections.status')}</StyledHeaderCell>
+            <StyledHeaderCell align="center">{t('collections.pointsApprox')}</StyledHeaderCell>
+            <StyledHeaderCell align="center">{t('collections.segments')}</StyledHeaderCell>
+            <StyledHeaderCell align="center">{t('collections.shards')}</StyledHeaderCell>
             <StyledHeaderCell width="20%" align="center">
-              Vectors Config
+              {t('collections.vectorsConfig')}
             </StyledHeaderCell>
             <StyledHeaderCell width="7%" align="right">
-              Actions
+              {t('collections.actions')}
             </StyledHeaderCell>
           </TableRow>
         </StyledTableHead>

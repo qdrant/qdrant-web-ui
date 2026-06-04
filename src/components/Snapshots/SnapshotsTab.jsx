@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
@@ -17,6 +18,7 @@ import { pumpFile, updateProgress } from '../../common/utils';
 import InfoBanner from '../Common/InfoBanner';
 
 export const SnapshotsTab = ({ collectionName }) => {
+  const { t } = useTranslation();
   const { client: qdrantClient } = useClient();
   const [snapshots, setSnapshots] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +76,7 @@ export const SnapshotsTab = ({ collectionName }) => {
   const downloadSnapshot = (snapshotName, snapshotSize, progress, setProgress) => {
     if (progress > 0) {
       enqueueSnackbar(
-        'Please wait until the previous download is finished',
+        t('snapshots.waitPreviousDownload'),
         getSnackbarOptions('warning', closeSnackbar, 2000)
       );
       return;
@@ -104,7 +106,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       })
       .catch((error) => {
         if (error.name === 'AbortError') {
-          enqueueSnackbar('Download canceled', getSnackbarOptions('warning', closeSnackbar, 2000));
+          enqueueSnackbar(t('snapshots.downloadCanceled'), getSnackbarOptions('warning', closeSnackbar, 2000));
           return;
         }
         enqueueSnackbar(error.message, errorSnackbarOptions);
@@ -117,7 +119,7 @@ export const SnapshotsTab = ({ collectionName }) => {
       .deleteSnapshot(collectionName, snapshotName)
       .then(() => {
         setSnapshots([...snapshots.filter((snapshot) => snapshot.name !== snapshotName)]);
-        enqueueSnackbar('Snapshot successfully deleted', getSnackbarOptions('success', closeSnackbar, 2000));
+        enqueueSnackbar(t('snapshots.snapshotDeleted'), getSnackbarOptions('success', closeSnackbar, 2000));
       })
       .catch((err) => {
         enqueueSnackbar(err.message, errorSnackbarOptions);
@@ -146,7 +148,7 @@ export const SnapshotsTab = ({ collectionName }) => {
           }}
         >
           <Typography variant="h4" component={'h1'}>
-            Snapshots
+            {t('snapshots.title')}
           </Typography>
         </Grid>
         <Grid
@@ -162,18 +164,18 @@ export const SnapshotsTab = ({ collectionName }) => {
             startIcon={<Camera size={18} />}
             disabled={isSnapshotLoading}
           >
-            Take snapshot
+            {t('snapshots.takeSnapshot')}
           </Button>
         </Grid>
         {remoteShards && remoteShards.length !== 0 && (
           <InfoBanner severity={'warning'}>
             <Typography>
-              Snapshot will not contain the full collection. It will only include shards on the current machine.
+              {t('snapshots.snapshotNotFull')}
             </Typography>
 
             {localShards.length > 0 && (
               <>
-                <Typography>Local shards:</Typography>
+                <Typography>{t('snapshots.localShards')}</Typography>
                 <ul>
                   {localShards.map((shard) => (
                     <Typography component={'li'} key={shard.shard_id}>
@@ -184,7 +186,7 @@ export const SnapshotsTab = ({ collectionName }) => {
               </>
             )}
             <>
-              <Typography>Remote shards (not included in the snapshot):</Typography>
+              <Typography>{t('snapshots.remoteShards')}</Typography>
               <ul>
                 {remoteShards.map((shard) => (
                   <Typography component={'li'} key={shard.shard_id}>
@@ -194,25 +196,23 @@ export const SnapshotsTab = ({ collectionName }) => {
               </ul>
             </>
             <Typography>
-              For more information, please visit the{' '}
-              <Link href={'https://qdrant.tech/documentation/tutorials/create-snapshot/'} target="_blank">
-                documentation
-              </Link>
-              .
+              {t('snapshots.forMoreInfo', {
+                link: <Link href={'https://qdrant.tech/documentation/tutorials/create-snapshot/'} target="_blank">{t('snapshots.documentation')}</Link>,
+              })}
             </Typography>
           </InfoBanner>
         )}
-        {isLoading && <div>Loading...</div>}
+        {isLoading && <div>{t('snapshots.loading')}</div>}
         {(snapshots?.length > 0 || isSnapshotLoading) && (
           <Grid size={12}>
             <StyledTableContainer>
               <Table aria-label="simple table">
                 <StyledTableHead>
                   <TableRow>
-                    <StyledHeaderCell>Snapshot Name</StyledHeaderCell>
-                    <StyledHeaderCell align="center">Created at</StyledHeaderCell>
-                    <StyledHeaderCell align="center">Size</StyledHeaderCell>
-                    <StyledHeaderCell align="center">Actions</StyledHeaderCell>
+                    <StyledHeaderCell>{t('snapshots.snapshotName')}</StyledHeaderCell>
+                    <StyledHeaderCell align="center">{t('snapshots.createdAt')}</StyledHeaderCell>
+                    <StyledHeaderCell align="center">{t('snapshots.size')}</StyledHeaderCell>
+                    <StyledHeaderCell align="center">{t('snapshots.actions')}</StyledHeaderCell>
                   </TableRow>
                 </StyledTableHead>
                 <StyledTableBody>
@@ -221,7 +221,7 @@ export const SnapshotsTab = ({ collectionName }) => {
                   {isSnapshotLoading && (
                     <StyledTableRow>
                       <TableCell colSpan={4} align="center">
-                        Loading...
+                        {t('snapshots.loading')}
                       </TableCell>
                     </StyledTableRow>
                   )}
@@ -232,7 +232,7 @@ export const SnapshotsTab = ({ collectionName }) => {
         )}
         {!isLoading && !snapshots?.length && !isSnapshotLoading && (
           <Grid textAlign={'center'} size={12}>
-            <Typography>No snapshots yet, take one! 📸</Typography>
+            <Typography>{t('snapshots.noSnapshots')}</Typography>
           </Grid>
         )}
       </Grid>

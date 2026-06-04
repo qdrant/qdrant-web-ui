@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, LinearProgress, Box } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -13,6 +14,7 @@ import { Divider } from '@mui/material';
 
 const PointCard = (props) => {
   const { onFindSimilar } = props;
+  const { t } = useTranslation();
   const [point, setPoint] = React.useState(props.point);
   const [loading, setLoading] = React.useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
@@ -58,19 +60,19 @@ const PointCard = (props) => {
           </Box>
         )}
         <CardHeader
-          title={'Point ' + point.id}
+          title={t('points.point', { id: point.id })}
           variant="heading"
           aria-label="Point Card Header"
           action={
             <>
               <CopyButton
                 text={bigIntJSON.stringify(point)}
-                tooltip={'Copy point to clipboard'}
-                successMessage={'Point JSON copied to clipboard.'}
+                tooltip={t('points.copyPoint')}
+                successMessage={t('points.pointCopied')}
               />
-              <Tooltip title={'Delete point'} placement={'left'}>
+              <Tooltip title={t('points.deletePoint')} placement={'left'}>
                 <IconButton
-                  aria-label={'delete point'}
+                  aria-label={t('points.deletePoint')}
                   onClick={() => {
                     setOpenDeleteDialog(true);
                   }}
@@ -99,10 +101,10 @@ const PointCard = (props) => {
       <ConfirmationDialog
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
-        title={'Delete point ' + point.id}
-        content={`Are you sure you want to delete point with id ${point.id}?`}
-        warning={`This action cannot be undone.`}
-        actionName={'Delete'}
+        title={t('delete.deletePoint', { id: point.id })}
+        content={t('delete.deletePointContent', { id: point.id })}
+        warning={t('delete.cannotBeUndone')}
+        actionName={t('delete.delete')}
         actionHandler={() => deletePoint()}
         aria-label="Delete Point Confirmation Dialog"
       />

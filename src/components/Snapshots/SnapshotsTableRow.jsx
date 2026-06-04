@@ -4,6 +4,7 @@ import prettyBytes from 'pretty-bytes';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Box, Chip, TableCell, Tooltip, Button } from '@mui/material';
 import { ArchiveRestore, CircleX, Download, Trash } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 import CircularProgressWithLabel from '../Common/CircularProgressWithLabel';
 import { useClient } from '../../context/client-context';
@@ -11,6 +12,7 @@ import { StyledTableRow } from '../Common/StyledTable';
 
 export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { client: qdrantClient } = useClient();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -18,7 +20,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
   return (
     <StyledTableRow key={snapshot.name}>
       <TableCell width={'60%'}>
-        <Tooltip title={'Download snapshot'} arrow placement={'top'}>
+        <Tooltip title={t('snapshots.downloadSnapshot')} arrow placement={'top'}>
           <Box
             sx={{
               display: 'inline-flex',
@@ -74,11 +76,11 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
         </Tooltip>
         {progress > 0 && (
           <Chip
-            label={`Preparing download`}
+            label={t('snapshots.preparingDownload')}
             size="small"
             sx={{ ml: 3, mb: '2px' }}
             deleteIcon={
-              <Tooltip title={'Cancel download'} placement={'right'}>
+              <Tooltip title={t('snapshots.cancelDownload')} placement={'right'}>
                 <CircleX size={16} />
               </Tooltip>
             }
@@ -105,7 +107,7 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
               py: '4px',
             }}
           >
-            Download
+            {t('snapshots.download')}
           </Button>
           <Button
             variant="outlined"
@@ -118,17 +120,17 @@ export const SnapshotsTableRow = ({ snapshot, downloadSnapshot, deleteSnapshot }
               py: '4px',
             }}
           >
-            Delete
+            {t('delete.delete')}
           </Button>
         </Box>
       </TableCell>
       <ConfirmationDialog
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
-        title={'Delete snapshot'}
-        content={`Are you sure you want to delete snapshot ${snapshot.name}?`}
-        warning={`This action cannot be undone.`}
-        actionName={'Delete'}
+        title={t('delete.deleteSnapshot')}
+        content={t('delete.deleteSnapshotContent', { name: snapshot.name })}
+        warning={t('delete.cannotBeUndone')}
+        actionName={t('delete.delete')}
         actionHandler={() => deleteSnapshot(snapshot.name)}
       />
     </StyledTableRow>

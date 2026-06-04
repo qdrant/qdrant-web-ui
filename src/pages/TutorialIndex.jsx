@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Alert, Box, Grid, Typography } from '@mui/material';
 import { useClient } from '../context/client-context';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
@@ -6,6 +7,7 @@ import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Zap, FileCode } from 'lucide-react';
 
 export const TutorialIndex = () => {
+  const { t } = useTranslation();
   const { isRestricted } = useClient();
 
   if (isRestricted) {
@@ -13,8 +15,7 @@ export const TutorialIndex = () => {
       <Box sx={{ p: 5, width: '100%' }}>
         <Grid size={12}>
           <Alert severity="warning">
-            Access Denied: Because of the serverless mode, tutorial will not work here properly. Please contact your
-            administrator.
+            {t('tutorial.accessDenied')}
           </Alert>
         </Grid>
       </Box>
@@ -46,21 +47,21 @@ export const TutorialIndex = () => {
             mb: '1rem',
           }}
         >
-          Welcome to Qdrant!
+          {t('welcome.title')}
         </Typography>
       </Box>
 
       <Box component="section">
         <Typography component="h2" variant="h6" mb="1rem">
-          Connect to your Project or Start with Samples
+          {t('welcome.sectionTitle')}
         </Typography>
 
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={Zap}
-              title="Quickstart"
-              description={'Create a collection, upsert vectors, and run a search.'}
+              title={t('tutorial.quickstart')}
+              description={t('tutorial.quickstartDescription')}
               href="/tutorial/quickstart"
               showCta={false}
               sx={{ flexGrow: 1 }}
@@ -69,8 +70,8 @@ export const TutorialIndex = () => {
           <Grid size={{ xs: 12, md: 6 }}>
             <InfoCard
               icon={FileCode}
-              title="Load Sample Data"
-              description={`Follow this tutorial to import a remote snapshot and explore vector search with real data in just a few steps.`}
+              title={t('welcome.loadSampleData')}
+              description={t('welcome.loadSampleDescription')}
               href="/tutorial/loadcontent"
               showCta={false}
               sx={{ flexGrow: 1 }}

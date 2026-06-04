@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { useClient } from '../../context/client-context';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 
 export default function DeleteDialog({ open, setOpen, collectionName, getCollectionsCall }) {
+  const { t } = useTranslation();
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -17,7 +19,7 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
       setOpen(false);
       setHasError(false);
     } catch (error) {
-      setErrorMessage(`Deletion Unsuccessful, error: ${error.message}`);
+      setErrorMessage(t('delete.deletionUnsuccessful', { error: error.message }));
       setHasError(true);
       setOpen(false);
     }
@@ -33,12 +35,9 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
       <ConfirmationDialog
         open={open}
         onClose={handleClose}
-        title={'Do you want to delete ' + collectionName + '?'}
-        warning={
-          'Deleting a collection cannot be undone. ' +
-          'Make sure you have backed up all important data before proceeding.'
-        }
-        actionName={'Delete'}
+        title={t('delete.deleteCollection', { name: collectionName })}
+        warning={t('delete.deleteCollectionWarning')}
+        actionName={t('delete.delete')}
         actionHandler={callDelete}
         aria-label="Delete Collection Confirmation Dialog"
       />

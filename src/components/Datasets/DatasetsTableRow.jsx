@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import prettyBytes from 'pretty-bytes';
 import { useTheme, alpha } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, TableCell, Tooltip, Typography, Button } from '@mui/material';
 import { StyledTableRow } from '../Common/StyledTable';
 import { ArchiveRestore, Upload } from 'lucide-react';
@@ -11,13 +12,14 @@ import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 
 export const DatasetsTableRow = ({ dataset, importDataset }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [importing, setImporting] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   return (
     <StyledTableRow key={dataset.name} align={'center'}>
       <TableCell width={'50%'}>
-        <Tooltip title={'Import Dataset'} arrow placement={'top'}>
+        <Tooltip title={t('datasets.importDataset')} arrow placement={'top'}>
           <Box
             sx={{
               display: 'inline-flex',
@@ -88,7 +90,7 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
         <CopyableGroupedNumber value={dataset.vectorCount} />
       </TableCell>
       <TableCell align="center">
-        <Tooltip title="Import Dataset" arrow placement={'top'}>
+        <Tooltip title={t('datasets.importDataset')} arrow placement={'top'}>
           <Button
             variant="outlined"
             size="small"
@@ -96,14 +98,14 @@ export const DatasetsTableRow = ({ dataset, importDataset }) => {
             onClick={() => setIsImportDialogOpen(true)}
             disabled={importing}
           >
-            Import
+            {t('datasets.import')}
           </Button>
         </Tooltip>
       </TableCell>
       <ImportDatasetDialog
         open={isImportDialogOpen}
         onClose={() => setIsImportDialogOpen(false)}
-        content={`Enter collection name for ${dataset.fileName}`}
+        content={t('datasets.enterCollectionName', { fileName: dataset.fileName })}
         fileName={dataset.fileName}
         actionHandler={importDataset}
         setImporting={setImporting}

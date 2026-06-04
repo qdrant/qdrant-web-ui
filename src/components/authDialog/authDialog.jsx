@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -14,6 +15,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useClient } from '../../context/client-context';
 
 export function ApiKeyDialog({ open, setOpen, onApply }) {
+  const { t } = useTranslation();
   const { settings, setSettings } = useClient();
   const [showApiKey, setShowApiKey] = React.useState(false);
   const [error, setError] = React.useState(false);
@@ -57,10 +59,10 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
           },
         }}
       >
-        <DialogTitle>Set API Key</DialogTitle>
+        <DialogTitle>{t('auth.setApiKey')}</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            This instance of Qdrant might be protected by an API Key. If so, please enter your API Key to continue.
+            {t('auth.apiKeyDescription')}
           </DialogContentText>
           <TextField
             onChange={(e) => setApiKey(e.target.value)}
@@ -72,9 +74,9 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             }}
             autoFocus
             id="api-key-input"
-            placeholder="API Key"
+            placeholder={t('auth.apiKey')}
             error={error}
-            helperText={error ? 'API Key is required' : ''}
+            helperText={error ? t('auth.apiKeyRequired') : ''}
             type={showApiKey ? 'text' : 'password'}
             fullWidth
             variant="outlined"
@@ -97,10 +99,10 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button variant="outlined" color="inherit" onClick={handleClose}>
-            Cancel
+            {t('delete.cancel')}
           </Button>
           <Button variant="contained" onClick={handleApply}>
-            Apply
+            {t('auth.apply')}
           </Button>
         </DialogActions>
       </Dialog>

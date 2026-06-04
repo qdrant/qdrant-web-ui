@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { useClient } from '../../context/client-context';
 import {
@@ -29,8 +30,10 @@ import { useVersion, useJwt } from '../../context/telemetry-context';
 import { useCloudInfo } from '../../context/cloud-info-context';
 import { useExternalInfo } from '../../context/external-info-context';
 import { isSemverGreater, buildReleaseLink } from '../../lib/common-helpers';
+import LanguageSwitcher from '../Common/LanguageSwitcher';
 
 export default function Sidebar() {
+  const { t } = useTranslation();
   const { version } = useVersion();
   const { jwtEnabled, jwtVisible } = useJwt();
   const { isRestricted } = useClient();
@@ -54,7 +57,7 @@ export default function Sidebar() {
       <StyledList>
         {cloudInfo?.cloud_backlink && (
           <SidebarItem
-            title="Back to Cloud"
+            title={t('sidebar.backToCloud')}
             icon={<CornerUpLeft size="16px" />}
             linkTo={cloudInfo.cloud_backlink}
             active={isActive(cloudInfo.cloud_backlink)}
@@ -64,7 +67,7 @@ export default function Sidebar() {
 
         {!isRestricted && (
           <SidebarItem
-            title="Welcome"
+            title={t('sidebar.welcome')}
             icon={<Rocket size="16px" />}
             linkTo="/welcome"
             active={isActive('/welcome')}
@@ -72,14 +75,14 @@ export default function Sidebar() {
           />
         )}
         <SidebarItem
-          title="Console"
+          title={t('sidebar.console')}
           icon={<SquareTerminal size="16px" />}
           linkTo="/console"
           active={isActive('/console')}
           disabled={false}
         />
         <SidebarItem
-          title="Collections"
+          title={t('sidebar.collections')}
           icon={<RectangleEllipsis size="16px" />}
           linkTo="/collections"
           active={isActive('/collections')}
@@ -88,7 +91,7 @@ export default function Sidebar() {
 
         {!isRestricted && (
           <SidebarItem
-            title="Tutorial"
+            title={t('sidebar.tutorial')}
             icon={<BookMarked size="16px" />}
             linkTo="/tutorial"
             active={isActive('/tutorial')}
@@ -96,11 +99,11 @@ export default function Sidebar() {
           />
         )}
 
-        {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
+        {!isRestricted && sidebarItem(t('sidebar.datasets'), <FileCode size="16px" />, '/datasets', location)}
 
         {!isRestricted && jwtVisible && (
           <SidebarItem
-            title="Access Tokens"
+            title={t('sidebar.accessTokens')}
             icon={<KeyRound size="16px" />}
             linkTo="/jwt"
             active={isActive('/jwt')}
@@ -113,7 +116,7 @@ export default function Sidebar() {
         <StyledSidebarFooterList>
           {cloudInfo?.support_url && (
             <SidebarItem
-              title="Get Support"
+              title={t('sidebar.getSupport')}
               icon={<CircleHelp size="16px" />}
               linkTo={cloudInfo.support_url}
               active={false}
@@ -123,7 +126,7 @@ export default function Sidebar() {
 
           {isUpdateNewer && updateLink && (
             <SidebarItem
-              title="Update Available"
+              title={t('sidebar.updateAvailable')}
               icon={<HardDriveUpload size="16px" />}
               linkTo={updateLink}
               active={false}
@@ -134,8 +137,11 @@ export default function Sidebar() {
       )}
 
       <StyledSidebarFooterList>
-        <StyledSidebarFooterListItem>
+        <StyledSidebarFooterListItem
+          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pr: 2 }}
+        >
           <StyledSidebarFooterText variant="caption">Qdrant v{version || '???'}</StyledSidebarFooterText>
+          <LanguageSwitcher />
         </StyledSidebarFooterListItem>
       </StyledSidebarFooterList>
     </Drawer>

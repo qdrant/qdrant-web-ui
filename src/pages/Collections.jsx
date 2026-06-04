@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
 import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip } from '@mui/material';
@@ -19,6 +20,7 @@ const spin = keyframes`
 `;
 
 function Collections() {
+  const { t } = useTranslation();
   const [rawCollections, setRawCollections] = useState(null);
   const [collections, setCollections] = useState(null);
   const [filteredCollections, setFilteredCollections] = useState(null);
@@ -164,15 +166,15 @@ function Collections() {
               component={'h1'}
               sx={{ lineHeight: '1', display: 'flex', alignItems: 'center', gap: 1 }}
             >
-              Collections{' '}
+              {t('collections.title')}{' '}
               {maxCollections && displayCollections ? `(${displayCollections.length} / ${maxCollections})` : ''}
-              <Tooltip title="Refresh collections">
+              <Tooltip title={t('collections.refreshCollections')}>
                 <span>
                   <IconButton
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     size="small"
-                    aria-label="Refresh collections list"
+                    aria-label={t('collections.refreshCollections')}
                     sx={{ color: 'text.primary' }}
                   >
                     <RefreshCw
@@ -202,7 +204,7 @@ function Collections() {
 
           {errorMessage && (
             <Grid textAlign={'center'} mt={3} size={12}>
-              <Typography>⚠ Error: {errorMessage}</Typography>
+              <Typography>⚠ {t('collections.error')}: {errorMessage}</Typography>
             </Grid>
           )}
           {!displayCollections && !errorMessage && (
@@ -214,7 +216,7 @@ function Collections() {
           )}
           {displayCollections && !errorMessage && displayCollections.length === 0 && (
             <Grid textAlign={'center'} mt={3} size={12}>
-              <Typography> 📪 No collection is present</Typography>
+              <Typography> 📪 {t('collections.noCollection')}</Typography>
             </Grid>
           )}
 

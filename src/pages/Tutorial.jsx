@@ -4,18 +4,19 @@ import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { useParams } from 'react-router-dom';
 import { Alert, Box, Grid } from '@mui/material';
 import { useClient } from '../context/client-context';
+import { useTranslation } from 'react-i18next';
 
 export const Tutorial = () => {
   const { pageSlug } = useParams();
   const { isRestricted } = useClient();
+  const { t } = useTranslation();
 
   if (isRestricted) {
     return (
       <Box sx={{ p: 5, width: '100%' }}>
         <Grid size={12}>
           <Alert severity="warning">
-            Access Denied: Because of the serverless mode, tutorial will not work here properly. Please contact your
-            administrator.
+            {t('tutorial.accessDenied')}
           </Alert>
         </Grid>
       </Box>
