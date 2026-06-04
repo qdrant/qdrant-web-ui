@@ -2,13 +2,17 @@ import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import { mdxComponents } from './MdxComponents/MdxComponents';
-import { tutorialSubPages } from './TutorialSubpages';
+import { getTutorialSubPages } from './TutorialSubpages';
 import { TutorialFooter } from './TutorialFooter';
 import { useLocation } from 'react-router-dom';
 import { Prism } from 'prism-react-renderer';
+import { useTranslation } from 'react-i18next';
+
 const InteractiveTutorial = ({ pageSlug }) => {
   const location = useLocation();
   const tutorialPanelRef = React.useRef(null);
+  const { i18n } = useTranslation();
+  const tutorialSubPages = getTutorialSubPages(i18n.language);
 
   useEffect(() => {
     // we need this to use prismjs support for json highlighting

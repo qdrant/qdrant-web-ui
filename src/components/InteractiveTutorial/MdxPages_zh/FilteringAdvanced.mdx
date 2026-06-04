@@ -1,0 +1,188 @@
+export const title = "高级过滤"
+
+# 高级过滤 - 嵌套过滤
+
+## 步骤 1：创建集合
+
+首先创建一个名为 `dinosaurs` 的集合，向量大小为 4，距离度量设置为 `Dot`：
+
+```json withRunButton="true"
+PUT collections/dinosaurs
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## 步骤 2：添加带负载的向量
+
+现在可以向集合中添加 Point。每个 Point 包含一个 `id`、`vector` 和一个 `payload`，payload 包含额外信息，如恐龙物种和饮食偏好：
+
+```json withRunButton="true"
+PUT collections/dinosaurs/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": {
+        "dinosaur": "t-rex",
+        "diet": [
+          { "food": "leaves", "likes": false },
+          { "food": "meat", "likes": true }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.2, 0.3, 0.4, 0.5],
+      "payload": {
+        "dinosaur": "diplodocus",
+        "diet": [
+          { "food": "leaves", "likes": true },
+          { "food": "meat", "likes": false }
+        ]
+      }
+    }
+  ]
+}
+```
+
+
+## 步骤 3：过滤前先建立索引
+
+**注意：** 在过滤之前，应始终先建立索引。如果在创建索引之前使用过滤，Qdrant 将以非结构化方式搜索整个数据集，搜索性能会非常慢。
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].food",
+    "field_schema": "keyword"
+}
+```
+
+```json withRunButton="true"
+PUT /collections/dinosaurs/index
+{
+    "field_name": "diet[].likes",
+    "field_schema": "bool"
+}
+```
+
+## 步骤 4：使用 `match` 进行基础过滤
+
+您可以按特定的负载值过滤 Point。例如，以下查询匹配以下条件的 Point：
+
+- `diet[].food` 包含 "meat"。
+- `diet[].likes` 设置为 `true`。
+
+两个 Point 都匹配这些条件，因为：
+- "t-rex" 吃肉且喜欢。
+- "diplodocus" 吃肉但不喜欢。
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "diet[].food",
+        "match": {
+          "value": "meat"
+        }
+      },
+      {
+        "key": "diet[].likes",
+        "match": {
+          "value": true
+        }
+      }
+    ]
+  }
+}
+```
+
+但是，如果您只想检索同一数组元素中两个条件同时为真的 Point（例如 ID 为 1 的 "t-rex"），则需要使用 **嵌套过滤**。
+
+## 步骤 5：使用嵌套对象过滤器进行高级过滤
+
+要在数组元素级别应用过滤器，您可以使用 `nested` 过滤条件。这确保 `food` 和 `likes` 值在每个数组元素内一起评估：
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "nested": {
+          "key": "diet",
+          "filter": {
+            "must": [
+              {
+                "key": "food",
+                "match": {
+                  "value": "meat"
+                }
+              },
+              {
+                "key": "likes",
+                "match": {
+                  "value": true
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+使用此过滤器，仅返回 "t-rex"（ID 1），因为其数组元素同时满足两个条件。
+
+### 解释
+
+嵌套过滤将每个数组元素视为独立对象，独立地对每个元素应用过滤条件。如果任何一个数组元素满足所有条件，则父文档（在本例中为恐龙 Point）就匹配。
+
+## 步骤 6：将 `has_id` 与嵌套过滤器结合使用
+
+请注意，`has_id` 不能在嵌套过滤器内部使用。如果还需要按 ID 过滤，请将 `has_id` 条件作为单独的子句包含，如下所示：
+
+您不会得到不同的答案。可以看到，通过将 `nested` 饮食过滤器与显式 ID 匹配相结合，此过滤器匹配 "t-rex"（ID 1）。
+
+```json withRunButton="true"
+POST /collections/dinosaurs/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "nested": {
+          "key": "diet",
+          "filter": {
+            "must": [
+              {
+                "key": "food",
+                "match": {
+                  "value": "meat"
+                }
+              },
+              {
+                "key": "likes",
+                "match": {
+                  "value": true
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "has_id": [1]
+      }
+    ]
+  }
+}
+```

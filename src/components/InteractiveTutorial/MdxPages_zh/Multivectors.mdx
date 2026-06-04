@@ -1,0 +1,103 @@
+export const title = '多向量搜索';
+
+# 使用 ColBERT 多向量进行搜索
+
+在 Qdrant 中，多向量允许您为集合中的每个 Point 存储和搜索多个向量。此外，您还可以存储负载（payload），即包含每个 Point 元数据的键值对。本教程将向您展示如何创建集合、插入带有多向量和负载的 Point 以及执行搜索。
+
+## 步骤 1：创建带有多向量的集合
+
+要使用多向量，您需要配置集合以在每个 Point 存储多个向量。集合的配置指定了向量大小、距离度量以及多向量设置（如比较器函数）。
+
+运行以下请求创建带有多向量的集合：
+
+```json withRunButton=true
+PUT collections/multivector_collection
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot",
+    "multivector_config": {
+      "comparator": "max_sim"
+    }
+  }
+}
+```
+
+## 步骤 2：插入带有多向量和负载的 Point
+
+现在集合已设置好，您可以插入每个 Point 包含多个向量和一个负载的 Point。负载存储额外的元数据，如行星名称和类型。
+
+运行以下请求插入带有多向量和负载的 Point：
+
+```json withRunButton=true
+PUT collections/multivector_collection/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [
+        [-0.013,  0.020, -0.007, -0.111],
+        [-0.030, -0.015,  0.021,  0.072],
+        [0.041,  -0.004, 0.032,  0.062]
+      ],
+      "payload": {
+        "name": "Mars",
+        "type": "terrestrial"
+      }
+    },
+    {
+      "id": 2,
+      "vector": [
+        [0.011,  -0.050,  0.007,  0.101],
+        [0.031,  0.014,  -0.032,  0.012]
+      ],
+      "payload": {
+        "name": "Jupiter",
+        "type": "gas giant"
+      }
+    },
+    {
+      "id": 3,
+      "vector": [
+        [0.041,  0.034,  -0.012, -0.022],
+        [0.040,  -0.095,  0.021,  0.032],
+        [-0.030,  0.025,  0.011,  0.082],
+        [0.021,  -0.044,  0.032, -0.032]
+      ],
+      "payload": {
+        "name": "Venus",
+        "type": "terrestrial"
+      }
+    },
+    {
+      "id": 4,
+      "vector": [
+        [-0.015,  0.020,  0.045,  -0.131],
+        [0.041,   -0.024, -0.032,  0.072]
+      ],
+      "payload": {
+        "name": "Neptune",
+        "type": "ice giant"
+      }
+    }
+  ]
+}
+```
+
+## 步骤 3：查询集合
+
+要使用多向量执行搜索，您可以传递多个查询向量。Qdrant 将查询向量与多向量进行比较，并根据集合定义的比较器（`max_sim`）返回最相似的结果。您还可以请求在搜索结果中返回负载。
+
+运行以下请求使用多向量搜索并检索负载：
+
+```json withRunButton=true
+POST collections/multivector_collection/points/query
+{
+  "query": [
+    [-0.015,  0.020,  0.045,  -0.131],
+    [0.030,   -0.005, 0.001,   0.022],
+    [0.041,   -0.024, -0.032,  0.072]
+  ],
+  "with_payload": true
+}
+```

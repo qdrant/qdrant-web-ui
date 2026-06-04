@@ -1,0 +1,148 @@
+export const title = '全文过滤';
+
+# 全文过滤
+
+以下是使用带有描述字段的行星数据集合在 Qdrant 中进行 **全文过滤** 的分步教程：
+
+## 步骤 1：创建集合
+
+我们首先创建一个名为 `star_charts` 的集合，向量大小为 4，使用点积距离进行相似性计算。
+
+```json withRunButton="true"
+PUT /collections/star_charts
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## 步骤 2：在负载中添加带描述的数据
+
+接下来，向集合中添加数据。每条记录包含 id、vector 和一个 payload，其中包含关于各种天体的详细信息，如殖民地信息、是否支持生命以及描述。
+
+```json withRunButton="true"
+PUT collections/star_charts/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.05, 0.61, 0.76, 0.74],
+      "payload": {
+        "colony": "Mars",
+        "supports_life": true,
+        "description": "The red planet, Mars, has a cold desert climate and may have once had conditions suitable for life."
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.19, 0.81, 0.75, 0.11],
+      "payload": {
+        "colony": "Jupiter",
+        "supports_life": false,
+        "description": "Jupiter is the largest planet in the solar system, known for its Great Red Spot and hostile gas environment."
+      }
+    },
+    {
+      "id": 3,
+      "vector": [0.36, 0.55, 0.47, 0.94],
+      "payload": {
+        "colony": "Venus",
+        "supports_life": false,
+        "description": "Venus, Earth's twin in size, has an extremely thick atmosphere and surface temperatures hot enough to melt lead."
+      }
+    },
+    {
+      "id": 4,
+      "vector": [0.18, 0.01, 0.85, 0.80],
+      "payload": {
+        "colony": "Moon",
+        "supports_life": true,
+        "description": "Earth's Moon, long visited by astronauts, is a barren, airless world but could host colonies in its underground caves."
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.24, 0.18, 0.22, 0.44],
+      "payload": {
+        "colony": "Pluto",
+        "supports_life": false,
+        "description": "Once considered the ninth planet, Pluto is a small icy world at the edge of the solar system."
+      }
+    }
+  ]
+}
+```
+
+### 步骤 3：尝试精确短语过滤（子串匹配）
+
+现在，让我们尝试过滤描述以找到包含精确短语 "host colonies" 的记录。
+Qdrant 默认支持使用精确匹配进行文本过滤，但请注意这不会对文本进行分词。
+
+```json withRunButton="true"
+POST /collections/star_charts/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "description",
+        "match": {
+          "text": "host colonies"
+        }
+      }
+    ]
+  },
+  "limit": 2,
+  "with_payload": true
+}
+```
+
+您会发现此过滤器有效，但如果稍微更改短语，则不会返回结果，因为未索引文本中的子串匹配对于变体来说不够灵活。
+
+**注意**：如果您的集群运行在 Qdrant Cloud 上，此查询将失败。在 Qdrant Cloud 上，集合默认配置为严格模式运行，这会阻止查询未索引的字段。接下来您将学习如何为文本过滤建立索引。
+
+### 步骤 4：为描述字段建立索引
+
+为了使过滤更强大、更灵活，我们将为 `description` 字段建立索引。这将对文本进行分词，从而支持更复杂的查询，例如过滤 "cave colonies" 等短语。我们使用 `word` 分词器 (Tokenizer)，只有长度在 5 到 20 个字符之间的分词才会被索引。
+
+**注意：** 在过滤之前，应始终先建立索引。如果在创建索引之前使用过滤（如步骤 3），Qdrant 将以非结构化方式搜索整个数据集，搜索性能会非常慢。
+
+```json withRunButton="true"
+PUT /collections/star_charts/index
+{
+    "field_name": "description",
+    "field_schema": {
+        "type": "text",
+        "tokenizer": "word",
+        "lowercase": true
+    }
+}
+```
+
+### 步骤 5：再次尝试过滤
+
+建立索引后，现在可以再次运行过滤，但这次不是搜索短语。
+现在，您将过滤描述中包含 "caves" 和 "colonies" 这两个分词的所有记录。
+
+```json withRunButton="true"
+POST /collections/star_charts/points/scroll
+{
+  "filter": {
+    "must": [
+      {
+        "key": "description",
+        "match": {
+          "text": "caves colonies"
+        }
+      }
+    ]
+  },
+  "limit": 2,
+  "with_payload": true
+}
+```
+
+## 总结
+
+对未索引字段进行全文过滤时，默认执行子串匹配，或者在严格模式下的集合上（Qdrant Cloud 的默认设置）会返回错误。最佳实践是首先为字段建立索引，这可以启用更高级的全文查询，例如完全忽略单词顺序的查询。

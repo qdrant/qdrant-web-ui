@@ -1,13 +1,14 @@
 import React from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import tutorialSubPages from './TutorialSubpages';
+import { getTutorialSubPages } from './TutorialSubpages';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
 export const TutorialFooter = () => {
   const { pageSlug } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const tutorialSubPages = getTutorialSubPages(i18n.language);
   const pageKeys = [...tutorialSubPages.map((p) => p[0])];
   let currentPageIndex = pageKeys.indexOf(pageSlug);
   const navigate = useNavigate();

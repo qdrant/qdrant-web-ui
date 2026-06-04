@@ -1,0 +1,133 @@
+export const title = '混合搜索';
+
+# 稀疏向量与稠密向量的混合搜索
+
+在本教程中，我们将继续探索 Qdrant 中的混合搜索，同时关注稀疏向量和稠密向量。
+这次，我们将使用与 `terraforming_plans` 相关的集合，每个数据 Point 在 `payload` 中都有一个关于其内容的简短描述。
+
+## 步骤 1：创建支持稀疏向量的集合
+
+我们首先创建一个名为 `terraforming_plans` 的集合。此集合将同时支持用于语义相似性的稠密向量和用于关键词搜索的稀疏向量。
+
+```json withRunButton=true
+PUT /collections/terraforming_plans
+{
+    "vectors": {
+        "size": 4,
+        "distance": "Cosine"
+    },
+    "sparse_vectors": {
+        "keywords": { }
+    }
+}
+```
+
+### 解释：
+- **`vectors`**：配置稠密向量空间，具有 4 个维度，使用余弦相似度进行距离测量。
+- **`sparse_vectors`**：配置集合以支持用于关键词索引的稀疏向量。
+
+---
+
+## 步骤 2：插入带描述的数据 Point
+
+现在，我们将三个数据 Point 插入到 `terraforming_plans` 集合中，每个数据 Point 对应一个不同的天体（火星、木星和金星）。每个 Point 将同时具有稠密和稀疏向量，以及 `payload` 中的 `description`。
+
+```json withRunButton=true
+PUT /collections/terraforming_plans/points
+{
+    "points": [
+        {
+            "id": 1,
+            "vector": {
+                "": [0.02, 0.4, 0.5, 0.9],
+                "keywords": {
+                   "indices": [1, 42],
+                   "values": [0.22, 0.8]
+                }
+            },
+            "payload": {
+                "description": "Plans about Mars colonization."
+            }
+        },
+        {
+            "id": 2,
+            "vector": {
+                "": [0.3, 0.1, 0.6, 0.4],
+                "keywords": {
+                   "indices": [2, 35],
+                   "values": [0.15, 0.65]
+                }
+            },
+            "payload": {
+                "description": "Study on Jupiter gas composition."
+            }
+        },
+        {
+            "id": 3,
+            "vector": {
+                "": [0.7, 0.5, 0.3, 0.8],
+                "keywords": {
+                   "indices": [10, 42],
+                   "values": [0.3, 0.5]
+                }
+            },
+            "payload": {
+                "description": "Venus geological terrain analysis."
+            }
+        }
+    ]
+}
+```
+
+### 解释：
+- **稠密向量**：以数值形式表示数据 Point 的语义特征。
+- **稀疏向量（`keywords`）**：表示关键词特征，`indices` 映射到特定关键词，`values` 表示其相关性。
+- **`payload`**：提供数据 Point 内容的简短描述，使人更容易理解每个向量代表什么。
+
+---
+
+## 步骤 3：执行混合搜索
+
+接下来，对 `terraforming_plans` 集合执行混合搜索，使用 Reciprocal Rank Fusion（RRF）将基于关键词的（稀疏）和语义的（稠密）搜索结合起来。
+
+```json withRunButton=true
+POST /collections/terraforming_plans/points/query
+{
+    "prefetch": [
+        {
+            "query": {
+                "indices": [1, 42],
+                "values": [0.22, 0.8]
+            },
+            "using": "keywords",
+            "limit": 20
+        },
+        {
+            "query": [0.01, 0.45, 0.67, 0.89],
+            "using": "",
+            "limit": 20
+        }
+    ],
+    "query": { "fusion": "rrf" },
+    "limit": 10,
+    "with_payload": true
+}
+```
+
+### 解释：
+- **`prefetch`**：包含两个子查询：
+  - **基于关键词的查询**：使用稀疏向量（keywords）按关键词相关性搜索。
+  - **稠密向量查询**：使用稠密向量进行语义相似性搜索。
+- **`fusion: rrf`**：使用 Reciprocal Rank Fusion（RRF）合并两个查询的结果，优先考虑在两个搜索中排名都较高的 Point。
+- **`limit`**：将结果数量限制为前 10 个。
+
+---
+
+## 总结
+
+在本教程中，我们：
+1. 创建了一个名为 `terraforming_plans` 的 Qdrant 集合，支持使用稠密和稀疏向量进行混合搜索。
+2. 插入了同时具有稠密和稀疏向量以及 payload 描述的数据 Point。
+3. 使用 Reciprocal Rank Fusion 执行了结合关键词相关性和稠密向量相似性的混合搜索。
+
+这种方法可以实现有效的混合搜索，结合文本和语义搜索能力，这在涉及复杂搜索需求的应用中非常有用。

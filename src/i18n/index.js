@@ -17,7 +17,7 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       lookupLocalStorage: 'qdrant-web-ui-language',
       caches: ['localStorage'],
     },

@@ -103,7 +103,21 @@
     "documentation": "documentation",
     "snapshotDeleted": "Snapshot successfully deleted",
     "downloadCanceled": "Download canceled",
-    "waitPreviousDownload": "Please wait until the previous download is finished"
+    "waitPreviousDownload": "Please wait until the previous download is finished",
+    "upload": {
+      "step1Title": "Step 1 - Enter a collection name",
+      "step1Description": "Can be new or existing",
+      "collectionNamePlaceholder": "Collection Name",
+      "collectionNameTooShort": "Collection name is too short",
+      "collectionNameTooLong": "Collection name is too long",
+      "collectionNameInvalidChar": "Collection name cannot contain \"{{char}}\" char",
+      "step2Title": "Step 2 - Upload a snapshot file",
+      "back": "Back",
+      "uploadFailed": "Upload failed: {{message}}",
+      "completed": "All steps completed - you're finished 🎉",
+      "dropHereOr": "%{browse} or drop here",
+      "browse": "Browse"
+    }
   },
   "points": {
     "noPoints": "No Points are present, {{name}} is empty",

@@ -1,0 +1,182 @@
+export const title = '多租户';
+
+# 在多租户设置中分离用户数据
+
+在本教程中，我们将介绍如何在 Qdrant 中实现多租户。多租户允许您在单个 Qdrant 实例中托管多个租户或客户，确保租户之间的数据隔离和访问控制。此功能对于需要为不同客户提供服务同时保持其数据分离的应用场景至关重要。
+
+## 步骤 1：创建集合
+
+假设您正在运行一个推荐服务，不同部门（租户）将其数据存储在 Qdrant 中。通过使用 **基于负载的多租户**，您可以将所有租户的数据保存在单个集合中，但根据唯一的租户标识符过滤数据。
+
+运行以下请求为所有租户创建共享集合：
+
+```json withRunButton=true
+PUT collections/central_library
+{
+  "vectors": {
+    "size": 4,
+    "distance": "Dot"
+  }
+}
+```
+
+## 步骤 2：构建租户索引
+
+Qdrant 支持基于租户标识符的高效索引以优化多租户搜索。通过启用租户索引，您可以在磁盘上结构化数据以实现更快的租户特定搜索，从而提高性能并减少磁盘读取。
+
+运行以下请求为租户标识符（`group_id`）启用索引：
+
+```json withRunButton=true
+PUT /collections/central_library/index
+{
+    "field_name": "group_id",
+    "field_schema": {
+        "type": "keyword",
+        "is_tenant": true
+    }
+}
+```
+
+## 步骤 3：为租户加载向量
+
+接下来，您将向共享集合加载数据。每个数据 Point 在 payload 中标有租户特定的标识符。此标识符（`group_id`）确保即使存储在同一个集合中，租户的数据也保持隔离。
+
+运行以下请求插入数据 Point：
+
+```json withRunButton=true
+PUT /collections/central_library/points
+{
+  "points": [
+    {
+      "id": 1,
+      "vector": [0.1, 0.2, 0.3, 0.4],
+      "payload": {
+        "group_id": "user_1",
+        "station": "Communications",
+        "message_log": "Contact with colony headquarters."
+      }
+    },
+    {
+      "id": 2,
+      "vector": [0.5, 0.6, 0.7, 0.8],
+      "payload": {
+        "group_id": "user_2",
+        "station": "Security",
+        "message_log": "Monitor intruder alert system."
+      }
+    },
+    {
+      "id": 3,
+      "vector": [0.9, 1.0, 1.1, 1.2],
+      "payload": {
+        "group_id": "user_3",
+        "station": "Engineering",
+        "message_log": "Repair warp core malfunction."
+      }
+    }
+  ]
+}
+```
+
+## 步骤 4：执行过滤查询
+
+查询共享集合时，使用 `group_id` 负载字段确保租户只能访问自己的数据。此查询中的过滤器确保仅返回属于指定 `group_id` 的 Point。
+
+运行以下请求搜索 `user_1` 特定的数据：
+
+```json withRunButton=true
+POST /collections/central_library/points/query
+{
+    "query": [0.2, 0.1, 0.9, 0.7],
+    "filter": {
+        "must": [
+            {
+                "key": "group_id",
+                "match": {
+                    "value": "user_1"
+                }
+            }
+        ]
+    },
+    "limit": 2,
+    "with_payload": true
+}
+```
+
+## 步骤 5：添加更多数据
+
+如果需要，您可以为多个租户添加更多数据 Point。此示例展示如何使用不同的 `group_id` 值扩展集合：
+
+<details open={true}>
+<summary>添加更多数据</summary>
+
+```json withRunButton=true
+PUT /collections/central_library/points
+{
+  "points": [
+    {
+      "id": 4,
+      "vector": [0.89, 0.95, 1.03, 0.99],
+      "payload": {
+        "group_id": "user_4",
+        "station": "Medical",
+        "message_log": "Prepare medical supplies."
+      }
+    },
+    {
+      "id": 5,
+      "vector": [0.82, 0.87, 0.83, 0.88],
+      "payload": {
+        "group_id": "user_5",
+        "station": "Operations",
+        "message_log": "Schedule maintenance for the day."
+      }
+    },
+    {
+      "id": 6,
+      "vector": [0.91, 1.05, 0.96, 0.90],
+      "payload": {
+        "group_id": "user_1",
+        "station": "Communications",
+        "message_log": "Dispatch signal to rescue team."
+      }
+    },
+    {
+      "id": 7,
+      "vector": [0.78, 0.86, 0.84, 0.81],
+      "payload": {
+        "group_id": "user_2",
+        "station": "Security",
+        "message_log": "Check perimeter for breaches."
+      }
+    },
+    {
+      "id": 8,
+      "vector": [1.04, 0.97, 1.01, 0.93],
+      "payload": {
+        "group_id": "user_3",
+        "station": "Engineering",
+        "message_log": "Run diagnostics on the shield generator."
+      }
+    }
+  ]
+}
+```
+</details>
+
+## 步骤 6：分组查询结果
+
+您可以按特定字段（如 `group_id`）对查询结果进行分组，以获得每个租户数据的概览。此查询按 `group_id` 对结果进行分组，并限制组数以及每组中的 Point 数。
+
+运行以下请求按 `group_id` 分组结果：
+
+```json withRunButton=true
+POST /collections/central_library/points/query/groups
+{
+    "query": [0.01, 0.45, 0.6, 0.88],
+    "group_by": "group_id",
+    "limit": 5,
+    "group_size": 5,
+    "with_payload": true
+}
+```

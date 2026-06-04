@@ -2,6 +2,7 @@ import React from 'react';
 import DragDrop from '@uppy/react/lib/DragDrop';
 import { styled } from '@mui/material/styles';
 import { Box } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const StyledDragDropBase = styled(DragDrop)(({ theme }) => ({
   '& .uppy-DragDrop-container': {
@@ -49,18 +50,20 @@ const StyledDragDropBase = styled(DragDrop)(({ theme }) => ({
   },
 }));
 
-export const StyledDragDrop = (props) => (
-  <Box sx={{ position: 'relative' }}>
-    <StyledDragDropBase
-      locale={{
-        strings: {
-          dropHereOr: '%{browse} or drop here',
-          browse: 'Browse',
-        },
-      }}
-      height="120px"
-      {...props}
-    />
+export const StyledDragDrop = (props) => {
+  const { t } = useTranslation();
+  return (
+    <Box sx={{ position: 'relative' }}>
+      <StyledDragDropBase
+        locale={{
+          strings: {
+            dropHereOr: t('snapshots.upload.dropHereOr'),
+            browse: t('snapshots.upload.browse'),
+          },
+        }}
+        height="120px"
+        {...props}
+      />
     <Box
       sx={{
         position: 'absolute',
@@ -73,4 +76,5 @@ export const StyledDragDrop = (props) => (
       }}
     ></Box>
   </Box>
-);
+  );
+};
