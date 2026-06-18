@@ -1,6 +1,10 @@
 export const getBaseURL = function () {
   const url = new URL(window.location.href);
-  const pathname = url.pathname.replace(/dashboard$/, '');
+  // The dashboard is served under the `/dashboard` path. The API lives at the
+  // root, so we strip the trailing `dashboard` segment to resolve relative API
+  // requests against the correct base. Handle every way the dashboard can be
+  // addressed: `/dashboard`, `/dashboard/` and `/dashboard/index.html`.
+  const pathname = url.pathname.replace(/dashboard\/(index\.html)?$/, '').replace(/dashboard$/, '');
   return new URL(pathname, url.href).href;
 };
 
