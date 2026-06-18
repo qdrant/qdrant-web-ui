@@ -28,6 +28,50 @@ describe('utils', () => {
 
       expect(getBaseURL()).toEqual(result);
     });
+
+    it('should return base url when accessed with a trailing slash', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/dashboard/',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getBaseURL()).toEqual('http://localhost:63342/');
+    });
+
+    it('should return base url with pathname when accessed with a trailing slash', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/myapp/dashboard/',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getBaseURL()).toEqual('http://localhost:63342/myapp/');
+    });
+
+    it('should return base url when accessed via index.html', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/dashboard/index.html',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getBaseURL()).toEqual('http://localhost:63342/');
+    });
+
+    it('should ignore hash and query when resolving the base url', () => {
+      const window = {
+        location: {
+          href: 'http://localhost:63342/dashboard/#/collections/my_collection#cluster',
+        },
+      };
+      vi.stubGlobal('window', window);
+
+      expect(getBaseURL()).toEqual('http://localhost:63342/');
+    });
   });
 
   describe('pumpFile', () => {
