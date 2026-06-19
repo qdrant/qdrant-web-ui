@@ -230,7 +230,7 @@ function Collections() {
             </Typography>
           </Grid>
           <Grid
-            sx={{ display: 'flex', justifyContent: { md: 'end' }, gap: 2 }}
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: { md: 'end' }, gap: 2 }}
             size={{
               xs: 12,
               md: 7,
@@ -303,7 +303,13 @@ function Collections() {
         open={openBulkDeleteDialog}
         onClose={() => setOpenBulkDeleteDialog(false)}
         title={`Delete ${selectedCollections.size} collection${selectedCollections.size !== 1 ? 's' : ''}?`}
-        content={Array.from(selectedCollections).join(', ')}
+        content={
+          <ul style={{ margin: 0, paddingLeft: 20 }}>
+            {Array.from(selectedCollections).map((col) => (
+              <li key={col}>{col}</li>
+            ))}
+          </ul>
+        }
         warning={
           'Deleting collections cannot be undone. ' +
           'Make sure you have backed up all important data before proceeding.'
