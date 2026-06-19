@@ -138,6 +138,10 @@ const themeOptions = {
           fontWeight: 500,
           lineHeight: '1.4',
           textTransform: 'capitalize',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
         },
         outlinedInherit: ({ theme }) => ({
           border: `1px solid ${theme.palette.divider}`,
@@ -150,10 +154,8 @@ const themeOptions = {
         containedPrimary: ({ theme }) => ({
           background: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
-          boxShadow: 'none',
           '&:hover': {
             background: theme.palette.primary.dark,
-            boxShadow: 'none',
           },
         }),
       },
