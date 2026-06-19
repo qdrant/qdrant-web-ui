@@ -56,6 +56,12 @@ const COLLECTIONS = [
   },
 ];
 
+const DEFAULT_SELECTION_PROPS = {
+  selectedCollections: new Set(),
+  handleToggleSelect: vi.fn(),
+  handleSelectAll: vi.fn(),
+};
+
 describe('CollectionsList', () => {
   it('should render CollectionsList with given data', () => {
     render(
@@ -65,6 +71,7 @@ describe('CollectionsList', () => {
           getCollectionsCall={() => {}}
           refreshCollection={vi.fn()}
           isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
         />
       </MemoryRouter>
     );
@@ -80,6 +87,7 @@ describe('CollectionsList', () => {
           getCollectionsCall={() => {}}
           refreshCollection={vi.fn()}
           isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
         />
       </MemoryRouter>
     );
@@ -95,6 +103,7 @@ describe('CollectionsList', () => {
     expect(screen.getByText('manhattan')).toBeInTheDocument();
     expect(screen.getByText('Aliases: alias1, alias2')).toBeInTheDocument();
   });
+
   it('should render Refresh menu item in actions menu', () => {
     render(
       <MemoryRouter>
@@ -103,6 +112,7 @@ describe('CollectionsList', () => {
           getCollectionsCall={() => {}}
           refreshCollection={vi.fn()}
           isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
         />
       </MemoryRouter>
     );
@@ -118,6 +128,7 @@ describe('CollectionsList', () => {
           getCollectionsCall={() => {}}
           refreshCollection={mockRefresh}
           isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
         />
       </MemoryRouter>
     );
@@ -134,6 +145,7 @@ describe('CollectionsList', () => {
           getCollectionsCall={() => {}}
           refreshCollection={vi.fn()}
           isRefreshing={true}
+          {...DEFAULT_SELECTION_PROPS}
         />
       </MemoryRouter>
     );

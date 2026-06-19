@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
+import { Checkbox, MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   StyledTableBody,
@@ -17,12 +17,27 @@ import CollectionStatus from './CollectionStatus';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
 import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 
-const CollectionTableRow = ({ collection, getCollectionsCall, refreshCollection, isRefreshing }) => {
+const CollectionTableRow = ({
+  collection,
+  getCollectionsCall,
+  refreshCollection,
+  isRefreshing,
+  isSelected,
+  onToggleSelect,
+}) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
 
   return (
-    <StyledTableRow>
+    <StyledTableRow selected={isSelected}>
+      <TableCell padding="checkbox">
+        <Checkbox
+          checked={isSelected}
+          onChange={() => onToggleSelect(collection.name)}
+          inputProps={{ 'aria-label': `Select collection ${collection.name}` }}
+          size="small"
+        />
+      </TableCell>
       <TableCell>
         <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
           {collection.name}
@@ -82,14 +97,36 @@ CollectionTableRow.propTypes = {
   getCollectionsCall: PropTypes.func.isRequired,
   refreshCollection: PropTypes.func.isRequired,
   isRefreshing: PropTypes.bool.isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  onToggleSelect: PropTypes.func.isRequired,
 };
 
-const CollectionsList = ({ collections, getCollectionsCall, refreshCollection, isRefreshing }) => {
+const CollectionsList = ({
+  collections,
+  getCollectionsCall,
+  refreshCollection,
+  isRefreshing,
+  selectedCollections,
+  handleToggleSelect,
+  handleSelectAll,
+}) => {
+  const allSelected = collections.length > 0 && collections.every((c) => selectedCollections.has(c.name));
+  const someSelected = collections.some((c) => selectedCollections.has(c.name));
+
   return (
     <StyledTableContainer>
       <Table aria-label="simple table">
         <StyledTableHead>
           <TableRow>
+            <StyledHeaderCell padding="checkbox">
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected && !allSelected}
+                onChange={() => handleSelectAll(collections)}
+                inputProps={{ 'aria-label': 'Select all collections on this page' }}
+                size="small"
+              />
+            </StyledHeaderCell>
             <StyledHeaderCell width="25%">Name</StyledHeaderCell>
             <StyledHeaderCell width="12%">Status</StyledHeaderCell>
             <StyledHeaderCell align="center">Points (Approx)</StyledHeaderCell>
@@ -112,6 +149,8 @@ const CollectionsList = ({ collections, getCollectionsCall, refreshCollection, i
                 getCollectionsCall={getCollectionsCall}
                 refreshCollection={refreshCollection}
                 isRefreshing={isRefreshing}
+                isSelected={selectedCollections.has(collection.name)}
+                onToggleSelect={handleToggleSelect}
               />
             ))}
         </StyledTableBody>
@@ -125,6 +164,9 @@ CollectionsList.propTypes = {
   getCollectionsCall: PropTypes.func.isRequired,
   refreshCollection: PropTypes.func.isRequired,
   isRefreshing: PropTypes.bool.isRequired,
+  selectedCollections: PropTypes.instanceOf(Set).isRequired,
+  handleToggleSelect: PropTypes.func.isRequired,
+  handleSelectAll: PropTypes.func.isRequired,
 };
 
 export default CollectionsList;

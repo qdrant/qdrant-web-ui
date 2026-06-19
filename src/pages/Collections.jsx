@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip } from '@mui/material';
+import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip, Button } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import { RefreshCw } from 'lucide-react';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
@@ -12,6 +12,7 @@ import CollectionsList from '../components/Collections/CollectionsList';
 import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
+import ConfirmationDialog from '../components/Common/ConfirmationDialog';
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -28,6 +29,9 @@ function Collections() {
   const { client: qdrantClient } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
+  const [selectedCollections, setSelectedCollections] = useState(new Set());
+  const [openBulkDeleteDialog, setOpenBulkDeleteDialog] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState(null);
 
   const { maxCollections } = useMaxCollections();
 
@@ -106,6 +110,7 @@ function Collections() {
   }, [currentPage, getCollectionsCall]);
 
   useEffect(() => {
+    setSelectedCollections(new Set());
     if (!searchQuery) {
       getCollectionsCall(currentPage);
     } else {
@@ -143,7 +148,45 @@ function Collections() {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+    setSelectedCollections(new Set());
   };
+
+  const handleToggleSelect = useCallback((name) => {
+    setSelectedCollections((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(
+    (pageCollections) => {
+      const allSelected = pageCollections.every((c) => selectedCollections.has(c.name));
+      if (allSelected) {
+        setSelectedCollections(new Set());
+      } else {
+        setSelectedCollections(new Set(pageCollections.map((c) => c.name)));
+      }
+    },
+    [selectedCollections]
+  );
+
+  const handleBulkDelete = useCallback(async () => {
+    const names = Array.from(selectedCollections);
+    const errors = [];
+    for (const name of names) {
+      try {
+        await qdrantClient.deleteCollection(name);
+      } catch (error) {
+        errors.push(`${name}: ${error.message}`);
+      }
+    }
+    setSelectedCollections(new Set());
+    await getCollectionsCall(currentPage);
+    if (errors.length > 0) {
+      setBulkDeleteError(`Failed to delete: ${errors.join('; ')}`);
+    }
+  }, [selectedCollections, qdrantClient, getCollectionsCall, currentPage]);
 
   const displayCollections = searchQuery ? filteredCollections : collections;
 
@@ -193,6 +236,16 @@ function Collections() {
               md: 7,
             }}
           >
+            {selectedCollections.size > 0 && (
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setOpenBulkDeleteDialog(true)}
+                aria-label={`Delete ${selectedCollections.size} selected collection(s)`}
+              >
+                Delete ({selectedCollections.size})
+              </Button>
+            )}
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
@@ -225,6 +278,9 @@ function Collections() {
                 getCollectionsCall={() => getCollectionsCall(currentPage)}
                 refreshCollection={refreshCollection}
                 isRefreshing={isRefreshing}
+                selectedCollections={selectedCollections}
+                handleToggleSelect={handleToggleSelect}
+                handleSelectAll={handleSelectAll}
               />
               {displayCollections && displayCollections.length > PAGE_SIZE && (
                 <Box justifyContent="center" display="flex" mt={3}>
@@ -242,6 +298,19 @@ function Collections() {
           )}
         </Grid>
       </CenteredFrame>
+      {bulkDeleteError && <ErrorNotifier message={bulkDeleteError} />}
+      <ConfirmationDialog
+        open={openBulkDeleteDialog}
+        onClose={() => setOpenBulkDeleteDialog(false)}
+        title={`Delete ${selectedCollections.size} collection${selectedCollections.size !== 1 ? 's' : ''}?`}
+        content={Array.from(selectedCollections).join(', ')}
+        warning={
+          'Deleting collections cannot be undone. ' +
+          'Make sure you have backed up all important data before proceeding.'
+        }
+        actionName={'Delete'}
+        actionHandler={handleBulkDelete}
+      />
     </>
   );
 }
