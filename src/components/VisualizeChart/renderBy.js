@@ -26,50 +26,48 @@ const PALLETE = [
   '#651067',
 ];
 
-// const SELECTED_BORDER_COLOR = '#881177';
-
 function colorByPayload(payloadValue, colored) {
+  if (payloadValue === undefined || payloadValue === null) {
+    return BACKGROUND_COLOR;
+  }
+
   if (colored[payloadValue]) {
     return colored[payloadValue];
   }
 
   const nextColorIndex = Object.keys(colored).length % PALLETE.length;
-
   colored[payloadValue] = PALLETE[nextColorIndex];
 
   return PALLETE[nextColorIndex];
 }
 
-// This function generates an array of colors for each point in the chart.
-// There are following options available for colorBy:
-//
-// - None: all points will have the same color
-// - typeof = "string": color points based on the source field
-// - {"payload": "field_name"}: color points based on the payload field
-// - {"discover_score": { ... } }: color points based on the discover score
-// - {"query": { ... }}: color points based on the query score
+// --------------------------------------------------
+// COLOR GENERATION
+// --------------------------------------------------
 
 export function generateColorBy(points, colorBy = null) {
-  // Points example:
-  // [
-  //     { id: 0, payload: { field_name: 1 }, score: 0.5, vector: [0.1, 0.2, ....] },
-  //     { id: 1, payload: { field_name: 2 }, score: 0.6, vector: [0.3, 0.4, ....] },
-  //     ...
-  // ]
-
-  if (!colorBy) {
-    return Array.from({ length: points.length }, () => BACKGROUND_COLOR); // Default color
+  if (!points || points.length === 0) {
+    return [];
   }
 
-  // If `colorBy` is a string, interpret as a field name
+  // Default: single color
+  if (!colorBy) {
+    return Array.from({ length: points.length }, () => BACKGROUND_COLOR);
+  }
+
+  // If `colorBy` is a string → payload field
   if (typeof colorBy === 'string') {
     colorBy = { payload: colorBy };
   }
 
   function getNestedValue(obj, path) {
+    if (!obj) return undefined;
     return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   }
 
+  // -------------------------------
+  // Payload-based coloring
+  // -------------------------------
   if (colorBy.payload) {
     const valuesToColor = {};
 
@@ -79,20 +77,52 @@ export function generateColorBy(points, colorBy = null) {
     });
   }
 
+  // -------------------------------
+  // Score-based coloring
+  // (query / discover / HNSW-safe)
+  // -------------------------------
   if (colorBy.query) {
-    const scores = points.map((point) => point.score);
+    const scores = points
+      .map((point) => point.score)
+      .filter((score) => typeof score === 'number');
+
+    if (scores.length === 0) {
+      return Array.from({ length: points.length }, () => BACKGROUND_COLOR);
+    }
+
     const minScore = Math.min(...scores);
     const maxScore = Math.max(...scores);
 
+    // Avoid division by zero
+    if (minScore === maxScore) {
+      return Array.from({ length: points.length }, () => SCORE_GRADIENT_COLORS[1]);
+    }
+
     const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
-    return scores.map((score) => {
-      const normalizedScore = (score - minScore) / (maxScore - minScore);
+
+    return points.map((point) => {
+      if (typeof point.score !== 'number') {
+        return BACKGROUND_COLOR;
+      }
+
+      const normalizedScore = (point.score - minScore) / (maxScore - minScore);
       return colorScale(normalizedScore).hex();
     });
   }
+
+  // Fallback
+  return Array.from({ length: points.length }, () => BACKGROUND_COLOR);
 }
 
+// --------------------------------------------------
+// SIZE GENERATION
+// --------------------------------------------------
+
 export function generateSizeBy(points) {
-  // ToDo: Intoroduce size differentiation later
+  if (!points || points.length === 0) {
+    return [];
+  }
+
+  // HNSW-safe default
   return points.map(() => 3);
 }
