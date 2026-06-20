@@ -10,7 +10,7 @@ export const ErrorNotifier = ({ message = 'Something went wrong', callback }) =>
   useEffect(() => {
     enqueueSnackbar(message, errorSnackbarOptions);
     typeof callback === 'function' && callback();
-  }, [enqueueSnackbar, errorSnackbarOptions, message]);
+  }, [enqueueSnackbar, errorSnackbarOptions, message, callback]);
 
   return null;
 };
