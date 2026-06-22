@@ -37,8 +37,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
       {isRestricted ? (
         <Tooltip
           title={
-            'Access Denied: You do not have permission to upload snapshot. ' +
-            'Please contact your administrator.'
+            'Access Denied: You do not have permission to upload snapshot. ' + 'Please contact your administrator.'
           }
           placement="bottom"
         >
@@ -54,11 +53,7 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
           </span>
         </Tooltip>
       ) : (
-        <Button
-          variant={'outlined'}
-          onClick={handleUploadClick}
-          startIcon={<UploadFile fontSize={'small'} />}
-        >
+        <Button variant={'outlined'} onClick={handleUploadClick} startIcon={<UploadFile fontSize={'small'} />}>
           {BUTTON_LABEL}
         </Button>
       )}
