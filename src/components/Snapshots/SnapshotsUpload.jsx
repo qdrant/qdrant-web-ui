@@ -12,6 +12,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { SnapshotUploadForm } from './SnapshotUploadForm';
 import { useClient } from '../../context/client-context';
 
+const BUTTON_LABEL = 'Upload snapshot';
+
 export const SnapshotsUpload = ({ onComplete, sx }) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -32,25 +34,34 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
 
   return (
     <Box sx={{ ...sx }}>
-      <Tooltip
-        title={
-          isRestricted
-            ? 'Access Denied: You do not have permission to upload snapshot. ' + 'Please contact your administrator.'
-            : 'Upload snapshot'
-        }
-        placement="left"
-      >
-        <span>
-          <Button
-            variant={'outlined'}
-            onClick={handleUploadClick}
-            startIcon={<UploadFile fontSize={'small'} />}
-            disabled={isRestricted}
-          >
-            Upload snapshot
-          </Button>
-        </span>
-      </Tooltip>
+      {isRestricted ? (
+        <Tooltip
+          title={
+            'Access Denied: You do not have permission to upload snapshot. ' +
+            'Please contact your administrator.'
+          }
+          placement="bottom"
+        >
+          <span>
+            <Button
+              variant={'outlined'}
+              onClick={handleUploadClick}
+              startIcon={<UploadFile fontSize={'small'} />}
+              disabled
+            >
+              {BUTTON_LABEL}
+            </Button>
+          </span>
+        </Tooltip>
+      ) : (
+        <Button
+          variant={'outlined'}
+          onClick={handleUploadClick}
+          startIcon={<UploadFile fontSize={'small'} />}
+        >
+          {BUTTON_LABEL}
+        </Button>
+      )}
 
       <Dialog
         fullScreen={fullScreen}
