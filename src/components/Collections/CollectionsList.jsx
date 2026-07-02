@@ -28,6 +28,50 @@ const CollectionTableRow = ({
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
 
+  if (collection.error) {
+    return (
+      <StyledTableRow selected={isSelected}>
+        <TableCell padding="checkbox">
+          <Checkbox
+            checked={isSelected}
+            onChange={() => onToggleSelect(collection.name)}
+            inputProps={{ 'aria-label': `Select collection ${collection.name}` }}
+            size="small"
+          />
+        </TableCell>
+        <TableCell>
+          <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
+            {collection.name}
+          </Typography>
+          <Typography component={'p'} variant="caption" color="text.secondary">
+            {collection.aliases && collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
+          </Typography>
+        </TableCell>
+        <TableCell colSpan={5}>
+          <Typography variant="body2" color="error.main">
+            ⚠ Error: {collection.error}
+          </Typography>
+        </TableCell>
+        <TableCell align="right">
+          <ActionsMenu>
+            <MenuItem onClick={() => refreshCollection(collection.name)} disabled={isRefreshing}>
+              Refresh
+            </MenuItem>
+            <MenuItem onClick={() => setOpenDeleteDialog(true)} sx={{ color: theme.palette.error.main }}>
+              Delete
+            </MenuItem>
+          </ActionsMenu>
+          <DeleteDialog
+            open={openDeleteDialog}
+            setOpen={setOpenDeleteDialog}
+            collectionName={collection.name}
+            getCollectionsCall={getCollectionsCall}
+          />
+        </TableCell>
+      </StyledTableRow>
+    );
+  }
+
   return (
     <StyledTableRow selected={isSelected}>
       <TableCell padding="checkbox">

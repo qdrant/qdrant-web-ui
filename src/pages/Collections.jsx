@@ -55,15 +55,23 @@ function Collections() {
 
         const nextRawCollections = await Promise.all(
           nextPageCollections.map(async (collection) => {
-            const collectionData = await qdrantClient.getCollection(collection.name);
             const collectionAliases = aliases.aliases
               .filter((alias) => alias.collection_name === collection.name)
               .map((alias) => alias.alias_name);
-            return {
-              name: collection.name,
-              ...collectionData,
-              aliases: [...collectionAliases],
-            };
+            try {
+              const collectionData = await qdrantClient.getCollection(collection.name);
+              return {
+                name: collection.name,
+                ...collectionData,
+                aliases: [...collectionAliases],
+              };
+            } catch (error) {
+              return {
+                name: collection.name,
+                error: getErrorMessageWithApiKey(error) || 'Failed to load collection info',
+                aliases: [...collectionAliases],
+              };
+            }
           })
         );
 
@@ -86,11 +94,18 @@ function Collections() {
         setFilteredCollections(filtered);
         const nextRawCollections = await Promise.all(
           filtered.map(async (collection) => {
-            const collectionData = await qdrantClient.getCollection(collection.name);
-            return {
-              name: collection.name,
-              ...collectionData,
-            };
+            try {
+              const collectionData = await qdrantClient.getCollection(collection.name);
+              return {
+                name: collection.name,
+                ...collectionData,
+              };
+            } catch (error) {
+              return {
+                name: collection.name,
+                error: getErrorMessageWithApiKey(error) || 'Failed to load collection info',
+              };
+            }
           })
         );
 
@@ -134,11 +149,13 @@ function Collections() {
       setIsRefreshing(true);
       try {
         const collectionData = await qdrantClient.getCollection(collectionName);
-        setRawCollections((prev) => prev.map((c) => (c.name === collectionName ? { ...c, ...collectionData } : c)));
+        setRawCollections((prev) =>
+          prev.map((c) => (c.name === collectionName ? { ...c, ...collectionData, error: null } : c))
+        );
         setErrorMessage(null);
       } catch (error) {
-        const message = getErrorMessageWithApiKey(error);
-        message && setErrorMessage(message);
+        const message = getErrorMessageWithApiKey(error) || 'Failed to load collection info';
+        setRawCollections((prev) => prev.map((c) => (c.name === collectionName ? { ...c, error: message } : c)));
       } finally {
         setIsRefreshing(false);
       }
