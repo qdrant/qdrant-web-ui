@@ -137,6 +137,35 @@ describe('CollectionsList', () => {
     expect(mockRefresh).toHaveBeenCalledWith(COLLECTIONS[0].name);
   });
 
+  it('should render an error row while keeping name and Delete available for unreadable collections', () => {
+    const COLLECTIONS_WITH_ERROR = [
+      COLLECTIONS[0],
+      {
+        name: 'Broken Collection',
+        error: 'Service internal error: something went wrong',
+        aliases: [],
+      },
+    ];
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={COLLECTIONS_WITH_ERROR}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    // Healthy collections still render alongside the broken one
+    expect(screen.getByText('Collection 1')).toBeInTheDocument();
+    // Broken collection keeps its name visible and surfaces the error
+    expect(screen.getByText('Broken Collection')).toBeInTheDocument();
+    expect(screen.getByText(/Service internal error: something went wrong/)).toBeInTheDocument();
+    // Delete action remains available for the broken collection
+    expect(screen.getAllByText('Delete')).toHaveLength(COLLECTIONS_WITH_ERROR.length);
+  });
+
   it('should disable Refresh menu item when isRefreshing is true', () => {
     render(
       <MemoryRouter>
