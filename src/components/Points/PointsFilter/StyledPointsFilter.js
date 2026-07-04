@@ -1,6 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Box, IconButton, Paper, Popper } from '@mui/material';
 import Editor from 'react-simple-code-editor';
+import { filterInputFontFamily } from './helpers';
 
 export const StyledAutocompletePopper = styled(Popper)(() => ({
   width: 'fit-content !important',
@@ -53,26 +54,39 @@ export const ClearButton = styled(IconButton)(({ theme }) => ({
   },
 }));
 
-export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
-  flex: 1,
-  fontFamily: theme.typography.fontFamily,
-  fontSize: '1rem',
+export const getFilterInputFontSx = (theme) => ({
+  fontFamily: filterInputFontFamily,
+  fontSize: theme.typography.body1.fontSize,
   fontWeight: 400,
   lineHeight: '23px',
   letterSpacing: '0.5px',
+  // Pin the shaping features explicitly so the visible <pre> overlay and the
+  // invisible <textarea> caret layer always shape text identically — form
+  // controls don't reliably pick these up from the theme on their own.
+  fontFeatureSettings: theme.typography.body1.fontFeatureSettings,
+});
+
+export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
+  flex: 1,
+  ...getFilterInputFontSx(theme),
   '& textarea, & pre': {
     fontFamily: 'inherit !important',
     fontSize: 'inherit !important',
     fontWeight: 'inherit !important',
     lineHeight: 'inherit !important',
     letterSpacing: 'inherit !important',
+    fontKerning: 'inherit !important',
+    fontFeatureSettings: 'inherit !important',
+    fontVariantLigatures: 'inherit !important',
     margin: '0 !important',
     padding: '0 !important',
     border: 'none !important',
     outline: 'none !important',
     background: 'transparent !important',
     whiteSpace: 'pre-wrap !important',
-    wordBreak: 'break-word !important',
+    // Match react-simple-code-editor defaults for consistent wrapping
+    wordBreak: 'keep-all !important',
+    overflowWrap: 'break-word !important',
     wordSpacing: 'normal !important',
     '&::placeholder': {
       color: theme.palette.text.disabled,
@@ -105,24 +119,37 @@ export const AutocompleteList = styled(Paper)(({ theme }) => ({
   },
 }));
 
-export const getSharedTextFieldSx = (theme) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '8px',
-    padding: '6px 8px',
-    minHeight: 40,
-  },
-  '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: theme.palette.divider,
-  },
-  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-    borderColor: theme.palette.primary.main,
-  },
-  '& .MuiChip-root': {
-    height: 28,
-    borderRadius: '8px',
-  },
-  '& .MuiOutlinedInput-input::placeholder': {
-    color: theme.palette.text.disabled,
-    opacity: 1,
-  },
-});
+export const getSharedTextFieldSx = (theme) => {
+  const fontSx = getFilterInputFontSx(theme);
+
+  return {
+    '& .MuiOutlinedInput-root': {
+      ...fontSx,
+      borderRadius: '8px',
+      padding: '6px 8px',
+      minHeight: 40,
+    },
+    '& .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.divider,
+    },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: theme.palette.primary.main,
+    },
+    '& .MuiOutlinedInput-input, & .MuiInputBase-input': {
+      ...fontSx,
+    },
+    '& .MuiChip-root': {
+      ...fontSx,
+      height: 28,
+      borderRadius: '8px',
+    },
+    '& .MuiChip-label': {
+      ...fontSx,
+    },
+    '& .MuiOutlinedInput-input::placeholder': {
+      color: theme.palette.text.disabled,
+      opacity: 1,
+      ...fontSx,
+    },
+  };
+};
