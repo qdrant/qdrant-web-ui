@@ -5,22 +5,24 @@ import { darkThemeOptions } from './dark-theme';
 import { lightThemeOptions } from './light-theme';
 import { highContrastThemeOptions } from './high-contrast-theme';
 
+export const baseFontFamily = [
+  '"Mona Sans"',
+  '-apple-system',
+  'BlinkMacSystemFont',
+  '"Segoe UI"',
+  '"Roboto"',
+  '"Oxygen"',
+  '"Ubuntu"',
+  '"Cantarell"',
+  '"Fira Sans"',
+  '"Droid Sans"',
+  '"Helvetica Neue"',
+  'sans-serif',
+].join(', ');
+
 const themeOptions = {
   typography: {
-    fontFamily: [
-      '"Mona Sans"',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      '"Roboto"',
-      '"Oxygen"',
-      '"Ubuntu"',
-      '"Cantarell"',
-      '"Fira Sans"',
-      '"Droid Sans"',
-      '"Helvetica Neue"',
-      'sans-serif',
-    ].join(', '),
+    fontFamily: baseFontFamily,
     allVariants: {
       fontFeatureSettings: "'ss01' on, 'ss05' on, 'ss06' on, 'liga' off, 'clig' off",
       textDecorationThickness: '1px',

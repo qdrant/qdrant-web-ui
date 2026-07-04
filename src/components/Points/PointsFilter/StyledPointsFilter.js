@@ -59,14 +59,15 @@ export const getFilterInputFontSx = (theme) => ({
   fontSize: theme.typography.body1.fontSize,
   fontWeight: 400,
   lineHeight: '23px',
-  letterSpacing: 'normal',
-  fontFeatureSettings: 'normal',
-  fontVariantLigatures: 'none',
+  letterSpacing: '0.5px',
+  // Pin the shaping features explicitly so the visible <pre> overlay and the
+  // invisible <textarea> caret layer always shape text identically — form
+  // controls don't reliably pick these up from the theme on their own.
+  fontFeatureSettings: theme.typography.body1.fontFeatureSettings,
 });
 
 export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
   flex: 1,
-  // Monospace avoids cumulative cursor drift from variable/proportional fonts in textarea vs pre
   ...getFilterInputFontSx(theme),
   '& textarea, & pre': {
     fontFamily: 'inherit !important',
@@ -74,6 +75,7 @@ export const StyledFilterEditor = styled(Editor)(({ theme }) => ({
     fontWeight: 'inherit !important',
     lineHeight: 'inherit !important',
     letterSpacing: 'inherit !important',
+    fontKerning: 'inherit !important',
     fontFeatureSettings: 'inherit !important',
     fontVariantLigatures: 'inherit !important',
     margin: '0 !important',

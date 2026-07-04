@@ -1,7 +1,12 @@
+import { baseFontFamily } from '../../../theme';
+
 /**
- * Shared monospace font stack for filter and similar-search inputs
+ * Shared font stack for filter and similar-search inputs — the regular theme
+ * font. The editor's <textarea> and highlighted <pre> overlay stay aligned as
+ * long as both layers use identical font settings and the highlight <span>s
+ * carry no metric-affecting styles (see getFilterInputFontSx).
  */
-export const filterInputFontFamily = 'ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", monospace';
+export const filterInputFontFamily = baseFontFamily;
 
 /**
  * Check if two filters are equal
@@ -204,6 +209,7 @@ export const calculatePopperOffset = (filterInputValue, currentWordStart) => {
     measureCtx = measureCanvas.getContext('2d');
     // Match the editor's font
     measureCtx.font = `400 16px ${filterInputFontFamily}`;
+    measureCtx.letterSpacing = '0.5px';
   }
 
   const textWidth = measureCtx.measureText(textBeforeWord).width;
