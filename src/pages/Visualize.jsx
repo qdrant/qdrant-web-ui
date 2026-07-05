@@ -18,7 +18,7 @@ const query = `
 // Try me!
 
 {
-  "limit": 1000
+  "limit": 2000
 }
 
 // Specify request parameters to select data for visualization.
@@ -29,7 +29,8 @@ const query = `
 // Available parameters:
 //
 // - 'limit': number of points to sample for visualization.
-//            *Warning*: values above a few thousand may be slow to lay out.
+//            UMAP (default) handles tens of thousands of points;
+//            TSNE and PCA get slow above a few thousand.
 //
 // - 'n_neighbors': number of nearest neighbors per point to request
 //                  from the server. Default: 15.

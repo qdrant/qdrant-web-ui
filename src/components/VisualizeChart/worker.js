@@ -1,13 +1,22 @@
 /* eslint-disable no-restricted-globals */
 import * as druid from '@saehrimnir/druidjs';
 import get from 'lodash/get';
-import { DEFAULT_N_NEIGHBORS, densifyKnnGraph } from '../../lib/knn-graph';
+import initWasm, { UmapLayout } from '@qdrant/graph-layout-wasm';
+import wasmUrl from '@qdrant/graph-layout-wasm/pkg/graph_layout_wasm_bg.wasm?url';
+import { densifyKnnGraph, scoresToDistances } from '../../lib/knn-graph';
 
 // druid's TSNE with `metric: "precomputed"` references the bare name `druid`
 // inside its own bundle (upstream bug), so the module has to be exposed globally
 self.druid = druid;
 
+let wasmReady = null;
+function ensureWasm() {
+  wasmReady = wasmReady ?? initWasm({ module_or_path: wasmUrl });
+  return wasmReady;
+}
+
 const MESSAGE_INTERVAL = 200;
+const UMAP_EPOCHS_PER_CHUNK = 5;
 const DEFAULT_ALGORITHM = 'UMAP';
 
 function getVectorType(vector) {
@@ -26,13 +35,13 @@ function getVectorType(vector) {
   return 'unknown';
 }
 
-self.onmessage = function (e) {
+self.onmessage = async function (e) {
   const params = e?.data?.params || {};
   const result = e?.data?.result || {};
 
   try {
     if (result.graph) {
-      handleKnnGraph(result, params);
+      await handleKnnGraph(result, params);
     } else {
       handleRawVectors(result, params);
     }
@@ -43,7 +52,7 @@ self.onmessage = function (e) {
 
 // Layout from the server-side computed knn graph (distance matrix API),
 // no raw vectors involved
-function handleKnnGraph(result, params) {
+async function handleKnnGraph(result, params) {
   const algorithm = params.algorithm || DEFAULT_ALGORITHM;
   const graph = result.graph;
   const n = graph.ids.length;
@@ -61,28 +70,53 @@ function handleKnnGraph(result, params) {
     return;
   }
 
-  let reducer;
   if (algorithm === 'UMAP') {
-    const matrix = densifyKnnGraph(graph, result.metric);
-    // Never use more neighbors than the knn graph actually contains per point,
-    // otherwise penalty fill values leak into the neighborhoods
-    const avgDegree = Math.floor(graph.scores.length / n);
-    const nNeighbors = Math.max(2, Math.min(params.n_neighbors ?? DEFAULT_N_NEIGHBORS, avgDegree, n - 1));
-    reducer = new druid.UMAP(matrix, { metric: 'precomputed', n_neighbors: nNeighbors });
+    // wasm layout consumes the sparse knn graph directly, no densification
+    await ensureWasm();
+    const distances = scoresToDistances(graph.scores, result.metric);
+    const layout = new UmapLayout(
+      n,
+      new Uint32Array(graph.offsets_row),
+      new Uint32Array(graph.offsets_col),
+      new Float32Array(distances),
+      undefined // default params: min_dist 0.1, auto epochs, fixed seed
+    );
+
+    try {
+      let now = Date.now();
+      let done = false;
+      while (!done) {
+        done = layout.step(UMAP_EPOCHS_PER_CHUNK);
+        if (Date.now() - now > MESSAGE_INTERVAL) {
+          now = Date.now();
+          self.postMessage({ result: intoPointsDataset(layout.embedding()), error: null });
+        }
+      }
+      self.postMessage({ result: intoPointsDataset(layout.embedding()), error: null });
+    } finally {
+      layout.free();
+    }
   } else if (algorithm === 'TSNE') {
     // druid's TSNE defaults to squared euclidean, mirror that for precomputed distances
     const matrix = densifyKnnGraph(graph, result.metric, { squared: true });
     const perplexity = Math.max(2, Math.min(50, Math.floor((n - 1) / 3)));
-    reducer = new druid.TSNE(matrix, { metric: 'precomputed', perplexity });
+    const reducer = new druid.TSNE(matrix, { metric: 'precomputed', perplexity });
+    streamLayout(reducer);
   } else {
     self.postMessage({
       data: [],
       error: `${algorithm} does not support server-side distance matrix`,
     });
-    return;
   }
+}
 
-  streamLayout(reducer);
+function intoPointsDataset(embedding) {
+  // Flat [x0, y0, x1, y1, ...] to [ { x: x0, y: y0 }, ... ]
+  const points = new Array(embedding.length / 2);
+  for (let i = 0; i < points.length; i++) {
+    points[i] = { x: embedding[i * 2], y: embedding[i * 2 + 1] };
+  }
+  return points;
 }
 
 // Legacy path: dimensionality reduction on raw vectors, loaded into the browser.
