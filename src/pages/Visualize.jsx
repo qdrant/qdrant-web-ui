@@ -18,15 +18,21 @@ const query = `
 // Try me!
 
 {
-  "limit": 500
+  "limit": 1000
 }
 
 // Specify request parameters to select data for visualization.
 //
+// Distances between points are computed by Qdrant server-side
+// (Distance Matrix API), so raw vectors are not transferred to the browser.
+//
 // Available parameters:
 //
-// - 'limit': maximum number of vectors to visualize.
-//            *Warning*: large values may cause browser to freeze.
+// - 'limit': number of points to sample for visualization.
+//            *Warning*: values above a few thousand may be slow to lay out.
+//
+// - 'n_neighbors': number of nearest neighbors per point to request
+//                  from the server. Default: 15.
 //
 // - 'filter': filter expression to select vectors for visualization.
 //             See https://qdrant.tech/documentation/concepts/filtering/
@@ -41,7 +47,9 @@ const query = `
 // - 'using': specify which vector to use for visualization
 //                  if there are multiple.
 //
-// - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP', 'PCA'.
+// - 'algorithm': specify algorithm to use for visualization.
+//                Available options: 'UMAP' (default), 'TSNE',
+//                'PCA' (loads raw vectors into the browser).
 
 
 `;
@@ -95,10 +103,17 @@ function Visualize() {
     type: 'object',
     properties: {
       limit: {
-        description: 'Page size. Default: 10',
+        description: 'Number of points to sample for visualization. Default: 1000',
         type: 'integer',
         format: 'uint',
         minimum: 1,
+        nullable: true,
+      },
+      n_neighbors: {
+        description: 'Number of nearest neighbors per point in the server-side distance matrix. Default: 15',
+        type: 'integer',
+        format: 'uint',
+        minimum: 2,
         nullable: true,
       },
       filter: {
@@ -150,8 +165,8 @@ function Visualize() {
       algorithm: {
         description: 'Algorithm to use for visualization',
         type: 'string',
-        enum: ['TSNE', 'UMAP', 'PCA'],
-        default: 'TSNE',
+        enum: ['UMAP', 'TSNE', 'PCA'],
+        default: 'UMAP',
       },
     },
   });
