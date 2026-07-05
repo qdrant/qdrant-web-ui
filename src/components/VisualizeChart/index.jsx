@@ -1,31 +1,10 @@
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import get from 'lodash/get';
 import ScatterGL from './ScatterGL';
-import { generateColorBy } from './renderBy';
-
-function buildGroups(points, payloadField, colors) {
-  // Group points by payload value for the legend; group order is
-  // alphabetical, matching the previous Chart.js legend
-  const groupOfPoint = new Array(points.length);
-  const groups = new Map();
-  points.forEach((point, index) => {
-    let label = get(point.payload, payloadField) + '';
-    if (!label) {
-      label = 'Unknown';
-    }
-    if (!groups.has(label)) {
-      groups.set(label, { label, color: colors[index], pointIndices: [] });
-    }
-    groups.get(label).pointIndices.push(index);
-    groupOfPoint[index] = label;
-  });
-  const sorted = [...groups.values()].sort((a, b) => a.label.localeCompare(b.label));
-  return { groups: sorted, groupOfPoint };
-}
+import { generateColorBy, generateGroupsAndColors } from './renderBy';
 
 const VisualizeChart = ({
   requestResult, // Raw output of the request from qdrant client
@@ -33,6 +12,8 @@ const VisualizeChart = ({
   onPointSelect, // callback: point clicked (null for a click on empty space)
   onBoxSelect, // callback: array of points selected with shift+drag
   focusIds, // ids of points to emphasize (all others get dimmed), or null
+  selectionCount, // number of points in the active selection, if any
+  onSelectionClear, // callback: the selection chip was closed
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -49,6 +30,14 @@ const VisualizeChart = ({
   const [legendGroups, setLegendGroups] = useState(null);
   const [hiddenGroups, setHiddenGroups] = useState(() => new Set());
   const [boxRect, setBoxRect] = useState(null);
+  const [progress, setProgress] = useState(null); // { step, total } while the layout runs
+  const workerRef = useRef(null);
+
+  const stopLayout = () => {
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setProgress(null);
+  };
 
   // Create the WebGL renderer once per mount
   useEffect(() => {
@@ -96,17 +85,17 @@ const VisualizeChart = ({
     pointsRef.current = points;
 
     const colorBy = visualizationParams?.color_by;
-    const colors = generateColorBy(points, colorBy);
     const payloadField = typeof colorBy === 'string' ? colorBy : colorBy?.payload;
 
     scatter.setData(points.length);
-    scatter.setColors(colors);
 
     if (payloadField) {
-      const { groups, groupOfPoint } = buildGroups(points, payloadField, colors);
+      const { colors, groups, groupOfPoint } = generateGroupsAndColors(points, payloadField);
+      scatter.setColors(colors);
       groupOfPointRef.current = groupOfPoint;
       setLegendGroups(groups);
     } else {
+      scatter.setColors(generateColorBy(points, colorBy));
       groupOfPointRef.current = null;
       setLegendGroups(null);
     }
@@ -116,15 +105,23 @@ const VisualizeChart = ({
     const worker = new Worker(new URL('./worker.js', import.meta.url), {
       type: 'module',
     });
+    workerRef.current = worker;
 
     worker.onmessage = (m) => {
       if (m.data.error) {
+        setProgress(null);
         enqueueSnackbar(`Visualization Unsuccessful, error: ${m.data.error}`, {
           variant: 'error',
         });
       } else if (m.data.result && m.data.result.length > 0) {
         scatterRef.current?.updatePositions(m.data.result);
+        if (m.data.done) {
+          setProgress(null);
+        } else if (m.data.progress) {
+          setProgress(m.data.progress);
+        }
       } else {
+        setProgress(null);
         enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
       }
     };
@@ -134,10 +131,13 @@ const VisualizeChart = ({
         result: requestResult,
         params: visualizationParams,
       });
+      setProgress({ step: 0, total: null });
     }
 
     return () => {
       worker.terminate();
+      workerRef.current = null;
+      setProgress(null);
     };
   }, [requestResult]);
 
@@ -230,10 +230,35 @@ const VisualizeChart = ({
                 sx={{ textDecoration: hiddenGroups.has(group.label) ? 'line-through' : 'none' }}
               >
                 {group.label}
+                {typeof group.count === 'number' ? ` (${group.count})` : ''}
               </Typography>
             </Box>
           ))}
         </Box>
+      )}
+      {selectionCount > 0 && (
+        <Chip
+          size="small"
+          color="primary"
+          label={`${selectionCount} points selected`}
+          onDelete={onSelectionClear}
+          sx={{ position: 'absolute', bottom: 8, right: 8, zIndex: 2 }}
+        />
+      )}
+      {progress && (
+        <Tooltip title="Layout is running, press to stop it and keep the current picture">
+          <Chip
+            size="small"
+            variant="outlined"
+            label={
+              progress.total
+                ? `Layout: ${Math.round((progress.step / progress.total) * 100)}%`
+                : `Layout: iteration ${progress.step}`
+            }
+            onDelete={stopLayout}
+            sx={{ position: 'absolute', bottom: 8, left: 8, zIndex: 2, backdropFilter: 'blur(2px)' }}
+          />
+        </Tooltip>
       )}
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
       {boxRect && (
@@ -280,6 +305,8 @@ VisualizeChart.propTypes = {
   onPointSelect: PropTypes.func,
   onBoxSelect: PropTypes.func,
   focusIds: PropTypes.array,
+  selectionCount: PropTypes.number,
+  onSelectionClear: PropTypes.func,
 };
 
 export default VisualizeChart;

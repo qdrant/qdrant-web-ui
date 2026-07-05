@@ -12,7 +12,6 @@ import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { getSimilarPoints } from '../lib/graph-visualization-helpers';
-import { bigIntJSON } from '../common/bigIntJSON';
 import { useSnackbar } from 'notistack';
 
 const SIMILAR_POINTS_LIMIT = 12;
@@ -65,8 +64,8 @@ const query = `
 // Chart interactions:
 //
 // - click a point to see its payload and its nearest neighbors
-// - shift+drag to select points: a request to isolate them
-//   is appended to this editor
+// - shift+drag to select points: the selection is emphasized,
+//   close the selection tag to reset it
 // - drag to pan, mouse wheel to zoom
 
 
@@ -86,10 +85,13 @@ function Visualize() {
   const navigate = useNavigate();
   const params = useParams();
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
+  const [panelsHeight, setPanelsHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
+  const panelsWrapper = useRef(null);
   const { height } = useWindowResize();
   const [activePoint, setActivePoint] = useState(null);
   const [similarPoints, setSimilarPoints] = useState(null);
+  const [selectedIds, setSelectedIds] = useState(null);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -98,7 +100,12 @@ function Visualize() {
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
-  }, [height, VisualizeChartWrapper]);
+    // Bound the whole split-pane area to the viewport, so an overly long
+    // Data Panel scrolls inside its own pane instead of the whole page
+    if (panelsWrapper.current) {
+      setPanelsHeight(height - panelsWrapper.current.getBoundingClientRect().top);
+    }
+  }, [height, VisualizeChartWrapper, panelsWrapper]);
 
   useEffect(() => {
     if (activePoint != null && tabValue !== 1) {
@@ -110,6 +117,7 @@ function Visualize() {
     setVisualizationParams(data);
     setActivePoint(null);
     setSimilarPoints(null);
+    setSelectedIds(null);
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
@@ -143,37 +151,23 @@ function Visualize() {
     }
   };
 
-  // Shift+drag selection: append a runnable isolation request to the editor,
-  // keeping the editor as the single source of truth for what is displayed
+  // Shift+drag: the selection becomes the working set - selected points
+  // stay bright, the rest is dimmed, and a closable chip in the chart
+  // indicates the active selection
   const onBoxSelect = (points) => {
     if (!points.length) {
+      setSelectedIds(null);
       return;
     }
-    const isolateRequest = {
-      limit: points.length,
-      filter: { must: [{ has_id: points.map((point) => point.id) }] },
-    };
-    if (visualizationParams?.using) {
-      isolateRequest.using = visualizationParams.using;
-    }
-    if (visualizationParams?.color_by) {
-      isolateRequest.color_by = visualizationParams.color_by;
-    }
-    const block = `\n// Selected ${points.length} points - run this block to isolate them:\n\n${bigIntJSON.stringify(
-      isolateRequest,
-      null,
-      2
-    )}\n`;
-    setCode((prevCode) => prevCode + block);
-    enqueueSnackbar(`Isolation request for ${points.length} points appended to the editor`, {
-      variant: 'info',
-    });
+    setSelectedIds(points.map((point) => point.id));
   };
 
-  // Points to emphasize in the chart: an active neighbor search takes
-  // precedence over the 'highlight' filter of the request
+  // Points to emphasize in the chart, by precedence: the active selection,
+  // then the neighbors of the clicked point, then the 'highlight' filter
   let focusIds = null;
-  if (similarPoints && activePoint) {
+  if (selectedIds?.length) {
+    focusIds = selectedIds;
+  } else if (similarPoints && activePoint) {
     focusIds = [activePoint.id, ...similarPoints.map((point) => point.id)];
   } else if (result?.highlightIds?.length) {
     focusIds = result.highlightIds;
@@ -273,111 +267,115 @@ function Visualize() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid size={12}>
-            <PanelGroup direction="horizontal">
-              <Panel style={{ display: 'flex' }}>
-                <Box width={'100%'}>
-                  <Box>
-                    <Paper
-                      variant="heading"
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        p: 1,
-                        borderRadius: 0,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Tooltip title={'Back to collection'}>
-                        <IconButton
-                          sx={{ mr: 3 }}
-                          size="small"
-                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
-                        >
-                          <ArrowBack />
-                        </IconButton>
-                      </Tooltip>
-                      <Typography variant="h6">{params.collectionName}</Typography>
-                    </Paper>
+            <Box ref={panelsWrapper} sx={{ height: panelsHeight || 'auto', overflow: 'hidden' }}>
+              <PanelGroup direction="horizontal" style={{ height: '100%' }}>
+                <Panel style={{ display: 'flex' }}>
+                  <Box width={'100%'}>
+                    <Box>
+                      <Paper
+                        variant="heading"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          p: 1,
+                          borderRadius: 0,
+                          borderBottom: `1px solid ${theme.palette.divider}`,
+                        }}
+                      >
+                        <Tooltip title={'Back to collection'}>
+                          <IconButton
+                            sx={{ mr: 3 }}
+                            size="small"
+                            onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
+                          >
+                            <ArrowBack />
+                          </IconButton>
+                        </Tooltip>
+                        <Typography variant="h6">{params.collectionName}</Typography>
+                      </Paper>
+                    </Box>
+                    <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
+                      <VisualizeChart
+                        requestResult={result}
+                        visualizationParams={visualizationParams}
+                        onPointSelect={onPointSelect}
+                        onBoxSelect={onBoxSelect}
+                        focusIds={focusIds}
+                        selectionCount={selectedIds?.length ?? 0}
+                        onSelectionClear={() => setSelectedIds(null)}
+                      />
+                    </Box>
                   </Box>
-                  <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart
-                      requestResult={result}
-                      visualizationParams={visualizationParams}
-                      onPointSelect={onPointSelect}
-                      onBoxSelect={onBoxSelect}
-                      focusIds={focusIds}
-                    />
-                  </Box>
-                </Box>
-              </Panel>
-              <PanelResizeHandle
-                style={{
-                  width: '10px',
-                  background: theme.palette.background.paperElevation2,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
+                </Panel>
+                <PanelResizeHandle
+                  style={{
+                    width: '10px',
+                    background: theme.palette.background.paperElevation2,
                   }}
                 >
-                  &#8942;
-                </Box>
-              </PanelResizeHandle>
-              <Panel>
-                <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <Box
                     sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      backgroundColor: theme.palette.background.paper,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
                     }}
                   >
-                    <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
-                      <Tab label="Code" />
-                      <Tab label="Data Panel" />
-                    </Tabs>
+                    &#8942;
                   </Box>
-                  <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
-                    <FilterEditorWindow
-                      code={code}
-                      onChange={setCode}
-                      onChangeResult={onEditorCodeRun}
-                      customRequestSchema={filterRequestSchema}
-                    />
-                  </TabPanel>
-                  <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>
-                      <PointPreview point={activePoint} />
-                      {similarPoints && similarPoints.length > 0 && (
-                        <Box sx={{ px: 2, pb: 2 }}>
-                          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                            Similar points
-                          </Typography>
-                          <List dense disablePadding>
-                            {similarPoints.map((point) => (
-                              <ListItemButton
-                                key={String(point.id)}
-                                onClick={() => onPointSelect(point)}
-                                sx={{ display: 'flex', justifyContent: 'space-between' }}
-                              >
-                                <Typography variant="body2">Point {String(point.id)}</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
-                                </Typography>
-                              </ListItemButton>
-                            ))}
-                          </List>
-                        </Box>
-                      )}
+                </PanelResizeHandle>
+                <Panel>
+                  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        backgroundColor: theme.palette.background.paper,
+                      }}
+                    >
+                      <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
+                        <Tab label="Code" />
+                        <Tab label="Data Panel" />
+                      </Tabs>
                     </Box>
-                  </TabPanel>
-                </Box>
-              </Panel>
-            </PanelGroup>
+                    <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
+                      <FilterEditorWindow
+                        code={code}
+                        onChange={setCode}
+                        onChangeResult={onEditorCodeRun}
+                        customRequestSchema={filterRequestSchema}
+                      />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
+                      <Box sx={{ height: '100%', overflowY: 'scroll' }}>
+                        <PointPreview point={activePoint} />
+                        {similarPoints && similarPoints.length > 0 && (
+                          <Box sx={{ px: 2, pb: 2 }}>
+                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                              Similar points
+                            </Typography>
+                            <List dense disablePadding>
+                              {similarPoints.map((point) => (
+                                <ListItemButton
+                                  key={String(point.id)}
+                                  onClick={() => onPointSelect(point)}
+                                  sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                >
+                                  <Typography variant="body2">Point {String(point.id)}</Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
+                                  </Typography>
+                                </ListItemButton>
+                              ))}
+                            </List>
+                          </Box>
+                        )}
+                      </Box>
+                    </TabPanel>
+                  </Box>
+                </Panel>
+              </PanelGroup>
+            </Box>
           </Grid>
         </Grid>
       </Box>

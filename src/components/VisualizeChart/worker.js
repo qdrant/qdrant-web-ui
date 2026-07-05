@@ -89,10 +89,13 @@ async function handleKnnGraph(result, params) {
         done = layout.step(UMAP_EPOCHS_PER_CHUNK);
         if (Date.now() - now > MESSAGE_INTERVAL) {
           now = Date.now();
-          postPositions(layout.embedding());
+          postPositions(layout.embedding(), {
+            step: layout.current_epoch(),
+            total: layout.n_epochs(),
+          });
         }
       }
-      postPositions(layout.embedding());
+      postPositions(layout.embedding(), null, true);
     } finally {
       layout.free();
     }
@@ -110,10 +113,12 @@ async function handleKnnGraph(result, params) {
   }
 }
 
-// Send flat [x0, y0, x1, y1, ...] coordinates, transferring the buffer
-function postPositions(positions) {
+// Send flat [x0, y0, x1, y1, ...] coordinates, transferring the buffer.
+// `progress` is { step, total } (total may be null when unknown),
+// `done` marks the final frame of the layout.
+function postPositions(positions, progress = null, done = false) {
   const array = positions instanceof Float32Array ? positions : new Float32Array(positions);
-  self.postMessage({ result: array, error: null }, [array.buffer]);
+  self.postMessage({ result: array, progress, done, error: null }, [array.buffer]);
 }
 
 // Legacy path: dimensionality reduction on raw vectors, loaded into the browser.
@@ -182,7 +187,7 @@ function handleRawVectors(result, params) {
       const D = new druid[algorithm](data, {});
       const transformedData = D.transform();
 
-      postPositions(flatten(transformedData));
+      postPositions(flatten(transformedData), null, true);
     } else {
       const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
       streamLayout(D);
@@ -196,13 +201,16 @@ function streamLayout(reducer) {
   const next = reducer.generator(); // default = 500 iterations
 
   let reducedPoints = [];
+  let step = 0;
   for (reducedPoints of next) {
+    step++;
     if (Date.now() - now > MESSAGE_INTERVAL) {
       now = Date.now();
-      postPositions(flatten(reducedPoints));
+      // druid's generator does not expose its total, report steps only
+      postPositions(flatten(reducedPoints), { step, total: null });
     }
   }
-  postPositions(flatten(reducedPoints));
+  postPositions(flatten(reducedPoints), null, true);
 }
 
 // Convert [[x1, y1], [x2, y2], ...] to flat [x1, y1, x2, y2, ...]

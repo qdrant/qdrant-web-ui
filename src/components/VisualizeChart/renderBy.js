@@ -28,6 +28,50 @@ const PALLETE = [
 
 // const SELECTED_BORDER_COLOR = '#881177';
 
+// Payload fields with many distinct values would produce an unreadable
+// legend and an undecipherable coloring: only the largest categories get
+// their own color, the rest is merged into "Other"
+export const MAX_LEGEND_GROUPS = 10;
+export const OTHER_GROUP_LABEL = 'Other';
+const OTHER_GROUP_COLOR = '#9E9E9E';
+
+function getNestedValue(obj, path) {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+// Group points by a payload field, keeping individual colors for the
+// MAX_LEGEND_GROUPS largest categories and merging the rest into "Other".
+// Returns { colors, groups, groupOfPoint }:
+// - colors: per-point CSS color
+// - groups: [{ label, color, count }], largest first, "Other" last
+// - groupOfPoint: per-point group label
+export function generateGroupsAndColors(points, payloadField) {
+  const values = points.map((point) => {
+    const value = getNestedValue(point.payload, payloadField);
+    return value === undefined || value === null || value === '' ? 'Unknown' : String(value);
+  });
+
+  const counts = new Map();
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const top = sorted.slice(0, MAX_LEGEND_GROUPS);
+
+  const colorOf = new Map(top.map(([value], index) => [value, PALLETE[index % PALLETE.length]]));
+  const groups = top.map(([value, count]) => ({ label: value, color: colorOf.get(value), count }));
+
+  if (sorted.length > MAX_LEGEND_GROUPS) {
+    const otherCount = sorted.slice(MAX_LEGEND_GROUPS).reduce((sum, [, count]) => sum + count, 0);
+    groups.push({ label: OTHER_GROUP_LABEL, color: OTHER_GROUP_COLOR, count: otherCount });
+  }
+
+  const groupOfPoint = values.map((value) => (colorOf.has(value) ? value : OTHER_GROUP_LABEL));
+  const colors = groupOfPoint.map((label) => (label === OTHER_GROUP_LABEL ? OTHER_GROUP_COLOR : colorOf.get(label)));
+
+  return { colors, groups, groupOfPoint };
+}
+
 function colorByPayload(payloadValue, colored) {
   if (colored[payloadValue]) {
     return colored[payloadValue];
@@ -64,10 +108,6 @@ export function generateColorBy(points, colorBy = null) {
   // If `colorBy` is a string, interpret as a field name
   if (typeof colorBy === 'string') {
     colorBy = { payload: colorBy };
-  }
-
-  function getNestedValue(obj, path) {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
   }
 
   if (colorBy.payload) {

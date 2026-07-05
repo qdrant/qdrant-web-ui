@@ -56,6 +56,9 @@ void main() {
 }`;
 
 const CLICK_TOLERANCE_PX = 4;
+// Positions arriving from the layout worker are tweened over this duration,
+// so the animation reads as continuous motion instead of discrete jumps
+const POSITION_TWEEN_MS = 260;
 
 function compileProgram(gl, vertexSource, fragmentSource) {
   const compile = (type, source) => {
@@ -165,6 +168,7 @@ export default class ScatterGL {
     const gl = this.gl;
     this.n = n;
     this.positions = null;
+    this.tween = null;
     this.hoveredIndex = null;
     this.highlightIndex = null;
     this.userAdjustedView = false;
@@ -239,12 +243,53 @@ export default class ScatterGL {
     this.requestRender();
   }
 
-  // `positions` is a Float32Array [x0, y0, x1, y1, ...]
+  // `positions` is a Float32Array [x0, y0, x1, y1, ...].
+  // The first update is applied directly, subsequent ones are tweened.
   updatePositions(positions) {
+    if (!this.positions || this.positions.length !== positions.length) {
+      this.positions = positions;
+      this.tween = null;
+      this.uploadPositions();
+      return;
+    }
+    this.tween = {
+      from: this.positions.slice(),
+      to: positions,
+      start: performance.now(),
+    };
+    this.runTween();
+  }
+
+  runTween() {
+    if (this.tweenRunning) return;
+    this.tweenRunning = true;
+    const frame = () => {
+      if (this.destroyed || !this.tween) {
+        this.tweenRunning = false;
+        return;
+      }
+      const { from, to, start } = this.tween;
+      const t = Math.min(1, (performance.now() - start) / POSITION_TWEEN_MS);
+      const eased = t * (2 - t); // ease-out
+      const positions = this.positions;
+      for (let i = 0; i < positions.length; i++) {
+        positions[i] = from[i] + (to[i] - from[i]) * eased;
+      }
+      this.uploadPositions();
+      if (t >= 1) {
+        this.tween = null;
+        this.tweenRunning = false;
+        return;
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
+  uploadPositions() {
     const gl = this.gl;
-    this.positions = positions;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.DYNAMIC_DRAW);
     if (!this.userAdjustedView) {
       this.fitView();
     }
