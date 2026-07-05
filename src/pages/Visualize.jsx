@@ -59,6 +59,11 @@ const query = `
 //                Available options: 'UMAP' (default), 'TSNE',
 //                'PCA' (loads raw vectors into the browser).
 //
+// - 'perplexity': TSNE only, effective number of neighbors per point.
+//                 The request automatically fetches 3x this many
+//                 neighbors from the server. Default: derived
+//                 from 'n_neighbors'.
+//
 // - 'highlight': emphasize points matching a filter, dim the rest:
 //
 //                "highlight": {
@@ -255,6 +260,13 @@ function Visualize() {
         type: 'string',
         enum: ['UMAP', 'TSNE', 'PCA'],
         default: 'UMAP',
+      },
+      perplexity: {
+        description:
+          'TSNE only: effective number of neighbors per point. 3x this many neighbors are requested from the server',
+        type: 'number',
+        minimum: 2,
+        nullable: true,
       },
       highlight: {
         description: 'Emphasize points matching a filter, dim the rest',
