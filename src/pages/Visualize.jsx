@@ -12,6 +12,7 @@ import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { getSimilarPoints } from '../lib/graph-visualization-helpers';
+import SelectionPanel from '../components/VisualizeChart/SelectionPanel';
 import { useSnackbar } from 'notistack';
 
 const SIMILAR_POINTS_LIMIT = 12;
@@ -64,7 +65,9 @@ const query = `
 // Chart interactions:
 //
 // - click a point to see its payload and its nearest neighbors
-// - shift+drag to select points: the selection is emphasized,
+// - shift+drag to select points: the selection is emphasized and
+//   the Selection tab opens, where selected points can be inspected
+//   and copied (ids, JSON or a ready-to-use filter);
 //   close the selection tag to reset it
 // - drag to pan, mouse wheel to zoom
 
@@ -91,8 +94,14 @@ function Visualize() {
   const { height } = useWindowResize();
   const [activePoint, setActivePoint] = useState(null);
   const [similarPoints, setSimilarPoints] = useState(null);
-  const [selectedIds, setSelectedIds] = useState(null);
+  const [selectedPoints, setSelectedPoints] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+
+  const clearSelection = () => {
+    setSelectedPoints(null);
+    // Leave the Selection tab if it was active, it is about to disappear
+    setTabValue((prev) => (prev === 2 ? 0 : prev));
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -117,7 +126,7 @@ function Visualize() {
     setVisualizationParams(data);
     setActivePoint(null);
     setSimilarPoints(null);
-    setSelectedIds(null);
+    clearSelection();
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
@@ -152,21 +161,22 @@ function Visualize() {
   };
 
   // Shift+drag: the selection becomes the working set - selected points
-  // stay bright, the rest is dimmed, and a closable chip in the chart
-  // indicates the active selection
+  // stay bright, the rest is dimmed, and the Selection tab opens with
+  // the list of selected points
   const onBoxSelect = (points) => {
     if (!points.length) {
-      setSelectedIds(null);
+      clearSelection();
       return;
     }
-    setSelectedIds(points.map((point) => point.id));
+    setSelectedPoints(points);
+    setTabValue(2);
   };
 
   // Points to emphasize in the chart, by precedence: the active selection,
   // then the neighbors of the clicked point, then the 'highlight' filter
   let focusIds = null;
-  if (selectedIds?.length) {
-    focusIds = selectedIds;
+  if (selectedPoints?.length) {
+    focusIds = selectedPoints.map((point) => point.id);
   } else if (similarPoints && activePoint) {
     focusIds = [activePoint.id, ...similarPoints.map((point) => point.id)];
   } else if (result?.highlightIds?.length) {
@@ -301,8 +311,8 @@ function Visualize() {
                         onPointSelect={onPointSelect}
                         onBoxSelect={onBoxSelect}
                         focusIds={focusIds}
-                        selectionCount={selectedIds?.length ?? 0}
-                        onSelectionClear={() => setSelectedIds(null)}
+                        selectionCount={selectedPoints?.length ?? 0}
+                        onSelectionClear={clearSelection}
                       />
                     </Box>
                   </Box>
@@ -334,8 +344,9 @@ function Visualize() {
                       }}
                     >
                       <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
-                        <Tab label="Code" />
-                        <Tab label="Data Panel" />
+                        <Tab label="Code" value={0} />
+                        <Tab label="Data Panel" value={1} />
+                        {selectedPoints?.length > 0 && <Tab label={`Selection (${selectedPoints.length})`} value={2} />}
                       </Tabs>
                     </Box>
                     <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
@@ -372,6 +383,11 @@ function Visualize() {
                         )}
                       </Box>
                     </TabPanel>
+                    {selectedPoints?.length > 0 && (
+                      <TabPanel value={tabValue} index={2} style={{ flex: 1, overflow: 'hidden' }}>
+                        <SelectionPanel points={selectedPoints} onPointClick={onPointSelect} />
+                      </TabPanel>
+                    )}
                   </Box>
                 </Panel>
               </PanelGroup>
