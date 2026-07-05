@@ -29,7 +29,7 @@ export async function requestData(qdrantClient, collectionName, params) {
 async function requestMatrixData(
   qdrantClient,
   collectionName,
-  { limit, filter = null, using = null, color_by = null, n_neighbors = null }
+  { limit, filter = null, using = null, color_by = null, n_neighbors = null, highlight = null }
 ) {
   const [collectionInfo, matrixResponse] = await Promise.all([
     qdrantClient.getCollection(collectionName),
@@ -92,10 +92,24 @@ async function requestMatrixData(
   // of the knn graph refer to positions in the `ids` array
   const points = ids.map((id) => pointById.get(String(id)) ?? { id, payload: {} });
 
+  // 'highlight': emphasize sampled points matching an extra filter,
+  // evaluated server-side against the sampled ids only
+  let highlightIds = null;
+  if (highlight?.filter) {
+    const { points: matched } = await qdrantClient.scroll(collectionName, {
+      filter: { must: [highlight.filter, { has_id: ids }] },
+      limit: ids.length,
+      with_payload: false,
+      with_vector: false,
+    });
+    highlightIds = matched.map((point) => point.id);
+  }
+
   return {
     points,
     graph: matrixResponse,
     metric: resolveDistanceMetric(collectionInfo, using),
+    highlightIds,
   };
 }
 

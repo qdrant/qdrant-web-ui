@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab } from '@mui/material';
+import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab, List, ListItemButton } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -11,7 +11,11 @@ import PointPreview from '../components/Common/PointPreview';
 import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
+import { getSimilarPoints } from '../lib/graph-visualization-helpers';
+import { bigIntJSON } from '../common/bigIntJSON';
 import { useSnackbar } from 'notistack';
+
+const SIMILAR_POINTS_LIMIT = 12;
 
 const query = `
 
@@ -51,6 +55,19 @@ const query = `
 // - 'algorithm': specify algorithm to use for visualization.
 //                Available options: 'UMAP' (default), 'TSNE',
 //                'PCA' (loads raw vectors into the browser).
+//
+// - 'highlight': emphasize points matching a filter, dim the rest:
+//
+//                "highlight": {
+//                  "filter": { ... }
+//                }
+//
+// Chart interactions:
+//
+// - click a point to see its payload and its nearest neighbors
+// - shift+drag to select points: a request to isolate them
+//   is appended to this editor
+// - drag to pan, mouse wheel to zoom
 
 
 `;
@@ -72,6 +89,7 @@ function Visualize() {
   const VisualizeChartWrapper = useRef(null);
   const { height } = useWindowResize();
   const [activePoint, setActivePoint] = useState(null);
+  const [similarPoints, setSimilarPoints] = useState(null);
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event, newValue) => {
@@ -90,6 +108,8 @@ function Visualize() {
 
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
+    setActivePoint(null);
+    setSimilarPoints(null);
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
@@ -98,6 +118,66 @@ function Visualize() {
       enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
     }
   };
+
+  // Click on a point: show it in the Data Panel and highlight its
+  // nearest neighbors, served live by Qdrant
+  const onPointSelect = async (point) => {
+    if (!point) {
+      setActivePoint(null);
+      setSimilarPoints(null);
+      return;
+    }
+    setActivePoint(point);
+    setSimilarPoints(null);
+    try {
+      const neighbors = await getSimilarPoints(qdrantClient, {
+        collectionName: params.collectionName,
+        pointId: point.id,
+        limit: SIMILAR_POINTS_LIMIT,
+        filter: visualizationParams?.filter ?? undefined,
+        using: visualizationParams?.using ?? undefined,
+      });
+      setSimilarPoints(neighbors);
+    } catch (e) {
+      enqueueSnackbar(`Failed to load similar points: ${e.message}`, { variant: 'error' });
+    }
+  };
+
+  // Shift+drag selection: append a runnable isolation request to the editor,
+  // keeping the editor as the single source of truth for what is displayed
+  const onBoxSelect = (points) => {
+    if (!points.length) {
+      return;
+    }
+    const isolateRequest = {
+      limit: points.length,
+      filter: { must: [{ has_id: points.map((point) => point.id) }] },
+    };
+    if (visualizationParams?.using) {
+      isolateRequest.using = visualizationParams.using;
+    }
+    if (visualizationParams?.color_by) {
+      isolateRequest.color_by = visualizationParams.color_by;
+    }
+    const block = `\n// Selected ${points.length} points - run this block to isolate them:\n\n${bigIntJSON.stringify(
+      isolateRequest,
+      null,
+      2
+    )}\n`;
+    setCode((prevCode) => prevCode + block);
+    enqueueSnackbar(`Isolation request for ${points.length} points appended to the editor`, {
+      variant: 'info',
+    });
+  };
+
+  // Points to emphasize in the chart: an active neighbor search takes
+  // precedence over the 'highlight' filter of the request
+  let focusIds = null;
+  if (similarPoints && activePoint) {
+    focusIds = [activePoint.id, ...similarPoints.map((point) => point.id)];
+  } else if (result?.highlightIds?.length) {
+    focusIds = result.highlightIds;
+  }
 
   const filterRequestSchema = (vectorNames) => ({
     description: 'Filter request',
@@ -169,6 +249,16 @@ function Visualize() {
         enum: ['UMAP', 'TSNE', 'PCA'],
         default: 'UMAP',
       },
+      highlight: {
+        description: 'Emphasize points matching a filter, dim the rest',
+        type: 'object',
+        properties: {
+          filter: {
+            $ref: '#/components/schemas/Filter',
+          },
+        },
+        nullable: true,
+      },
     },
   });
 
@@ -213,8 +303,9 @@ function Visualize() {
                     <VisualizeChart
                       requestResult={result}
                       visualizationParams={visualizationParams}
-                      activePoint={activePoint}
-                      setActivePoint={setActivePoint}
+                      onPointSelect={onPointSelect}
+                      onBoxSelect={onBoxSelect}
+                      focusIds={focusIds}
                     />
                   </Box>
                 </Box>
@@ -261,6 +352,27 @@ function Visualize() {
                   <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
                     <Box sx={{ height: '100%', overflowY: 'scroll' }}>
                       <PointPreview point={activePoint} />
+                      {similarPoints && similarPoints.length > 0 && (
+                        <Box sx={{ px: 2, pb: 2 }}>
+                          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                            Similar points
+                          </Typography>
+                          <List dense disablePadding>
+                            {similarPoints.map((point) => (
+                              <ListItemButton
+                                key={String(point.id)}
+                                onClick={() => onPointSelect(point)}
+                                sx={{ display: 'flex', justifyContent: 'space-between' }}
+                              >
+                                <Typography variant="body2">Point {String(point.id)}</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                  {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
+                                </Typography>
+                              </ListItemButton>
+                            ))}
+                          </List>
+                        </Box>
+                      )}
                     </Box>
                   </TabPanel>
                 </Box>

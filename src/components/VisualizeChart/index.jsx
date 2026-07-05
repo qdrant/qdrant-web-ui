@@ -30,7 +30,9 @@ function buildGroups(points, payloadField, colors) {
 const VisualizeChart = ({
   requestResult, // Raw output of the request from qdrant client
   visualizationParams, // Parameters, as specified by the user in the input editor
-  setActivePoint, // callback to set new active point
+  onPointSelect, // callback: point clicked (null for a click on empty space)
+  onBoxSelect, // callback: array of points selected with shift+drag
+  focusIds, // ids of points to emphasize (all others get dimmed), or null
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -39,10 +41,14 @@ const VisualizeChart = ({
   const scatterRef = useRef(null);
   const pointsRef = useRef([]);
   const groupOfPointRef = useRef(null);
+  // Callbacks are captured by ScatterGL once at mount, keep them fresh
+  const callbacksRef = useRef({});
+  callbacksRef.current = { onPointSelect, onBoxSelect };
 
   const [tooltip, setTooltip] = useState(null); // { x, y, id }
   const [legendGroups, setLegendGroups] = useState(null);
   const [hiddenGroups, setHiddenGroups] = useState(() => new Set());
+  const [boxRect, setBoxRect] = useState(null);
 
   // Create the WebGL renderer once per mount
   useEffect(() => {
@@ -57,16 +63,16 @@ const VisualizeChart = ({
           }
           const point = pointsRef.current[index];
           setTooltip({ x, y, id: point?.id });
-          if (point && point.id !== undefined) {
-            setActivePoint(point);
-          }
         },
         onClick: (index) => {
-          const point = pointsRef.current[index];
-          if (point) {
-            setActivePoint(point);
-          }
+          const point = index === null ? null : pointsRef.current[index];
+          callbacksRef.current.onPointSelect?.(point ?? null);
         },
+        onBoxSelect: (indices) => {
+          const points = indices.map((index) => pointsRef.current[index]).filter(Boolean);
+          callbacksRef.current.onBoxSelect?.(points);
+        },
+        onBoxRect: (rect) => setBoxRect(rect),
       });
     } catch (e) {
       enqueueSnackbar(`Visualization is not available: ${e.message}`, { variant: 'error' });
@@ -153,6 +159,27 @@ const VisualizeChart = ({
     scatter.setVisibility(visible);
   }, [hiddenGroups, legendGroups]);
 
+  // Emphasize the given point ids (nearest neighbors of a selection or
+  // a highlight filter match) by dimming everything else
+  useEffect(() => {
+    const scatter = scatterRef.current;
+    if (!scatter || scatter.n === 0) {
+      return;
+    }
+    if (!focusIds || focusIds.length === 0) {
+      scatter.setFocus(null);
+      return;
+    }
+    const idSet = new Set(focusIds.map((id) => String(id)));
+    const indices = [];
+    pointsRef.current.forEach((point, index) => {
+      if (idSet.has(String(point.id))) {
+        indices.push(index);
+      }
+    });
+    scatter.setFocus(indices);
+  }, [focusIds, requestResult]);
+
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
       const next = new Set(prev);
@@ -209,6 +236,21 @@ const VisualizeChart = ({
         </Box>
       )}
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      {boxRect && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: boxRect.left,
+            top: boxRect.top,
+            width: boxRect.width,
+            height: boxRect.height,
+            border: `1px dashed ${theme.palette.primary.main}`,
+            backgroundColor: 'rgba(128, 128, 255, 0.1)',
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        />
+      )}
       {tooltip && (
         <Box
           sx={{
@@ -235,8 +277,9 @@ const VisualizeChart = ({
 VisualizeChart.propTypes = {
   requestResult: PropTypes.object.isRequired,
   visualizationParams: PropTypes.object.isRequired,
-  activePoint: PropTypes.object,
-  setActivePoint: PropTypes.func,
+  onPointSelect: PropTypes.func,
+  onBoxSelect: PropTypes.func,
+  focusIds: PropTypes.array,
 };
 
 export default VisualizeChart;

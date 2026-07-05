@@ -78,10 +78,15 @@ function compileProgram(gl, vertexSource, fragmentSource) {
 }
 
 export default class ScatterGL {
-  constructor(canvas, { onHover = null, onClick = null, pointSize = 7 } = {}) {
+  constructor(canvas, { onHover = null, onClick = null, onBoxSelect = null, onBoxRect = null, pointSize = 7 } = {}) {
     this.canvas = canvas;
     this.onHover = onHover;
     this.onClick = onClick;
+    // Called with an array of selected point indices after a shift+drag
+    this.onBoxSelect = onBoxSelect;
+    // Called with a pixel-space rect during a shift+drag (null when done),
+    // so the host can render a selection rectangle overlay
+    this.onBoxRect = onBoxRect;
     this.basePointSize = pointSize;
 
     const gl = canvas.getContext('webgl2', { antialias: true, alpha: true });
@@ -208,9 +213,29 @@ export default class ScatterGL {
         data[i] = data[i] ? 255 : 0;
       }
     }
+    this.visibleMask = visible ? data : null;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.visibilityBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
     this.pickingDirty = true;
+    this.requestRender();
+  }
+
+  // Dim all points except the given indices; null restores full colors
+  setFocus(indices) {
+    const gl = this.gl;
+    if (!this.pointColors) return;
+    let data = this.pointColors;
+    if (indices !== null) {
+      data = new Uint8Array(this.pointColors);
+      for (let i = 0; i < this.n; i++) {
+        data[i * 4 + 3] = Math.round(data[i * 4 + 3] * 0.15);
+      }
+      for (const index of indices) {
+        data[index * 4 + 3] = this.pointColors[index * 4 + 3];
+      }
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
     this.requestRender();
   }
 
@@ -368,16 +393,65 @@ export default class ScatterGL {
 
   // ---- interactions ----
 
+  clientToWorld(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
+    const clipX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const clipY = -(((clientY - rect.top) / rect.height) * 2 - 1);
+    return [(clipX - this.viewOffset[0]) / this.viewScale[0], (clipY - this.viewOffset[1]) / this.viewScale[1]];
+  }
+
+  // Indices of visible points inside a client-space rectangle
+  selectInBox({ x0, y0, x1, y1 }) {
+    if (!this.positions) return [];
+    const [wx0, wy0] = this.clientToWorld(x0, y0);
+    const [wx1, wy1] = this.clientToWorld(x1, y1);
+    const minX = Math.min(wx0, wx1);
+    const maxX = Math.max(wx0, wx1);
+    const minY = Math.min(wy0, wy1);
+    const maxY = Math.max(wy0, wy1);
+    const selected = [];
+    for (let i = 0; i < this.n; i++) {
+      if (this.visibleMask && !this.visibleMask[i]) continue;
+      const x = this.positions[i * 2];
+      const y = this.positions[i * 2 + 1];
+      if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+        selected.push(i);
+      }
+    }
+    return selected;
+  }
+
   attachEvents() {
     const canvas = this.canvas;
     this.dragState = null;
+    this.boxState = null;
 
     this.handlePointerDown = (e) => {
+      if (e.shiftKey && this.onBoxSelect) {
+        this.boxState = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
+        canvas.setPointerCapture(e.pointerId);
+        return;
+      }
       this.dragState = { x: e.clientX, y: e.clientY, moved: 0 };
       canvas.setPointerCapture(e.pointerId);
     };
 
     this.handlePointerMove = (e) => {
+      if (this.boxState) {
+        this.boxState.x1 = e.clientX;
+        this.boxState.y1 = e.clientY;
+        if (this.onBoxRect) {
+          const rect = canvas.getBoundingClientRect();
+          const { x0, y0, x1, y1 } = this.boxState;
+          this.onBoxRect({
+            left: Math.min(x0, x1) - rect.left,
+            top: Math.min(y0, y1) - rect.top,
+            width: Math.abs(x1 - x0),
+            height: Math.abs(y1 - y0),
+          });
+        }
+        return;
+      }
       if (this.dragState) {
         const dx = e.clientX - this.dragState.x;
         const dy = e.clientY - this.dragState.y;
@@ -405,11 +479,18 @@ export default class ScatterGL {
     };
 
     this.handlePointerUp = (e) => {
+      if (this.boxState) {
+        const selected = this.selectInBox(this.boxState);
+        this.boxState = null;
+        if (this.onBoxRect) this.onBoxRect(null);
+        if (this.onBoxSelect) this.onBoxSelect(selected);
+        return;
+      }
       const wasClick = this.dragState && this.dragState.moved <= CLICK_TOLERANCE_PX;
       this.dragState = null;
       if (wasClick && this.onClick) {
-        const index = this.pick(e.clientX, e.clientY);
-        if (index !== null) this.onClick(index);
+        // null = click on empty space (used to clear selection)
+        this.onClick(this.pick(e.clientX, e.clientY));
       }
     };
 
