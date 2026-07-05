@@ -12,8 +12,11 @@ import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { getSimilarPoints } from '../lib/graph-visualization-helpers';
-import SelectionPanel from '../components/VisualizeChart/SelectionPanel';
 import { useSnackbar } from 'notistack';
+
+// Lazy: SelectionPanel pulls in @mui/x-data-grid (~90 KB gzipped), which is
+// only needed once the user makes a selection
+const SelectionPanel = React.lazy(() => import('../components/VisualizeChart/SelectionPanel'));
 
 const SIMILAR_POINTS_LIMIT = 12;
 
@@ -385,7 +388,9 @@ function Visualize() {
                     </TabPanel>
                     {selectedPoints?.length > 0 && (
                       <TabPanel value={tabValue} index={2} style={{ flex: 1, overflow: 'hidden' }}>
-                        <SelectionPanel points={selectedPoints} onPointClick={onPointSelect} />
+                        <React.Suspense fallback={null}>
+                          <SelectionPanel points={selectedPoints} onPointClick={onPointSelect} />
+                        </React.Suspense>
                       </TabPanel>
                     )}
                   </Box>
