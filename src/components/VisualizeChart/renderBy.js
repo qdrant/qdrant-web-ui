@@ -81,8 +81,13 @@ export function generateColorBy(points, colorBy = null) {
 
   if (colorBy.query) {
     const scores = points.map((point) => point.score);
-    const minScore = Math.min(...scores);
-    const maxScore = Math.max(...scores);
+    // No Math.min(...scores): spreading large arrays overflows the call stack
+    let minScore = Infinity;
+    let maxScore = -Infinity;
+    for (const score of scores) {
+      if (score < minScore) minScore = score;
+      if (score > maxScore) maxScore = score;
+    }
 
     const colorScale = chroma.scale(SCORE_GRADIENT_COLORS);
     return scores.map((score) => {

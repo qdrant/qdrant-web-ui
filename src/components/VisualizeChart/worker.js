@@ -89,10 +89,10 @@ async function handleKnnGraph(result, params) {
         done = layout.step(UMAP_EPOCHS_PER_CHUNK);
         if (Date.now() - now > MESSAGE_INTERVAL) {
           now = Date.now();
-          self.postMessage({ result: intoPointsDataset(layout.embedding()), error: null });
+          postPositions(layout.embedding());
         }
       }
-      self.postMessage({ result: intoPointsDataset(layout.embedding()), error: null });
+      postPositions(layout.embedding());
     } finally {
       layout.free();
     }
@@ -110,13 +110,10 @@ async function handleKnnGraph(result, params) {
   }
 }
 
-function intoPointsDataset(embedding) {
-  // Flat [x0, y0, x1, y1, ...] to [ { x: x0, y: y0 }, ... ]
-  const points = new Array(embedding.length / 2);
-  for (let i = 0; i < points.length; i++) {
-    points[i] = { x: embedding[i * 2], y: embedding[i * 2 + 1] };
-  }
-  return points;
+// Send flat [x0, y0, x1, y1, ...] coordinates, transferring the buffer
+function postPositions(positions) {
+  const array = positions instanceof Float32Array ? positions : new Float32Array(positions);
+  self.postMessage({ result: array, error: null }, [array.buffer]);
 }
 
 // Legacy path: dimensionality reduction on raw vectors, loaded into the browser.
@@ -185,7 +182,7 @@ function handleRawVectors(result, params) {
       const D = new druid[algorithm](data, {});
       const transformedData = D.transform();
 
-      self.postMessage({ result: getDataset(transformedData), error: null });
+      postPositions(flatten(transformedData));
     } else {
       const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
       streamLayout(D);
@@ -202,13 +199,18 @@ function streamLayout(reducer) {
   for (reducedPoints of next) {
     if (Date.now() - now > MESSAGE_INTERVAL) {
       now = Date.now();
-      self.postMessage({ result: getDataset(reducedPoints), error: null });
+      postPositions(flatten(reducedPoints));
     }
   }
-  self.postMessage({ result: getDataset(reducedPoints), error: null });
+  postPositions(flatten(reducedPoints));
 }
 
-function getDataset(reducedPoints) {
-  // Convert [[x1, y1], [x2, y2] ] to [ { x: x1, y: y1 }, { x: x2, y: y2 } ]
-  return reducedPoints.map((point) => ({ x: point[0], y: point[1] }));
+// Convert [[x1, y1], [x2, y2], ...] to flat [x1, y1, x2, y2, ...]
+function flatten(reducedPoints) {
+  const flat = new Float32Array(reducedPoints.length * 2);
+  for (let i = 0; i < reducedPoints.length; i++) {
+    flat[i * 2] = reducedPoints[i][0];
+    flat[i * 2 + 1] = reducedPoints[i][1];
+  }
+  return flat;
 }
