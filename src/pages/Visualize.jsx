@@ -1,7 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import {
+  Paper,
+  Box,
+  Tooltip,
+  Typography,
+  Grid,
+  IconButton,
+  Tabs,
+  Tab,
+  List,
+  ListItemButton,
+  alpha,
+} from '@mui/material';
+import { ArrowBack, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
@@ -11,22 +23,36 @@ import PointPreview from '../components/Common/PointPreview';
 import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
+import { getSimilarPoints } from '../lib/graph-visualization-helpers';
 import { useSnackbar } from 'notistack';
+
+// Lazy: SelectionPanel pulls in @mui/x-data-grid (~90 KB gzipped), which is
+// only needed once the user makes a selection
+const SelectionPanel = React.lazy(() => import('../components/VisualizeChart/SelectionPanel'));
+
+const SIMILAR_POINTS_LIMIT = 12;
 
 const query = `
 
 // Try me!
 
 {
-  "limit": 500
+  "limit": 2000
 }
 
 // Specify request parameters to select data for visualization.
 //
+// Distances between points are computed by Qdrant server-side
+// (Distance Matrix API), so raw vectors are not transferred to the browser.
+//
 // Available parameters:
 //
-// - 'limit': maximum number of vectors to visualize.
-//            *Warning*: large values may cause browser to freeze.
+// - 'limit': number of points to sample for visualization.
+//            UMAP (default) handles tens of thousands of points;
+//            TSNE and PCA get slow above a few thousand.
+//
+// - 'n_neighbors': number of nearest neighbors per point to request
+//                  from the server. Default: 15.
 //
 // - 'filter': filter expression to select vectors for visualization.
 //             See https://qdrant.tech/documentation/concepts/filtering/
@@ -41,7 +67,29 @@ const query = `
 // - 'using': specify which vector to use for visualization
 //                  if there are multiple.
 //
-// - 'algorithm': specify algorithm to use for visualization. Available options: 'TSNE', 'UMAP', 'PCA'.
+// - 'algorithm': specify algorithm to use for visualization.
+//                Available options: 'UMAP' (default), 'TSNE',
+//                'PCA' (loads raw vectors into the browser).
+//
+// - 'perplexity': TSNE only, effective number of neighbors per point.
+//                 The request automatically fetches 3x this many
+//                 neighbors from the server. Default: derived
+//                 from 'n_neighbors'.
+//
+// - 'highlight': emphasize points matching a filter, dim the rest:
+//
+//                "highlight": {
+//                  "filter": { ... }
+//                }
+//
+// Chart interactions:
+//
+// - click a point to see its payload and its nearest neighbors
+// - shift+drag to select points: the selection is emphasized and
+//   the Selection tab opens, where selected points can be inspected
+//   and copied (ids, JSON or a ready-to-use filter);
+//   close the selection tag to reset it
+// - drag to pan, mouse wheel to zoom
 
 
 `;
@@ -60,10 +108,28 @@ function Visualize() {
   const navigate = useNavigate();
   const params = useParams();
   const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
+  const [panelsHeight, setPanelsHeight] = useState(0);
   const VisualizeChartWrapper = useRef(null);
+  const panelsWrapper = useRef(null);
   const { height } = useWindowResize();
   const [activePoint, setActivePoint] = useState(null);
+  const [similarPoints, setSimilarPoints] = useState(null);
+  const [selectedPoints, setSelectedPoints] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  // True while the distance-matrix request is in flight, before any layout
+  // work starts - the first request can be slow, so surface it right away
+  const [fetching, setFetching] = useState(false);
+
+  // Ids currently sampled into the visualization. Similar points are queried
+  // against the whole collection (a sample-restricted filter would be huge),
+  // so some neighbors are not part of what is drawn - mark them as such
+  const sampledIds = useMemo(() => new Set((result.points ?? []).map((point) => String(point.id))), [result]);
+
+  const clearSelection = () => {
+    setSelectedPoints(null);
+    // Leave the Selection tab if it was active, it is about to disappear
+    setTabValue((prev) => (prev === 2 ? 0 : prev));
+  };
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -71,7 +137,12 @@ function Visualize() {
 
   useEffect(() => {
     setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
-  }, [height, VisualizeChartWrapper]);
+    // Bound the whole split-pane area to the viewport, so an overly long
+    // Data Panel scrolls inside its own pane instead of the whole page
+    if (panelsWrapper.current) {
+      setPanelsHeight(height - panelsWrapper.current.getBoundingClientRect().top);
+    }
+  }, [height, VisualizeChartWrapper, panelsWrapper]);
 
   useEffect(() => {
     if (activePoint != null && tabValue !== 1) {
@@ -81,24 +152,88 @@ function Visualize() {
 
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
+    setActivePoint(null);
+    setSimilarPoints(null);
+    clearSelection();
+    setFetching(true);
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
       setResult(result);
     } catch (e) {
       enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
+    } finally {
+      setFetching(false);
     }
   };
+
+  // Click on a point: show it in the Data Panel and highlight its
+  // nearest neighbors, served live by Qdrant
+  const onPointSelect = async (point) => {
+    if (!point) {
+      setActivePoint(null);
+      setSimilarPoints(null);
+      return;
+    }
+    setActivePoint(point);
+    setSimilarPoints(null);
+    try {
+      const neighbors = await getSimilarPoints(qdrantClient, {
+        collectionName: params.collectionName,
+        pointId: point.id,
+        limit: SIMILAR_POINTS_LIMIT,
+        filter: visualizationParams?.filter ?? undefined,
+        using: visualizationParams?.using ?? undefined,
+      });
+      setSimilarPoints(neighbors);
+    } catch (e) {
+      enqueueSnackbar(`Failed to load similar points: ${e.message}`, { variant: 'error' });
+    }
+  };
+
+  // Shift+drag: the selection becomes the working set - selected points
+  // stay bright, the rest is dimmed, and the Selection tab opens with
+  // the list of selected points
+  const onBoxSelect = (points) => {
+    if (!points.length) {
+      clearSelection();
+      return;
+    }
+    setSelectedPoints(points);
+    setTabValue(2);
+  };
+
+  // Points to emphasize in the chart, by precedence: the active selection,
+  // then the neighbors of the clicked point, then the 'highlight' filter
+  let focusIds = null;
+  if (selectedPoints?.length) {
+    focusIds = selectedPoints.map((point) => point.id);
+  } else if (similarPoints && activePoint) {
+    focusIds = [activePoint.id, ...similarPoints.map((point) => point.id)];
+  } else if (result?.highlightIds?.length) {
+    focusIds = result.highlightIds;
+  }
+
+  // The clicked point gets a distinct marker, but not while a box selection
+  // (which has no single "current" point) is the active emphasis
+  const selectedId = !selectedPoints?.length && activePoint ? activePoint.id : null;
 
   const filterRequestSchema = (vectorNames) => ({
     description: 'Filter request',
     type: 'object',
     properties: {
       limit: {
-        description: 'Page size. Default: 10',
+        description: 'Number of points to sample for visualization. Default: 1000',
         type: 'integer',
         format: 'uint',
         minimum: 1,
+        nullable: true,
+      },
+      n_neighbors: {
+        description: 'Number of nearest neighbors per point in the server-side distance matrix. Default: 15',
+        type: 'integer',
+        format: 'uint',
+        minimum: 2,
         nullable: true,
       },
       filter: {
@@ -150,8 +285,25 @@ function Visualize() {
       algorithm: {
         description: 'Algorithm to use for visualization',
         type: 'string',
-        enum: ['TSNE', 'UMAP', 'PCA'],
-        default: 'TSNE',
+        enum: ['UMAP', 'TSNE', 'PCA'],
+        default: 'UMAP',
+      },
+      perplexity: {
+        description:
+          'TSNE only: effective number of neighbors per point. 3x this many neighbors are requested from the server',
+        type: 'number',
+        minimum: 2,
+        nullable: true,
+      },
+      highlight: {
+        description: 'Emphasize points matching a filter, dim the rest',
+        type: 'object',
+        properties: {
+          filter: {
+            $ref: '#/components/schemas/Filter',
+          },
+        },
+        nullable: true,
       },
     },
   });
@@ -167,89 +319,162 @@ function Visualize() {
           {/*    </Grid>*/}
           {/*  )}*/}
           <Grid size={12}>
-            <PanelGroup direction="horizontal">
-              <Panel style={{ display: 'flex' }}>
-                <Box width={'100%'}>
-                  <Box>
-                    <Paper
-                      variant="heading"
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        p: 1,
-                        borderRadius: 0,
-                        borderBottom: `1px solid ${theme.palette.divider}`,
-                      }}
-                    >
-                      <Tooltip title={'Back to collection'}>
-                        <IconButton
-                          sx={{ mr: 3 }}
-                          size="small"
-                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
-                        >
-                          <ArrowBack />
-                        </IconButton>
-                      </Tooltip>
-                      <Typography variant="h6">{params.collectionName}</Typography>
-                    </Paper>
+            <Box ref={panelsWrapper} sx={{ height: panelsHeight || 'auto', overflow: 'hidden' }}>
+              <PanelGroup direction="horizontal" style={{ height: '100%' }}>
+                <Panel style={{ display: 'flex' }}>
+                  <Box width={'100%'}>
+                    <Box>
+                      <Paper
+                        variant="heading"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          p: 1,
+                          borderRadius: 0,
+                          borderBottom: `1px solid ${theme.palette.divider}`,
+                        }}
+                      >
+                        <Tooltip title={'Back to collection'}>
+                          <IconButton
+                            sx={{ mr: 3 }}
+                            size="small"
+                            onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
+                          >
+                            <ArrowBack />
+                          </IconButton>
+                        </Tooltip>
+                        <Typography variant="h6">{params.collectionName}</Typography>
+                      </Paper>
+                    </Box>
+                    <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
+                      <VisualizeChart
+                        requestResult={result}
+                        visualizationParams={visualizationParams}
+                        fetching={fetching}
+                        onPointSelect={onPointSelect}
+                        onBoxSelect={onBoxSelect}
+                        focusIds={focusIds}
+                        selectedId={selectedId}
+                        selectionCount={selectedPoints?.length ?? 0}
+                        onSelectionClear={clearSelection}
+                      />
+                    </Box>
                   </Box>
-                  <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
-                    <VisualizeChart
-                      requestResult={result}
-                      visualizationParams={visualizationParams}
-                      activePoint={activePoint}
-                      setActivePoint={setActivePoint}
-                    />
-                  </Box>
-                </Box>
-              </Panel>
-              <PanelResizeHandle
-                style={{
-                  width: '10px',
-                  background: theme.palette.background.paperElevation2,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
+                </Panel>
+                <PanelResizeHandle
+                  style={{
+                    width: '10px',
+                    background: theme.palette.background.paperElevation2,
                   }}
                 >
-                  &#8942;
-                </Box>
-              </PanelResizeHandle>
-              <Panel>
-                <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <Box
                     sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      backgroundColor: theme.palette.background.paper,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
                     }}
                   >
-                    <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
-                      <Tab label="Code" />
-                      <Tab label="Data Panel" />
-                    </Tabs>
+                    &#8942;
                   </Box>
-                  <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
-                    <FilterEditorWindow
-                      code={code}
-                      onChange={setCode}
-                      onChangeResult={onEditorCodeRun}
-                      customRequestSchema={filterRequestSchema}
-                    />
-                  </TabPanel>
-                  <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', overflowY: 'scroll' }}>
-                      <PointPreview point={activePoint} />
+                </PanelResizeHandle>
+                <Panel>
+                  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Box
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        backgroundColor: theme.palette.background.paper,
+                      }}
+                    >
+                      <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
+                        <Tab label="Code" value={0} />
+                        <Tab label="Data Panel" value={1} />
+                        {selectedPoints?.length > 0 && <Tab label={`Selection (${selectedPoints.length})`} value={2} />}
+                      </Tabs>
                     </Box>
-                  </TabPanel>
-                </Box>
-              </Panel>
-            </PanelGroup>
+                    <TabPanel value={tabValue} index={0} style={{ flex: 1, overflow: 'hidden' }}>
+                      <FilterEditorWindow
+                        code={code}
+                        onChange={setCode}
+                        onChangeResult={onEditorCodeRun}
+                        customRequestSchema={filterRequestSchema}
+                      />
+                    </TabPanel>
+                    <TabPanel value={tabValue} index={1} style={{ flex: 1, overflow: 'hidden' }}>
+                      <Box sx={{ height: '100%', overflowY: 'scroll' }}>
+                        <PointPreview point={activePoint} />
+                        {similarPoints && similarPoints.length > 0 && (
+                          <Box sx={{ borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.12)}` }}>
+                            {/* Match the section-header treatment used in PointPreview */}
+                            <Box
+                              component="header"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.action.hover, 0.08),
+                                px: 2,
+                                py: 0.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 48,
+                              }}
+                            >
+                              <Typography variant="h6">Similar points</Typography>
+                            </Box>
+                            <List dense disablePadding sx={{ py: 1 }}>
+                              {similarPoints.map((point) => {
+                                const inSample = sampledIds.has(String(point.id));
+                                return (
+                                  <ListItemButton
+                                    key={String(point.id)}
+                                    onClick={() => onPointSelect(point)}
+                                    sx={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      gap: 1,
+                                      px: 2,
+                                      opacity: inSample ? 1 : 0.55,
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                      <Tooltip
+                                        title={
+                                          inSample
+                                            ? 'Shown in the visualization'
+                                            : 'Not among the sampled points, so it is not shown in the chart'
+                                        }
+                                      >
+                                        {inSample ? (
+                                          <Visibility fontSize="small" color="action" />
+                                        ) : (
+                                          <VisibilityOff fontSize="small" color="disabled" />
+                                        )}
+                                      </Tooltip>
+                                      <Typography variant="body2" noWrap>
+                                        Point {String(point.id)}
+                                      </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary">
+                                      {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
+                                    </Typography>
+                                  </ListItemButton>
+                                );
+                              })}
+                            </List>
+                          </Box>
+                        )}
+                      </Box>
+                    </TabPanel>
+                    {selectedPoints?.length > 0 && (
+                      <TabPanel value={tabValue} index={2} style={{ flex: 1, overflow: 'hidden' }}>
+                        <React.Suspense fallback={null}>
+                          <SelectionPanel points={selectedPoints} onPointClick={onPointSelect} />
+                        </React.Suspense>
+                      </TabPanel>
+                    )}
+                  </Box>
+                </Panel>
+              </PanelGroup>
+            </Box>
           </Grid>
         </Grid>
       </Box>
