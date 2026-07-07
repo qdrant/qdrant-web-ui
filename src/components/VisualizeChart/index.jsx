@@ -13,6 +13,7 @@ const VisualizeChart = ({
   onPointSelect, // callback: point clicked (null for a click on empty space)
   onBoxSelect, // callback: array of points selected with shift+drag
   focusIds, // ids of points to emphasize (all others get dimmed), or null
+  selectedId, // id of the single clicked point, marked distinctly, or null
   selectionCount, // number of points in the active selection, if any
   onSelectionClear, // callback: the selection chip was closed
 }) => {
@@ -181,6 +182,20 @@ const VisualizeChart = ({
     scatter.setFocus(indices);
   }, [focusIds, requestResult]);
 
+  // Mark the single clicked point distinctly from its highlighted neighbors
+  useEffect(() => {
+    const scatter = scatterRef.current;
+    if (!scatter || scatter.n === 0) {
+      return;
+    }
+    if (selectedId === null || selectedId === undefined) {
+      scatter.setSelected(null, theme.palette.text.primary);
+      return;
+    }
+    const index = pointsRef.current.findIndex((point) => String(point.id) === String(selectedId));
+    scatter.setSelected(index >= 0 ? index : null, theme.palette.text.primary);
+  }, [selectedId, requestResult, theme.palette.text.primary]);
+
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
       const next = new Set(prev);
@@ -320,6 +335,7 @@ VisualizeChart.propTypes = {
   onPointSelect: PropTypes.func,
   onBoxSelect: PropTypes.func,
   focusIds: PropTypes.array,
+  selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectionCount: PropTypes.number,
   onSelectionClear: PropTypes.func,
 };

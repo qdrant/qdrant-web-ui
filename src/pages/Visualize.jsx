@@ -209,6 +209,10 @@ function Visualize() {
     focusIds = result.highlightIds;
   }
 
+  // The clicked point gets a distinct marker, but not while a box selection
+  // (which has no single "current" point) is the active emphasis
+  const selectedId = !selectedPoints?.length && activePoint ? activePoint.id : null;
+
   const filterRequestSchema = (vectorNames) => ({
     description: 'Filter request',
     type: 'object',
@@ -345,6 +349,7 @@ function Visualize() {
                         onPointSelect={onPointSelect}
                         onBoxSelect={onBoxSelect}
                         focusIds={focusIds}
+                        selectedId={selectedId}
                         selectionCount={selectedPoints?.length ?? 0}
                         onSelectionClear={clearSelection}
                       />
