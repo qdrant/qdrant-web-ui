@@ -1,6 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab, List, ListItemButton } from '@mui/material';
+import {
+  Paper,
+  Box,
+  Tooltip,
+  Typography,
+  Grid,
+  IconButton,
+  Tabs,
+  Tab,
+  List,
+  ListItemButton,
+  alpha,
+} from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
@@ -383,16 +395,27 @@ function Visualize() {
                       <Box sx={{ height: '100%', overflowY: 'scroll' }}>
                         <PointPreview point={activePoint} />
                         {similarPoints && similarPoints.length > 0 && (
-                          <Box sx={{ px: 2, pb: 2 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                              Similar points
-                            </Typography>
-                            <List dense disablePadding>
+                          <Box sx={{ borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.12)}` }}>
+                            {/* Match the section-header treatment used in PointPreview */}
+                            <Box
+                              component="header"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.action.hover, 0.08),
+                                px: 2,
+                                py: 0.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 48,
+                              }}
+                            >
+                              <Typography variant="h6">Similar points</Typography>
+                            </Box>
+                            <List dense disablePadding sx={{ py: 1 }}>
                               {similarPoints.map((point) => (
                                 <ListItemButton
                                   key={String(point.id)}
                                   onClick={() => onPointSelect(point)}
-                                  sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                  sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}
                                 >
                                   <Typography variant="body2">Point {String(point.id)}</Typography>
                                   <Typography variant="body2" color="text.secondary">
