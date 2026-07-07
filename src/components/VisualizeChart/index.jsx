@@ -123,7 +123,7 @@ const VisualizeChart = ({
         }
       } else {
         setProgress(null);
-        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
+        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occurred`, { variant: 'error' });
       }
     };
 
