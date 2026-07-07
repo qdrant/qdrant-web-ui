@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Paper,
@@ -13,7 +13,7 @@ import {
   ListItemButton,
   alpha,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
@@ -119,6 +119,11 @@ function Visualize() {
   // True while the distance-matrix request is in flight, before any layout
   // work starts - the first request can be slow, so surface it right away
   const [fetching, setFetching] = useState(false);
+
+  // Ids currently sampled into the visualization. Similar points are queried
+  // against the whole collection (a sample-restricted filter would be huge),
+  // so some neighbors are not part of what is drawn - mark them as such
+  const sampledIds = useMemo(() => new Set((result.points ?? []).map((point) => String(point.id))), [result]);
 
   const clearSelection = () => {
     setSelectedPoints(null);
@@ -416,18 +421,44 @@ function Visualize() {
                               <Typography variant="h6">Similar points</Typography>
                             </Box>
                             <List dense disablePadding sx={{ py: 1 }}>
-                              {similarPoints.map((point) => (
-                                <ListItemButton
-                                  key={String(point.id)}
-                                  onClick={() => onPointSelect(point)}
-                                  sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}
-                                >
-                                  <Typography variant="body2">Point {String(point.id)}</Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
-                                  </Typography>
-                                </ListItemButton>
-                              ))}
+                              {similarPoints.map((point) => {
+                                const inSample = sampledIds.has(String(point.id));
+                                return (
+                                  <ListItemButton
+                                    key={String(point.id)}
+                                    onClick={() => onPointSelect(point)}
+                                    sx={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      gap: 1,
+                                      px: 2,
+                                      opacity: inSample ? 1 : 0.55,
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                      <Tooltip
+                                        title={
+                                          inSample
+                                            ? 'Shown in the visualization'
+                                            : 'Not among the sampled points, so it is not shown in the chart'
+                                        }
+                                      >
+                                        {inSample ? (
+                                          <Visibility fontSize="small" color="action" />
+                                        ) : (
+                                          <VisibilityOff fontSize="small" color="disabled" />
+                                        )}
+                                      </Tooltip>
+                                      <Typography variant="body2" noWrap>
+                                        Point {String(point.id)}
+                                      </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary">
+                                      {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
+                                    </Typography>
+                                  </ListItemButton>
+                                );
+                              })}
                             </List>
                           </Box>
                         )}
