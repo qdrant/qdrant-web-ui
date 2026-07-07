@@ -1,36 +1,21 @@
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import get from 'lodash/get';
 import ScatterGL from './ScatterGL';
-import { generateColorBy } from './renderBy';
-
-function buildGroups(points, payloadField, colors) {
-  // Group points by payload value for the legend; group order is
-  // alphabetical, matching the previous Chart.js legend
-  const groupOfPoint = new Array(points.length);
-  const groups = new Map();
-  points.forEach((point, index) => {
-    let label = get(point.payload, payloadField) + '';
-    if (!label) {
-      label = 'Unknown';
-    }
-    if (!groups.has(label)) {
-      groups.set(label, { label, color: colors[index], pointIndices: [] });
-    }
-    groups.get(label).pointIndices.push(index);
-    groupOfPoint[index] = label;
-  });
-  const sorted = [...groups.values()].sort((a, b) => a.label.localeCompare(b.label));
-  return { groups: sorted, groupOfPoint };
-}
+import { generateColorBy, generateGroupsAndColors } from './renderBy';
 
 const VisualizeChart = ({
   requestResult, // Raw output of the request from qdrant client
   visualizationParams, // Parameters, as specified by the user in the input editor
-  setActivePoint, // callback to set new active point
+  fetching, // true while the distance-matrix request is in flight (before layout)
+  onPointSelect, // callback: point clicked (null for a click on empty space)
+  onBoxSelect, // callback: array of points selected with shift+drag
+  focusIds, // ids of points to emphasize (all others get dimmed), or null
+  selectedId, // id of the single clicked point, marked distinctly, or null
+  selectionCount, // number of points in the active selection, if any
+  onSelectionClear, // callback: the selection chip was closed
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -39,10 +24,22 @@ const VisualizeChart = ({
   const scatterRef = useRef(null);
   const pointsRef = useRef([]);
   const groupOfPointRef = useRef(null);
+  // Callbacks are captured by ScatterGL once at mount, keep them fresh
+  const callbacksRef = useRef({});
+  callbacksRef.current = { onPointSelect, onBoxSelect };
 
   const [tooltip, setTooltip] = useState(null); // { x, y, id }
   const [legendGroups, setLegendGroups] = useState(null);
   const [hiddenGroups, setHiddenGroups] = useState(() => new Set());
+  const [boxRect, setBoxRect] = useState(null);
+  const [progress, setProgress] = useState(null); // { step, total } while the layout runs
+  const workerRef = useRef(null);
+
+  const stopLayout = () => {
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setProgress(null);
+  };
 
   // Create the WebGL renderer once per mount
   useEffect(() => {
@@ -57,16 +54,16 @@ const VisualizeChart = ({
           }
           const point = pointsRef.current[index];
           setTooltip({ x, y, id: point?.id });
-          if (point && point.id !== undefined) {
-            setActivePoint(point);
-          }
         },
         onClick: (index) => {
-          const point = pointsRef.current[index];
-          if (point) {
-            setActivePoint(point);
-          }
+          const point = index === null ? null : pointsRef.current[index];
+          callbacksRef.current.onPointSelect?.(point ?? null);
         },
+        onBoxSelect: (indices) => {
+          const points = indices.map((index) => pointsRef.current[index]).filter(Boolean);
+          callbacksRef.current.onBoxSelect?.(points);
+        },
+        onBoxRect: (rect) => setBoxRect(rect),
       });
     } catch (e) {
       enqueueSnackbar(`Visualization is not available: ${e.message}`, { variant: 'error' });
@@ -90,17 +87,17 @@ const VisualizeChart = ({
     pointsRef.current = points;
 
     const colorBy = visualizationParams?.color_by;
-    const colors = generateColorBy(points, colorBy);
     const payloadField = typeof colorBy === 'string' ? colorBy : colorBy?.payload;
 
     scatter.setData(points.length);
-    scatter.setColors(colors);
 
     if (payloadField) {
-      const { groups, groupOfPoint } = buildGroups(points, payloadField, colors);
+      const { colors, groups, groupOfPoint } = generateGroupsAndColors(points, payloadField);
+      scatter.setColors(colors);
       groupOfPointRef.current = groupOfPoint;
       setLegendGroups(groups);
     } else {
+      scatter.setColors(generateColorBy(points, colorBy));
       groupOfPointRef.current = null;
       setLegendGroups(null);
     }
@@ -110,16 +107,24 @@ const VisualizeChart = ({
     const worker = new Worker(new URL('./worker.js', import.meta.url), {
       type: 'module',
     });
+    workerRef.current = worker;
 
     worker.onmessage = (m) => {
       if (m.data.error) {
+        setProgress(null);
         enqueueSnackbar(`Visualization Unsuccessful, error: ${m.data.error}`, {
           variant: 'error',
         });
       } else if (m.data.result && m.data.result.length > 0) {
         scatterRef.current?.updatePositions(m.data.result);
+        if (m.data.done) {
+          setProgress(null);
+        } else if (m.data.progress) {
+          setProgress(m.data.progress);
+        }
       } else {
-        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
+        setProgress(null);
+        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occurred`, { variant: 'error' });
       }
     };
 
@@ -128,10 +133,13 @@ const VisualizeChart = ({
         result: requestResult,
         params: visualizationParams,
       });
+      setProgress({ step: 0, total: null });
     }
 
     return () => {
       worker.terminate();
+      workerRef.current = null;
+      setProgress(null);
     };
   }, [requestResult]);
 
@@ -152,6 +160,41 @@ const VisualizeChart = ({
     }
     scatter.setVisibility(visible);
   }, [hiddenGroups, legendGroups]);
+
+  // Emphasize the given point ids (nearest neighbors of a selection or
+  // a highlight filter match) by dimming everything else
+  useEffect(() => {
+    const scatter = scatterRef.current;
+    if (!scatter || scatter.n === 0) {
+      return;
+    }
+    if (!focusIds || focusIds.length === 0) {
+      scatter.setFocus(null);
+      return;
+    }
+    const idSet = new Set(focusIds.map((id) => String(id)));
+    const indices = [];
+    pointsRef.current.forEach((point, index) => {
+      if (idSet.has(String(point.id))) {
+        indices.push(index);
+      }
+    });
+    scatter.setFocus(indices);
+  }, [focusIds, requestResult]);
+
+  // Mark the single clicked point distinctly from its highlighted neighbors
+  useEffect(() => {
+    const scatter = scatterRef.current;
+    if (!scatter || scatter.n === 0) {
+      return;
+    }
+    if (selectedId === null || selectedId === undefined) {
+      scatter.setSelected(null, theme.palette.text.primary);
+      return;
+    }
+    const index = pointsRef.current.findIndex((point) => String(point.id) === String(selectedId));
+    scatter.setSelected(index >= 0 ? index : null, theme.palette.text.primary);
+  }, [selectedId, requestResult, theme.palette.text.primary]);
 
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
@@ -203,12 +246,65 @@ const VisualizeChart = ({
                 sx={{ textDecoration: hiddenGroups.has(group.label) ? 'line-through' : 'none' }}
               >
                 {group.label}
+                {typeof group.count === 'number' ? ` (${group.count})` : ''}
               </Typography>
             </Box>
           ))}
         </Box>
       )}
+      {selectionCount > 0 && (
+        <Chip
+          size="small"
+          color="primary"
+          label={`${selectionCount} points selected`}
+          onDelete={onSelectionClear}
+          sx={{ position: 'absolute', bottom: 8, right: 8, zIndex: 2 }}
+        />
+      )}
+      {/* Fetching takes precedence over any stale progress from the previous
+          run's worker, which keeps animating until the new result arrives */}
+      {fetching ? (
+        <Tooltip title="Requesting data from Qdrant, this can take a while on the first request">
+          <Chip
+            size="small"
+            variant="outlined"
+            label="Requesting data…"
+            sx={{ position: 'absolute', bottom: 8, left: 8, zIndex: 2, backdropFilter: 'blur(2px)' }}
+          />
+        </Tooltip>
+      ) : (
+        progress && (
+          <Tooltip title="Layout is running, press to stop it and keep the current picture">
+            <Chip
+              size="small"
+              variant="outlined"
+              label={
+                progress.total
+                  ? `Layout: ${Math.round((progress.step / progress.total) * 100)}%`
+                  : `Layout: iteration ${progress.step}`
+              }
+              onDelete={stopLayout}
+              sx={{ position: 'absolute', bottom: 8, left: 8, zIndex: 2, backdropFilter: 'blur(2px)' }}
+            />
+          </Tooltip>
+        )
+      )}
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      {boxRect && (
+        <Box
+          sx={{
+            position: 'absolute',
+            left: boxRect.left,
+            top: boxRect.top,
+            width: boxRect.width,
+            height: boxRect.height,
+            border: `1px dashed ${theme.palette.primary.main}`,
+            backgroundColor: 'rgba(128, 128, 255, 0.1)',
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}
+        />
+      )}
       {tooltip && (
         <Box
           sx={{
@@ -235,8 +331,13 @@ const VisualizeChart = ({
 VisualizeChart.propTypes = {
   requestResult: PropTypes.object.isRequired,
   visualizationParams: PropTypes.object.isRequired,
-  activePoint: PropTypes.object,
-  setActivePoint: PropTypes.func,
+  fetching: PropTypes.bool,
+  onPointSelect: PropTypes.func,
+  onBoxSelect: PropTypes.func,
+  focusIds: PropTypes.array,
+  selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  selectionCount: PropTypes.number,
+  onSelectionClear: PropTypes.func,
 };
 
 export default VisualizeChart;

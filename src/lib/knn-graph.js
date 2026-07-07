@@ -38,48 +38,6 @@ export function scoresToDistances(scores, metric) {
   }
 }
 
-// Expand the sparse knn graph from the matrix/offsets response into a dense,
-// symmetric distance matrix (as an array of rows), suitable for DruidJS
-// with `metric: "precomputed"`. Pairs absent from the knn graph get a penalty
-// distance larger than any observed one.
-//
-// Note: this densification is O(n²) memory and is a temporary bridge until
-// the layout can consume the sparse graph directly.
-export function densifyKnnGraph(graph, metric, { squared = false } = {}) {
-  const { offsets_row, offsets_col, scores, ids } = graph;
-  const n = ids.length;
-
-  const distances = scoresToDistances(scores, metric);
-
-  const maxDistance = distances.length > 0 ? arrayMax(distances) : 0;
-  let fillValue = (maxDistance > 0 ? maxDistance : 1) * 2;
-  if (squared) {
-    fillValue *= fillValue;
-  }
-
-  const matrix = new Array(n);
-  for (let i = 0; i < n; i++) {
-    matrix[i] = new Array(n).fill(fillValue);
-    matrix[i][i] = 0;
-  }
-
-  for (let k = 0; k < distances.length; k++) {
-    const i = offsets_row[k];
-    const j = offsets_col[k];
-    if (i === j) {
-      continue;
-    }
-    const distance = squared ? distances[k] * distances[k] : distances[k];
-    // Symmetrize, keeping the smaller distance if both directions are present
-    if (distance < matrix[i][j]) {
-      matrix[i][j] = distance;
-      matrix[j][i] = distance;
-    }
-  }
-
-  return matrix;
-}
-
 // Figure out the distance metric of the vector used for visualization
 // from the collection info. Returns null if it cannot be determined.
 export function resolveDistanceMetric(collectionInfo, using = null) {
