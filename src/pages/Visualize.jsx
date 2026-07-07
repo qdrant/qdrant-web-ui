@@ -1,7 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab, List, ListItemButton } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import {
+  Paper,
+  Box,
+  Tooltip,
+  Typography,
+  Grid,
+  IconButton,
+  Tabs,
+  Tab,
+  List,
+  ListItemButton,
+  alpha,
+} from '@mui/material';
+import { ArrowBack, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
@@ -59,6 +71,11 @@ const query = `
 //                Available options: 'UMAP' (default), 'TSNE',
 //                'PCA' (loads raw vectors into the browser).
 //
+// - 'perplexity': TSNE only, effective number of neighbors per point.
+//                 The request automatically fetches 3x this many
+//                 neighbors from the server. Default: derived
+//                 from 'n_neighbors'.
+//
 // - 'highlight': emphasize points matching a filter, dim the rest:
 //
 //                "highlight": {
@@ -99,6 +116,14 @@ function Visualize() {
   const [similarPoints, setSimilarPoints] = useState(null);
   const [selectedPoints, setSelectedPoints] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  // True while the distance-matrix request is in flight, before any layout
+  // work starts - the first request can be slow, so surface it right away
+  const [fetching, setFetching] = useState(false);
+
+  // Ids currently sampled into the visualization. Similar points are queried
+  // against the whole collection (a sample-restricted filter would be huge),
+  // so some neighbors are not part of what is drawn - mark them as such
+  const sampledIds = useMemo(() => new Set((result.points ?? []).map((point) => String(point.id))), [result]);
 
   const clearSelection = () => {
     setSelectedPoints(null);
@@ -130,12 +155,15 @@ function Visualize() {
     setActivePoint(null);
     setSimilarPoints(null);
     clearSelection();
+    setFetching(true);
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
       setResult(result);
     } catch (e) {
       enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -185,6 +213,10 @@ function Visualize() {
   } else if (result?.highlightIds?.length) {
     focusIds = result.highlightIds;
   }
+
+  // The clicked point gets a distinct marker, but not while a box selection
+  // (which has no single "current" point) is the active emphasis
+  const selectedId = !selectedPoints?.length && activePoint ? activePoint.id : null;
 
   const filterRequestSchema = (vectorNames) => ({
     description: 'Filter request',
@@ -256,6 +288,13 @@ function Visualize() {
         enum: ['UMAP', 'TSNE', 'PCA'],
         default: 'UMAP',
       },
+      perplexity: {
+        description:
+          'TSNE only: effective number of neighbors per point. 3x this many neighbors are requested from the server',
+        type: 'number',
+        minimum: 2,
+        nullable: true,
+      },
       highlight: {
         description: 'Emphasize points matching a filter, dim the rest',
         type: 'object',
@@ -311,9 +350,11 @@ function Visualize() {
                       <VisualizeChart
                         requestResult={result}
                         visualizationParams={visualizationParams}
+                        fetching={fetching}
                         onPointSelect={onPointSelect}
                         onBoxSelect={onBoxSelect}
                         focusIds={focusIds}
+                        selectedId={selectedId}
                         selectionCount={selectedPoints?.length ?? 0}
                         onSelectionClear={clearSelection}
                       />
@@ -364,23 +405,60 @@ function Visualize() {
                       <Box sx={{ height: '100%', overflowY: 'scroll' }}>
                         <PointPreview point={activePoint} />
                         {similarPoints && similarPoints.length > 0 && (
-                          <Box sx={{ px: 2, pb: 2 }}>
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                              Similar points
-                            </Typography>
-                            <List dense disablePadding>
-                              {similarPoints.map((point) => (
-                                <ListItemButton
-                                  key={String(point.id)}
-                                  onClick={() => onPointSelect(point)}
-                                  sx={{ display: 'flex', justifyContent: 'space-between' }}
-                                >
-                                  <Typography variant="body2">Point {String(point.id)}</Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
-                                  </Typography>
-                                </ListItemButton>
-                              ))}
+                          <Box sx={{ borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.12)}` }}>
+                            {/* Match the section-header treatment used in PointPreview */}
+                            <Box
+                              component="header"
+                              sx={{
+                                backgroundColor: alpha(theme.palette.action.hover, 0.08),
+                                px: 2,
+                                py: 0.5,
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: 48,
+                              }}
+                            >
+                              <Typography variant="h6">Similar points</Typography>
+                            </Box>
+                            <List dense disablePadding sx={{ py: 1 }}>
+                              {similarPoints.map((point) => {
+                                const inSample = sampledIds.has(String(point.id));
+                                return (
+                                  <ListItemButton
+                                    key={String(point.id)}
+                                    onClick={() => onPointSelect(point)}
+                                    sx={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      gap: 1,
+                                      px: 2,
+                                      opacity: inSample ? 1 : 0.55,
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                      <Tooltip
+                                        title={
+                                          inSample
+                                            ? 'Shown in the visualization'
+                                            : 'Not among the sampled points, so it is not shown in the chart'
+                                        }
+                                      >
+                                        {inSample ? (
+                                          <Visibility fontSize="small" color="action" />
+                                        ) : (
+                                          <VisibilityOff fontSize="small" color="disabled" />
+                                        )}
+                                      </Tooltip>
+                                      <Typography variant="body2" noWrap>
+                                        Point {String(point.id)}
+                                      </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary">
+                                      {typeof point.score === 'number' ? point.score.toFixed(4) : ''}
+                                    </Typography>
+                                  </ListItemButton>
+                                );
+                              })}
                             </List>
                           </Box>
                         )}

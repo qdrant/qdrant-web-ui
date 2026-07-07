@@ -35,14 +35,22 @@ void main() {
 const POINT_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 in vec4 v_color;
+uniform float u_ring;      // 0 = filled disc, 1 = ring outline (selected marker)
+uniform vec4 u_ringColor;  // ring color, used only when u_ring == 1
 out vec4 outColor;
 void main() {
   vec2 c = gl_PointCoord - vec2(0.5);
   float dist = length(c);
   if (dist > 0.5) discard;
-  // Soft edge
-  float alpha = v_color.a * smoothstep(0.5, 0.42, dist);
-  outColor = vec4(v_color.rgb * alpha, alpha);
+  if (u_ring > 0.5) {
+    // Annulus: opaque near the rim, hollow in the middle
+    float a = u_ringColor.a * smoothstep(0.30, 0.40, dist) * smoothstep(0.5, 0.44, dist);
+    outColor = vec4(u_ringColor.rgb * a, a);
+  } else {
+    // Soft edge
+    float alpha = v_color.a * smoothstep(0.5, 0.42, dist);
+    outColor = vec4(v_color.rgb * alpha, alpha);
+  }
 }`;
 
 const PICKING_FRAGMENT_SHADER = `#version 300 es
@@ -115,6 +123,10 @@ export default class ScatterGL {
 
     this.hoveredIndex = null;
     this.highlightIndex = null;
+    // The clicked point, drawn enlarged with a contrasting ring so it stands
+    // out from its (also emphasized) nearest neighbors
+    this.selectedIndex = null;
+    this.selectedRing = [1, 1, 1, 1];
     this.renderScheduled = false;
     this.pickingDirty = true;
     this.destroyed = false;
@@ -171,6 +183,7 @@ export default class ScatterGL {
     this.tween = null;
     this.hoveredIndex = null;
     this.highlightIndex = null;
+    this.selectedIndex = null;
     this.userAdjustedView = false;
 
     // Picking colors encode index + 1 as RGB (0 = background)
@@ -379,13 +392,28 @@ export default class ScatterGL {
     gl.bindVertexArray(this.vao);
     gl.uniform2fv(gl.getUniformLocation(this.program, 'u_scale'), this.viewScale);
     gl.uniform2fv(gl.getUniformLocation(this.program, 'u_offset'), this.viewOffset);
-    gl.uniform1f(gl.getUniformLocation(this.program, 'u_pointSize'), this.pointSizePx());
+    const uPointSize = gl.getUniformLocation(this.program, 'u_pointSize');
+    const uRing = gl.getUniformLocation(this.program, 'u_ring');
+    gl.uniform1f(uRing, 0);
+    gl.uniform1f(uPointSize, this.pointSizePx());
     gl.drawArrays(gl.POINTS, 0, this.n);
 
     // Emphasize the hovered point by re-drawing it larger
     if (this.highlightIndex !== null && this.highlightIndex < this.n) {
-      gl.uniform1f(gl.getUniformLocation(this.program, 'u_pointSize'), this.pointSizePx() * 1.8);
+      gl.uniform1f(uPointSize, this.pointSizePx() * 1.8);
       gl.drawArrays(gl.POINTS, this.highlightIndex, 1);
+    }
+
+    // Mark the selected point: redraw it larger in its own color, then wrap it
+    // in a contrasting ring so it is distinct from the emphasized neighbors
+    if (this.selectedIndex !== null && this.selectedIndex < this.n) {
+      gl.uniform1f(uPointSize, this.pointSizePx() * 1.5);
+      gl.drawArrays(gl.POINTS, this.selectedIndex, 1);
+      gl.uniform1f(uRing, 1);
+      gl.uniform4fv(gl.getUniformLocation(this.program, 'u_ringColor'), this.selectedRing);
+      gl.uniform1f(uPointSize, this.pointSizePx() * 2.6);
+      gl.drawArrays(gl.POINTS, this.selectedIndex, 1);
+      gl.uniform1f(uRing, 0);
     }
     gl.bindVertexArray(null);
   }
@@ -393,6 +421,19 @@ export default class ScatterGL {
   setHighlight(index) {
     if (index !== this.highlightIndex) {
       this.highlightIndex = index;
+      this.requestRender();
+    }
+  }
+
+  // Mark a single point as selected (the clicked one). `color` is a CSS color
+  // string for the ring; pass null as index to clear the marker.
+  setSelected(index, color) {
+    if (color) {
+      const c = chroma(color).rgba();
+      this.selectedRing = [c[0] / 255, c[1] / 255, c[2] / 255, c[3]];
+    }
+    if (index !== this.selectedIndex || color) {
+      this.selectedIndex = index;
       this.requestRender();
     }
   }

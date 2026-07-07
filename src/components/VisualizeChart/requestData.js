@@ -1,41 +1,36 @@
 /* eslint-disable camelcase */
 import { DEFAULT_N_NEIGHBORS, resolveDistanceMetric } from '../../lib/knn-graph';
 
-// Preferred data source: server-side distance matrix (Qdrant >= 1.12).
-// Qdrant samples `limit` points and computes a knn graph between them,
-// so raw vectors never have to be transferred to the browser.
-// Falls back to the legacy scroll-with-vectors request for older servers
-// and for PCA, which needs the raw vectors.
+// Data source for the visualization: the server-side distance matrix
+// (Qdrant >= 1.12). Qdrant samples `limit` points and computes a knn graph
+// between them, so raw vectors never have to be transferred to the browser.
+//
+// The one exception is PCA, which fundamentally needs the raw vectors and
+// is fed by a plain scroll request.
 
 export async function requestData(qdrantClient, collectionName, params) {
-  const { algorithm = null } = params;
-
-  if (algorithm === 'PCA') {
-    // PCA operates on raw vectors, there is nothing to precompute server-side
+  if (params.algorithm === 'PCA') {
     return await requestRawVectors(qdrantClient, collectionName, params);
   }
-
-  try {
-    return await requestMatrixData(qdrantClient, collectionName, params);
-  } catch (e) {
-    if (isMatrixApiUnsupported(e)) {
-      // Qdrant < 1.12 does not have the distance matrix API
-      return await requestRawVectors(qdrantClient, collectionName, params);
-    }
-    throw e;
-  }
+  return await requestMatrixData(qdrantClient, collectionName, params);
 }
 
 async function requestMatrixData(
   qdrantClient,
   collectionName,
-  { limit, filter = null, using = null, color_by = null, n_neighbors = null, highlight = null }
+  { limit, filter = null, using = null, color_by = null, n_neighbors = null, perplexity = null, highlight = null }
 ) {
+  // t-SNE convention: the Gaussian kernel wants ~3x perplexity neighbors
+  let knnLimit = n_neighbors ?? DEFAULT_N_NEIGHBORS;
+  if (perplexity != null) {
+    knnLimit = Math.max(knnLimit, Math.ceil(3 * perplexity));
+  }
+
   const [collectionInfo, matrixResponse] = await Promise.all([
     qdrantClient.getCollection(collectionName),
     qdrantClient.searchMatrixOffsets(collectionName, {
       sample: limit,
-      limit: n_neighbors ?? DEFAULT_N_NEIGHBORS,
+      limit: knnLimit,
       filter,
       using: using ?? undefined,
     }),
@@ -113,22 +108,22 @@ async function requestMatrixData(
   };
 }
 
+// Raw vectors, PCA only
 async function requestRawVectors(
   qdrantClient,
   collectionName,
   { limit, filter = null, using = null, color_by = null }
 ) {
-  if (color_by?.query) {
-    const query = {
+  if (color_by != null && color_by.query !== undefined && color_by.query !== null) {
+    // Score-based coloring: the query provides both vectors and scores
+    return await qdrantClient.query(collectionName, {
       query: color_by.query,
       limit: limit,
       filter: filter,
       with_vector: using ? [using] : true,
       with_payload: true,
-      using: using ?? null,
-    };
-
-    return await qdrantClient.query(collectionName, query);
+      using: using ?? undefined,
+    });
   }
 
   const scrollQuery = {
@@ -139,12 +134,4 @@ async function requestRawVectors(
   };
 
   return await qdrantClient.scroll(collectionName, scrollQuery);
-}
-
-function isMatrixApiUnsupported(error) {
-  const status = error?.status ?? error?.response?.status;
-  if (status === 404 || status === 501) {
-    return true;
-  }
-  return /not found/i.test(String(error?.message ?? ''));
 }

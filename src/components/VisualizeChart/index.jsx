@@ -9,9 +9,11 @@ import { generateColorBy, generateGroupsAndColors } from './renderBy';
 const VisualizeChart = ({
   requestResult, // Raw output of the request from qdrant client
   visualizationParams, // Parameters, as specified by the user in the input editor
+  fetching, // true while the distance-matrix request is in flight (before layout)
   onPointSelect, // callback: point clicked (null for a click on empty space)
   onBoxSelect, // callback: array of points selected with shift+drag
   focusIds, // ids of points to emphasize (all others get dimmed), or null
+  selectedId, // id of the single clicked point, marked distinctly, or null
   selectionCount, // number of points in the active selection, if any
   onSelectionClear, // callback: the selection chip was closed
 }) => {
@@ -122,7 +124,7 @@ const VisualizeChart = ({
         }
       } else {
         setProgress(null);
-        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occured`, { variant: 'error' });
+        enqueueSnackbar(`Visualization Unsuccessful, error: Unexpected Error Occurred`, { variant: 'error' });
       }
     };
 
@@ -179,6 +181,20 @@ const VisualizeChart = ({
     });
     scatter.setFocus(indices);
   }, [focusIds, requestResult]);
+
+  // Mark the single clicked point distinctly from its highlighted neighbors
+  useEffect(() => {
+    const scatter = scatterRef.current;
+    if (!scatter || scatter.n === 0) {
+      return;
+    }
+    if (selectedId === null || selectedId === undefined) {
+      scatter.setSelected(null, theme.palette.text.primary);
+      return;
+    }
+    const index = pointsRef.current.findIndex((point) => String(point.id) === String(selectedId));
+    scatter.setSelected(index >= 0 ? index : null, theme.palette.text.primary);
+  }, [selectedId, requestResult, theme.palette.text.primary]);
 
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
@@ -245,20 +261,33 @@ const VisualizeChart = ({
           sx={{ position: 'absolute', bottom: 8, right: 8, zIndex: 2 }}
         />
       )}
-      {progress && (
-        <Tooltip title="Layout is running, press to stop it and keep the current picture">
+      {/* Fetching takes precedence over any stale progress from the previous
+          run's worker, which keeps animating until the new result arrives */}
+      {fetching ? (
+        <Tooltip title="Requesting data from Qdrant, this can take a while on the first request">
           <Chip
             size="small"
             variant="outlined"
-            label={
-              progress.total
-                ? `Layout: ${Math.round((progress.step / progress.total) * 100)}%`
-                : `Layout: iteration ${progress.step}`
-            }
-            onDelete={stopLayout}
+            label="Requesting data…"
             sx={{ position: 'absolute', bottom: 8, left: 8, zIndex: 2, backdropFilter: 'blur(2px)' }}
           />
         </Tooltip>
+      ) : (
+        progress && (
+          <Tooltip title="Layout is running, press to stop it and keep the current picture">
+            <Chip
+              size="small"
+              variant="outlined"
+              label={
+                progress.total
+                  ? `Layout: ${Math.round((progress.step / progress.total) * 100)}%`
+                  : `Layout: iteration ${progress.step}`
+              }
+              onDelete={stopLayout}
+              sx={{ position: 'absolute', bottom: 8, left: 8, zIndex: 2, backdropFilter: 'blur(2px)' }}
+            />
+          </Tooltip>
+        )
       )}
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
       {boxRect && (
@@ -302,9 +331,11 @@ const VisualizeChart = ({
 VisualizeChart.propTypes = {
   requestResult: PropTypes.object.isRequired,
   visualizationParams: PropTypes.object.isRequired,
+  fetching: PropTypes.bool,
   onPointSelect: PropTypes.func,
   onBoxSelect: PropTypes.func,
   focusIds: PropTypes.array,
+  selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectionCount: PropTypes.number,
   onSelectionClear: PropTypes.func,
 };
