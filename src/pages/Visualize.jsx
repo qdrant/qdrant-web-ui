@@ -104,6 +104,9 @@ function Visualize() {
   const [similarPoints, setSimilarPoints] = useState(null);
   const [selectedPoints, setSelectedPoints] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+  // True while the distance-matrix request is in flight, before any layout
+  // work starts - the first request can be slow, so surface it right away
+  const [fetching, setFetching] = useState(false);
 
   const clearSelection = () => {
     setSelectedPoints(null);
@@ -135,12 +138,15 @@ function Visualize() {
     setActivePoint(null);
     setSimilarPoints(null);
     clearSelection();
+    setFetching(true);
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
       setResult(result);
     } catch (e) {
       enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
+    } finally {
+      setFetching(false);
     }
   };
 
@@ -323,6 +329,7 @@ function Visualize() {
                       <VisualizeChart
                         requestResult={result}
                         visualizationParams={visualizationParams}
+                        fetching={fetching}
                         onPointSelect={onPointSelect}
                         onBoxSelect={onBoxSelect}
                         focusIds={focusIds}
