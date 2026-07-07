@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CopyTextButton } from '../Common/CopyTextButton';
+import VectorFingerprint from './VectorFingerprint';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useNavigate, useParams } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
@@ -67,8 +68,8 @@ const Vectors = memo(function Vectors({ point, onFindSimilar }) {
                 </>
               )}
             </Grid>
-            <Grid my={1} size={{ xs: 12, md: 4 }}>
-              <Typography variant="body2" color="text.secondary" display={'inline'} mr={1}>
+            <Grid my={1} size={{ xs: 12, md: 4 }} display={'flex'} alignItems={'center'} flexWrap={'wrap'} gap={1}>
+              <Typography variant="body2" color="text.secondary" display={'inline'}>
                 Length:
               </Typography>
               <Chip
@@ -87,6 +88,7 @@ const Vectors = memo(function Vectors({ point, onFindSimilar }) {
                 variant="outlined"
                 size="small"
               />
+              <VectorFingerprint vector={vectors[key]} />
             </Grid>
             <Grid
               my={1}
