@@ -1,40 +1,32 @@
 /* eslint-disable no-restricted-globals */
-import * as druid from '@saehrimnir/druidjs';
 import get from 'lodash/get';
-import { DEFAULT_N_NEIGHBORS, densifyKnnGraph } from '../../lib/knn-graph';
+import initWasm, { UmapLayout, TsneLayout, TsneParams } from '@qdrant/graph-layout-wasm';
+import wasmUrl from '@qdrant/graph-layout-wasm/pkg/graph_layout_wasm_bg.wasm?url';
+import { scoresToDistances } from '../../lib/knn-graph';
+import { pca2d } from './pca';
 
-// druid's TSNE with `metric: "precomputed"` references the bare name `druid`
-// inside its own bundle (upstream bug), so the module has to be exposed globally
-self.druid = druid;
-
-const MESSAGE_INTERVAL = 200;
-const DEFAULT_ALGORITHM = 'UMAP';
-
-function getVectorType(vector) {
-  if (Array.isArray(vector)) {
-    if (Array.isArray(vector[0])) {
-      return 'multivector';
-    }
-    return 'vector';
-  }
-  if (typeof vector === 'object') {
-    if (vector.indices) {
-      return 'sparse';
-    }
-    return 'named';
-  }
-  return 'unknown';
+let wasmReady = null;
+function ensureWasm() {
+  wasmReady = wasmReady ?? initWasm({ module_or_path: wasmUrl });
+  return wasmReady;
 }
 
-self.onmessage = function (e) {
+const MESSAGE_INTERVAL = 200;
+const UMAP_EPOCHS_PER_CHUNK = 5;
+const TSNE_ITERATIONS_PER_CHUNK = 10;
+const DEFAULT_ALGORITHM = 'UMAP';
+
+self.onmessage = async function (e) {
   const params = e?.data?.params || {};
   const result = e?.data?.result || {};
 
   try {
     if (result.graph) {
-      handleKnnGraph(result, params);
+      await handleKnnGraph(result, params);
+    } else if ((params.algorithm || DEFAULT_ALGORITHM) === 'PCA') {
+      handlePca(result, params);
     } else {
-      handleRawVectors(result, params);
+      self.postMessage({ data: [], error: 'No data found' });
     }
   } catch (error) {
     self.postMessage({ data: [], error: error?.message ?? String(error) });
@@ -43,7 +35,7 @@ self.onmessage = function (e) {
 
 // Layout from the server-side computed knn graph (distance matrix API),
 // no raw vectors involved
-function handleKnnGraph(result, params) {
+async function handleKnnGraph(result, params) {
   const algorithm = params.algorithm || DEFAULT_ALGORITHM;
   const graph = result.graph;
   const n = graph.ids.length;
@@ -61,19 +53,27 @@ function handleKnnGraph(result, params) {
     return;
   }
 
-  let reducer;
+  await ensureWasm();
+
+  const rows = new Uint32Array(graph.offsets_row);
+  const cols = new Uint32Array(graph.offsets_col);
+  const distances = new Float32Array(scoresToDistances(graph.scores, result.metric));
+
+  let layout;
+  let chunk;
   if (algorithm === 'UMAP') {
-    const matrix = densifyKnnGraph(graph, result.metric);
-    // Never use more neighbors than the knn graph actually contains per point,
-    // otherwise penalty fill values leak into the neighborhoods
-    const avgDegree = Math.floor(graph.scores.length / n);
-    const nNeighbors = Math.max(2, Math.min(params.n_neighbors ?? DEFAULT_N_NEIGHBORS, avgDegree, n - 1));
-    reducer = new druid.UMAP(matrix, { metric: 'precomputed', n_neighbors: nNeighbors });
+    // default params: min_dist 0.1, auto epochs, fixed seed
+    layout = new UmapLayout(n, rows, cols, distances, undefined);
+    chunk = UMAP_EPOCHS_PER_CHUNK;
   } else if (algorithm === 'TSNE') {
-    // druid's TSNE defaults to squared euclidean, mirror that for precomputed distances
-    const matrix = densifyKnnGraph(graph, result.metric, { squared: true });
-    const perplexity = Math.max(2, Math.min(50, Math.floor((n - 1) / 3)));
-    reducer = new druid.TSNE(matrix, { metric: 'precomputed', perplexity });
+    const tsneParams = new TsneParams();
+    // The graph carries the neighbors the server was asked for; without an
+    // explicit perplexity, derive one from the actual graph degree
+    // (t-SNE convention: k = 3 x perplexity)
+    const avgDegree = Math.floor(graph.scores.length / n);
+    tsneParams.perplexity = params.perplexity ?? Math.min(30, Math.max(2, Math.floor(avgDegree / 3)));
+    layout = new TsneLayout(n, rows, cols, distances, tsneParams);
+    chunk = TSNE_ITERATIONS_PER_CHUNK;
   } else {
     self.postMessage({
       data: [],
@@ -82,35 +82,58 @@ function handleKnnGraph(result, params) {
     return;
   }
 
-  streamLayout(reducer);
+  try {
+    let now = Date.now();
+    let done = false;
+    while (!done) {
+      done = layout.step(chunk);
+      if (Date.now() - now > MESSAGE_INTERVAL) {
+        now = Date.now();
+        postPositions(layout.embedding(), {
+          step: layout.current_epoch(),
+          total: layout.n_epochs(),
+        });
+      }
+    }
+    postPositions(layout.embedding(), null, true);
+  } finally {
+    layout.free();
+  }
 }
 
-// Legacy path: dimensionality reduction on raw vectors, loaded into the browser.
-// Used for PCA and as a fallback for Qdrant versions without the matrix API.
-function handleRawVectors(result, params) {
-  const algorithm = params.algorithm || DEFAULT_ALGORITHM;
+function getVectorType(vector) {
+  if (Array.isArray(vector)) {
+    if (Array.isArray(vector[0])) {
+      return 'multivector';
+    }
+    return 'vector';
+  }
+  if (typeof vector === 'object') {
+    if (vector.indices) {
+      return 'sparse';
+    }
+    return 'named';
+  }
+  return 'unknown';
+}
 
-  const data = [];
-
+// PCA fundamentally needs the raw vectors (there is nothing to precompute
+// server-side), so it is the one algorithm still fed by a scroll request
+function handlePca(result, params) {
   const points = result.points;
   const vectorName = params.using;
 
   if (!points || points.length === 0) {
-    self.postMessage({
-      data: [],
-      error: 'No data found',
-    });
+    self.postMessage({ data: [], error: 'No data found' });
     return;
   }
 
   if (points.length === 1) {
-    self.postMessage({
-      data: [],
-      error: `cannot perform ${algorithm} on single point`,
-    });
+    self.postMessage({ data: [], error: 'cannot perform PCA on single point' });
     return;
   }
 
+  const data = [];
   for (let i = 0; i < points.length; i++) {
     if (!vectorName) {
       // Work with default vector
@@ -121,16 +144,11 @@ function handleRawVectors(result, params) {
     }
   }
 
-  // Validate data
-
   for (let i = 0; i < data.length; i++) {
-    const vector = data[i];
-    const vectorType = getVectorType(vector);
-
+    const vectorType = getVectorType(data[i]);
     if (vectorType === 'vector') {
       continue;
     }
-
     if (vectorType === 'named') {
       self.postMessage({
         data: [],
@@ -138,7 +156,6 @@ function handleRawVectors(result, params) {
       });
       return;
     }
-
     self.postMessage({
       data: [],
       error: 'Vector visualization is not supported for vector type: ' + vectorType,
@@ -146,35 +163,12 @@ function handleRawVectors(result, params) {
     return;
   }
 
-  if (data.length) {
-    if (algorithm === 'PCA') {
-      const D = new druid[algorithm](data, {});
-      const transformedData = D.transform();
-
-      self.postMessage({ result: getDataset(transformedData), error: null });
-    } else {
-      const D = new druid[algorithm](data, {}); // ex  params = { perplexity : 50,epsilon :5}
-      streamLayout(D);
-    }
-  }
+  postPositions(pca2d(data), null, true);
 }
 
-// Run the iterative layout, streaming intermediate results for animation
-function streamLayout(reducer) {
-  let now = Date.now();
-  const next = reducer.generator(); // default = 500 iterations
-
-  let reducedPoints = [];
-  for (reducedPoints of next) {
-    if (Date.now() - now > MESSAGE_INTERVAL) {
-      now = Date.now();
-      self.postMessage({ result: getDataset(reducedPoints), error: null });
-    }
-  }
-  self.postMessage({ result: getDataset(reducedPoints), error: null });
-}
-
-function getDataset(reducedPoints) {
-  // Convert [[x1, y1], [x2, y2] ] to [ { x: x1, y: y1 }, { x: x2, y: y2 } ]
-  return reducedPoints.map((point) => ({ x: point[0], y: point[1] }));
+// Send flat [x0, y0, x1, y1, ...] coordinates, transferring the buffer.
+// `progress` is { step, total }, `done` marks the final frame of the layout.
+function postPositions(positions, progress = null, done = false) {
+  const array = positions instanceof Float32Array ? positions : new Float32Array(positions);
+  self.postMessage({ result: array, progress, done, error: null }, [array.buffer]);
 }
