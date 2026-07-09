@@ -143,7 +143,6 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
                   backgroundColor: 'transparent',
                   fontSize: '0.875rem',
                 }}
-                enableClipboard={false}
                 displayDataTypes={false}
                 rootName={false}
               />

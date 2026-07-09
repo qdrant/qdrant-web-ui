@@ -14,12 +14,19 @@ import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
  * @param {string} props.theme - JsonViewer theme name (default: 'qdrant-custom')
  * @return {JSX.Element} Themed JsonViewer component with overrides
  */
-const JsonViewerWrapper = ({ sx = {}, jsonViewerProps = {}, theme: themeName = 'qdrant-custom', ...otherProps }) => {
+const JsonViewerWrapper = ({
+  sx = {},
+  jsonViewerProps = {},
+  theme: themeName = 'qdrant-custom',
+  enableClipboard = true,
+  ...otherProps
+}) => {
   const { theme, overrides } = useJsonViewerTheme(themeName);
 
   return (
     <JsonViewer
       theme={theme}
+      enableClipboard={enableClipboard}
       {...jsonViewerProps}
       sx={{
         ...overrides,
@@ -34,6 +41,7 @@ JsonViewerWrapper.propTypes = {
   sx: PropTypes.object,
   jsonViewerProps: PropTypes.object,
   theme: PropTypes.string,
+  enableClipboard: PropTypes.bool,
 };
 
 export default JsonViewerWrapper;

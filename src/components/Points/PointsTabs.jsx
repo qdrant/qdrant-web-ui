@@ -61,6 +61,12 @@ const PointsTabs = ({ collectionName, client }) => {
     });
   };
 
+  const refreshPayloadSchema = useCallback(async () => {
+    const collectionInfo = await qdrantClient.getCollection(collectionName);
+    const schema = collectionInfo.payload_schema || {};
+    setPayloadSchema(schema);
+  }, [collectionName, qdrantClient]);
+
   useEffect(() => {
     const getCollection = async () => {
       const collectionInfo = await qdrantClient.getCollection(collectionName);
@@ -241,6 +247,7 @@ const PointsTabs = ({ collectionName, client }) => {
                 collectionName={collectionName}
                 deletePoint={deletePoint}
                 payloadSchema={payloadSchema}
+                onPayloadSchemaRefresh={refreshPayloadSchema}
                 client={client}
               />
             </Grid>

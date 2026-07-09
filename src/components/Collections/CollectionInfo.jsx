@@ -144,7 +144,6 @@ export const CollectionInfo = ({ collectionName }) => {
                 displayDataTypes={false}
                 displayObjectSize={false}
                 rootName={false}
-                enableClipboard={false}
                 valueTypes={valueTypes}
               />
             </SchemasProvider>
