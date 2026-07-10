@@ -19,9 +19,7 @@ const HoverFieldContext = createContext(null);
 export const HoverFieldProvider = HoverFieldContext.Provider;
 
 // Mirrors json-viewer's DataBox
-const DataBox = ({ sx, ...props }) => (
-  <Box component="span" {...props} sx={{ display: 'inline', ...sx }} />
-);
+const DataBox = ({ sx, ...props }) => <Box component="span" {...props} sx={{ display: 'inline', ...sx }} />;
 DataBox.propTypes = { sx: PropTypes.object };
 
 const NativeValueRenderer = ({ value }) => {
@@ -45,19 +43,11 @@ const NativeValueRenderer = ({ value }) => {
   }
 
   if (typeof value === 'boolean') {
-    return (
-      <DataBox sx={{ color: colors.base0E }}>
-        {value ? 'true' : 'false'}
-      </DataBox>
-    );
+    return <DataBox sx={{ color: colors.base0E }}>{value ? 'true' : 'false'}</DataBox>;
   }
 
   if (typeof value === 'string') {
-    return (
-      <DataBox sx={{ color: colors.base09, overflowWrap: 'anywhere' }}>
-        &quot;{value}&quot;
-      </DataBox>
-    );
+    return <DataBox sx={{ color: colors.base09, overflowWrap: 'anywhere' }}>&quot;{value}&quot;</DataBox>;
   }
 
   if (typeof value === 'number') {
@@ -84,12 +74,7 @@ const NativeValueRenderer = ({ value }) => {
 };
 
 NativeValueRenderer.propTypes = {
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.bool,
-    PropTypes.oneOf([null]),
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
 };
 
 const PayloadIndexComponent = ({ value, path }) => {
@@ -152,12 +137,7 @@ const PayloadIndexComponent = ({ value, path }) => {
 };
 
 PayloadIndexComponent.propTypes = {
-  value: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-    PropTypes.bool,
-    PropTypes.oneOf([null]),
-  ]),
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
   path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
 };
 
