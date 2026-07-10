@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
-import { Box } from '@mui/material';
-import { Database } from 'lucide-react';
+import { Box, Tooltip } from '@mui/material';
+import { Database, DatabaseZap } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 // ColorspaceContext — compute colors outside json-viewer's ThemeProvider and pass them in.
@@ -98,33 +98,55 @@ const PayloadIndexComponent = ({ value, path }) => {
   const activeField = useContext(HoverFieldContext);
 
   const fieldName = path.join('.');
-  const alreadyIndexed = indexAction?.isIndexed(fieldName);
+  const indexedType = indexAction?.getIndexType(fieldName);
   const isRowActive = activeField === fieldName;
 
   return (
     <>
       <NativeValueRenderer value={value} />
-      {indexAction && !alreadyIndexed && isRowActive && (
-        // Mirrors json-viewer's IconBox (the copy button wrapper): an inline span on the
-        // text baseline with the same padding and icon size, so both icons line up.
-        <Box
-          component="span"
-          role="button"
-          aria-label={`Create index for ${fieldName}`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            indexAction.open(fieldName, value);
-          }}
-          sx={{
-            cursor: 'pointer',
-            paddingLeft: '0.7rem',
-            color: colors.base0D || 'inherit',
-          }}
-        >
-          <Database size="0.8rem" />
-        </Box>
-      )}
+      {indexAction &&
+        isRowActive &&
+        // Mirrors json-viewer's IconBox (the copy button wrapper): an inline span with the
+        // same padding and icon size, so both icons line up.
+        (indexedType ? (
+          <Tooltip title={`Indexed: ${indexedType} — click to edit or delete the index`} placement="top">
+            <Box
+              component="span"
+              role="button"
+              aria-label={`Edit index for ${fieldName} (${indexedType})`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                indexAction.open(fieldName, value);
+              }}
+              sx={{
+                cursor: 'pointer',
+                paddingLeft: '0.7rem',
+                color: colors.base0D || 'inherit',
+              }}
+            >
+              <DatabaseZap size="0.8rem" />
+            </Box>
+          </Tooltip>
+        ) : (
+          <Box
+            component="span"
+            role="button"
+            aria-label={`Create index for ${fieldName}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              indexAction.open(fieldName, value);
+            }}
+            sx={{
+              cursor: 'pointer',
+              paddingLeft: '0.7rem',
+              color: colors.base0D || 'inherit',
+            }}
+          >
+            <Database size="0.8rem" />
+          </Box>
+        ))}
     </>
   );
 };
@@ -149,7 +171,8 @@ function hasNumericSegment(path) {
 
 /**
  * Returns a valueTypes array for @textea/json-viewer that adds a hover "create index"
- * button to every primitive leaf field in point payload.
+ * button to every primitive leaf field in point payload; already indexed fields get
+ * an indicator with the index type instead.
  *
  * @return {Array} valueTypes
  */

@@ -67,7 +67,7 @@ const PointPayload = ({
         setIndexField({ name: fieldName, value: fieldValue });
         setIndexDialogOpen(true);
       },
-      isIndexed: (fieldName) => !!(payloadSchema && fieldName in payloadSchema),
+      getIndexType: (fieldName) => payloadSchema?.[fieldName]?.data_type ?? null,
     }),
     [payloadSchema]
   );
