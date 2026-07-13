@@ -217,7 +217,23 @@ const PayloadIndexDialog = ({
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>{isEditing ? 'Edit Payload Index' : 'Create Payload Index'}</DialogTitle>
-      <DialogContent>
+      <DialogContent
+        sx={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${theme.palette.nativeScrollbarBg} transparent`,
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            width: '4px',
+            height: '4px',
+          },
+          '&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            background: theme.palette.nativeScrollbarBg,
+            borderRadius: '2px',
+          },
+        }}
+      >
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Indexes speed up filtered search. Pick the type that matches the values of this field.
         </Typography>

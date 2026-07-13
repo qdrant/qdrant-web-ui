@@ -159,7 +159,7 @@ export const CollectionInfo = ({ collectionName }) => {
         onSchemaChange={fetchCollection}
       />
 
-      {clusterInfo && <ClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo} />}
+      {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
     </Box>
   );
 };
