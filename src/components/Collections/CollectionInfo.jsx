@@ -9,6 +9,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import CollectionAliases from './CollectionAliases';
+import PayloadIndexesCard from './PayloadIndexesCard';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import {
   makeCollectionInfoValueTypes,
@@ -152,7 +153,13 @@ export const CollectionInfo = ({ collectionName }) => {
         </CardContent>
       </Card>
 
-      {clusterInfo && <ClusterInfo sx={{ mt: 5 }} collectionCluster={clusterInfo} />}
+      <PayloadIndexesCard
+        collectionName={collectionName}
+        payloadSchema={collection.payload_schema}
+        onSchemaChange={fetchCollection}
+      />
+
+      {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
     </Box>
   );
 };

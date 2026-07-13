@@ -41,6 +41,11 @@ const THEMES = {
         '& .MuiSvgIcon-root': {
           color: hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400],
         },
+        // Center action/expand icons on the text instead of the default baseline
+        // alignment, which makes them look raised relative to the 0.75rem font.
+        '& .data-key-pair svg': {
+          verticalAlign: 'middle',
+        },
       };
     },
   },
@@ -80,6 +85,11 @@ const THEMES = {
         },
         '& .MuiSvgIcon-root': {
           color: theme.palette.text.secondary, // Icons - Mapped to text.secondary
+        },
+        // Center action/expand icons on the text instead of the default baseline
+        // alignment, which makes them look raised relative to the 0.75rem font.
+        '& .data-key-pair svg': {
+          verticalAlign: 'middle',
         },
       };
     },

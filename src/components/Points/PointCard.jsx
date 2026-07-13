@@ -12,7 +12,7 @@ import { bigIntJSON } from '../../common/bigIntJSON';
 import { Divider } from '@mui/material';
 
 const PointCard = (props) => {
-  const { onFindSimilar } = props;
+  const { onFindSimilar, payloadSchema, onPayloadSchemaRefresh } = props;
   const [point, setPoint] = React.useState(props.point);
   const [loading, setLoading] = React.useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
@@ -87,7 +87,15 @@ const PointCard = (props) => {
         {Object.keys(point.payload).length > 0 && (
           <>
             <CardContent sx={{ padding: '0.5rem 1rem' }}>
-              <PointPayload point={point} onPayloadEdit={onPayloadEdit} setLoading={setLoading} />
+              <PointPayload
+                point={point}
+                onPayloadEdit={onPayloadEdit}
+                setLoading={setLoading}
+                collectionName={props.collectionName}
+                payloadSchema={payloadSchema}
+                onPayloadSchemaRefresh={onPayloadSchemaRefresh}
+                buttonsToShow={['copy', 'edit', 'index']}
+              />
             </CardContent>
           </>
         )}
@@ -113,9 +121,10 @@ const PointCard = (props) => {
 PointCard.propTypes = {
   point: PropTypes.object.isRequired,
   onFindSimilar: PropTypes.func.isRequired,
-  collectionName: PropTypes.string.isRequired, // use params instead?
+  collectionName: PropTypes.string.isRequired,
   deletePoint: PropTypes.func.isRequired,
   payloadSchema: PropTypes.object.isRequired,
+  onPayloadSchemaRefresh: PropTypes.func,
   client: PropTypes.object,
 };
 
