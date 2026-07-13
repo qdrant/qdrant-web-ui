@@ -24,73 +24,14 @@ import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import DeletePayloadIndexDialog from '../Common/DeletePayloadIndexDialog';
-import {
-  payloadFieldFormToIndexConfig,
-  createPayloadIndexParams,
-} from '../Collections/CreateCollection/create-collection.js';
+import { createPayloadIndexParams } from '../Collections/CreateCollection/create-collection.js';
+import { payloadFieldFormToIndexConfig, suggestFieldType } from '../../lib/payload-index-helpers';
 import { enqueueSnackbar, closeSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 
 const FIELD_TYPES = ['keyword', 'integer', 'float', 'uuid', 'datetime', 'text', 'geo', 'bool'];
 
 const TEXT_TOKENIZERS = ['prefix', 'whitespace', 'word', 'multilingual'];
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const PRIMITIVE_TYPES = ['string', 'number', 'boolean', 'bigint'];
-
-/**
- * Suggest an index type from a sample payload value. Returns null when
- * the value gives no hint (for example null).
- *
- * @param {*} value - payload field value
- * @return {string|null} one of FIELD_TYPES or null
- */
-export function suggestFieldType(value) {
-  if (typeof value === 'boolean') return 'bool';
-  if (typeof value === 'bigint') return 'integer';
-  if (typeof value === 'number') return Number.isInteger(value) ? 'integer' : 'float';
-  if (typeof value === 'string') {
-    if (UUID_REGEX.test(value)) return 'uuid';
-    if (/^\d{4}-\d{2}-\d{2}/.test(value) && !isNaN(Date.parse(value))) return 'datetime';
-    // Multi-word strings read as natural language — suggest full-text search.
-    if (/\s/.test(value.trim())) return 'text';
-    return 'keyword';
-  }
-  return null;
-}
-
-/**
- * Collect indexable leaf fields from a point payload as dot-notation paths,
- * each with a sample value for type suggestion. Array elements share the
- * parent path (numeric segments are not part of index field names).
- *
- * @param {Object} payload - point payload object
- * @param {Array} prefix - current path segments (used for recursion)
- * @return {Array<{name: string, value: *}>} unique leaf fields
- */
-export function extractPayloadLeafFields(payload, prefix = []) {
-  const fields = new Map();
-  const add = (entries) => {
-    for (const entry of entries) {
-      if (!fields.has(entry.name)) fields.set(entry.name, entry);
-    }
-  };
-  for (const [key, value] of Object.entries(payload || {})) {
-    const path = [...prefix, key];
-    if (value === null || PRIMITIVE_TYPES.includes(typeof value)) {
-      add([{ name: path.join('.'), value }]);
-    } else if (Array.isArray(value)) {
-      const sample = value.find((item) => item === null || PRIMITIVE_TYPES.includes(typeof item));
-      if (sample !== undefined) add([{ name: path.join('.'), value: sample }]);
-      const nested = value.find((item) => item && typeof item === 'object' && !Array.isArray(item));
-      if (nested) add(extractPayloadLeafFields(nested, path));
-    } else if (typeof value === 'object') {
-      add(extractPayloadLeafFields(value, path));
-    }
-  }
-  return [...fields.values()];
-}
 
 const DEFAULT_STATE = {
   // integer
