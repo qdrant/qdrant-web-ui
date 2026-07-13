@@ -18,7 +18,8 @@ import {
 import { Pencil, Trash } from 'lucide-react';
 import { useClient } from '../../context/client-context';
 import DeletePayloadIndexDialog from '../Common/DeletePayloadIndexDialog';
-import PayloadIndexDialog, { extractPayloadLeafFields } from '../Points/PayloadIndexDialog';
+import PayloadIndexDialog from '../Points/PayloadIndexDialog';
+import { extractPayloadLeafFields } from '../../lib/payload-index-helpers';
 
 const HeaderCell = ({ children, ...props }) => (
   <TableCell {...props}>

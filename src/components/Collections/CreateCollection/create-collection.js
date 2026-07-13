@@ -280,44 +280,6 @@ export function createPayloadIndexParams(params) {
   };
 }
 
-/**
- * Convert a single field form state (from ButtonGroupWithInputs) into
- * the { name, type, params } shape expected by createPayloadIndexParams.
- *
- * fieldFormData shape: { field_config_enum: 'text', tokenizer: 'word', lowercase: true, … }
- *
- * @param {string} fieldName - dot-notation field path (e.g. "metadata.url")
- * @param {Object} fieldFormData - form state for the field_config element
- * @return {{ name: string, type: string, params: Object }}
- */
-export function payloadFieldFormToIndexConfig(fieldName, fieldFormData) {
-  const type = fieldFormData?.field_config_enum;
-  const params = {};
-
-  if (type === 'text') {
-    params.lowercase = fieldFormData?.lowercase ?? true;
-    params.tokenizer = fieldFormData?.tokenizer || 'whitespace';
-    params.phrase_matching = fieldFormData?.phrase_matching ?? true;
-
-    const minLength = fieldFormData?.min_token_len;
-    const maxLength = fieldFormData?.max_token_len;
-
-    if (minLength !== undefined && minLength !== '') {
-      const value = typeof minLength === 'number' ? minLength : parseInt(minLength, 10);
-      if (!isNaN(value) && value >= 0) params.min_token_len = value;
-    }
-    if (maxLength !== undefined && maxLength !== '') {
-      const value = typeof maxLength === 'number' ? maxLength : parseInt(maxLength, 10);
-      if (!isNaN(value) && value >= 0) params.max_token_len = value;
-    }
-  } else if (type === 'integer') {
-    params.range = fieldFormData?.range ?? true;
-    params.lookup = fieldFormData?.lookup ?? true;
-  }
-
-  return { name: fieldName, type, params };
-}
-
 export async function createCollection(qdrantClient, configuration, recreate = false) {
   const collectionName = configuration.collection_name;
 
