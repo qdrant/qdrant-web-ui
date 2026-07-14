@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { payloadFieldFormToIndexConfig, suggestFieldType, extractPayloadLeafFields } from '../payload-index-helpers';
+import {
+  payloadFieldFormToIndexConfig,
+  suggestFieldType,
+  extractPayloadLeafFields,
+  pathToIndexName,
+} from '../payload-index-helpers';
 import { createPayloadIndexParams } from '../../components/Collections/CreateCollection/create-collection';
 
 describe('payloadFieldFormToIndexConfig', () => {
@@ -138,14 +143,22 @@ describe('extractPayloadLeafFields', () => {
     ]);
   });
 
-  it('uses the parent path for array elements (no numeric segments)', () => {
+  it('indexes arrays of primitives at the array path', () => {
     const fields = extractPayloadLeafFields({
       tags: ['a', 'b'],
-      items: [{ sku: 'x1' }],
+    });
+    expect(fields).toEqual([{ name: 'tags', value: 'a' }]);
+  });
+
+  it('uses the [] notation for fields inside arrays of objects', () => {
+    const fields = extractPayloadLeafFields({
+      items: [{ sku: 'x1', variants: [{ color: 'red' }] }],
+      nested: { list: [{ id: 7 }] },
     });
     expect(fields).toEqual([
-      { name: 'tags', value: 'a' },
-      { name: 'items.sku', value: 'x1' },
+      { name: 'items[].sku', value: 'x1' },
+      { name: 'items[].variants[].color', value: 'red' },
+      { name: 'nested.list[].id', value: 7 },
     ]);
   });
 
@@ -156,5 +169,25 @@ describe('extractPayloadLeafFields', () => {
   it('returns an empty list for empty or missing payload', () => {
     expect(extractPayloadLeafFields({})).toEqual([]);
     expect(extractPayloadLeafFields(undefined)).toEqual([]);
+  });
+});
+
+describe('pathToIndexName', () => {
+  it('keeps plain object paths as dot notation', () => {
+    expect(pathToIndexName(['metadata', 'url'])).toBe('metadata.url');
+  });
+
+  it('targets the array field for primitive array elements', () => {
+    expect(pathToIndexName(['tags', 0])).toBe('tags');
+    expect(pathToIndexName(['tags', '1'])).toBe('tags');
+  });
+
+  it('folds array indices into the [] notation', () => {
+    expect(pathToIndexName(['items', 0, 'sku'])).toBe('items[].sku');
+    expect(pathToIndexName(['items', 2, 'variants', 1, 'color'])).toBe('items[].variants[].color');
+  });
+
+  it('handles arrays nested under objects', () => {
+    expect(pathToIndexName(['meta', 'list', 1])).toBe('meta.list');
   });
 });

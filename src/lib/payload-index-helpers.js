@@ -67,9 +67,37 @@ export function suggestFieldType(value) {
 }
 
 /**
- * Collect indexable leaf fields from a point payload as dot-notation paths,
- * each with a sample value for type suggestion. Array elements share the
- * parent path (numeric segments are not part of index field names).
+ * Whether a json-viewer path segment is an array index.
+ *
+ * @param {string|number} segment - path segment
+ * @return {boolean} true for array indices
+ */
+export function isArrayIndexSegment(segment) {
+  return typeof segment === 'number' || (typeof segment === 'string' && /^\d+$/.test(segment));
+}
+
+/**
+ * Convert a json-viewer path into a Qdrant index field name. Array indices are
+ * folded into the [] notation ("items[].sku") — plain dots would create an
+ * index that matches nothing. An index on array elements themselves targets
+ * the array field, so trailing brackets are dropped ("tags").
+ *
+ * @param {Array} path - json-viewer path segments (strings and array indices)
+ * @return {string} Qdrant index field name
+ */
+export function pathToIndexName(path) {
+  const name = path.reduce((acc, segment) => {
+    if (isArrayIndexSegment(segment)) return `${acc}[]`;
+    return acc ? `${acc}.${segment}` : String(segment);
+  }, '');
+  return name.replace(/(\[\])+$/, '');
+}
+
+/**
+ * Collect indexable leaf fields from a point payload, each with a sample value
+ * for type suggestion. Arrays of primitives are indexed at the array path
+ * ("tags"); fields inside arrays of objects use the [] notation required by
+ * Qdrant ("items[].sku") — plain dots would create an index that matches nothing.
  *
  * @param {Object} payload - point payload object
  * @param {Array} prefix - current path segments (used for recursion)
@@ -90,7 +118,7 @@ export function extractPayloadLeafFields(payload, prefix = []) {
       const sample = value.find((item) => item === null || PRIMITIVE_TYPES.includes(typeof item));
       if (sample !== undefined) add([{ name: path.join('.'), value: sample }]);
       const nested = value.find((item) => item && typeof item === 'object' && !Array.isArray(item));
-      if (nested) add(extractPayloadLeafFields(nested, path));
+      if (nested) add(extractPayloadLeafFields(nested, [...prefix, `${key}[]`]));
     } else if (typeof value === 'object') {
       add(extractPayloadLeafFields(value, path));
     }

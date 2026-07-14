@@ -10,6 +10,7 @@ import { PayloadEditor } from './PayloadEditor';
 import PayloadIndexDialog from './PayloadIndexDialog';
 import {
   makePayloadIndexValueTypes,
+  payloadIndexKeyRenderer,
   PayloadIndexColorspaceProvider,
   IndexActionProvider,
   HoverFieldProvider,
@@ -122,6 +123,7 @@ const PointPayload = ({
                     rootName={false}
                     enableClipboard={true}
                     valueTypes={showIndexButton ? valueTypes : undefined}
+                    keyRenderer={showIndexButton ? payloadIndexKeyRenderer : undefined}
                   />
                 </Box>
               </HoverFieldProvider>
