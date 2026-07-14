@@ -42,7 +42,7 @@ jobs:
         with:
           args: zip -r dist-qdrant.zip dist
       - name: Release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist-qdrant.zip
