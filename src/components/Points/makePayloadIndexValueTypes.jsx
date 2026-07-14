@@ -1,7 +1,9 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Box, Tooltip } from '@mui/material';
 import { Database, DatabaseZap } from 'lucide-react';
 import PropTypes from 'prop-types';
+import { pathToIndexName, isArrayIndexSegment } from '../../lib/payload-index-helpers';
 
 // ColorspaceContext — compute colors outside json-viewer's ThemeProvider and pass them in.
 // (The json-viewer bundles its own MUI v5, so useTheme() inside valueTypes Components
@@ -77,64 +79,80 @@ NativeValueRenderer.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
 };
 
-const PayloadIndexComponent = ({ value, path }) => {
+// The index button (or "already indexed" indicator) shown while its row is hovered.
+// Mirrors json-viewer's IconBox (the copy button wrapper): an inline span with the
+// same padding and icon size, so both icons line up.
+const PayloadIndexButton = ({ path, sampleValue }) => {
   const colors = useContext(ColorspaceContext) || {};
   const indexAction = useContext(IndexActionContext);
   const activeField = useContext(HoverFieldContext);
 
-  const fieldName = path.join('.');
+  // Row identity for hover tracking keeps the raw path ("items.0.sku"),
+  // while the index acts on the Qdrant field name ("items[].sku").
+  const rowKey = path.join('.');
+  const fieldName = pathToIndexName(path);
   const indexedType = indexAction?.getIndexType(fieldName);
-  const isRowActive = activeField === fieldName;
 
-  return (
-    <>
-      <NativeValueRenderer value={value} />
-      {indexAction &&
-        isRowActive &&
-        // Mirrors json-viewer's IconBox (the copy button wrapper): an inline span with the
-        // same padding and icon size, so both icons line up.
-        (indexedType ? (
-          <Tooltip title={`Indexed: ${indexedType} — click to edit or delete the index`} placement="top">
-            <Box
-              component="span"
-              role="button"
-              aria-label={`Edit index for ${fieldName} (${indexedType})`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                indexAction.open(fieldName, value);
-              }}
-              sx={{
-                cursor: 'pointer',
-                paddingLeft: '0.7rem',
-                color: colors.base0D || 'inherit',
-              }}
-            >
-              <DatabaseZap size="0.8rem" />
-            </Box>
-          </Tooltip>
-        ) : (
-          <Box
-            component="span"
-            role="button"
-            aria-label={`Create index for ${fieldName}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              indexAction.open(fieldName, value);
-            }}
-            sx={{
-              cursor: 'pointer',
-              paddingLeft: '0.7rem',
-              color: colors.base0D || 'inherit',
-            }}
-          >
-            <Database size="0.8rem" />
-          </Box>
-        ))}
-    </>
+  // Like json-viewer's own copy button, a row counts as hovered while the
+  // cursor is on it or on any of its descendants (relevant for array rows).
+  const isRowActive = activeField === rowKey || (activeField !== null && activeField.startsWith(`${rowKey}.`));
+
+  if (!indexAction || !isRowActive) {
+    return null;
+  }
+
+  return indexedType ? (
+    <Tooltip title={`Indexed: ${indexedType} — click to edit or delete the index`} placement="top">
+      <Box
+        component="span"
+        role="button"
+        aria-label={`Edit index for ${fieldName} (${indexedType})`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          indexAction.open(fieldName, sampleValue);
+        }}
+        sx={{
+          cursor: 'pointer',
+          paddingLeft: '0.7rem',
+          color: colors.base0D || 'inherit',
+        }}
+      >
+        <DatabaseZap size="0.8rem" />
+      </Box>
+    </Tooltip>
+  ) : (
+    <Box
+      component="span"
+      role="button"
+      aria-label={`Create index for ${fieldName}`}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        indexAction.open(fieldName, sampleValue);
+      }}
+      sx={{
+        cursor: 'pointer',
+        paddingLeft: '0.7rem',
+        color: colors.base0D || 'inherit',
+      }}
+    >
+      <Database size="0.8rem" />
+    </Box>
   );
 };
+
+PayloadIndexButton.propTypes = {
+  path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  sampleValue: PropTypes.any,
+};
+
+const PayloadIndexComponent = ({ value, path }) => (
+  <>
+    <NativeValueRenderer value={value} />
+    <PayloadIndexButton path={path} sampleValue={value} />
+  </>
+);
 
 PayloadIndexComponent.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
@@ -145,27 +163,64 @@ function isPrimitive(value) {
   return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
 }
 
-function hasNumericSegment(path) {
-  return path.some((segment) => typeof segment === 'number' || (typeof segment === 'string' && /^\d+$/.test(segment)));
-}
-
 /**
  * Returns a valueTypes array for @textea/json-viewer that adds a hover "create index"
- * button to every primitive leaf field in point payload; already indexed fields get
- * an indicator with the index type instead.
+ * button to primitive leaf fields in point payload, including fields inside arrays
+ * of objects (indexed via the "items[].sku" notation). Elements of primitive arrays
+ * are skipped — the index button for those sits on the array row itself (see
+ * payloadIndexKeyRenderer). Already indexed fields get an indicator with the index
+ * type instead.
  *
  * @return {Array} valueTypes
  */
 export function makePayloadIndexValueTypes() {
   return [
     {
-      is: (value, path) => {
-        if (!isPrimitive(value)) return false;
-        if (path.length === 0) return false;
-        if (hasNumericSegment(path)) return false;
-        return true;
-      },
+      is: (value, path) => isPrimitive(value) && path.length > 0 && !isArrayIndexSegment(path[path.length - 1]),
       Component: PayloadIndexComponent,
     },
   ];
 }
+
+// Renders the key of an array-of-primitives row ("sections": […]) with the index
+// button attached, since the index for such arrays targets the array field itself
+// and the elements' value renderers are skipped. Objects inside arrays keep their
+// per-field buttons instead.
+//
+// The key renderer output is placed at the start of the ".data-key" span, before
+// the colon, while json-viewer renders the opening bracket and its hover copy icon
+// later in the same span. To match plain fields (index icon first, copy icon after),
+// the button is portaled into a dedicated span inserted right after the bracket —
+// appending to the span itself would race with the copy icon's mount order.
+const PayloadIndexKeyRenderer = ({ path, value }) => {
+  const anchorRef = useRef(null);
+  const [buttonHost, setButtonHost] = useState(null);
+
+  useEffect(() => {
+    const keySpan = anchorRef.current?.closest('.data-key');
+    if (!keySpan) return undefined;
+    const bracket = keySpan.querySelector(':scope > .data-object-start');
+    const host = document.createElement('span');
+    keySpan.insertBefore(host, bracket ? bracket.nextSibling : null);
+    setButtonHost(host);
+    return () => host.remove();
+  }, []);
+
+  return (
+    <>
+      &quot;{path[path.length - 1]}&quot;
+      <span ref={anchorRef} style={{ display: 'none' }} />
+      {buttonHost && createPortal(<PayloadIndexButton path={path} sampleValue={value.find(isPrimitive)} />, buttonHost)}
+    </>
+  );
+};
+
+PayloadIndexKeyRenderer.when = ({ value, path }) =>
+  Array.isArray(value) && path.length > 0 && !isArrayIndexSegment(path[path.length - 1]) && value.some(isPrimitive);
+
+PayloadIndexKeyRenderer.propTypes = {
+  path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  value: PropTypes.array.isRequired,
+};
+
+export const payloadIndexKeyRenderer = PayloadIndexKeyRenderer;
