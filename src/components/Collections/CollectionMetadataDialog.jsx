@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useClient } from '../../context/client-context';
@@ -13,6 +13,21 @@ import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 const hasMetadata = (metadata) => metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
 
 const emptyMetadata = {};
+
+/**
+ * Apply the same merge rules as the update-collection API:
+ * empty object clears metadata; otherwise top-level keys are merged over the current object.
+ *
+ * @param {Object} current - existing collection metadata
+ * @param {Object} patch - metadata object from the editor
+ * @return {Object} metadata after the merge
+ */
+const mergeMetadata = (current, patch) => {
+  if (!hasMetadata(patch)) {
+    return emptyMetadata;
+  }
+  return { ...current, ...patch };
+};
 
 const editorOptions = {
   scrollBeyondLastLine: false,
@@ -42,18 +57,24 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
   const [text, setText] = useState(() => bigIntJSON.stringify(currentMetadata, null, 2));
   const [loading, setLoading] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
+  const [pendingPatch, setPendingPatch] = useState(null);
 
-  const originalText = bigIntJSON.stringify(currentMetadata, null, 2);
+  const previousMetadataString = bigIntJSON.stringify(currentMetadata, null, 2);
+  const mergedResult = pendingPatch !== null ? mergeMetadata(currentMetadata, pendingPatch) : null;
+  const mergedResultString = mergedResult !== null ? bigIntJSON.stringify(mergedResult, null, 2) : '';
+  const mergeHasNoEffect = mergedResult !== null && isEqual(currentMetadata, mergedResult);
 
   useEffect(() => {
     if (open) {
       setText(bigIntJSON.stringify(hasMetadata(metadata) ? metadata : emptyMetadata, null, 2));
       setShowDiff(false);
+      setPendingPatch(null);
     }
   }, [open, metadata]);
 
   const handleClose = () => {
     setShowDiff(false);
+    setPendingPatch(null);
     onClose();
   };
 
@@ -75,26 +96,33 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
     const nextMetadata = parseMetadata();
     if (nextMetadata === null) return;
 
+    // Only skip the confirm dialog when the submitted object is identical to current metadata.
+    // If keys were removed in the editor, still show the diff so the no-op merge is visible.
     if (isEqual(currentMetadata, nextMetadata)) {
       handleClose();
       return;
     }
 
+    setPendingPatch(nextMetadata);
     setShowDiff(true);
   };
 
   const handleConfirmMerge = async () => {
-    const nextMetadata = parseMetadata();
-    if (nextMetadata === null) return;
+    if (pendingPatch === null) return;
 
-    if (isEqual(currentMetadata, nextMetadata)) {
+    const merged = mergeMetadata(currentMetadata, pendingPatch);
+    if (isEqual(currentMetadata, merged)) {
+      enqueueSnackbar(
+        'No metadata changes — removed keys are kept on merge',
+        getSnackbarOptions('info', closeSnackbar, 4000)
+      );
       handleClose();
       return;
     }
 
     setLoading(true);
     try {
-      await qdrantClient.updateCollection(collectionName, { metadata: nextMetadata });
+      await qdrantClient.updateCollection(collectionName, { metadata: pendingPatch });
       enqueueSnackbar('Metadata merged', getSnackbarOptions('success', closeSnackbar, 2000));
       handleClose();
       onSuccess?.();
@@ -103,6 +131,7 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
     } finally {
       setLoading(false);
       setShowDiff(false);
+      setPendingPatch(null);
     }
   };
 
@@ -114,8 +143,8 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
         </DialogTitle>
         <DialogContent sx={{ pb: 1 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Provided keys are merged into existing collection metadata. Removed keys are not deleted — set metadata to
-            an empty object to clear it.
+            Provided object will be merged into existing collection metadata.
+            To remove a key, set its value to null.
           </Typography>
           <EditorCommon
             height="360px"
@@ -155,9 +184,15 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
             },
           }}
         >
+          {mergeHasNoEffect && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              This merge will not change collection metadata.
+              Removed keys are not deleted — set values to null to remove them.
+            </Alert>
+          )}
           <ReactDiffViewer
-            oldValue={originalText}
-            newValue={text}
+            oldValue={previousMetadataString}
+            newValue={mergedResultString}
             splitView={true}
             useDarkTheme={theme.palette.mode === 'dark'}
             styles={{
@@ -182,7 +217,7 @@ const CollectionMetadataDialog = ({ open, onClose, collectionName, metadata, onS
             Cancel
           </Button>
           <Button onClick={handleConfirmMerge} color="primary" variant="contained" disabled={loading}>
-            {loading ? 'Merging...' : 'Confirm Merge'}
+            {loading ? 'Merging...' : mergeHasNoEffect ? 'Close' : 'Confirm Merge'}
           </Button>
         </DialogActions>
       </Dialog>
