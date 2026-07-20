@@ -23,12 +23,19 @@ import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useClient } from '../../context/client-context';
 import { StyledTableContainer, StyledTableHead, StyledTableBody, StyledTableRow } from '../Common/StyledTable';
 
-const CollectionAliases = ({ collectionName }) => {
+const CollectionAliases = ({ collectionName, forceCreateOpen = false, onForceCreateClose }) => {
   const { client: qdrantClient } = useClient();
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [aliasToDelete, setAliasToDelete] = useState('');
   const [aliases, setAliases] = useState([]);
   const theme = useTheme();
+
+  const createDialogOpen = openCreateModal || forceCreateOpen;
+
+  const closeCreateDialog = useCallback(() => {
+    setOpenCreateModal(false);
+    onForceCreateClose?.();
+  }, [onForceCreateClose]);
 
   // Fetch aliases on mount
   useEffect(() => {
@@ -67,7 +74,7 @@ const CollectionAliases = ({ collectionName }) => {
       // if alias name already exists
       if (aliases.some((alias) => alias.alias_name === newAliasNameNormalized)) {
         enqueueSnackbar('Alias name already exists', getSnackbarOptions('error', closeSnackbar, 2000));
-        setOpenCreateModal(false);
+        closeCreateDialog();
         return;
       }
       // if alias name is empty
@@ -81,13 +88,13 @@ const CollectionAliases = ({ collectionName }) => {
           actions: [{ create_alias: { collection_name: collectionName, alias_name: newAliasNameNormalized } }],
         });
         setAliases((prev) => [...prev, { alias_name: newAliasNameNormalized }]);
-        setOpenCreateModal(false);
+        closeCreateDialog();
         enqueueSnackbar('Alias created successfully', getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
     },
-    [collectionName, qdrantClient, aliases]
+    [collectionName, qdrantClient, aliases, closeCreateDialog]
   );
 
   const AliasList = aliases.map((alias) => (
@@ -95,44 +102,35 @@ const CollectionAliases = ({ collectionName }) => {
   ));
 
   return (
-    <StyledTableContainer>
-      <Table aria-label="aliases table">
-        <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
-          <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
-            <TableCell sx={{ py: 1, borderBottom: 0 }}>
-              <Typography variant="h6">Aliases</Typography>
-            </TableCell>
-            <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{ display: 'block', py: 0.75, mb: 0.2 }}
-                  onClick={() => setOpenCreateModal(true)}
-                >
-                  Create alias
-                </Button>
-              </Box>
-            </TableCell>
-          </TableRow>
-        </StyledTableHead>
+    <>
+      {aliases.length > 0 && (
+        <StyledTableContainer>
+          <Table aria-label="aliases table">
+            <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
+              <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
+                <TableCell sx={{ py: 1, borderBottom: 0 }}>
+                  <Typography variant="h6">Aliases</Typography>
+                </TableCell>
+                <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      sx={{ display: 'block', py: 0.75, mb: 0.2 }}
+                      onClick={() => setOpenCreateModal(true)}
+                    >
+                      Create alias
+                    </Button>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            </StyledTableHead>
+            <StyledTableBody>{AliasList}</StyledTableBody>
+          </Table>
+        </StyledTableContainer>
+      )}
 
-        <StyledTableBody>
-          {aliases.length === 0 ? (
-            <StyledTableRow>
-              <TableCell colSpan={2} width={'100%'} align="left">
-                <Typography variant="subtitle1" color="text.secondary">
-                  No aliases found
-                </Typography>
-              </TableCell>
-            </StyledTableRow>
-          ) : (
-            AliasList
-          )}
-        </StyledTableBody>
-      </Table>
-
-      <CreateAliasModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onCreate={handleCreateAlias} />
+      <CreateAliasModal open={createDialogOpen} onClose={closeCreateDialog} onCreate={handleCreateAlias} />
 
       <ConfirmationDialog
         open={!!aliasToDelete}
@@ -146,7 +144,7 @@ const CollectionAliases = ({ collectionName }) => {
           setAliasToDelete('');
         }}
       />
-    </StyledTableContainer>
+    </>
   );
 };
 
@@ -277,6 +275,8 @@ CreateAliasModal.propTypes = {
 
 CollectionAliases.propTypes = {
   collectionName: PropTypes.string.isRequired,
+  forceCreateOpen: PropTypes.bool,
+  onForceCreateClose: PropTypes.func,
 };
 
 export default CollectionAliases;

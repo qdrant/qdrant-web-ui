@@ -1,7 +1,8 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Card, CardContent, CardHeader, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
@@ -27,6 +28,10 @@ export const CollectionInfo = ({ collectionName }) => {
   const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
+  const [actionsAnchor, setActionsAnchor] = React.useState(null);
+  const [createAliasOpen, setCreateAliasOpen] = React.useState(false);
+  const [editMetadataOpen, setEditMetadataOpen] = React.useState(false);
+  const [createIndexOpen, setCreateIndexOpen] = React.useState(false);
 
   const fetchClusterInfo = () => {
     if (isRestricted) {
@@ -102,11 +107,17 @@ export const CollectionInfo = ({ collectionName }) => {
 
   return (
     <Box display="flex" flexDirection="column" gap={5}>
-      <CollectionAliases collectionName={collectionName} />
+      <CollectionAliases
+        collectionName={collectionName}
+        forceCreateOpen={createAliasOpen}
+        onForceCreateClose={() => setCreateAliasOpen(false)}
+      />
       <CollectionMetadata
         collectionName={collectionName}
         metadata={collection.config?.metadata}
         onMetadataChange={fetchCollection}
+        forceEditOpen={editMetadataOpen}
+        onForceEditClose={() => setEditMetadataOpen(false)}
       />
       <Card elevation={0}>
         <CardHeader
@@ -138,6 +149,45 @@ export const CollectionInfo = ({ collectionName }) => {
                   <RefreshIcon />
                 </IconButton>
               </Tooltip>
+              <Tooltip title="Actions">
+                <IconButton
+                  size="small"
+                  sx={{ color: 'text.primary' }}
+                  onClick={(e) => setActionsAnchor(e.currentTarget)}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </Tooltip>
+              <Menu anchorEl={actionsAnchor} open={Boolean(actionsAnchor)} onClose={() => setActionsAnchor(null)}>
+                <MenuItem
+                  onClick={() => {
+                    setCreateAliasOpen(true);
+                    setActionsAnchor(null);
+                  }}
+                >
+                  Create Alias
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setEditMetadataOpen(true);
+                    setActionsAnchor(null);
+                  }}
+                >
+                  {collection.config?.metadata &&
+                  typeof collection.config.metadata === 'object' &&
+                  Object.keys(collection.config.metadata).length > 0
+                    ? 'Edit Metadata'
+                    : 'Add Metadata'}
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setCreateIndexOpen(true);
+                    setActionsAnchor(null);
+                  }}
+                >
+                  Create Payload Index
+                </MenuItem>
+              </Menu>
             </Box>
           }
         />
@@ -164,6 +214,8 @@ export const CollectionInfo = ({ collectionName }) => {
         collectionName={collectionName}
         payloadSchema={collection.payload_schema}
         onSchemaChange={fetchCollection}
+        forceCreateOpen={createIndexOpen}
+        onForceCreateClose={() => setCreateIndexOpen(false)}
       />
 
       {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
