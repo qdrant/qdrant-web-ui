@@ -103,7 +103,11 @@ export const CollectionInfo = ({ collectionName }) => {
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases collectionName={collectionName} />
-      <CollectionMetadata metadata={collection.config?.metadata} />
+      <CollectionMetadata
+        collectionName={collectionName}
+        metadata={collection.config?.metadata}
+        onMetadataChange={fetchCollection}
+      />
       <Card elevation={0}>
         <CardHeader
           title={'Collection Info'}
