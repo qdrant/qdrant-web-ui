@@ -9,6 +9,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import CollectionAliases from './CollectionAliases';
+import CollectionMetadata from './CollectionMetadata';
 import PayloadIndexesCard from './PayloadIndexesCard';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import {
@@ -102,6 +103,7 @@ export const CollectionInfo = ({ collectionName }) => {
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases collectionName={collectionName} />
+      <CollectionMetadata metadata={collection.config?.metadata} />
       <Card elevation={0}>
         <CardHeader
           title={'Collection Info'}

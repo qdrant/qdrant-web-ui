@@ -29,6 +29,10 @@ const COLLECTIONS = [
           distance: 'cosine',
         },
       },
+      metadata: {
+        owner: 'team-a',
+        purpose: 'search',
+      },
     },
     aliases: ['alias1', 'alias2'],
   },
@@ -102,6 +106,41 @@ describe('CollectionsList', () => {
     expect(screen.getByText('32')).toBeInTheDocument();
     expect(screen.getByText('manhattan')).toBeInTheDocument();
     expect(screen.getByText('Aliases: alias1, alias2')).toBeInTheDocument();
+    expect(screen.getByText('Metadata: {"owner":"team-a","purpose":"search"}')).toBeInTheDocument();
+    expect(screen.getByText('Metadata: {"owner":"team-a","purpose":"search"}')).toHaveAttribute(
+      'href',
+      '/collections/Collection%201#info'
+    );
+  });
+
+  it('should truncate long metadata previews', () => {
+    const longMetadata = {
+      description: 'x'.repeat(120),
+      nested: { key: 'value', another: 'field' },
+    };
+    const collections = [
+      {
+        ...COLLECTIONS[0],
+        config: {
+          ...COLLECTIONS[0].config,
+          metadata: longMetadata,
+        },
+      },
+    ];
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={collections}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    const preview = screen.getByText(/^Metadata: /);
+    expect(preview.textContent).toMatch(/^Metadata: .{100}\.\.\.$/);
+    expect(preview.textContent.length).toBe('Metadata: '.length + 100 + 3);
   });
 
   it('should render Refresh menu item in actions menu', () => {
