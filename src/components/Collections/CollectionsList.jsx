@@ -17,6 +17,7 @@ import CollectionStatus from './CollectionStatus';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
 import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 import { bigIntJSON } from '../../common/bigIntJSON';
+import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
 
 const previewClampSx = {
   display: '-webkit-box',
@@ -57,7 +58,7 @@ const CollectionNameCell = ({ collection }) => {
       {showMetadata && (
         <Typography
           component={StyledLink}
-          to={`/collections/${encodeURIComponent(collection.name)}#info`}
+          to={`/collections/${encodeURIComponent(collection.name)}#info/${COLLECTION_METADATA_CARD_ID}`}
           variant="caption"
           color="text.secondary"
           sx={previewClampSx}

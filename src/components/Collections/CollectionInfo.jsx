@@ -1,8 +1,7 @@
 import React, { memo, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Card, CardContent, CardHeader, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Box, Button, CardContent, IconButton, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
@@ -13,6 +12,7 @@ import CollectionAliases from './CollectionAliases';
 import CollectionMetadata from './CollectionMetadata';
 import PayloadIndexesCard from './PayloadIndexesCard';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
+import CollapsibleCard from '../Common/CollapsibleCard';
 import {
   DescriptionRow,
   useOpenApiSchemas,
@@ -23,15 +23,20 @@ import {
 } from './CollectionInfoKeyRenderer';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 
-export const CollectionInfo = ({ collectionName }) => {
+export const CollectionInfo = ({
+  collectionName,
+  forceCreateAliasOpen = false,
+  onForceCreateAliasClose,
+  forceAddMetadataOpen = false,
+  onForceAddMetadataClose,
+  forceCreateIndexOpen = false,
+  onForceCreateIndexClose,
+  onMetadataChange,
+}) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
-  const [actionsAnchor, setActionsAnchor] = React.useState(null);
-  const [createAliasOpen, setCreateAliasOpen] = React.useState(false);
-  const [addMetadataOpen, setAddMetadataOpen] = React.useState(false);
-  const [createIndexOpen, setCreateIndexOpen] = React.useState(false);
 
   const fetchClusterInfo = () => {
     if (isRestricted) {
@@ -51,15 +56,6 @@ export const CollectionInfo = ({ collectionName }) => {
       });
   };
 
-  const refreshAll = () => {
-    fetchCollection();
-    fetchClusterInfo();
-  };
-
-  useEffect(() => {
-    refreshAll();
-  }, [collectionName]);
-
   const fetchCollection = () => {
     qdrantClient
       .getCollection(collectionName)
@@ -72,6 +68,20 @@ export const CollectionInfo = ({ collectionName }) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       });
   };
+
+  const handleMetadataChange = () => {
+    fetchCollection();
+    onMetadataChange?.();
+  };
+
+  const refreshAll = () => {
+    fetchCollection();
+    fetchClusterInfo();
+  };
+
+  useEffect(() => {
+    refreshAll();
+  }, [collectionName]);
 
   const triggerOptimizers = () => {
     qdrantClient
@@ -106,92 +116,42 @@ export const CollectionInfo = ({ collectionName }) => {
   const openApiSchemas = useOpenApiSchemas();
 
   const metadata = collection.config?.metadata;
-  const hasMetadata = metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
 
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases
         collectionName={collectionName}
-        forceCreateOpen={createAliasOpen}
-        onForceCreateClose={() => setCreateAliasOpen(false)}
+        forceCreateOpen={forceCreateAliasOpen}
+        onForceCreateClose={onForceCreateAliasClose}
       />
-      <CollectionMetadata
-        collectionName={collectionName}
-        metadata={metadata}
-        onMetadataChange={fetchCollection}
-        forceAddOpen={addMetadataOpen}
-        onForceAddClose={() => setAddMetadataOpen(false)}
-      />
-      <Card elevation={0}>
-        <CardHeader
-          title={'Collection Info'}
-          variant="heading"
-          sx={{
-            flexGrow: 1,
-          }}
-          action={
-            <Box display="flex" gap={1}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={triggerOptimizers}
-                disabled={
-                  collection.status === 'green' ||
-                  collection.optimizer_status?.error === `optimizations pending, awaiting update operation`
-                }
-                sx={{
-                  py: 0.75,
-                  mb: 0.2,
-                }}
-              >
-                Trigger optimizers
-              </Button>
-              <CopyButton text={bigIntJSON.stringify(collection)} />
-              <Tooltip title="Refresh collection info">
-                <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
-                  <RefreshIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Actions">
-                <IconButton
-                  size="small"
-                  sx={{ color: 'text.primary' }}
-                  onClick={(e) => setActionsAnchor(e.currentTarget)}
-                >
-                  <MoreVertIcon />
-                </IconButton>
-              </Tooltip>
-              <Menu anchorEl={actionsAnchor} open={Boolean(actionsAnchor)} onClose={() => setActionsAnchor(null)}>
-                <MenuItem
-                  onClick={() => {
-                    setCreateAliasOpen(true);
-                    setActionsAnchor(null);
-                  }}
-                >
-                  Create Alias
-                </MenuItem>
-                {!hasMetadata && (
-                  <MenuItem
-                    onClick={() => {
-                      setAddMetadataOpen(true);
-                      setActionsAnchor(null);
-                    }}
-                  >
-                    Add Metadata
-                  </MenuItem>
-                )}
-                <MenuItem
-                  onClick={() => {
-                    setCreateIndexOpen(true);
-                    setActionsAnchor(null);
-                  }}
-                >
-                  Create Payload Index
-                </MenuItem>
-              </Menu>
-            </Box>
-          }
-        />
+      <CollapsibleCard
+        title="Collection Info"
+        action={
+          <Box display="flex" gap={1} alignItems="center">
+            <Button
+              variant="contained"
+              size="small"
+              onClick={triggerOptimizers}
+              disabled={
+                collection.status === 'green' ||
+                collection.optimizer_status?.error === `optimizations pending, awaiting update operation`
+              }
+              sx={{
+                py: 0.75,
+                mb: 0.2,
+              }}
+            >
+              Trigger optimizers
+            </Button>
+            <CopyButton text={bigIntJSON.stringify(collection)} />
+            <Tooltip title="Refresh collection info">
+              <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        }
+      >
         <CardContent>
           <ColorspaceProvider value={colorspaceSubset}>
             <SchemasProvider value={openApiSchemas}>
@@ -209,14 +169,21 @@ export const CollectionInfo = ({ collectionName }) => {
             </SchemasProvider>
           </ColorspaceProvider>
         </CardContent>
-      </Card>
+      </CollapsibleCard>
+      <CollectionMetadata
+        collectionName={collectionName}
+        metadata={metadata}
+        onMetadataChange={handleMetadataChange}
+        forceAddOpen={forceAddMetadataOpen}
+        onForceAddClose={onForceAddMetadataClose}
+      />
 
       <PayloadIndexesCard
         collectionName={collectionName}
         payloadSchema={collection.payload_schema}
         onSchemaChange={fetchCollection}
-        forceCreateOpen={createIndexOpen}
-        onForceCreateClose={() => setCreateIndexOpen(false)}
+        forceCreateOpen={forceCreateIndexOpen}
+        onForceCreateClose={onForceCreateIndexClose}
       />
 
       {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
@@ -228,6 +195,13 @@ CollectionInfo.displayName = 'CollectionInfo';
 
 CollectionInfo.propTypes = {
   collectionName: PropTypes.string.isRequired,
+  forceCreateAliasOpen: PropTypes.bool,
+  onForceCreateAliasClose: PropTypes.func,
+  forceAddMetadataOpen: PropTypes.bool,
+  onForceAddMetadataClose: PropTypes.func,
+  forceCreateIndexOpen: PropTypes.bool,
+  onForceCreateIndexClose: PropTypes.func,
+  onMetadataChange: PropTypes.func,
 };
 
 export default memo(CollectionInfo);

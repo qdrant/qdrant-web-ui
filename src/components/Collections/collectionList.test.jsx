@@ -109,7 +109,7 @@ describe('CollectionsList', () => {
     expect(screen.getByText('Metadata: {"owner":"team-a","purpose":"search"}')).toBeInTheDocument();
     expect(screen.getByText('Metadata: {"owner":"team-a","purpose":"search"}')).toHaveAttribute(
       'href',
-      '/collections/Collection%201#info'
+      '/collections/Collection%201#info/collection-metadata'
     );
   });
 

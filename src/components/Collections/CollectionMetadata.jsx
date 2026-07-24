@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import {
   Box,
   Button,
-  Card,
   CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -20,10 +18,12 @@ import { enqueueSnackbar, closeSnackbar } from 'notistack';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import { CopyButton } from '../Common/CopyButton';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
+import CollapsibleCard from '../Common/CollapsibleCard';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { useClient } from '../../context/client-context';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
+import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
 import {
   makeMetadataValueTypes,
   metadataKeyRenderer,
@@ -436,9 +436,7 @@ export const CollectionMetadata = ({
 
   // While editing an object/array field, hide its nested rows so the in-place editor replaces them.
   const editingObjectHideSx =
-    editingKey != null &&
-    currentMetadata[editingKey] != null &&
-    typeof currentMetadata[editingKey] === 'object'
+    editingKey != null && currentMetadata[editingKey] != null && typeof currentMetadata[editingKey] === 'object'
       ? {
           [`& [data-testid="data-key-pair${editingKey}"] > :not(.data-key)`]: {
             display: 'none !important',
@@ -453,41 +451,39 @@ export const CollectionMetadata = ({
   return (
     <>
       {showMetadata && (
-        <Card elevation={0}>
-          <CardHeader
-            title="Metadata"
-            variant="heading"
-            action={
-              <Box display="flex" alignItems="center" gap={0.5}>
-                <CopyButton text={bigIntJSON.stringify(metadata)} />
-                <Tooltip title="Add metadata field">
-                  <IconButton
-                    aria-label="Add metadata field"
-                    size="small"
-                    onClick={openAddForm}
-                    disabled={loading || addInlineOpen}
-                    sx={{ color: 'text.primary' }}
-                  >
-                    <Plus size="1.25rem" />
-                  </IconButton>
-                </Tooltip>
-                <Button
-                  variant="outlined"
+        <CollapsibleCard
+          id={COLLECTION_METADATA_CARD_ID}
+          title="Metadata"
+          action={
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Button
+                variant="contained"
+                size="small"
+                sx={{ py: 0.75, mb: 0.2 }}
+                onClick={openAddForm}
+                disabled={loading || addInlineOpen}
+              >
+                Add Field
+              </Button>
+              <CopyButton text={bigIntJSON.stringify(metadata)} />
+              <Tooltip title="Delete all metadata">
+                <IconButton
+                  aria-label="Delete all metadata"
                   size="small"
-                  color="error"
-                  startIcon={<Trash size={18} />}
                   onClick={() => {
                     cancelEdit();
                     closeAddForm();
                     setConfirmDeleteAll(true);
                   }}
                   disabled={loading}
+                  sx={{ color: 'text.primary' }}
                 >
-                  Delete
-                </Button>
-              </Box>
-            }
-          />
+                  <Trash size="1.25rem" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          }
+        >
           <CardContent>
             <MetadataColorspaceProvider value={colorspaceSubset}>
               <MetadataActionProvider value={metadataAction}>
@@ -514,7 +510,7 @@ export const CollectionMetadata = ({
               </MetadataActionProvider>
             </MetadataColorspaceProvider>
           </CardContent>
-        </Card>
+        </CollapsibleCard>
       )}
 
       <Dialog open={addDialogOpen} onClose={closeAddForm} fullWidth maxWidth="sm">

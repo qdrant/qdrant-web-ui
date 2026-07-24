@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button,
-  Card,
-  CardHeader,
   Chip,
   IconButton,
   Table,
@@ -18,6 +16,7 @@ import { Pencil, Trash } from 'lucide-react';
 import { useClient } from '../../context/client-context';
 import DeletePayloadIndexDialog from '../Common/DeletePayloadIndexDialog';
 import PayloadIndexDialog from '../Points/PayloadIndexDialog';
+import CollapsibleCard from '../Common/CollapsibleCard';
 import { extractPayloadLeafFields } from '../../lib/payload-index-helpers';
 
 const HeaderCell = ({ children, ...props }) => (
@@ -71,16 +70,15 @@ const PayloadIndexesCard = ({
   return (
     <>
       {fields.length > 0 && (
-        <Card elevation={0} {...other}>
-          <CardHeader
-            title={'Payload Indexes'}
-            variant="heading"
-            action={
-              <Button variant="contained" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={openCreateDialog}>
-                Create Index
-              </Button>
-            }
-          />
+        <CollapsibleCard
+          title="Payload Indexes"
+          action={
+            <Button variant="contained" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={openCreateDialog}>
+              Create Index
+            </Button>
+          }
+          {...other}
+        >
           <Table>
             <TableHead>
               <TableRow>
@@ -150,7 +148,7 @@ const PayloadIndexesCard = ({
               })}
             </TableBody>
           </Table>
-        </Card>
+        </CollapsibleCard>
       )}
       <DeletePayloadIndexDialog
         collectionName={collectionName}

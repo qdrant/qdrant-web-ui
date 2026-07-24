@@ -13,6 +13,7 @@ import {
   Table,
   TableCell,
   TableRow,
+  IconButton,
   useTheme,
   alpha,
 } from '@mui/material';
@@ -156,25 +157,16 @@ const AliasRow = ({ aliasName, onDelete }) => (
       </Typography>
     </TableCell>
     <TableCell align="right">
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Tooltip title={'Delete alias'} placement={'left'}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<Trash size={18} />}
-            sx={{
-              px: '10px',
-              py: '4px',
-            }}
-            onClick={onDelete}
-            aria-label="delete"
-            color="error"
-            data-testid={`delete-alias-${aliasName}`}
-          >
-            Delete
-          </Button>
-        </Tooltip>
-      </Box>
+      <Tooltip title="Delete alias" placement="left">
+        <IconButton
+          aria-label={`Delete alias ${aliasName}`}
+          onClick={onDelete}
+          data-testid={`delete-alias-${aliasName}`}
+          sx={{ color: 'text.primary' }}
+        >
+          <Trash size="1.25rem" />
+        </IconButton>
+      </Tooltip>
     </TableCell>
   </StyledTableRow>
 );
