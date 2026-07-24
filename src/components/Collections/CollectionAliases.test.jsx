@@ -73,11 +73,7 @@ describe('CollectionAliases', () => {
     const onForceCreateClose = vi.fn();
     render(
       <MemoryRouter>
-        <CollectionAliases
-          collectionName={COLLECTION_NAME}
-          forceCreateOpen
-          onForceCreateClose={onForceCreateClose}
-        />
+        <CollectionAliases collectionName={COLLECTION_NAME} forceCreateOpen onForceCreateClose={onForceCreateClose} />
       </MemoryRouter>
     );
 
