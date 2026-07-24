@@ -105,6 +105,9 @@ export const CollectionInfo = ({ collectionName }) => {
 
   const openApiSchemas = useOpenApiSchemas();
 
+  const metadata = collection.config?.metadata;
+  const hasMetadata = metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
+
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases
@@ -114,7 +117,7 @@ export const CollectionInfo = ({ collectionName }) => {
       />
       <CollectionMetadata
         collectionName={collectionName}
-        metadata={collection.config?.metadata}
+        metadata={metadata}
         onMetadataChange={fetchCollection}
         forceAddOpen={addMetadataOpen}
         onForceAddClose={() => setAddMetadataOpen(false)}
@@ -167,14 +170,16 @@ export const CollectionInfo = ({ collectionName }) => {
                 >
                   Create Alias
                 </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setAddMetadataOpen(true);
-                    setActionsAnchor(null);
-                  }}
-                >
-                  Add Metadata
-                </MenuItem>
+                {!hasMetadata && (
+                  <MenuItem
+                    onClick={() => {
+                      setAddMetadataOpen(true);
+                      setActionsAnchor(null);
+                    }}
+                  >
+                    Add Metadata
+                  </MenuItem>
+                )}
                 <MenuItem
                   onClick={() => {
                     setCreateIndexOpen(true);

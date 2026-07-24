@@ -51,6 +51,42 @@ const createEmptyFieldRow = () => ({
 });
 
 /**
+ * Whether a field row has both key and value empty (after trim).
+ *
+ * @param {{key: string, value: string}} row - field row
+ * @return {boolean} true when both inputs are empty
+ */
+const isFieldRowEmpty = (row) => !row.key.trim() && !row.value.trim();
+
+/**
+ * Whether a field row has both key and value filled (after trim).
+ *
+ * @param {{key: string, value: string}} row - field row
+ * @return {boolean} true when both inputs are non-empty
+ */
+const isFieldRowComplete = (row) => Boolean(row.key.trim() && row.value.trim());
+
+/**
+ * Whether the dialog Add button should be enabled for the given rows.
+ * Fully empty rows are skipped on submit. Partial rows (only key or only value)
+ * block submit. At least one complete row is required.
+ *
+ * @param {Array<{key: string, value: string}>} rows - field rows
+ * @return {boolean} true when the form is ready to submit
+ */
+const canSubmitFieldRows = (rows) => {
+  let hasComplete = false;
+
+  for (const row of rows) {
+    if (isFieldRowEmpty(row)) continue;
+    if (!isFieldRowComplete(row)) return false;
+    hasComplete = true;
+  }
+
+  return hasComplete;
+};
+
+/**
  * Parse editor input as JSON; fall back to a string literal when parsing fails.
  *
  * @param {string} text - raw input from the field editor
@@ -113,6 +149,9 @@ const AddFieldsForm = ({ rows, onChange, loading }) => {
     setFocusKeyId(nextRow.id);
   };
 
+  // Allow removing any row (including the first) once another filled pair exists.
+  const canRemoveRows = rows.some((row, index) => index > 0 && !isFieldRowEmpty(row));
+
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       {rows.map((row, index) => (
@@ -121,7 +160,7 @@ const AddFieldsForm = ({ rows, onChange, loading }) => {
             <Typography variant="caption" color="text.secondary">
               Field {index + 1}
             </Typography>
-            {index > 0 && (
+            {(canRemoveRows || index > 0) && (
               <Tooltip title="Remove field">
                 <IconButton
                   aria-label={`Remove field ${index + 1}`}
@@ -352,15 +391,19 @@ export const CollectionMetadata = ({
   };
 
   const handleSaveAdd = async () => {
+    if (!canSubmitFieldRows(fieldRows)) {
+      enqueueSnackbar('Each field needs both a key and a value', getSnackbarOptions('error', closeSnackbar, 4000));
+      return;
+    }
+
     const patch = {};
     const seenKeys = new Set();
 
     for (const row of fieldRows) {
+      if (isFieldRowEmpty(row)) continue;
+
       const key = row.key.trim();
-      if (!key) {
-        enqueueSnackbar('Each field needs a key', getSnackbarOptions('error', closeSnackbar, 4000));
-        return;
-      }
+
       if (seenKeys.has(key)) {
         enqueueSnackbar(`Duplicate key "${key}" in the form`, getSnackbarOptions('error', closeSnackbar, 4000));
         return;
@@ -485,7 +528,12 @@ export const CollectionMetadata = ({
           <Button onClick={closeAddForm} color="inherit" variant="outlined" disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleSaveAdd} color="primary" variant="contained" disabled={loading}>
+          <Button
+            onClick={handleSaveAdd}
+            color="primary"
+            variant="contained"
+            disabled={loading || !canSubmitFieldRows(fieldRows)}
+          >
             {loading ? 'Saving...' : 'Add'}
           </Button>
         </DialogActions>
