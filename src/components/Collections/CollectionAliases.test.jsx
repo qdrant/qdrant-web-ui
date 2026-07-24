@@ -40,13 +40,19 @@ const COLLECTION_NAME = 'test_collection';
 
 describe('CollectionAliases', () => {
   it('should render CollectionAliases without aliases', async () => {
+    const { client } = useClient();
     render(
       <MemoryRouter>
         <CollectionAliases collectionName={'collection_without_aliases'} />
       </MemoryRouter>
     );
-    expect(await screen.findByText('Aliases')).toBeInTheDocument();
-    expect(await screen.findByText('No aliases found')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(client.getCollectionAliases).toHaveBeenCalledWith('collection_without_aliases');
+    });
+
+    expect(screen.queryByLabelText('aliases table')).not.toBeInTheDocument();
+    expect(screen.queryByText('Aliases')).not.toBeInTheDocument();
   });
 
   it('should render CollectionAliases with given data', async () => {
@@ -64,19 +70,16 @@ describe('CollectionAliases', () => {
 
   it('should handle alias creation', async () => {
     const { client } = useClient();
+    const onForceCreateClose = vi.fn();
     render(
       <MemoryRouter>
-        <CollectionAliases collectionName={COLLECTION_NAME} />
+        <CollectionAliases
+          collectionName={COLLECTION_NAME}
+          forceCreateOpen
+          onForceCreateClose={onForceCreateClose}
+        />
       </MemoryRouter>
     );
-
-    // Open the Create Alias dialog
-    const createButton = screen.getByText('Create alias');
-    expect(createButton).toBeInTheDocument();
-
-    await act(async () => {
-      fireEvent.click(createButton);
-    });
 
     await waitFor(() => {
       expect(screen.getByTestId('create-alias-dialog')).toBeInTheDocument();
@@ -109,6 +112,7 @@ describe('CollectionAliases', () => {
         },
       ],
     });
+    expect(onForceCreateClose).toHaveBeenCalled();
   });
 
   it('should handle alias deletion', async () => {
