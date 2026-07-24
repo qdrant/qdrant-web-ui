@@ -129,7 +129,7 @@ export const CollectionInfo = ({
         action={
           <Box display="flex" gap={1} alignItems="center">
             <Button
-              variant="contained"
+              variant="outlined"
               size="small"
               onClick={triggerOptimizers}
               disabled={

@@ -73,7 +73,7 @@ const PayloadIndexesCard = ({
         <CollapsibleCard
           title="Payload Indexes"
           action={
-            <Button variant="contained" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={openCreateDialog}>
+            <Button variant="outlined" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={openCreateDialog}>
               Create Index
             </Button>
           }

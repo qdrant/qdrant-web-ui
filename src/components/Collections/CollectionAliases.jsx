@@ -7,29 +7,25 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Box,
   Typography,
   Tooltip,
   Table,
   TableCell,
-  TableRow,
   IconButton,
-  useTheme,
-  alpha,
 } from '@mui/material';
 import { Trash } from 'lucide-react';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
+import CollapsibleCard from '../Common/CollapsibleCard';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useClient } from '../../context/client-context';
-import { StyledTableContainer, StyledTableHead, StyledTableBody, StyledTableRow } from '../Common/StyledTable';
+import { StyledTableBody, StyledTableRow } from '../Common/StyledTable';
 
 const CollectionAliases = ({ collectionName, forceCreateOpen = false, onForceCreateClose }) => {
   const { client: qdrantClient } = useClient();
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [aliasToDelete, setAliasToDelete] = useState('');
   const [aliases, setAliases] = useState([]);
-  const theme = useTheme();
 
   const createDialogOpen = openCreateModal || forceCreateOpen;
 
@@ -98,37 +94,40 @@ const CollectionAliases = ({ collectionName, forceCreateOpen = false, onForceCre
     [collectionName, qdrantClient, aliases, closeCreateDialog]
   );
 
-  const AliasList = aliases.map((alias) => (
-    <AliasRow key={alias.alias_name} aliasName={alias.alias_name} onDelete={() => setAliasToDelete(alias.alias_name)} />
-  ));
-
   return (
     <>
       {aliases.length > 0 && (
-        <StyledTableContainer>
+        <CollapsibleCard
+          title="Aliases"
+          action={
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ py: 0.75, mb: 0.2 }}
+              onClick={() => setOpenCreateModal(true)}
+            >
+              Create Alias
+            </Button>
+          }
+        >
           <Table aria-label="aliases table">
-            <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
-              <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
-                <TableCell sx={{ py: 1, borderBottom: 0 }}>
-                  <Typography variant="h6">Aliases</Typography>
-                </TableCell>
-                <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      sx={{ display: 'block', py: 0.75, mb: 0.2 }}
-                      onClick={() => setOpenCreateModal(true)}
-                    >
-                      Create alias
-                    </Button>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            </StyledTableHead>
-            <StyledTableBody>{AliasList}</StyledTableBody>
+            <StyledTableBody
+              sx={{
+                '& tr:last-of-type td': {
+                  borderBottom: 'none',
+                },
+              }}
+            >
+              {aliases.map((alias) => (
+                <AliasRow
+                  key={alias.alias_name}
+                  aliasName={alias.alias_name}
+                  onDelete={() => setAliasToDelete(alias.alias_name)}
+                />
+              ))}
+            </StyledTableBody>
           </Table>
-        </StyledTableContainer>
+        </CollapsibleCard>
       )}
 
       <CreateAliasModal open={createDialogOpen} onClose={closeCreateDialog} onCreate={handleCreateAlias} />

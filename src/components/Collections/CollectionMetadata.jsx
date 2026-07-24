@@ -24,6 +24,7 @@ import { useClient } from '../../context/client-context';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
+import { useScrollToId } from '../../hooks/useScrollToId';
 import {
   makeMetadataValueTypes,
   metadataKeyRenderer,
@@ -246,11 +247,15 @@ export const CollectionMetadata = ({
   const [fieldRows, setFieldRows] = useState([createEmptyFieldRow()]);
   const [fieldToDelete, setFieldToDelete] = useState(null);
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+  const [scrollToCardId, setScrollToCardId] = useState(null);
 
   const isAdding = adding || forceAddOpen;
   // When collection has no metadata yet, add via dialog instead of showing an empty card.
   const addDialogOpen = isAdding && !showMetadata;
   const addInlineOpen = isAdding && showMetadata;
+
+  const clearScrollToCard = useCallback(() => setScrollToCardId(null), []);
+  useScrollToId(scrollToCardId, { onScrolled: clearScrollToCard });
 
   const resetFieldRows = useCallback(() => {
     setFieldRows([createEmptyFieldRow()]);
@@ -417,12 +422,17 @@ export const CollectionMetadata = ({
     }
 
     const count = Object.keys(patch).length;
+    // Dialog is only used when the collection has no metadata yet.
+    const creatingFirstMetadata = !showMetadata;
     const ok = await updateMetadataField(
       patch,
       count === 1 ? `Added metadata field "${Object.keys(patch)[0]}"` : `Added ${count} metadata fields`
     );
     if (ok) {
       closeAddForm();
+      if (creatingFirstMetadata) {
+        setScrollToCardId(COLLECTION_METADATA_CARD_ID);
+      }
     }
   };
 
@@ -457,7 +467,7 @@ export const CollectionMetadata = ({
           action={
             <Box display="flex" alignItems="center" gap={0.5}>
               <Button
-                variant="contained"
+                variant="outlined"
                 size="small"
                 sx={{ py: 0.75, mb: 0.2 }}
                 onClick={openAddForm}
