@@ -1,30 +1,411 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Card, CardContent, CardHeader, IconButton, Tooltip } from '@mui/material';
-import { Pencil } from 'lucide-react';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { Plus, Trash, Trash2 } from 'lucide-react';
+import { enqueueSnackbar, closeSnackbar } from 'notistack';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import { CopyButton } from '../Common/CopyButton';
+import ConfirmationDialog from '../Common/ConfirmationDialog';
 import { bigIntJSON } from '../../common/bigIntJSON';
-import CollectionMetadataDialog from './CollectionMetadataDialog';
+import { useClient } from '../../context/client-context';
+import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
+import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
+import {
+  makeMetadataValueTypes,
+  metadataKeyRenderer,
+  MetadataActionProvider,
+  MetadataColorspaceProvider,
+  HoverFieldProvider,
+  InPlaceAddField,
+} from './metadataValueTypes';
 
 const hasMetadata = (metadata) => metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
+
+const emptyMetadata = {};
+
+let nextFieldRowId = 1;
+
+/**
+ * Create a blank key/value row for the multi-field add form.
+ *
+ * @return {{id: number, key: string, value: string}} empty row
+ */
+const createEmptyFieldRow = () => ({
+  id: nextFieldRowId++,
+  key: '',
+  value: '',
+});
+
+/**
+ * Parse editor input as JSON; fall back to a string literal when parsing fails.
+ *
+ * @param {string} text - raw input from the field editor
+ * @return {*} parsed value
+ */
+const parseFieldValue = (text) => {
+  try {
+    return bigIntJSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+/**
+ * Serialize a metadata value for the inline editor input.
+ * Always uses JSON representation so strings are quoted, preventing
+ * accidental type conversions (e.g. "123" showing as 123).
+ *
+ * @param {*} value - current field value
+ * @return {string} editor text (valid JSON)
+ */
+const valueToEditorText = (value) => {
+  return bigIntJSON.stringify(value, null, 2);
+};
+
+/**
+ * Multi-row key/value form used by the inline add UI and the empty-metadata dialog.
+ *
+ * @param {Object} props - component props
+ * @param {Array<{id: number, key: string, value: string}>} props.rows - field rows
+ * @param {function} props.onChange - called with updated rows array
+ * @param {boolean} props.loading - disables inputs while saving
+ * @return {JSX.Element} editable key/value rows with an add-row control
+ */
+const AddFieldsForm = ({ rows, onChange, loading }) => {
+  const keyInputRefs = React.useRef({});
+  const [focusKeyId, setFocusKeyId] = useState(null);
+
+  useEffect(() => {
+    if (focusKeyId == null) return;
+    keyInputRefs.current[focusKeyId]?.focus();
+    setFocusKeyId(null);
+  }, [focusKeyId, rows]);
+
+  const updateRow = (id, patch) => {
+    onChange(rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+  };
+
+  const removeRow = (id) => {
+    if (rows.length <= 1) {
+      onChange([{ ...rows[0], key: '', value: '' }]);
+      return;
+    }
+    onChange(rows.filter((row) => row.id !== id));
+  };
+
+  const addRow = () => {
+    const nextRow = createEmptyFieldRow();
+    onChange([...rows, nextRow]);
+    setFocusKeyId(nextRow.id);
+  };
+
+  return (
+    <Box display="flex" flexDirection="column" gap={2}>
+      {rows.map((row, index) => (
+        <Box key={row.id} display="flex" flexDirection="column" gap={1}>
+          <Box display="flex" alignItems="center" justifyContent="space-between">
+            <Typography variant="caption" color="text.secondary">
+              Field {index + 1}
+            </Typography>
+            {index > 0 && (
+              <Tooltip title="Remove field">
+                <IconButton
+                  aria-label={`Remove field ${index + 1}`}
+                  size="small"
+                  onClick={() => removeRow(row.id)}
+                  disabled={loading}
+                >
+                  <Trash2 size="0.9rem" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+          <TextField
+            fullWidth
+            size="small"
+            label="Key"
+            value={row.key}
+            onChange={(e) => updateRow(row.id, { key: e.target.value })}
+            disabled={loading}
+            autoFocus={index === 0}
+            inputRef={(el) => {
+              keyInputRefs.current[row.id] = el;
+            }}
+          />
+          <TextField
+            fullWidth
+            size="small"
+            label="Value"
+            multiline
+            minRows={1}
+            maxRows={8}
+            value={row.value}
+            onChange={(e) => updateRow(row.id, { value: e.target.value })}
+            disabled={loading}
+            placeholder="JSON or plain string"
+          />
+        </Box>
+      ))}
+      <Button
+        startIcon={<Plus size="1rem" />}
+        onClick={addRow}
+        disabled={loading}
+        size="small"
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        Add another field
+      </Button>
+    </Box>
+  );
+};
+
+AddFieldsForm.propTypes = {
+  rows: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      key: PropTypes.string.isRequired,
+      value: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  onChange: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
+};
 
 export const CollectionMetadata = ({
   collectionName,
   metadata,
   onMetadataChange,
-  forceEditOpen = false,
-  onForceEditClose,
+  forceAddOpen = false,
+  onForceAddClose,
 }) => {
-  const [editOpen, setEditOpen] = useState(false);
+  const { client: qdrantClient } = useClient();
   const showMetadata = hasMetadata(metadata);
+  const currentMetadata = showMetadata ? metadata : emptyMetadata;
 
-  const isEditDialogOpen = editOpen || forceEditOpen;
+  const viewerContainerRef = useRef(null);
+  const [activeField, setActiveField] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [editingKey, setEditingKey] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [addKey, setAddKey] = useState('');
+  const [addValue, setAddValue] = useState('');
+  const [fieldRows, setFieldRows] = useState([createEmptyFieldRow()]);
+  const [fieldToDelete, setFieldToDelete] = useState(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
 
-  const handleEditClose = () => {
-    setEditOpen(false);
-    onForceEditClose?.();
+  const isAdding = adding || forceAddOpen;
+  // When collection has no metadata yet, add via dialog instead of showing an empty card.
+  const addDialogOpen = isAdding && !showMetadata;
+  const addInlineOpen = isAdding && showMetadata;
+
+  const resetFieldRows = useCallback(() => {
+    setFieldRows([createEmptyFieldRow()]);
+  }, []);
+
+  useEffect(() => {
+    if (forceAddOpen) {
+      setEditingKey(null);
+      setEditValue('');
+      resetFieldRows();
+    }
+  }, [forceAddOpen, resetFieldRows]);
+
+  const { theme: colorspace } = useJsonViewerTheme('info');
+  const colorspaceSubset = useMemo(
+    () => ({
+      base02: colorspace.base02,
+      base08: colorspace.base08,
+      base09: colorspace.base09,
+      base0B: colorspace.base0B,
+      base0D: colorspace.base0D,
+      base0E: colorspace.base0E,
+      base0F: colorspace.base0F,
+    }),
+    [colorspace]
+  );
+
+  const valueTypes = useMemo(() => makeMetadataValueTypes(), []);
+
+  const handleViewerMouseOver = useCallback((e) => {
+    const row = e.target.closest?.('[data-testid^="data-key-pair"]');
+    if (!row || (e.relatedTarget instanceof Node && row.contains(e.relatedTarget))) return;
+    setActiveField(row.getAttribute('data-testid').slice('data-key-pair'.length));
+  }, []);
+
+  const handleViewerMouseLeave = useCallback(() => setActiveField(null), []);
+
+  const closeAddForm = useCallback(() => {
+    setAdding(false);
+    setAddKey('');
+    setAddValue('');
+    resetFieldRows();
+    onForceAddClose?.();
+  }, [onForceAddClose, resetFieldRows]);
+
+  const cancelEdit = useCallback(() => {
+    setEditingKey(null);
+    setEditValue('');
+  }, []);
+
+  const updateMetadataField = useCallback(
+    async (patch, successMessage) => {
+      setLoading(true);
+      try {
+        await qdrantClient.updateCollection(collectionName, { metadata: patch });
+        enqueueSnackbar(successMessage, getSnackbarOptions('success', closeSnackbar, 2000));
+        onMetadataChange?.();
+        return true;
+      } catch (err) {
+        enqueueSnackbar(err?.message || 'Failed to update metadata', getSnackbarOptions('error', closeSnackbar, 6000));
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [qdrantClient, collectionName, onMetadataChange]
+  );
+
+  const saveEdit = useCallback(async () => {
+    if (editingKey == null) return;
+    const parsed = parseFieldValue(editValue);
+    const ok = await updateMetadataField({ [editingKey]: parsed }, `Updated metadata field "${editingKey}"`);
+    if (ok) {
+      setEditingKey(null);
+      setEditValue('');
+    }
+  }, [editingKey, editValue, updateMetadataField]);
+
+  const saveInlineAdd = useCallback(async () => {
+    const key = addKey.trim();
+    if (!key) {
+      enqueueSnackbar('Key is required', getSnackbarOptions('error', closeSnackbar, 4000));
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(currentMetadata, key)) {
+      enqueueSnackbar(`Key "${key}" already exists`, getSnackbarOptions('error', closeSnackbar, 4000));
+      return;
+    }
+    const parsed = parseFieldValue(addValue);
+    const ok = await updateMetadataField({ [key]: parsed }, `Added metadata field "${key}"`);
+    if (ok) {
+      closeAddForm();
+    }
+  }, [addKey, addValue, currentMetadata, updateMetadataField, closeAddForm]);
+
+  const metadataAction = useMemo(
+    () => ({
+      editingKey,
+      editValue,
+      setEditValue,
+      saveEdit,
+      cancelEdit,
+      loading,
+      addingInline: addInlineOpen,
+      addKey,
+      setAddKey,
+      addValue,
+      setAddValue,
+      saveAdd: saveInlineAdd,
+      cancelAdd: closeAddForm,
+      editField: (key, value) => {
+        closeAddForm();
+        setEditingKey(key);
+        setEditValue(valueToEditorText(value));
+      },
+      deleteField: (key) => {
+        cancelEdit();
+        closeAddForm();
+        setFieldToDelete(key);
+      },
+    }),
+    [editingKey, editValue, saveEdit, cancelEdit, loading, addInlineOpen, addKey, addValue, saveInlineAdd, closeAddForm]
+  );
+
+  const handleConfirmDelete = async () => {
+    if (fieldToDelete == null) return;
+    const key = fieldToDelete;
+    setFieldToDelete(null);
+    await updateMetadataField({ [key]: null }, `Deleted metadata field "${key}"`);
   };
+
+  const handleConfirmDeleteAll = async () => {
+    const patch = Object.fromEntries(Object.keys(currentMetadata).map((key) => [key, null]));
+    setConfirmDeleteAll(false);
+    cancelEdit();
+    closeAddForm();
+    await updateMetadataField(patch, 'Deleted all metadata');
+  };
+
+  const handleSaveAdd = async () => {
+    const patch = {};
+    const seenKeys = new Set();
+
+    for (const row of fieldRows) {
+      const key = row.key.trim();
+      if (!key) {
+        enqueueSnackbar('Each field needs a key', getSnackbarOptions('error', closeSnackbar, 4000));
+        return;
+      }
+      if (seenKeys.has(key)) {
+        enqueueSnackbar(`Duplicate key "${key}" in the form`, getSnackbarOptions('error', closeSnackbar, 4000));
+        return;
+      }
+      if (Object.prototype.hasOwnProperty.call(currentMetadata, key)) {
+        enqueueSnackbar(`Key "${key}" already exists`, getSnackbarOptions('error', closeSnackbar, 4000));
+        return;
+      }
+      seenKeys.add(key);
+      patch[key] = parseFieldValue(row.value);
+    }
+
+    const count = Object.keys(patch).length;
+    const ok = await updateMetadataField(
+      patch,
+      count === 1 ? `Added metadata field "${Object.keys(patch)[0]}"` : `Added ${count} metadata fields`
+    );
+    if (ok) {
+      closeAddForm();
+    }
+  };
+
+  const openAddForm = () => {
+    cancelEdit();
+    setAdding(true);
+    setAddKey('');
+    setAddValue('');
+    resetFieldRows();
+  };
+
+  // While editing an object/array field, hide its nested rows so the in-place editor replaces them.
+  const editingObjectHideSx =
+    editingKey != null &&
+    currentMetadata[editingKey] != null &&
+    typeof currentMetadata[editingKey] === 'object'
+      ? {
+          [`& [data-testid="data-key-pair${editingKey}"] > :not(.data-key)`]: {
+            display: 'none !important',
+          },
+          [`& [data-testid="data-key-pair${editingKey}"] .data-object-start, & [data-testid="data-key-pair${editingKey}"] .data-object-end`]:
+            {
+              display: 'none !important',
+            },
+        }
+      : {};
 
   return (
     <>
@@ -36,37 +417,98 @@ export const CollectionMetadata = ({
             action={
               <Box display="flex" alignItems="center" gap={0.5}>
                 <CopyButton text={bigIntJSON.stringify(metadata)} />
-                <Tooltip title="Edit metadata">
+                <Tooltip title="Add metadata field">
                   <IconButton
-                    aria-label="Edit metadata"
+                    aria-label="Add metadata field"
                     size="small"
-                    onClick={() => setEditOpen(true)}
+                    onClick={openAddForm}
+                    disabled={loading || addInlineOpen}
                     sx={{ color: 'text.primary' }}
                   >
-                    <Pencil size="1.25rem" />
+                    <Plus size="1.25rem" />
                   </IconButton>
                 </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  startIcon={<Trash size={18} />}
+                  onClick={() => {
+                    cancelEdit();
+                    closeAddForm();
+                    setConfirmDeleteAll(true);
+                  }}
+                  disabled={loading}
+                >
+                  Delete
+                </Button>
               </Box>
             }
           />
           <CardContent>
-            <JsonViewerCustom
-              theme="info"
-              value={metadata}
-              displayDataTypes={false}
-              displayObjectSize={false}
-              rootName={false}
-              enableClipboard={false}
-            />
+            <MetadataColorspaceProvider value={colorspaceSubset}>
+              <MetadataActionProvider value={metadataAction}>
+                <HoverFieldProvider value={activeField}>
+                  <Box
+                    ref={viewerContainerRef}
+                    onMouseOver={handleViewerMouseOver}
+                    onMouseLeave={handleViewerMouseLeave}
+                    sx={editingObjectHideSx}
+                  >
+                    <JsonViewerCustom
+                      theme="info"
+                      value={metadata}
+                      displayDataTypes={false}
+                      displayObjectSize={false}
+                      rootName={false}
+                      enableClipboard={false}
+                      valueTypes={valueTypes}
+                      keyRenderer={metadataKeyRenderer}
+                    />
+                    <InPlaceAddField containerRef={viewerContainerRef} />
+                  </Box>
+                </HoverFieldProvider>
+              </MetadataActionProvider>
+            </MetadataColorspaceProvider>
           </CardContent>
         </Card>
       )}
-      <CollectionMetadataDialog
-        open={isEditDialogOpen}
-        onClose={handleEditClose}
-        collectionName={collectionName}
-        metadata={metadata}
-        onSuccess={onMetadataChange}
+
+      <Dialog open={addDialogOpen} onClose={closeAddForm} fullWidth maxWidth="sm">
+        <DialogTitle>Add metadata</DialogTitle>
+        <DialogContent>
+          <Box pt={1}>
+            <AddFieldsForm rows={fieldRows} onChange={setFieldRows} loading={loading} />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={closeAddForm} color="inherit" variant="outlined" disabled={loading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveAdd} color="primary" variant="contained" disabled={loading}>
+            {loading ? 'Saving...' : 'Add'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmationDialog
+        open={fieldToDelete != null}
+        onClose={() => setFieldToDelete(null)}
+        title="Delete metadata field"
+        content={`Are you sure you want to delete the metadata field "${fieldToDelete}"?`}
+        warning="This action cannot be undone."
+        actionName="Delete"
+        actionHandler={handleConfirmDelete}
+      />
+
+      <ConfirmationDialog
+        open={confirmDeleteAll}
+        onClose={() => setConfirmDeleteAll(false)}
+        title="Delete all metadata"
+        content="Are you sure you want to delete all metadata for this collection?"
+        warning="This action cannot be undone."
+        actionName="Delete"
+        actionHandler={handleConfirmDeleteAll}
       />
     </>
   );
@@ -76,8 +518,8 @@ CollectionMetadata.propTypes = {
   collectionName: PropTypes.string.isRequired,
   metadata: PropTypes.object,
   onMetadataChange: PropTypes.func,
-  forceEditOpen: PropTypes.bool,
-  onForceEditClose: PropTypes.func,
+  forceAddOpen: PropTypes.bool,
+  onForceAddClose: PropTypes.func,
 };
 
 export default memo(CollectionMetadata);

@@ -30,7 +30,7 @@ export const CollectionInfo = ({ collectionName }) => {
   const [clusterInfo, setClusterInfo] = React.useState(null);
   const [actionsAnchor, setActionsAnchor] = React.useState(null);
   const [createAliasOpen, setCreateAliasOpen] = React.useState(false);
-  const [editMetadataOpen, setEditMetadataOpen] = React.useState(false);
+  const [addMetadataOpen, setAddMetadataOpen] = React.useState(false);
   const [createIndexOpen, setCreateIndexOpen] = React.useState(false);
 
   const fetchClusterInfo = () => {
@@ -116,8 +116,8 @@ export const CollectionInfo = ({ collectionName }) => {
         collectionName={collectionName}
         metadata={collection.config?.metadata}
         onMetadataChange={fetchCollection}
-        forceEditOpen={editMetadataOpen}
-        onForceEditClose={() => setEditMetadataOpen(false)}
+        forceAddOpen={addMetadataOpen}
+        onForceAddClose={() => setAddMetadataOpen(false)}
       />
       <Card elevation={0}>
         <CardHeader
@@ -169,15 +169,11 @@ export const CollectionInfo = ({ collectionName }) => {
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
-                    setEditMetadataOpen(true);
+                    setAddMetadataOpen(true);
                     setActionsAnchor(null);
                   }}
                 >
-                  {collection.config?.metadata &&
-                  typeof collection.config.metadata === 'object' &&
-                  Object.keys(collection.config.metadata).length > 0
-                    ? 'Edit Metadata'
-                    : 'Add Metadata'}
+                  Add Metadata
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
