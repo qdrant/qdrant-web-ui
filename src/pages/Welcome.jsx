@@ -87,9 +87,9 @@ const Welcome = () => {
               icon={BrainCircuit}
               title="Agent Skills"
               description={
-                'Download our AI Agent Skills, crafted by our team of experts to accelerate your development workflow.'
+                'Download our AI Agent Skills, crafted by our team of experts to strengthen your Qdrant development.'
               }
-              href="https://github.com/qdrant/skills"
+              href="https://qdrant.tech/documentation/skills/"
               showCta={false}
             />
           </Grid>
