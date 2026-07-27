@@ -150,14 +150,14 @@ const AddFieldsForm = ({ rows, onChange, loading }) => {
     setFocusKeyId(nextRow.id);
   };
 
-  // Allow removing any row (including the first) once another filled pair exists.
+  // Allow removing any row once another filled pair exists
   const canRemoveRows = rows.some((row, index) => index > 0 && !isFieldRowEmpty(row));
 
   return (
-    <Box display="flex" flexDirection="column" gap={2}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {rows.map((row, index) => (
-        <Box key={row.id} display="flex" flexDirection="column" gap={1}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
+        <Box key={row.id} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="caption" color="text.secondary">
               Field {index + 1}
             </Typography>
@@ -327,12 +327,20 @@ export const CollectionMetadata = ({
   const saveEdit = useCallback(async () => {
     if (editingKey == null) return;
     const parsed = parseFieldValue(editValue);
+    const originalValue = currentMetadata[editingKey];
+    if (typeof originalValue === 'object' && originalValue != null && typeof parsed === 'string') {
+      enqueueSnackbar(
+        'Invalid JSON — value must be a valid object or array',
+        getSnackbarOptions('error', closeSnackbar, 4000)
+      );
+      return;
+    }
     const ok = await updateMetadataField({ [editingKey]: parsed }, `Updated metadata field "${editingKey}"`);
     if (ok) {
       setEditingKey(null);
       setEditValue('');
     }
-  }, [editingKey, editValue, updateMetadataField]);
+  }, [editingKey, editValue, currentMetadata, updateMetadataField]);
 
   const saveInlineAdd = useCallback(async () => {
     const key = addKey.trim();
@@ -465,7 +473,7 @@ export const CollectionMetadata = ({
           id={COLLECTION_METADATA_CARD_ID}
           title="Metadata"
           action={
-            <Box display="flex" alignItems="center" gap={0.5}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Button
                 variant="outlined"
                 size="small"
@@ -526,7 +534,7 @@ export const CollectionMetadata = ({
       <Dialog open={addDialogOpen} onClose={closeAddForm} fullWidth maxWidth="sm">
         <DialogTitle>Add metadata</DialogTitle>
         <DialogContent>
-          <Box pt={1}>
+          <Box sx={{ pt: 1 }}>
             <AddFieldsForm rows={fieldRows} onChange={setFieldRows} loading={loading} />
           </Box>
         </DialogContent>

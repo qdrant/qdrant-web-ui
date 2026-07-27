@@ -35,27 +35,11 @@ function Collection() {
   const initialHash = parseCollectionHash(location.hash);
   const [currentTab, setCurrentTab] = useState(initialHash.tab);
   const [scrollToId, setScrollToId] = useState(initialHash.scrollToId);
-  const { client: qdrantClient, isRestricted } = useClient();
+  const { isRestricted } = useClient();
   const [hasMetadata, setHasMetadata] = useState(false);
   const [createAliasOpen, setCreateAliasOpen] = useState(false);
   const [addMetadataOpen, setAddMetadataOpen] = useState(false);
   const [createIndexOpen, setCreateIndexOpen] = useState(false);
-
-  const refreshHasMetadata = useCallback(() => {
-    qdrantClient
-      .getCollection(collectionName)
-      .then((res) => {
-        const metadata = res?.config?.metadata;
-        setHasMetadata(metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0);
-      })
-      .catch(() => {
-        setHasMetadata(false);
-      });
-  }, [qdrantClient, collectionName]);
-
-  useEffect(() => {
-    refreshHasMetadata();
-  }, [refreshHasMetadata]);
 
   useEffect(() => {
     const { tab, scrollToId: nextScrollToId } = parseCollectionHash(location.hash);
@@ -147,7 +131,7 @@ function Collection() {
                 onForceAddMetadataClose={() => setAddMetadataOpen(false)}
                 forceCreateIndexOpen={createIndexOpen}
                 onForceCreateIndexClose={() => setCreateIndexOpen(false)}
-                onMetadataChange={refreshHasMetadata}
+                onMetadataChange={setHasMetadata}
               />
             )}
             {!isRestricted && currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}

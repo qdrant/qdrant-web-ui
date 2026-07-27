@@ -100,12 +100,7 @@ const CollectionAliases = ({ collectionName, forceCreateOpen = false, onForceCre
         <CollapsibleCard
           title="Aliases"
           action={
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ py: 0.75, mb: 0.2 }}
-              onClick={() => setOpenCreateModal(true)}
-            >
+            <Button variant="outlined" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={() => setOpenCreateModal(true)}>
               Create Alias
             </Button>
           }

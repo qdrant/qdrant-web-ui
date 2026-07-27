@@ -56,6 +56,11 @@ export const CollectionInfo = ({
       });
   };
 
+  const reportHasMetadata = (metadata) => {
+    const next = metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
+    onMetadataChange?.(next);
+  };
+
   const fetchCollection = () => {
     qdrantClient
       .getCollection(collectionName)
@@ -63,15 +68,11 @@ export const CollectionInfo = ({
         setCollection(() => {
           return { ...res };
         });
+        reportHasMetadata(res?.config?.metadata);
       })
       .catch((err) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       });
-  };
-
-  const handleMetadataChange = () => {
-    fetchCollection();
-    onMetadataChange?.();
   };
 
   const refreshAll = () => {
@@ -173,7 +174,7 @@ export const CollectionInfo = ({
       <CollectionMetadata
         collectionName={collectionName}
         metadata={metadata}
-        onMetadataChange={handleMetadataChange}
+        onMetadataChange={fetchCollection}
         forceAddOpen={forceAddMetadataOpen}
         onForceAddClose={onForceAddMetadataClose}
       />
@@ -201,6 +202,10 @@ CollectionInfo.propTypes = {
   onForceAddMetadataClose: PropTypes.func,
   forceCreateIndexOpen: PropTypes.bool,
   onForceCreateIndexClose: PropTypes.func,
+  /**
+   * Called after collection info is loaded or refreshed with whether metadata is non-empty.
+   * @param {boolean} hasMetadata
+   */
   onMetadataChange: PropTypes.func,
 };
 
