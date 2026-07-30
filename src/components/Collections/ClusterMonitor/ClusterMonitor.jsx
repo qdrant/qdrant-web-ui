@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
 import { ArcherContainer } from 'react-archer';
@@ -19,7 +19,12 @@ import ShardTransferDialog from './ShardTransferDialog';
 import ReshardingDialog from './ReshardingDialog';
 import AbortReshardingDialog from './AbortReshardingDialog';
 import ReshardingButtons from './ReshardingButtons';
+import ReshardingStatus from './ReshardingStatus';
+import { useReshardingProgress } from './reshardingProgress';
 import ReplicationControl from './ReplicationButtons';
+
+/** How often the cluster info is re-fetched while a resharding operation is running. */
+const RESHARDING_POLL_INTERVAL_MS = 5000;
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -240,7 +245,7 @@ const ClusterMonitor = ({ collectionName }) => {
   };
 
   // Helper function to refresh cluster info
-  const refreshClusterInfo = async () => {
+  const refreshClusterInfo = useCallback(async () => {
     try {
       const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
         axios.get(`/cluster`),
@@ -274,7 +279,7 @@ const ClusterMonitor = ({ collectionName }) => {
       console.error('Error refreshing cluster info:', err);
       throw err;
     }
-  };
+  }, [collectionName, qdrantClient]);
 
   const handleTransferConfirm = async (transferRequest) => {
     setTransferLoading(true);
@@ -456,6 +461,26 @@ const ClusterMonitor = ({ collectionName }) => {
     fetchClusterInfo();
   }, [collectionName, isRestricted, qdrantClient]);
 
+  const reshardingOperations = cluster?.resharding_operations ?? [];
+  const isResharding = reshardingOperations.length > 0;
+  const reshardingProgress = useReshardingProgress(collectionName, isResharding);
+
+  // Resharding advances through several stages, so its reported progress has to
+  // be re-fetched. Paused while dragging a shard to not disturb the interaction.
+  useEffect(() => {
+    if (!isResharding || isRestricted || dragState.isDragging) {
+      return undefined;
+    }
+
+    const interval = setInterval(() => {
+      // Errors are already logged by refreshClusterInfo; a failed poll is retried
+      // by the next tick and should not raise a snackbar on every attempt.
+      refreshClusterInfo().catch(() => {});
+    }, RESHARDING_POLL_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [isResharding, isRestricted, dragState.isDragging, refreshClusterInfo]);
+
   // Extract unique shard keys from all shards (must be before conditional return)
   const shardKeys = React.useMemo(() => {
     if (!cluster?.shards || cluster.shards.length === 0) return [];
@@ -631,6 +656,11 @@ const ClusterMonitor = ({ collectionName }) => {
           boxSizing: 'border-box',
         }}
       >
+        {isResharding && (
+          <Box sx={{ mb: 1.5 }}>
+            <ReshardingStatus operations={reshardingOperations} progress={reshardingProgress} />
+          </Box>
+        )}
         <Box
           ref={summaryScrollRef}
           onScroll={onSummaryScroll}
