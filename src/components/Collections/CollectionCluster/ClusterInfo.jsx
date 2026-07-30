@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card, CardHeader, Table, TableBody } from '@mui/material';
+import { Table, TableBody } from '@mui/material';
 import { CopyButton } from '../../Common/CopyButton';
+import CollapsibleCard from '../../Common/CollapsibleCard';
 import ClusterInfoHead from './ClusterInfoHead';
 import ClusterShardRow from './ClusterShardRow';
 import { bigIntJSON } from '../../../common/bigIntJSON';
@@ -21,15 +22,11 @@ const ClusterInfo = ({ collectionCluster = { result: {} }, ...other }) => {
   ));
 
   return (
-    <Card elevation={0} {...other}>
-      <CardHeader
-        title={'Collection Cluster Info'}
-        variant="heading"
-        sx={{
-          flexGrow: 1,
-        }}
-        action={<CopyButton text={bigIntJSON.stringify(collectionCluster)} />}
-      />
+    <CollapsibleCard
+      title="Collection Cluster Info"
+      action={<CopyButton text={bigIntJSON.stringify(collectionCluster)} />}
+      {...other}
+    >
       <Table>
         <ClusterInfoHead />
         <TableBody
@@ -43,7 +40,7 @@ const ClusterInfo = ({ collectionCluster = { result: {} }, ...other }) => {
           {shardRows}
         </TableBody>
       </Table>
-    </Card>
+    </CollapsibleCard>
   );
 };
 

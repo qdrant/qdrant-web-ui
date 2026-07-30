@@ -7,28 +7,32 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Box,
   Typography,
   Tooltip,
   Table,
   TableCell,
-  TableRow,
-  useTheme,
-  alpha,
+  IconButton,
 } from '@mui/material';
 import { Trash } from 'lucide-react';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
+import CollapsibleCard from '../Common/CollapsibleCard';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { useClient } from '../../context/client-context';
-import { StyledTableContainer, StyledTableHead, StyledTableBody, StyledTableRow } from '../Common/StyledTable';
+import { StyledTableBody, StyledTableRow } from '../Common/StyledTable';
 
-const CollectionAliases = ({ collectionName }) => {
+const CollectionAliases = ({ collectionName, forceCreateOpen = false, onForceCreateClose }) => {
   const { client: qdrantClient } = useClient();
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [aliasToDelete, setAliasToDelete] = useState('');
   const [aliases, setAliases] = useState([]);
-  const theme = useTheme();
+
+  const createDialogOpen = openCreateModal || forceCreateOpen;
+
+  const closeCreateDialog = useCallback(() => {
+    setOpenCreateModal(false);
+    onForceCreateClose?.();
+  }, [onForceCreateClose]);
 
   // Fetch aliases on mount
   useEffect(() => {
@@ -67,7 +71,7 @@ const CollectionAliases = ({ collectionName }) => {
       // if alias name already exists
       if (aliases.some((alias) => alias.alias_name === newAliasNameNormalized)) {
         enqueueSnackbar('Alias name already exists', getSnackbarOptions('error', closeSnackbar, 2000));
-        setOpenCreateModal(false);
+        closeCreateDialog();
         return;
       }
       // if alias name is empty
@@ -81,58 +85,47 @@ const CollectionAliases = ({ collectionName }) => {
           actions: [{ create_alias: { collection_name: collectionName, alias_name: newAliasNameNormalized } }],
         });
         setAliases((prev) => [...prev, { alias_name: newAliasNameNormalized }]);
-        setOpenCreateModal(false);
+        closeCreateDialog();
         enqueueSnackbar('Alias created successfully', getSnackbarOptions('success', closeSnackbar, 2000));
       } catch (err) {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
       }
     },
-    [collectionName, qdrantClient, aliases]
+    [collectionName, qdrantClient, aliases, closeCreateDialog]
   );
 
-  const AliasList = aliases.map((alias) => (
-    <AliasRow key={alias.alias_name} aliasName={alias.alias_name} onDelete={() => setAliasToDelete(alias.alias_name)} />
-  ));
-
   return (
-    <StyledTableContainer>
-      <Table aria-label="aliases table">
-        <StyledTableHead sx={{ background: theme.palette.background.paperElevation1, borderBottom: 0 }}>
-          <TableRow sx={{ background: alpha(theme.palette.action.hover, 0.04) }}>
-            <TableCell sx={{ py: 1, borderBottom: 0 }}>
-              <Typography variant="h6">Aliases</Typography>
-            </TableCell>
-            <TableCell sx={{ py: 0.5, borderBottom: 0 }} align="right">
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  size="small"
-                  sx={{ display: 'block', py: 0.75, mb: 0.2 }}
-                  onClick={() => setOpenCreateModal(true)}
-                >
-                  Create alias
-                </Button>
-              </Box>
-            </TableCell>
-          </TableRow>
-        </StyledTableHead>
+    <>
+      {aliases.length > 0 && (
+        <CollapsibleCard
+          title="Aliases"
+          action={
+            <Button variant="outlined" size="small" sx={{ py: 0.75, mb: 0.2 }} onClick={() => setOpenCreateModal(true)}>
+              Create Alias
+            </Button>
+          }
+        >
+          <Table aria-label="aliases table">
+            <StyledTableBody
+              sx={{
+                '& tr:last-of-type td': {
+                  borderBottom: 'none',
+                },
+              }}
+            >
+              {aliases.map((alias) => (
+                <AliasRow
+                  key={alias.alias_name}
+                  aliasName={alias.alias_name}
+                  onDelete={() => setAliasToDelete(alias.alias_name)}
+                />
+              ))}
+            </StyledTableBody>
+          </Table>
+        </CollapsibleCard>
+      )}
 
-        <StyledTableBody>
-          {aliases.length === 0 ? (
-            <StyledTableRow>
-              <TableCell colSpan={2} width={'100%'} align="left">
-                <Typography variant="subtitle1" color="text.secondary">
-                  No aliases found
-                </Typography>
-              </TableCell>
-            </StyledTableRow>
-          ) : (
-            AliasList
-          )}
-        </StyledTableBody>
-      </Table>
-
-      <CreateAliasModal open={openCreateModal} onClose={() => setOpenCreateModal(false)} onCreate={handleCreateAlias} />
+      <CreateAliasModal open={createDialogOpen} onClose={closeCreateDialog} onCreate={handleCreateAlias} />
 
       <ConfirmationDialog
         open={!!aliasToDelete}
@@ -146,7 +139,7 @@ const CollectionAliases = ({ collectionName }) => {
           setAliasToDelete('');
         }}
       />
-    </StyledTableContainer>
+    </>
   );
 };
 
@@ -158,25 +151,16 @@ const AliasRow = ({ aliasName, onDelete }) => (
       </Typography>
     </TableCell>
     <TableCell align="right">
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <Tooltip title={'Delete alias'} placement={'left'}>
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<Trash size={18} />}
-            sx={{
-              px: '10px',
-              py: '4px',
-            }}
-            onClick={onDelete}
-            aria-label="delete"
-            color="error"
-            data-testid={`delete-alias-${aliasName}`}
-          >
-            Delete
-          </Button>
-        </Tooltip>
-      </Box>
+      <Tooltip title="Delete alias" placement="left">
+        <IconButton
+          aria-label={`Delete alias ${aliasName}`}
+          onClick={onDelete}
+          data-testid={`delete-alias-${aliasName}`}
+          sx={{ color: 'text.primary' }}
+        >
+          <Trash size="1.25rem" />
+        </IconButton>
+      </Tooltip>
     </TableCell>
   </StyledTableRow>
 );
@@ -277,6 +261,8 @@ CreateAliasModal.propTypes = {
 
 CollectionAliases.propTypes = {
   collectionName: PropTypes.string.isRequired,
+  forceCreateOpen: PropTypes.bool,
+  onForceCreateClose: PropTypes.func,
 };
 
 export default CollectionAliases;

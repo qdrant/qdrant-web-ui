@@ -16,6 +16,63 @@ import ActionsMenu from '../Common/ActionsMenu';
 import CollectionStatus from './CollectionStatus';
 import VectorsConfigChips from '../Common/VectorsConfigChips';
 import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
+import { bigIntJSON } from '../../common/bigIntJSON';
+import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
+
+const previewClampSx = {
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  wordBreak: 'break-all',
+};
+
+const METADATA_PREVIEW_MAX_LENGTH = 100;
+
+const hasMetadata = (metadata) => metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
+
+const formatMetadataPreview = (metadata, maxLength = METADATA_PREVIEW_MAX_LENGTH) => {
+  const text = bigIntJSON.stringify(metadata);
+  if (text.length <= maxLength) {
+    return `Metadata: ${text}`;
+  }
+  return `Metadata: ${text.slice(0, maxLength)}...`;
+};
+
+const CollectionNameCell = ({ collection }) => {
+  const aliases = collection.aliases;
+  const metadata = collection.config?.metadata;
+  const showAliases = aliases && aliases.length > 0;
+  const showMetadata = hasMetadata(metadata);
+
+  return (
+    <TableCell>
+      <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
+        {collection.name}
+      </Typography>
+      {showAliases && (
+        <Typography component="p" variant="caption" color="text.secondary" sx={previewClampSx}>
+          {`Aliases: ${aliases.join(', ')}`}
+        </Typography>
+      )}
+      {showMetadata && (
+        <Typography
+          component={StyledLink}
+          to={`/collections/${encodeURIComponent(collection.name)}#info/${COLLECTION_METADATA_CARD_ID}`}
+          variant="caption"
+          color="text.secondary"
+          sx={previewClampSx}
+        >
+          {formatMetadataPreview(metadata)}
+        </Typography>
+      )}
+    </TableCell>
+  );
+};
+
+CollectionNameCell.propTypes = {
+  collection: PropTypes.object.isRequired,
+};
 
 const CollectionTableRow = ({
   collection,
@@ -39,14 +96,7 @@ const CollectionTableRow = ({
             size="small"
           />
         </TableCell>
-        <TableCell>
-          <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
-            {collection.name}
-          </Typography>
-          <Typography component={'p'} variant="caption" color="text.secondary">
-            {collection.aliases && collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
-          </Typography>
-        </TableCell>
+        <CollectionNameCell collection={collection} />
         <TableCell colSpan={5}>
           <Typography variant="body2" color="error.main">
             ⚠ Error: {collection.error}
@@ -82,14 +132,7 @@ const CollectionTableRow = ({
           size="small"
         />
       </TableCell>
-      <TableCell>
-        <Typography component={StyledLink} to={`/collections/${encodeURIComponent(collection.name)}`}>
-          {collection.name}
-        </Typography>
-        <Typography component={'p'} variant="caption" color="text.secondary">
-          {collection.aliases && collection.aliases.length > 0 && `Aliases: ${collection.aliases.join(', ')}`}
-        </Typography>
-      </TableCell>
+      <CollectionNameCell collection={collection} />
       <TableCell>
         <CollectionStatus status={collection.status} collectionName={collection.name} />
       </TableCell>
