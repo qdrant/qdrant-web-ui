@@ -8,9 +8,9 @@ const CopiedIcon = RawJsonView.Copied;
 const ICON_SIZE = 14;
 
 const renderCopiedIcon = ({ 'data-copied': copied, onClick }) => (
-  <span
+  <button
+    type="button"
     onClick={onClick}
-    role="button"
     aria-label={copied ? 'Copied' : 'Copy to clipboard'}
     style={{
       display: 'inline-flex',
@@ -18,11 +18,15 @@ const renderCopiedIcon = ({ 'data-copied': copied, onClick }) => (
       cursor: 'pointer',
       verticalAlign: 'middle',
       color: 'var(--w-rjv-arrow-color, currentColor)',
+      background: 'transparent',
+      border: 0,
+      padding: 0,
       paddingLeft: '0.4rem',
+      font: 'inherit',
     }}
   >
     {copied ? <Check size={ICON_SIZE} /> : <Copy size={ICON_SIZE} />}
-  </span>
+  </button>
 );
 
 const JsonView = ({ enableClipboard = true, shortenTextAfterLength = 50, children, ...otherProps }) => (

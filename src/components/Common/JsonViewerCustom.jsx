@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import JsonView from './JsonViewBase';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 import { bigIntJSON } from '../../common/bigIntJSON';
+import { enqueueSnackbar, closeSnackbar } from 'notistack';
+import { getSnackbarOptions } from './utils/snackbarOptions';
 
 const JsonViewerWrapper = ({
   style: styleProp = {},
@@ -19,8 +21,14 @@ const JsonViewerWrapper = ({
   const handleCopied = useMemo(() => {
     if (!enableClipboard) return undefined;
     return (_text, value) => {
+      if (!navigator.clipboard?.writeText) {
+        enqueueSnackbar('Clipboard not available (requires HTTPS)', getSnackbarOptions('error', closeSnackbar));
+        return;
+      }
+
+      // better formatting when the browser still allows it
       const formatted = typeof value === 'string' ? value : bigIntJSON.stringify(value, null, 2);
-      navigator.clipboard.writeText(formatted);
+      navigator.clipboard.writeText(formatted).catch(() => {});
     };
   }, [enableClipboard]);
 
