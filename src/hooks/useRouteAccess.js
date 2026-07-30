@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { useClient } from '../context/client-context';
 import { isPathRestricted } from '../config/restricted-routes';
 

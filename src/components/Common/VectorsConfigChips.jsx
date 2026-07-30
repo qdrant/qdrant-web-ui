@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Chip, Link, styled, Tooltip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Ellipsis } from 'lucide-react';
 
 const StyledChip = styled(({ title, ...props }) => (

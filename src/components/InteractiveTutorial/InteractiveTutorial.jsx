@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import { mdxComponents } from './MdxComponents/MdxComponents';
 import { tutorialSubPages } from './TutorialSubpages';
 import { TutorialFooter } from './TutorialFooter';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { Prism } from 'prism-react-renderer';
 const InteractiveTutorial = ({ pageSlug }) => {
   const location = useLocation();

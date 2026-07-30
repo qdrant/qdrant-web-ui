@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Button, Chip, Grid, Typography } from '@mui/material';
 import { CopyTextButton } from '../Common/CopyTextButton';
 import { bigIntJSON } from '../../common/bigIntJSON';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { styled } from '@mui/material/styles';
 
 const StyledButton = styled(Button)({

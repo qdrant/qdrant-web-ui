@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Card, CardContent, Typography, Box, CardActions, CardActionArea, Button } from '@mui/material';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const StyledCard = styled(({ ...props }) => <Card elevation={0} {...props} />)(({ theme }) => ({
   display: 'flex',

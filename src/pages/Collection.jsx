@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { Typography, Grid, Tabs, Tab } from '@mui/material';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import Box from '@mui/material/Box';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography, Button } from '@mui/material';
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet } from 'react-router';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
 import { Key, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';

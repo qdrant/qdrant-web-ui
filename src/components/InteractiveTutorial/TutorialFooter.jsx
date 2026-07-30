@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Grid } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import tutorialSubPages from './TutorialSubpages';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 

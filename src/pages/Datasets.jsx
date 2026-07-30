@@ -8,7 +8,7 @@ import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
 import { compareSemver } from '../lib/common-helpers';
-// import { useOutletContext } from 'react-router-dom';
+// import { useOutletContext } from 'react-router';
 import { useVersion } from '../context/telemetry-context';
 import { useRouteAccess } from '../hooks/useRouteAccess';
 

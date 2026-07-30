@@ -1,6 +1,6 @@
 import { alpha, styled } from '@mui/material/styles';
 import { TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   borderRadius: '0.5rem',

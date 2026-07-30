@@ -1,5 +1,5 @@
 import React from 'react';
-import { useRoutes } from 'react-router-dom';
+import { useRoutes } from 'react-router';
 import routes from './routes';
 import useTitle from './components/UseTitle';
 import { CssBaseline } from '@mui/material';
