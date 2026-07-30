@@ -9,7 +9,7 @@ import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import CollectionAliases from './CollectionAliases';
-import CollectionMetadata from './CollectionMetadata';
+import CollectionMetadata from './Metadata/CollectionMetadata';
 import PayloadIndexesCard from './PayloadIndexesCard';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import CollapsibleCard from '../Common/CollapsibleCard';

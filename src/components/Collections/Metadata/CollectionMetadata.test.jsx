@@ -2,9 +2,9 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act } from 'react';
 import CollectionMetadata from './CollectionMetadata';
-import { useClient } from '../../context/client-context';
+import { useClient } from '../../../context/client-context';
 
-vi.mock('../../context/client-context', () => {
+vi.mock('../../../context/client-context', () => {
   const client = {
     updateCollection: vi.fn().mockResolvedValue(undefined),
   };

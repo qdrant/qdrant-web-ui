@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Box, InputBase, Tooltip } from '@mui/material';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
 import PropTypes from 'prop-types';
-import JsonView from '../Common/JsonViewBase';
+import JsonView from '../../Common/JsonViewBase';
 
 // ColorspaceContext — compute colors outside the json view tree and pass them in.
 const ColorspaceContext = createContext(null);
