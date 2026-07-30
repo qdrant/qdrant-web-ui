@@ -1,6 +1,6 @@
-import React, { memo, useEffect, useMemo } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, CardContent, IconButton, Tooltip } from '@mui/material';
+import { Box, CardContent, IconButton, Tooltip } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
@@ -10,6 +10,7 @@ import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import CollectionAliases from './CollectionAliases';
 import CollectionMetadata from './Metadata/CollectionMetadata';
+import CollectionActionsButton from './CollectionActionsButton';
 import PayloadIndexesCard from './PayloadIndexesCard';
 import JsonViewerCustom from '../Common/JsonViewerCustom';
 import CollapsibleCard from '../Common/CollapsibleCard';
@@ -23,20 +24,14 @@ import {
 } from './CollectionInfoKeyRenderer';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 
-export const CollectionInfo = ({
-  collectionName,
-  forceCreateAliasOpen = false,
-  onForceCreateAliasClose,
-  forceAddMetadataOpen = false,
-  onForceAddMetadataClose,
-  forceCreateIndexOpen = false,
-  onForceCreateIndexClose,
-  onMetadataChange,
-}) => {
+export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client: qdrantClient, isRestricted } = useClient();
   const [collection, setCollection] = React.useState({});
   const [clusterInfo, setClusterInfo] = React.useState(null);
+  const [createAliasOpen, setCreateAliasOpen] = useState(false);
+  const [addMetadataOpen, setAddMetadataOpen] = useState(false);
+  const [createIndexOpen, setCreateIndexOpen] = useState(false);
 
   const fetchClusterInfo = () => {
     if (isRestricted) {
@@ -56,10 +51,10 @@ export const CollectionInfo = ({
       });
   };
 
-  const reportHasMetadata = (metadata) => {
-    const next = metadata != null && typeof metadata === 'object' && Object.keys(metadata).length > 0;
-    onMetadataChange?.(next);
-  };
+  const hasMetadata =
+    collection.config?.metadata != null &&
+    typeof collection.config.metadata === 'object' &&
+    Object.keys(collection.config.metadata).length > 0;
 
   const fetchCollection = () => {
     qdrantClient
@@ -68,7 +63,6 @@ export const CollectionInfo = ({
         setCollection(() => {
           return { ...res };
         });
-        reportHasMetadata(res?.config?.metadata);
       })
       .catch((err) => {
         enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
@@ -98,6 +92,10 @@ export const CollectionInfo = ({
       });
   };
 
+  const triggerOptimizersDisabled =
+    collection.status === 'green' ||
+    collection.optimizer_status?.error === `optimizations pending, awaiting update operation`;
+
   const { colorspace } = useJsonViewerTheme('info');
   const colorspaceSubset = useMemo(
     () => ({
@@ -122,28 +120,21 @@ export const CollectionInfo = ({
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases
         collectionName={collectionName}
-        forceCreateOpen={forceCreateAliasOpen}
-        onForceCreateClose={onForceCreateAliasClose}
+        forceCreateOpen={createAliasOpen}
+        onForceCreateClose={() => setCreateAliasOpen(false)}
       />
       <CollapsibleCard
         title="Collection Info"
         action={
           <Box display="flex" gap={1} alignItems="center">
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={triggerOptimizers}
-              disabled={
-                collection.status === 'green' ||
-                collection.optimizer_status?.error === `optimizations pending, awaiting update operation`
-              }
-              sx={{
-                py: 0.75,
-                mb: 0.2,
-              }}
-            >
-              Trigger optimizers
-            </Button>
+            <CollectionActionsButton
+              hasMetadata={hasMetadata}
+              onCreateAlias={() => setCreateAliasOpen(true)}
+              onAddMetadata={() => setAddMetadataOpen(true)}
+              onCreatePayloadIndex={() => setCreateIndexOpen(true)}
+              onTriggerOptimizers={triggerOptimizers}
+              triggerOptimizersDisabled={triggerOptimizersDisabled}
+            />
             <CopyButton text={bigIntJSON.stringify(collection)} />
             <Tooltip title="Refresh collection info">
               <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
@@ -175,16 +166,16 @@ export const CollectionInfo = ({
         collectionName={collectionName}
         metadata={metadata}
         onMetadataChange={fetchCollection}
-        forceAddOpen={forceAddMetadataOpen}
-        onForceAddClose={onForceAddMetadataClose}
+        forceAddOpen={addMetadataOpen}
+        onForceAddClose={() => setAddMetadataOpen(false)}
       />
 
       <PayloadIndexesCard
         collectionName={collectionName}
         payloadSchema={collection.payload_schema}
         onSchemaChange={fetchCollection}
-        forceCreateOpen={forceCreateIndexOpen}
-        onForceCreateClose={onForceCreateIndexClose}
+        forceCreateOpen={createIndexOpen}
+        onForceCreateClose={() => setCreateIndexOpen(false)}
       />
 
       {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
@@ -196,17 +187,6 @@ CollectionInfo.displayName = 'CollectionInfo';
 
 CollectionInfo.propTypes = {
   collectionName: PropTypes.string.isRequired,
-  forceCreateAliasOpen: PropTypes.bool,
-  onForceCreateAliasClose: PropTypes.func,
-  forceAddMetadataOpen: PropTypes.bool,
-  onForceAddMetadataClose: PropTypes.func,
-  forceCreateIndexOpen: PropTypes.bool,
-  onForceCreateIndexClose: PropTypes.func,
-  /**
-   * Called after collection info is loaded or refreshed with whether metadata is non-empty.
-   * @param {boolean} hasMetadata
-   */
-  onMetadataChange: PropTypes.func,
 };
 
 export default memo(CollectionInfo);

@@ -4,7 +4,6 @@ import { Typography, Grid, Tabs, Tab, Box } from '@mui/material';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
-import CollectionActionsButton from '../components/Collections/CollectionActionsButton';
 import PointsTabs from '../components/Points/PointsTabs';
 import SearchQuality from '../components/Collections/SearchQuality/SearchQuality';
 import { useClient } from '../context/client-context';
@@ -36,10 +35,6 @@ function Collection() {
   const [currentTab, setCurrentTab] = useState(initialHash.tab);
   const [scrollToId, setScrollToId] = useState(initialHash.scrollToId);
   const { isRestricted } = useClient();
-  const [hasMetadata, setHasMetadata] = useState(false);
-  const [createAliasOpen, setCreateAliasOpen] = useState(false);
-  const [addMetadataOpen, setAddMetadataOpen] = useState(false);
-  const [createIndexOpen, setCreateIndexOpen] = useState(false);
 
   useEffect(() => {
     const { tab, scrollToId: nextScrollToId } = parseCollectionHash(location.hash);
@@ -67,33 +62,10 @@ function Collection() {
     <>
       <CenteredFrame>
         <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
-          <Grid
-            size={12}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-            }}
-          >
-            <Typography variant="h4" component="h1" sx={{ lineHeight: 1, minWidth: 0 }}>
+          <Grid size={12}>
+            <Typography variant="h4" component="h1">
               {collectionName}
             </Typography>
-            <Box
-              aria-hidden={currentTab !== 'info'}
-              sx={{
-                visibility: currentTab === 'info' ? 'visible' : 'hidden',
-                pointerEvents: currentTab === 'info' ? 'auto' : 'none',
-                flexShrink: 0,
-              }}
-            >
-              <CollectionActionsButton
-                hasMetadata={hasMetadata}
-                onCreateAlias={() => setCreateAliasOpen(true)}
-                onAddMetadata={() => setAddMetadataOpen(true)}
-                onCreatePayloadIndex={() => setCreateIndexOpen(true)}
-              />
-            </Box>
           </Grid>
 
           <Grid size={12}>
@@ -122,18 +94,7 @@ function Collection() {
           </Grid>
 
           <Grid size={12}>
-            {currentTab === 'info' && (
-              <CollectionInfo
-                collectionName={collectionName}
-                forceCreateAliasOpen={createAliasOpen}
-                onForceCreateAliasClose={() => setCreateAliasOpen(false)}
-                forceAddMetadataOpen={addMetadataOpen}
-                onForceAddMetadataClose={() => setAddMetadataOpen(false)}
-                forceCreateIndexOpen={createIndexOpen}
-                onForceCreateIndexClose={() => setCreateIndexOpen(false)}
-                onMetadataChange={setHasMetadata}
-              />
-            )}
+            {currentTab === 'info' && <CollectionInfo collectionName={collectionName} />}
             {!isRestricted && currentTab === 'quality' && <SearchQuality collectionName={collectionName} />}
             {currentTab === 'points' && <PointsTabs collectionName={collectionName} />}
             {!isRestricted && currentTab === 'snapshots' && <SnapshotsTab collectionName={collectionName} />}
