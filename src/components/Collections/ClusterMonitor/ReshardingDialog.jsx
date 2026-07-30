@@ -14,14 +14,16 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { JsonViewer } from '@textea/json-viewer';
+import JsonView from '../../Common/JsonViewBase';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
+import { useJsonViewerTheme } from '../../../theme/json-viewer-theme';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 
 const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false, collectionName, shardKeys = [] }) => {
   const theme = useTheme();
+  const { style: jsonViewStyle } = useJsonViewerTheme('dialog');
   const [selectedShardKey, setSelectedShardKey] = useState('');
 
   React.useEffect(() => {
@@ -136,15 +138,14 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
               >
                 POST collections/{collectionName}/cluster
               </Typography>
-              <JsonViewer
+              <JsonView
                 value={requestPayload}
-                theme={theme.palette.mode === 'dark' ? 'dark' : 'light'}
                 style={{
-                  backgroundColor: 'transparent',
+                  ...jsonViewStyle,
+                  '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}
                 displayDataTypes={false}
-                rootName={false}
               />
             </Box>
           </Box>

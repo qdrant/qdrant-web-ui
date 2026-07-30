@@ -19,8 +19,9 @@ import {
   InputLabel,
   FormControl,
 } from '@mui/material';
-import { JsonViewer } from '@textea/json-viewer';
+import JsonView from '../Common/JsonViewBase';
 import { useTheme } from '@mui/material/styles';
+import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import DeletePayloadIndexDialog from '../Common/DeletePayloadIndexDialog';
@@ -81,6 +82,7 @@ const PayloadIndexDialog = ({
 }) => {
   const { client: qdrantClient } = useClient();
   const theme = useTheme();
+  const { style: jsonViewStyle } = useJsonViewerTheme('dialog');
   const [selectedField, setSelectedField] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
   const [params, setParams] = useState(DEFAULT_STATE);
@@ -343,16 +345,15 @@ const PayloadIndexDialog = ({
               >
                 PUT collections/{collectionName}/index
               </Typography>
-              <JsonViewer
+              <JsonView
                 value={requestParams}
-                theme={theme.palette.mode === 'dark' ? 'dark' : 'light'}
                 style={{
-                  backgroundColor: 'transparent',
+                  ...jsonViewStyle,
+                  '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}
                 enableClipboard={false}
                 displayDataTypes={false}
-                rootName={false}
               />
             </Box>
           </Box>

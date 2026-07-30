@@ -9,11 +9,12 @@ import PointImage from './PointImage';
 import { PayloadEditor } from './PayloadEditor';
 import PayloadIndexDialog from './PayloadIndexDialog';
 import {
-  makePayloadIndexValueTypes,
-  payloadIndexKeyRenderer,
+  PayloadIndexRow,
   PayloadIndexColorspaceProvider,
   IndexActionProvider,
   HoverFieldProvider,
+  PathMapProvider,
+  buildPathMap,
 } from './makePayloadIndexValueTypes';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 
@@ -29,18 +30,10 @@ const PointPayload = ({
 }) => {
   const [openPayloadEditor, setOpenPayloadEditor] = useState(false);
   const [indexDialogOpen, setIndexDialogOpen] = useState(false);
-  const [indexField, setIndexField] = useState(null); // { name, value } of the field to index
-  // Tracks which payload field is currently "row-hovered" (dot-joined path or null).
-  // Mirrors json-viewer's own hoverPath lifetime: persists in the between-row gutter,
-  // clears only when the cursor leaves the json viewer area entirely.
+  const [indexField, setIndexField] = useState(null);
   const [activeField, setActiveField] = useState(null);
 
   const handleViewerMouseOver = useCallback((e) => {
-    // data-testid on each .data-key-pair row is "data-key-pair" + path.join('.').
-    // json-viewer sets its own hover (the copy button) via per-row mouseenter, which
-    // does not re-fire when the cursor moves from a leaf row out into an enclosing
-    // parent row or the gutter. Emulate that: only update activeField when the cursor
-    // crosses into a row that didn't already contain it.
     const row = e.target.closest?.('[data-testid^="data-key-pair"]');
     if (!row || (e.relatedTarget instanceof Node && row.contains(e.relatedTarget))) return;
     setActiveField(row.getAttribute('data-testid').slice('data-key-pair'.length));
@@ -48,7 +41,7 @@ const PointPayload = ({
 
   const handleViewerMouseLeave = useCallback(() => setActiveField(null), []);
 
-  const { theme: colorspace } = useJsonViewerTheme('qdrant-custom');
+  const { colorspace } = useJsonViewerTheme('qdrant-custom');
   const colorspaceSubset = useMemo(
     () => ({
       base02: colorspace.base02,
@@ -62,6 +55,8 @@ const PointPayload = ({
     [colorspace]
   );
 
+  const pathMap = useMemo(() => (point?.payload ? buildPathMap(point.payload) : new WeakMap()), [point?.payload]);
+
   const indexAction = useMemo(
     () => ({
       open: (fieldName, fieldValue) => {
@@ -72,8 +67,6 @@ const PointPayload = ({
     }),
     [payloadSchema]
   );
-
-  const valueTypes = useMemo(() => makePayloadIndexValueTypes(), []);
 
   if (!point || !point.payload || Object.keys(point.payload).length === 0) {
     return null;
@@ -111,21 +104,22 @@ const PointPayload = ({
           <PayloadIndexColorspaceProvider value={colorspaceSubset}>
             <IndexActionProvider value={showIndexButton ? indexAction : null}>
               <HoverFieldProvider value={activeField}>
-                <Box
-                  onMouseOver={showIndexButton ? handleViewerMouseOver : undefined}
-                  onMouseLeave={showIndexButton ? handleViewerMouseLeave : undefined}
-                >
-                  <JsonViewerCustom
-                    value={point.payload}
-                    displayDataTypes={false}
-                    defaultInspectDepth={2}
-                    displayObjectSize={false}
-                    rootName={false}
-                    enableClipboard={true}
-                    valueTypes={showIndexButton ? valueTypes : undefined}
-                    keyRenderer={showIndexButton ? payloadIndexKeyRenderer : undefined}
-                  />
-                </Box>
+                <PathMapProvider value={pathMap}>
+                  <Box
+                    onMouseOver={showIndexButton ? handleViewerMouseOver : undefined}
+                    onMouseLeave={showIndexButton ? handleViewerMouseLeave : undefined}
+                  >
+                    <JsonViewerCustom
+                      value={point.payload}
+                      displayDataTypes={false}
+                      collapsed={2}
+                      displayObjectSize={false}
+                      enableClipboard={true}
+                    >
+                      {showIndexButton && <PayloadIndexRow />}
+                    </JsonViewerCustom>
+                  </Box>
+                </PathMapProvider>
               </HoverFieldProvider>
             </IndexActionProvider>
           </PayloadIndexColorspaceProvider>

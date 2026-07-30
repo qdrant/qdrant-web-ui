@@ -1,124 +1,156 @@
 import { useTheme } from '@mui/material/styles';
-import { red, blue, neutral, yellow } from './colors';
+import { amber, red, blue, green, neutral, yellow } from './colors';
 
 const THEMES = {
   'qdrant-custom': {
-    scheme: 'qdrant-custom',
-    author: 'Qdrant Web UI',
-    getColors: (theme) => {
-      const isDark = theme.palette.mode === 'dark';
-      const hc = theme.palette.highContrast;
-      return {
-        base00: theme.palette.background.paperElevation1, // Default Background
-        base02: hc ? '#333333' : isDark ? neutral[700] : neutral[200], // Borders / NaN bg
-        base04: hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400], // Item Size
-        base05: hc ? theme.palette.text.primary : red[600], // Default Foreground, Brackets, Colons
-        base06: isDark ? neutral[300] : neutral[600], // Light Foreground (unused)
-        base07: hc ? theme.palette.text.primary : red[600], // Keys, Colons, Brackets
-        base08: theme.palette.error.main, // NaN
-        base09: hc ? '#00E5FF' : blue[600], // Ellipsis and String Values
-        base0A: theme.palette.warning.main, // Regex and Null
-        base0B: hc ? '#00E5FF' : blue[600], // Floating-Point Values
-        base0C: hc ? theme.palette.text.secondary : red[600], // Number Keys
-        base0D: hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400], // Icons, Search, Date
-        base0E: theme.palette.warning.main, // Booleans and Expanded Icons
-        base0F: hc ? '#FF9100' : blue[600], // Integers
-      };
-    },
-    getOverrides: (theme) => {
+    getStyle: (theme) => {
       const isDark = theme.palette.mode === 'dark';
       const hc = theme.palette.highContrast;
       const bracketColor = hc ? theme.palette.text.primary : yellow[600];
+      const keyColor = hc ? theme.palette.text.primary : red[600];
+      const arrowColor = hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400];
+
       return {
         fontSize: '0.75rem',
         lineHeight: '150%',
-        '& .data-object-start': {
-          color: bracketColor,
-        },
-        '& .data-object-end': {
-          color: bracketColor,
-        },
-        '& .MuiSvgIcon-root': {
-          color: hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400],
-        },
-        // Center action/expand icons on the text instead of the default baseline
-        // alignment, which makes them look raised relative to the 0.75rem font.
-        '& .data-key-pair svg': {
-          verticalAlign: 'middle',
-        },
+        '--w-rjv-background-color': theme.palette.background.paperElevation1,
+        '--w-rjv-color': keyColor,
+        '--w-rjv-key-string': keyColor,
+        '--w-rjv-key-number': hc ? theme.palette.text.secondary : red[600],
+        '--w-rjv-info-color': hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400],
+        '--w-rjv-arrow-color': arrowColor,
+        '--w-rjv-line-color': isDark ? `${neutral[700]}80` : `${neutral[200]}80`,
+        '--w-rjv-curlybraces-color': bracketColor,
+        '--w-rjv-brackets-color': bracketColor,
+        '--w-rjv-colon-color': keyColor,
+        '--w-rjv-quotes-color': keyColor,
+        '--w-rjv-quotes-string-color': hc ? '#00E5FF' : blue[600],
+        '--w-rjv-ellipsis-color': hc ? '#00E5FF' : blue[600],
+        '--w-rjv-type-string-color': hc ? '#00E5FF' : blue[600],
+        '--w-rjv-type-int-color': hc ? '#FF9100' : blue[600],
+        '--w-rjv-type-float-color': hc ? '#00E5FF' : blue[600],
+        '--w-rjv-type-bigint-color': hc ? '#FF9100' : blue[600],
+        '--w-rjv-type-boolean-color': theme.palette.warning.main,
+        '--w-rjv-type-date-color': hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400],
+        '--w-rjv-type-null-color': theme.palette.warning.main,
+        '--w-rjv-type-nan-color': theme.palette.error.main,
+        '--w-rjv-type-undefined-color': theme.palette.warning.main,
+      };
+    },
+    getColorspace: (theme) => {
+      const isDark = theme.palette.mode === 'dark';
+      const hc = theme.palette.highContrast;
+      return {
+        base02: hc ? '#333333' : isDark ? neutral[700] : neutral[200],
+        base08: theme.palette.error.main,
+        base09: hc ? '#00E5FF' : blue[600],
+        base0B: hc ? '#00E5FF' : blue[600],
+        base0D: hc ? theme.palette.text.secondary : isDark ? neutral[500] : neutral[400],
+        base0E: theme.palette.warning.main,
+        base0F: hc ? '#FF9100' : blue[600],
       };
     },
   },
   info: {
-    scheme: 'info',
-    author: 'Qdrant Web UI',
-    getColors: (theme) => {
+    getStyle: (theme) => {
       const isDark = theme.palette.mode === 'dark';
-      return {
-        base00: theme.palette.background.paperElevation1, // Default Background
-        // base01: isDark ? neutral[800] : neutral[100],    // Lighter Background (unused)
-        base02: isDark ? neutral[700] : neutral[200], // Borders and Background for types NaN, null, and undefined
-        // base03: isDark ? neutral[600] : neutral[300],    // Comments, Invisibles, Line Highlighting (unused)
-        base04: theme.palette.text.secondary, // Item Size - Line numbers
-        base05: theme.palette.text.secondary, // Default Foreground - Keys and colons
-        base06: isDark ? neutral[300] : neutral[600], // Light Foreground (unused)
-        base07: theme.palette.text.secondary, // Keys, Colons, and Brackets - Mapped to text.secondary
-        base08: theme.palette.error.main, // Color for NaN
-        base09: theme.palette.success.main, // Ellipsis and String Values - Mapped to success.main
-        base0A: theme.palette.error.main, // Regular Expressions and Null Values - Mapped to error.main
-        base0B: theme.palette.success.main, // Floating-Point Values - Mapped to success.main
-        base0C: theme.palette.text.secondary, // Number Keys - Mapped to text.secondary
-        base0D: theme.palette.text.secondary, // Icons, Search Input, Date - Mapped to text.secondary
-        base0E: theme.palette.warning.main, // Booleans and Expanded Icons - Mapped to warning.main
-        base0F: theme.palette.warning.main, // Integers - Mapped to warning.main
-      };
-    },
-    getOverrides: (theme) => {
+
       return {
         fontSize: '0.75rem',
         lineHeight: '150%',
-        '& .data-object-start': {
-          color: theme.palette.warning.main, // Yellow brackets - Mapped to warning.main
-        },
-        '& .data-object-end': {
-          color: theme.palette.warning.main, // Yellow brackets - Mapped to warning.main
-        },
-        '& .MuiSvgIcon-root': {
-          color: theme.palette.text.secondary, // Icons - Mapped to text.secondary
-        },
-        // Center action/expand icons on the text instead of the default baseline
-        // alignment, which makes them look raised relative to the 0.75rem font.
-        '& .data-key-pair svg': {
-          verticalAlign: 'middle',
-        },
+        '--w-rjv-background-color': theme.palette.background.paperElevation1,
+        '--w-rjv-color': theme.palette.text.secondary,
+        '--w-rjv-key-string': theme.palette.text.secondary,
+        '--w-rjv-key-number': theme.palette.text.secondary,
+        '--w-rjv-info-color': theme.palette.text.secondary,
+        '--w-rjv-arrow-color': theme.palette.text.secondary,
+        '--w-rjv-line-color': isDark ? `${neutral[700]}80` : `${neutral[200]}80`,
+        '--w-rjv-curlybraces-color': theme.palette.warning.main,
+        '--w-rjv-brackets-color': theme.palette.warning.main,
+        '--w-rjv-colon-color': theme.palette.text.secondary,
+        '--w-rjv-quotes-color': theme.palette.text.secondary,
+        '--w-rjv-quotes-string-color': theme.palette.success.main,
+        '--w-rjv-ellipsis-color': theme.palette.success.main,
+        '--w-rjv-type-string-color': theme.palette.success.main,
+        '--w-rjv-type-int-color': theme.palette.warning.main,
+        '--w-rjv-type-float-color': theme.palette.success.main,
+        '--w-rjv-type-bigint-color': theme.palette.warning.main,
+        '--w-rjv-type-boolean-color': theme.palette.warning.main,
+        '--w-rjv-type-date-color': theme.palette.text.secondary,
+        '--w-rjv-type-null-color': theme.palette.error.main,
+        '--w-rjv-type-nan-color': theme.palette.error.main,
+        '--w-rjv-type-undefined-color': theme.palette.error.main,
       };
     },
+    getColorspace: (theme) => {
+      return {
+        base02: theme.palette.mode === 'dark' ? neutral[700] : neutral[200],
+        base08: theme.palette.error.main,
+        base09: theme.palette.success.main,
+        base0B: theme.palette.success.main,
+        base0E: theme.palette.warning.main,
+        base0F: theme.palette.warning.main,
+        comment: theme.palette.text.secondary,
+      };
+    },
+  },
+  dialog: {
+    getStyle: (theme) => {
+      const isDark = theme.palette.mode === 'dark';
+      return {
+        fontSize: '0.75rem',
+        lineHeight: '150%',
+        '--w-rjv-background-color': theme.palette.background.paperElevation1,
+        '--w-rjv-color': theme.palette.text.primary,
+        '--w-rjv-key-string': theme.palette.text.primary,
+        '--w-rjv-key-number': theme.palette.text.secondary,
+        '--w-rjv-info-color': isDark ? neutral[500] : neutral[400],
+        '--w-rjv-arrow-color': isDark ? neutral[500] : neutral[400],
+        '--w-rjv-line-color': isDark ? `${neutral[700]}80` : `${neutral[200]}80`,
+        '--w-rjv-curlybraces-color': isDark ? theme.palette.warning.main : neutral[600],
+        '--w-rjv-brackets-color': isDark ? theme.palette.warning.main : neutral[600],
+        '--w-rjv-colon-color': theme.palette.text.primary,
+        '--w-rjv-quotes-color': theme.palette.text.primary,
+        '--w-rjv-quotes-string-color': isDark ? amber[300] : red[700],
+        '--w-rjv-ellipsis-color': isDark ? amber[300] : red[700],
+        '--w-rjv-type-string-color': isDark ? amber[300] : red[700],
+        '--w-rjv-type-int-color': isDark ? blue[300] : blue[600],
+        '--w-rjv-type-float-color': isDark ? amber[400] : green[700],
+        '--w-rjv-type-bigint-color': isDark ? blue[300] : blue[600],
+        '--w-rjv-type-boolean-color': isDark ? blue[300] : blue[700],
+        '--w-rjv-type-date-color': isDark ? neutral[500] : neutral[600],
+        '--w-rjv-type-null-color': isDark ? theme.palette.error.main : red[400],
+        '--w-rjv-type-nan-color': theme.palette.error.main,
+        '--w-rjv-type-undefined-color': isDark ? theme.palette.error.main : neutral[500],
+      };
+    },
+    getColorspace: () => ({}),
   },
 };
 
 /**
- * Creates a custom JsonViewer theme that integrates with the app's theme system
+ * Creates a custom JsonView theme that integrates with the app's theme system.
+ * Returns a CSS custom property style object for @uiw/react-json-view and
+ * an optional colorspace subset for custom value renderers.
+ *
  * @param {Object} theme - MUI theme object
- * @param {string} themeName - Name of the JsonViewer theme to use (default: 'qdrant-custom')
- * @return {Object} JsonViewer colorspace
+ * @param {string} themeName - Name of the JsonView theme to use (default: 'qdrant-custom')
+ * @return {{ style: Object, colorspace: Object }}
  */
 export const createJsonViewerTheme = (theme, themeName = 'qdrant-custom') => {
   const selectedTheme = THEMES[themeName] || THEMES['qdrant-custom'];
 
   return {
-    theme: {
-      scheme: selectedTheme.scheme,
-      author: selectedTheme.author,
-      ...selectedTheme.getColors(theme),
-    },
-    overrides: selectedTheme.getOverrides(theme),
+    style: selectedTheme.getStyle(theme),
+    colorspace: selectedTheme.getColorspace(theme),
   };
 };
 
 /**
- * Hook to get the current JsonViewer theme based on app theme
- * @param {string} themeName - Name of the JsonViewer theme to use (default: 'qdrant-custom')
- * @return {Object} JsonViewer colorspace
+ * Hook to get the current JsonView theme based on app theme.
+ *
+ * @param {string} themeName - Name of the JsonView theme to use (default: 'qdrant-custom')
+ * @return {{ style: Object, colorspace: Object }}
  */
 export const useJsonViewerTheme = (themeName = 'qdrant-custom') => {
   const theme = useTheme();
