@@ -11,6 +11,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Trash } from 'lucide-react';
 import { enqueueSnackbar, closeSnackbar } from 'notistack';
 import JsonViewerCustom from '../../Common/JsonViewerCustom';
@@ -20,7 +21,6 @@ import CollapsibleCard from '../../Common/CollapsibleCard';
 import { bigIntJSON } from '../../../common/bigIntJSON';
 import { useClient } from '../../../context/client-context';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
-import { useJsonViewerTheme } from '../../../theme/json-viewer-theme';
 import { COLLECTION_METADATA_CARD_ID } from '../collectionSectionIds';
 import { useScrollToId } from '../../../hooks/useScrollToId';
 import {
@@ -104,17 +104,17 @@ export const CollectionMetadata = ({
     }
   }, [forceAddOpen, resetFieldRows]);
 
-  const { colorspace } = useJsonViewerTheme('info');
+  const theme = useTheme();
   const colorspaceSubset = useMemo(
     () => ({
-      base02: colorspace.base02,
-      base05: colorspace.comment,
-      base08: colorspace.base08,
-      base09: colorspace.base09,
-      base0B: colorspace.base0B,
-      base0D: colorspace.comment,
+      base02: theme.palette.mode === 'dark' ? theme.palette.grey[700] : theme.palette.grey[200],
+      base05: theme.palette.text.secondary,
+      base08: theme.palette.error.main,
+      base09: theme.palette.success.main,
+      base0B: theme.palette.success.main,
+      base0D: theme.palette.text.secondary,
     }),
-    [colorspace]
+    [theme]
   );
 
   const closeAddForm = useCallback(() => {

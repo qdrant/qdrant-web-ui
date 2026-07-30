@@ -372,23 +372,54 @@ export const MetadataKeyName = () => {
 };
 
 /**
- * Inline key/value input rendered below the JSON viewer. Matches InPlaceEditor
- * styling. Enter saves; Escape cancels.
+ * Inline key/value input portaled into the root JSON object's field list,
+ * so it appears before the closing brace. Matches InPlaceEditor styling.
+ * Enter saves; Escape cancels.
  *
- * @return {JSX.Element|null} the add-field inline form, or null when inactive
+ * @return {JSX.Element|null} marker + portaled form when active
  */
 export const InPlaceAddField = () => {
   const colors = useContext(ColorspaceContext) || {};
   const metadataAction = useContext(MetadataActionContext);
   const keyRef = useRef(null);
+  const markerRef = useRef(null);
+  const [host, setHost] = useState(null);
+  const addingInline = Boolean(metadataAction?.addingInline);
+
+  useLayoutEffect(() => {
+    if (!addingInline) {
+      return undefined;
+    }
+
+    const rootViewer = markerRef.current?.parentElement?.querySelector('.w-json-view-container');
+    const wrap = rootViewer ? [...rootViewer.children].find((el) => el.classList?.contains('w-rjv-wrap')) : null;
+    if (!wrap) {
+      return undefined;
+    }
+
+    const hostEl = document.createElement('div');
+    hostEl.className = 'metadata-add-host';
+    wrap.appendChild(hostEl);
+    setHost(hostEl);
+
+    return () => {
+      hostEl.remove();
+    };
+  }, [addingInline]);
 
   useEffect(() => {
-    if (metadataAction?.addingInline) {
+    if (addingInline && host) {
       keyRef.current?.focus();
     }
-  }, [metadataAction?.addingInline]);
+  }, [addingInline, host]);
 
-  if (!metadataAction?.addingInline) {
+  useEffect(() => {
+    if (!addingInline) {
+      setHost(null);
+    }
+  }, [addingInline]);
+
+  if (!addingInline) {
     return null;
   }
 
@@ -425,66 +456,72 @@ export const InPlaceAddField = () => {
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.5,
-        pl: 2,
-        py: 0.5,
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <InputBase
-        inputRef={keyRef}
-        value={addKey}
-        onChange={(e) => setAddKey(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={loading}
-        placeholder="key"
-        sx={{ ...inputSx, color: colors.base0D || 'inherit', minWidth: 80, maxWidth: 160 }}
-      />
-      <Box component="span" sx={{ color: colors.base05 || 'text.secondary', mx: 0.25 }}>
-        :
-      </Box>
-      <InputBase
-        value={addValue}
-        onChange={(e) => setAddValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={loading}
-        placeholder="value (Enter to save)"
-        sx={{ ...inputSx, color: colors.base09 || 'inherit', minWidth: 120, maxWidth: 480, flex: 1 }}
-      />
-      <Tooltip title="Save (Enter)" placement="top">
-        <Box
-          component="span"
-          role="button"
-          aria-label="Save new field"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!loading) saveAdd();
-          }}
-          sx={{ ...iconSx, color: colors.base0B || 'inherit', opacity: loading ? 0.5 : 1 }}
-        >
-          <Check size="0.85rem" />
-        </Box>
-      </Tooltip>
-      <Tooltip title="Cancel (Esc)" placement="top">
-        <Box
-          component="span"
-          role="button"
-          aria-label="Cancel add"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!loading) cancelAdd();
-          }}
-          sx={{ ...iconSx, color: colors.base08 || 'inherit', opacity: loading ? 0.5 : 1 }}
-        >
-          <X size="0.85rem" />
-        </Box>
-      </Tooltip>
-    </Box>
+    <>
+      <Box ref={markerRef} component="span" aria-hidden sx={{ display: 'none' }} />
+      {host &&
+        createPortal(
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              py: 0.5,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <InputBase
+              inputRef={keyRef}
+              value={addKey}
+              onChange={(e) => setAddKey(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+              placeholder="key"
+              sx={{ ...inputSx, color: colors.base0D || 'inherit', minWidth: 80, maxWidth: 160 }}
+            />
+            <Box component="span" sx={{ color: colors.base05 || 'text.secondary', mx: 0.25 }}>
+              :
+            </Box>
+            <InputBase
+              value={addValue}
+              onChange={(e) => setAddValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+              placeholder="value (Enter to save)"
+              sx={{ ...inputSx, color: colors.base09 || 'inherit', minWidth: 120, maxWidth: 480, flex: 1 }}
+            />
+            <Tooltip title="Save (Enter)" placement="top">
+              <Box
+                component="span"
+                role="button"
+                aria-label="Save new field"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!loading) saveAdd();
+                }}
+                sx={{ ...iconSx, color: colors.base0B || 'inherit', opacity: loading ? 0.5 : 1 }}
+              >
+                <Check size="0.85rem" />
+              </Box>
+            </Tooltip>
+            <Tooltip title="Cancel (Esc)" placement="top">
+              <Box
+                component="span"
+                role="button"
+                aria-label="Cancel add"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!loading) cancelAdd();
+                }}
+                sx={{ ...iconSx, color: colors.base08 || 'inherit', opacity: loading ? 0.5 : 1 }}
+              >
+                <X size="0.85rem" />
+              </Box>
+            </Tooltip>
+          </Box>,
+          host
+        )}
+    </>
   );
 };

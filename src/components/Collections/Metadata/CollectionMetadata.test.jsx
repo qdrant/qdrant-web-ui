@@ -123,6 +123,10 @@ describe('CollectionMetadata (json-view migration)', () => {
     const keyInput = await screen.findByPlaceholderText('key');
     const valueInput = await screen.findByPlaceholderText('value (Enter to save)');
 
+    // Inputs are portaled into the root object's field list (before `}`).
+    expect(keyInput.closest('.w-rjv-wrap')).toBeTruthy();
+    expect(keyInput.closest('.metadata-add-host')).toBeTruthy();
+
     await act(async () => {
       fireEvent.change(keyInput, { target: { value: 'team' } });
       fireEvent.change(valueInput, { target: { value: '"platform"' } });
