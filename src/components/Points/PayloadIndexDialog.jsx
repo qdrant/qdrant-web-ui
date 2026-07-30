@@ -19,7 +19,9 @@ import {
   InputLabel,
   FormControl,
 } from '@mui/material';
-import { JsonViewer } from '@textea/json-viewer';
+import { darkTheme } from '@uiw/react-json-view/dark';
+import { lightTheme } from '@uiw/react-json-view/light';
+import JsonView from '../Common/JsonViewBase';
 import { useTheme } from '@mui/material/styles';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
@@ -343,16 +345,15 @@ const PayloadIndexDialog = ({
               >
                 PUT collections/{collectionName}/index
               </Typography>
-              <JsonViewer
+              <JsonView
                 value={requestParams}
-                theme={theme.palette.mode === 'dark' ? 'dark' : 'light'}
                 style={{
-                  backgroundColor: 'transparent',
+                  ...(theme.palette.mode === 'dark' ? darkTheme : lightTheme),
+                  '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}
                 enableClipboard={false}
                 displayDataTypes={false}
-                rootName={false}
               />
             </Box>
           </Box>

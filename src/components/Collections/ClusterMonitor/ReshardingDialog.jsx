@@ -14,7 +14,9 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { JsonViewer } from '@textea/json-viewer';
+import { darkTheme } from '@uiw/react-json-view/dark';
+import { lightTheme } from '@uiw/react-json-view/light';
+import JsonView from '../../Common/JsonViewBase';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
@@ -136,15 +138,14 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
               >
                 POST collections/{collectionName}/cluster
               </Typography>
-              <JsonViewer
+              <JsonView
                 value={requestPayload}
-                theme={theme.palette.mode === 'dark' ? 'dark' : 'light'}
                 style={{
-                  backgroundColor: 'transparent',
+                  ...(theme.palette.mode === 'dark' ? darkTheme : lightTheme),
+                  '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}
                 displayDataTypes={false}
-                rootName={false}
               />
             </Box>
           </Box>

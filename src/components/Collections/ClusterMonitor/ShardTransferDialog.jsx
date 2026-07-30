@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Alert } from '@mui/material';
-import { JsonViewer } from '@textea/json-viewer';
+import { darkTheme } from '@uiw/react-json-view/dark';
+import { lightTheme } from '@uiw/react-json-view/light';
+import JsonView from '../../Common/JsonViewBase';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
 
@@ -79,16 +81,15 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
               >
                 POST collections/{collectionName}/cluster
               </Typography>
-              <JsonViewer
+              <JsonView
                 value={requestPayload}
-                theme={theme.palette.mode === 'dark' ? 'dark' : 'light'}
                 style={{
-                  backgroundColor: 'transparent',
+                  ...(theme.palette.mode === 'dark' ? darkTheme : lightTheme),
+                  '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}
                 enableClipboard={false}
                 displayDataTypes={false}
-                rootName={false}
               />
             </Box>
           </Box>
