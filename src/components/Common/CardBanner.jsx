@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box, Typography, Button } from '@mui/material';
 import { styled, alpha, useTheme } from '@mui/material/styles';
 import { indigo } from '@mui/material/colors';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const BannerContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,

@@ -9,7 +9,7 @@ import { getSnackbarOptions } from '../Common/utils/snackbarOptions';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useTheme } from '@mui/material/styles';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading }) => {
   const qdrantClient = useClient().client;

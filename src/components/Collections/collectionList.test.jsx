@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import CollectionsList from './CollectionsList';
 import { describe, it, expect } from 'vitest';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import InteractiveTutorial from '../components/InteractiveTutorial/InteractiveTutorial';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { Alert, Box, Grid } from '@mui/material';
 import { useClient } from '../context/client-context';
 

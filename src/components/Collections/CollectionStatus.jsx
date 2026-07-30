@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 const StatusBadge = styled(Box)(({ status, theme }) => {
   const getStatusStyles = (status) => {
