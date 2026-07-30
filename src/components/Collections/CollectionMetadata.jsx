@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -26,11 +26,10 @@ import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
 import { useScrollToId } from '../../hooks/useScrollToId';
 import {
-  makeMetadataValueTypes,
-  metadataKeyRenderer,
+  MetadataRow,
+  MetadataKeyName,
   MetadataActionProvider,
   MetadataColorspaceProvider,
-  HoverFieldProvider,
   InPlaceAddField,
 } from './metadataValueTypes';
 
@@ -236,8 +235,6 @@ export const CollectionMetadata = ({
   const showMetadata = hasMetadata(metadata);
   const currentMetadata = showMetadata ? metadata : emptyMetadata;
 
-  const viewerContainerRef = useRef(null);
-  const [activeField, setActiveField] = useState(null);
   const [loading, setLoading] = useState(false);
   const [editingKey, setEditingKey] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -269,29 +266,18 @@ export const CollectionMetadata = ({
     }
   }, [forceAddOpen, resetFieldRows]);
 
-  const { theme: colorspace } = useJsonViewerTheme('info');
+  const { colorspace } = useJsonViewerTheme('info');
   const colorspaceSubset = useMemo(
     () => ({
       base02: colorspace.base02,
+      base05: colorspace.comment,
       base08: colorspace.base08,
       base09: colorspace.base09,
       base0B: colorspace.base0B,
-      base0D: colorspace.base0D,
-      base0E: colorspace.base0E,
-      base0F: colorspace.base0F,
+      base0D: colorspace.comment,
     }),
     [colorspace]
   );
-
-  const valueTypes = useMemo(() => makeMetadataValueTypes(), []);
-
-  const handleViewerMouseOver = useCallback((e) => {
-    const row = e.target.closest?.('[data-testid^="data-key-pair"]');
-    if (!row || (e.relatedTarget instanceof Node && row.contains(e.relatedTarget))) return;
-    setActiveField(row.getAttribute('data-testid').slice('data-key-pair'.length));
-  }, []);
-
-  const handleViewerMouseLeave = useCallback(() => setActiveField(null), []);
 
   const closeAddForm = useCallback(() => {
     setAdding(false);
@@ -452,19 +438,25 @@ export const CollectionMetadata = ({
     resetFieldRows();
   };
 
-  // While editing an object/array field, hide its nested rows so the in-place editor replaces them.
-  const editingObjectHideSx =
-    editingKey != null && currentMetadata[editingKey] != null && typeof currentMetadata[editingKey] === 'object'
-      ? {
-          [`& [data-testid="data-key-pair${editingKey}"] > :not(.data-key)`]: {
-            display: 'none !important',
-          },
-          [`& [data-testid="data-key-pair${editingKey}"] .data-object-start, & [data-testid="data-key-pair${editingKey}"] .data-object-end`]:
-            {
-              display: 'none !important',
-            },
-        }
-      : {};
+  // Reveal a field's edit/delete actions when its row (primitive) or container
+  // (object/array) is hovered, and — while an object/array field is being
+  // edited — hide its rendered subtree so the in-place editor replaces it.
+  // `.w-rjv-inner.w-rjv` is the root container, excluded so hovering blank space
+  // does not reveal every field's actions at once.
+  const viewerSx = {
+    '& .metadata-actions': {
+      opacity: 0,
+      pointerEvents: 'none',
+      transition: 'opacity 0.12s ease-in-out',
+    },
+    '& .w-rjv-line:hover .metadata-actions, & .w-rjv-inner:not(.w-rjv):hover .metadata-actions': {
+      opacity: 1,
+      pointerEvents: 'auto',
+    },
+    '& .w-rjv-inner[data-metadata-editing="true"] > :not(.metadata-edit-host)': {
+      display: 'none',
+    },
+  };
 
   return (
     <>
@@ -505,26 +497,19 @@ export const CollectionMetadata = ({
           <CardContent>
             <MetadataColorspaceProvider value={colorspaceSubset}>
               <MetadataActionProvider value={metadataAction}>
-                <HoverFieldProvider value={activeField}>
-                  <Box
-                    ref={viewerContainerRef}
-                    onMouseOver={handleViewerMouseOver}
-                    onMouseLeave={handleViewerMouseLeave}
-                    sx={editingObjectHideSx}
+                <Box sx={viewerSx}>
+                  <JsonViewerCustom
+                    theme="info"
+                    value={metadata}
+                    displayDataTypes={false}
+                    displayObjectSize={false}
+                    enableClipboard={false}
                   >
-                    <JsonViewerCustom
-                      theme="info"
-                      value={metadata}
-                      displayDataTypes={false}
-                      displayObjectSize={false}
-                      rootName={false}
-                      enableClipboard={false}
-                      valueTypes={valueTypes}
-                      keyRenderer={metadataKeyRenderer}
-                    />
-                    <InPlaceAddField containerRef={viewerContainerRef} />
-                  </Box>
-                </HoverFieldProvider>
+                    <MetadataRow />
+                    <MetadataKeyName />
+                  </JsonViewerCustom>
+                  <InPlaceAddField />
+                </Box>
               </MetadataActionProvider>
             </MetadataColorspaceProvider>
           </CardContent>

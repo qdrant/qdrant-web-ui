@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Box, InputBase, Tooltip } from '@mui/material';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
 import PropTypes from 'prop-types';
+import JsonView from '../Common/JsonViewBase';
 
-// ColorspaceContext — compute colors outside json-viewer's ThemeProvider and pass them in.
+// ColorspaceContext — compute colors outside the json view tree and pass them in.
 const ColorspaceContext = createContext(null);
 export const MetadataColorspaceProvider = ColorspaceContext.Provider;
 
@@ -14,68 +15,6 @@ export const MetadataColorspaceProvider = ColorspaceContext.Provider;
  */
 const MetadataActionContext = createContext(null);
 export const MetadataActionProvider = MetadataActionContext.Provider;
-
-// HoverFieldContext — the currently hovered top-level field name (dot-joined path).
-const HoverFieldContext = createContext(null);
-export const HoverFieldProvider = HoverFieldContext.Provider;
-
-const DataBox = ({ sx, ...props }) => <Box component="span" {...props} sx={{ display: 'inline', ...sx }} />;
-DataBox.propTypes = { sx: PropTypes.object };
-
-const NativeValueRenderer = ({ value }) => {
-  const colors = useContext(ColorspaceContext) || {};
-
-  if (value === null) {
-    return (
-      <DataBox
-        sx={{
-          color: colors.base08,
-          fontSize: '0.8rem',
-          backgroundColor: colors.base02,
-          fontWeight: 'bold',
-          borderRadius: '3px',
-          padding: '0.5px 2px',
-        }}
-      >
-        NULL
-      </DataBox>
-    );
-  }
-
-  if (typeof value === 'boolean') {
-    return <DataBox sx={{ color: colors.base0E }}>{value ? 'true' : 'false'}</DataBox>;
-  }
-
-  if (typeof value === 'string') {
-    return <DataBox sx={{ color: colors.base09, overflowWrap: 'anywhere' }}>&quot;{value}&quot;</DataBox>;
-  }
-
-  if (typeof value === 'number') {
-    if (isNaN(value)) {
-      return (
-        <DataBox
-          sx={{
-            color: colors.base08,
-            backgroundColor: colors.base02,
-            fontSize: '0.8rem',
-            fontWeight: 'bold',
-            borderRadius: '3px',
-          }}
-        >
-          NaN
-        </DataBox>
-      );
-    }
-    const isInt = value % 1 === 0;
-    return <DataBox sx={{ color: isInt ? colors.base0F : colors.base0B }}>{value}</DataBox>;
-  }
-
-  return <DataBox>{String(value)}</DataBox>;
-};
-
-NativeValueRenderer.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
-};
 
 function isPrimitive(value) {
   return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
@@ -90,7 +29,31 @@ const iconSx = {
 };
 
 /**
- * In-place value editor rendered inside the json-viewer row.
+ * Renders a top-level metadata key label (`"key":`) using the json view's CSS
+ * variables so it matches the surrounding tree while a field is being edited.
+ *
+ * @param {Object} props - component props
+ * @param {string} props.fieldKey - the field name to render
+ * @return {JSX.Element} the styled key label
+ */
+const KeyLabel = ({ fieldKey }) => (
+  <Box component="span" sx={{ verticalAlign: 'middle' }}>
+    <Box component="span" sx={{ color: 'var(--w-rjv-key-string, currentColor)' }}>
+      &quot;{fieldKey}&quot;
+    </Box>
+    <Box component="span" sx={{ color: 'var(--w-rjv-colon-color, currentColor)' }}>
+      :
+    </Box>
+    &nbsp;
+  </Box>
+);
+
+KeyLabel.propTypes = {
+  fieldKey: PropTypes.string.isRequired,
+};
+
+/**
+ * In-place value editor rendered inside a json view row.
  * Enter (or Ctrl/Cmd+Enter when multiline) saves; Escape cancels.
  *
  * @param {Object} props - component props
@@ -209,22 +172,27 @@ InPlaceEditor.propTypes = {
   multiline: PropTypes.bool,
 };
 
-const MetadataFieldActions = ({ path, value }) => {
+/**
+ * Edit/Delete action icons appended to a top-level metadata field.
+ * Wrapped in a `.metadata-actions` span so the parent card can reveal them on
+ * row hover via CSS. Hidden while the field is being edited.
+ *
+ * @param {Object} props - component props
+ * @param {string} props.fieldKey - the top-level field name
+ * @param {*} props.value - the field's current value
+ * @return {JSX.Element|null} the action icons, or null when hidden
+ */
+const MetadataFieldActions = ({ fieldKey, value }) => {
   const colors = useContext(ColorspaceContext) || {};
   const metadataAction = useContext(MetadataActionContext);
-  const activeField = useContext(HoverFieldContext);
-
-  const fieldKey = String(path[0]);
-  const rowKey = path.join('.');
-  const isRowActive = activeField === rowKey || (activeField !== null && activeField.startsWith(`${rowKey}.`));
   const isEditing = metadataAction?.editingKey === fieldKey;
 
-  if (!metadataAction || isEditing || !isRowActive) {
+  if (!metadataAction || isEditing) {
     return null;
   }
 
   return (
-    <>
+    <Box component="span" className="metadata-actions">
       <Tooltip title="Edit field" placement="top">
         <Box
           component="span"
@@ -255,135 +223,172 @@ const MetadataFieldActions = ({ path, value }) => {
           <Trash2 size="0.8rem" />
         </Box>
       </Tooltip>
-    </>
+    </Box>
   );
 };
 
 MetadataFieldActions.propTypes = {
-  path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  fieldKey: PropTypes.string.isRequired,
   value: PropTypes.any,
 };
 
-const MetadataFieldComponent = ({ value, path }) => {
+const MetadataRowInner = ({ rowProps, value, keys }) => {
   const metadataAction = useContext(MetadataActionContext);
+  const path = keys || [];
+  const isTopLevelPrimitive = path.length === 1 && isPrimitive(value);
+  const { children, ...restProps } = rowProps;
+
+  if (!isTopLevelPrimitive) {
+    return <div {...rowProps} />;
+  }
+
   const fieldKey = String(path[0]);
   const isEditing = metadataAction?.editingKey === fieldKey;
 
   if (isEditing) {
-    return <InPlaceEditor multiline={false} />;
+    return (
+      <div {...restProps}>
+        <KeyLabel fieldKey={fieldKey} />
+        <InPlaceEditor multiline={false} />
+      </div>
+    );
   }
 
   return (
-    <>
-      <NativeValueRenderer value={value} />
-      <MetadataFieldActions path={path} value={value} />
-    </>
+    <div {...restProps}>
+      {children}
+      <MetadataFieldActions fieldKey={fieldKey} value={value} />
+    </div>
   );
 };
 
-MetadataFieldComponent.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool, PropTypes.oneOf([null])]),
-  path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+MetadataRowInner.propTypes = {
+  rowProps: PropTypes.object.isRequired,
+  value: PropTypes.any,
+  keys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
 };
 
 /**
- * Returns a valueTypes array for @textea/json-viewer that adds edit/delete
- * buttons and in-place editing to top-level primitive metadata fields.
+ * A Row child for @uiw/react-json-view that adds edit/delete actions and
+ * in-place editing to top-level primitive metadata fields. Nested rows and
+ * object/array fields (handled by {@link MetadataKeyName}) render unchanged.
  *
- * @return {Array} valueTypes
+ * @return {JSX.Element} Row render element
  */
-export function makeMetadataValueTypes() {
-  return [
-    {
-      is: (value, path) => isPrimitive(value) && path.length === 1,
-      Component: MetadataFieldComponent,
-    },
-  ];
-}
+export const MetadataRow = () => {
+  const Row = JsonView.Row;
+  return <Row render={(props, { value, keys }) => <MetadataRowInner rowProps={props} value={value} keys={keys} />} />;
+};
 
-// Attaches edit/delete icons (and in-place editor) to top-level object/array rows.
-const MetadataKeyRenderer = ({ path, value }) => {
+// While editing an object/array field, hide its rendered subtree (via the
+// `data-metadata-editing` attribute + CSS in CollectionMetadata) and render the
+// multiline editor in a portal appended inside the field's container.
+const ObjectFieldEditor = ({ keyProps, fieldKey }) => {
   const anchorRef = useRef(null);
-  const [buttonHost, setButtonHost] = useState(null);
-  const metadataAction = useContext(MetadataActionContext);
-  const fieldKey = String(path[0]);
-  const isEditing = metadataAction?.editingKey === fieldKey;
+  const [host, setHost] = useState(null);
+  const { children, ...restKeyProps } = keyProps;
 
-  useEffect(() => {
-    const keySpan = anchorRef.current?.closest('.data-key');
-    if (!keySpan) return undefined;
-    const bracket = keySpan.querySelector(':scope > .data-object-start');
-    const host = document.createElement('span');
-    keySpan.insertBefore(host, bracket ? bracket.nextSibling : null);
-    setButtonHost(host);
-    return () => host.remove();
+  useLayoutEffect(() => {
+    const inner = anchorRef.current?.closest('.w-rjv-inner');
+    if (!inner) {
+      return undefined;
+    }
+    inner.setAttribute('data-metadata-editing', 'true');
+    const hostEl = document.createElement('div');
+    hostEl.className = 'metadata-edit-host';
+    inner.appendChild(hostEl);
+    setHost(hostEl);
+    return () => {
+      inner.removeAttribute('data-metadata-editing');
+      hostEl.remove();
+    };
   }, []);
 
   return (
     <>
-      &quot;{path[path.length - 1]}&quot;
-      <span ref={anchorRef} style={{ display: 'none' }} />
-      {buttonHost &&
+      <span {...restKeyProps} ref={anchorRef}>
+        {children}
+      </span>
+      {host &&
         createPortal(
-          isEditing ? <InPlaceEditor multiline /> : <MetadataFieldActions path={path} value={value} />,
-          buttonHost
+          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'flex-start' }}>
+            <KeyLabel fieldKey={fieldKey} />
+            <InPlaceEditor multiline />
+          </Box>,
+          host
         )}
     </>
   );
 };
 
-MetadataKeyRenderer.when = ({ value, path }) => path.length === 1 && !isPrimitive(value);
-
-MetadataKeyRenderer.propTypes = {
-  path: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
-  value: PropTypes.any,
+ObjectFieldEditor.propTypes = {
+  keyProps: PropTypes.object.isRequired,
+  fieldKey: PropTypes.string.isRequired,
 };
 
-export const metadataKeyRenderer = MetadataKeyRenderer;
+const MetadataKeyNameInner = ({ keyProps, value, keys }) => {
+  const metadataAction = useContext(MetadataActionContext);
+  const path = keys || [];
+  const isTopLevelObject = path.length === 1 && !isPrimitive(value);
+
+  if (!isTopLevelObject) {
+    return <span {...keyProps} />;
+  }
+
+  const fieldKey = String(path[0]);
+  const isEditing = metadataAction?.editingKey === fieldKey;
+
+  if (isEditing) {
+    return <ObjectFieldEditor keyProps={keyProps} fieldKey={fieldKey} />;
+  }
+
+  const { children, ...restKeyProps } = keyProps;
+  return (
+    <span {...restKeyProps}>
+      {children}
+      <MetadataFieldActions fieldKey={fieldKey} value={value} />
+    </span>
+  );
+};
+
+MetadataKeyNameInner.propTypes = {
+  keyProps: PropTypes.object.isRequired,
+  value: PropTypes.any,
+  keys: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+};
 
 /**
- * Inline key/value input portaled inside the JSON viewer, before the closing bracket.
- * Matches InPlaceEditor styling. Enter saves; Escape cancels.
+ * A KeyName child for @uiw/react-json-view that adds edit/delete actions and
+ * in-place editing to top-level object/array metadata fields. Row rendering
+ * (via {@link MetadataRow}) covers primitive fields.
  *
- * @param {Object} props - component props
- * @param {Object} props.containerRef - ref to the Box wrapping JsonViewerCustom
- * @return {JSX.Element|null} the add-field inline form (portaled into the viewer)
+ * @return {JSX.Element} KeyName render element
  */
-export const InPlaceAddField = ({ containerRef }) => {
+export const MetadataKeyName = () => {
+  const KeyName = JsonView.KeyName;
+  return (
+    <KeyName render={(props, { value, keys }) => <MetadataKeyNameInner keyProps={props} value={value} keys={keys} />} />
+  );
+};
+
+/**
+ * Inline key/value input rendered below the JSON viewer. Matches InPlaceEditor
+ * styling. Enter saves; Escape cancels.
+ *
+ * @return {JSX.Element|null} the add-field inline form, or null when inactive
+ */
+export const InPlaceAddField = () => {
   const colors = useContext(ColorspaceContext) || {};
   const metadataAction = useContext(MetadataActionContext);
   const keyRef = useRef(null);
-  const [hostEl, setHostEl] = useState(null);
 
   useEffect(() => {
-    if (!metadataAction?.addingInline || !containerRef?.current) {
-      setHostEl(null);
-      return undefined;
-    }
-    const viewer = containerRef.current;
-    // Root structure: Paper > .data-key-pair > (.data-key, .data-object, .data-object-end).
-    // Nested objects also use .data-object-end, so only take the root pair's direct child "}".
-    const rootPair =
-      viewer.querySelector(':scope > .MuiPaper-root > .data-key-pair') ||
-      viewer.querySelector('[data-testid="data-key-pair"]');
-    const closingBracket = rootPair?.querySelector(':scope > .data-object-end');
-    if (!closingBracket) {
-      setHostEl(null);
-      return undefined;
-    }
-    const host = document.createElement('div');
-    closingBracket.parentNode.insertBefore(host, closingBracket);
-    setHostEl(host);
-    return () => host.remove();
-  }, [metadataAction?.addingInline, containerRef]);
-
-  useEffect(() => {
-    if (hostEl && metadataAction?.addingInline) {
+    if (metadataAction?.addingInline) {
       keyRef.current?.focus();
     }
-  }, [hostEl, metadataAction?.addingInline]);
+  }, [metadataAction?.addingInline]);
 
-  if (!metadataAction?.addingInline || !hostEl) {
+  if (!metadataAction?.addingInline) {
     return null;
   }
 
@@ -419,14 +424,14 @@ export const InPlaceAddField = ({ containerRef }) => {
     }
   };
 
-  return createPortal(
+  return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 0.5,
         pl: 2,
-        py: 0.25,
+        py: 0.5,
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -480,11 +485,6 @@ export const InPlaceAddField = ({ containerRef }) => {
           <X size="0.85rem" />
         </Box>
       </Tooltip>
-    </Box>,
-    hostEl
+    </Box>
   );
-};
-
-InPlaceAddField.propTypes = {
-  containerRef: PropTypes.shape({ current: PropTypes.any }),
 };
