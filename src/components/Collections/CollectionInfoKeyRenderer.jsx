@@ -94,9 +94,7 @@ export const DescriptionRow = () => {
   return (
     <Row
       render={(props, { keyName, value, parentValue }) => {
-        return (
-          <DescriptionRowInner rowProps={props} keyName={keyName} value={value} parentValue={parentValue} />
-        );
+        return <DescriptionRowInner rowProps={props} keyName={keyName} value={value} parentValue={parentValue} />;
       }}
     />
   );
@@ -112,8 +110,7 @@ const DescriptionRowInner = ({ rowProps, keyName, value, parentValue }) => {
     return <div {...rowProps} />;
   }
 
-  const parentPath =
-    parentValue != null && typeof parentValue === 'object' ? (pathMap?.get(parentValue) || []) : [];
+  const parentPath = parentValue != null && typeof parentValue === 'object' ? pathMap?.get(parentValue) || [] : [];
   const path = keyName != null ? [...parentPath, keyName] : parentPath;
   const description = getDescriptionByPath(schemas, 'CollectionInfo', path);
 

@@ -14,16 +14,16 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { darkTheme } from '@uiw/react-json-view/dark';
-import { lightTheme } from '@uiw/react-json-view/light';
 import JsonView from '../../Common/JsonViewBase';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
+import { useJsonViewerTheme } from '../../../theme/json-viewer-theme';
 import ArrowUpward from '@mui/icons-material/ArrowUpward';
 import ArrowDownward from '@mui/icons-material/ArrowDownward';
 
 const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false, collectionName, shardKeys = [] }) => {
   const theme = useTheme();
+  const { style: jsonViewStyle } = useJsonViewerTheme('dialog');
   const [selectedShardKey, setSelectedShardKey] = useState('');
 
   React.useEffect(() => {
@@ -141,7 +141,7 @@ const ReshardingDialog = ({ open, onClose, direction, onConfirm, loading = false
               <JsonView
                 value={requestPayload}
                 style={{
-                  ...(theme.palette.mode === 'dark' ? darkTheme : lightTheme),
+                  ...jsonViewStyle,
                   '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}

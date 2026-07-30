@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, Alert } from '@mui/material';
-import { darkTheme } from '@uiw/react-json-view/dark';
-import { lightTheme } from '@uiw/react-json-view/light';
 import JsonView from '../../Common/JsonViewBase';
 import { CopyButton } from '../../Common/CopyButton';
 import { useTheme } from '@mui/material/styles';
+import { useJsonViewerTheme } from '../../../theme/json-viewer-theme';
 
 const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loading = false, collectionName }) => {
   const theme = useTheme();
+  const { style: jsonViewStyle } = useJsonViewerTheme('dialog');
 
   if (!transferRequest) {
     return null;
@@ -84,7 +84,7 @@ const ShardTransferDialog = ({ open, onClose, transferRequest, onConfirm, loadin
               <JsonView
                 value={requestPayload}
                 style={{
-                  ...(theme.palette.mode === 'dark' ? darkTheme : lightTheme),
+                  ...jsonViewStyle,
                   '--w-rjv-background-color': 'transparent',
                   fontSize: '0.875rem',
                 }}

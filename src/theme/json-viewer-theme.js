@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material/styles';
-import { red, blue, neutral, yellow } from './colors';
+import { amber, red, blue, green, neutral, yellow } from './colors';
 
 const THEMES = {
   'qdrant-custom': {
@@ -93,6 +93,38 @@ const THEMES = {
         comment: theme.palette.text.secondary,
       };
     },
+  },
+  dialog: {
+    getStyle: (theme) => {
+      const isDark = theme.palette.mode === 'dark';
+      return {
+        fontSize: '0.75rem',
+        lineHeight: '150%',
+        '--w-rjv-background-color': theme.palette.background.paperElevation1,
+        '--w-rjv-color': theme.palette.text.primary,
+        '--w-rjv-key-string': theme.palette.text.primary,
+        '--w-rjv-key-number': theme.palette.text.secondary,
+        '--w-rjv-info-color': isDark ? neutral[500] : neutral[400],
+        '--w-rjv-arrow-color': isDark ? neutral[500] : neutral[400],
+        '--w-rjv-line-color': isDark ? `${neutral[700]}80` : `${neutral[200]}80`,
+        '--w-rjv-curlybraces-color': isDark ? theme.palette.warning.main : neutral[600],
+        '--w-rjv-brackets-color': isDark ? theme.palette.warning.main : neutral[600],
+        '--w-rjv-colon-color': theme.palette.text.primary,
+        '--w-rjv-quotes-color': theme.palette.text.primary,
+        '--w-rjv-quotes-string-color': isDark ? amber[300] : red[700],
+        '--w-rjv-ellipsis-color': isDark ? amber[300] : red[700],
+        '--w-rjv-type-string-color': isDark ? amber[300] : red[700],
+        '--w-rjv-type-int-color': isDark ? blue[300] : blue[600],
+        '--w-rjv-type-float-color': isDark ? amber[400] : green[700],
+        '--w-rjv-type-bigint-color': isDark ? blue[300] : blue[600],
+        '--w-rjv-type-boolean-color': isDark ? blue[300] : blue[700],
+        '--w-rjv-type-date-color': isDark ? neutral[500] : neutral[600],
+        '--w-rjv-type-null-color': isDark ? theme.palette.error.main : red[400],
+        '--w-rjv-type-nan-color': theme.palette.error.main,
+        '--w-rjv-type-undefined-color': isDark ? theme.palette.error.main : neutral[500],
+      };
+    },
+    getColorspace: () => ({}),
   },
 };
 

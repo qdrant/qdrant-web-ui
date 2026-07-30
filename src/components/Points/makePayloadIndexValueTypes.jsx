@@ -125,9 +125,7 @@ export const PayloadIndexRow = () => {
   return (
     <Row
       render={(props, { keyName, value, parentValue }) => {
-        return (
-          <PayloadIndexRowInner rowProps={props} keyName={keyName} value={value} parentValue={parentValue} />
-        );
+        return <PayloadIndexRowInner rowProps={props} keyName={keyName} value={value} parentValue={parentValue} />;
       }}
     />
   );
@@ -137,11 +135,10 @@ const PayloadIndexRowInner = ({ rowProps, keyName, value, parentValue }) => {
   const pathMap = useContext(PathMapContext);
   const { children, ...restProps } = rowProps;
 
-  const parentPath = parentValue != null && typeof parentValue === 'object' ? (pathMap?.get(parentValue) || []) : [];
+  const parentPath = parentValue != null && typeof parentValue === 'object' ? pathMap?.get(parentValue) || [] : [];
   const path = keyName != null ? [...parentPath, keyName] : parentPath;
 
-  const isLeafPrimitive =
-    isPrimitive(value) && path.length > 0 && !isArrayIndexSegment(path[path.length - 1]);
+  const isLeafPrimitive = isPrimitive(value) && path.length > 0 && !isArrayIndexSegment(path[path.length - 1]);
 
   const isArrayOfPrimitives =
     Array.isArray(value) && path.length > 0 && !isArrayIndexSegment(path[path.length - 1]) && value.some(isPrimitive);

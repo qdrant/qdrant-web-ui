@@ -55,10 +55,7 @@ const PointPayload = ({
     [colorspace]
   );
 
-  const pathMap = useMemo(
-    () => (point?.payload ? buildPathMap(point.payload) : new WeakMap()),
-    [point?.payload]
-  );
+  const pathMap = useMemo(() => (point?.payload ? buildPathMap(point.payload) : new WeakMap()), [point?.payload]);
 
   const indexAction = useMemo(
     () => ({
