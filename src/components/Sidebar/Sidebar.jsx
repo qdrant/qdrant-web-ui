@@ -14,6 +14,7 @@ import {
   CornerUpLeft,
   CircleHelp,
   HardDriveUpload,
+  Settings,
 } from 'lucide-react';
 import {
   DrawerHeader,
@@ -107,6 +108,14 @@ export default function Sidebar() {
             disabled={!jwtEnabled}
           />
         )}
+
+        <SidebarItem
+          title="Settings"
+          icon={<Settings size="16px" />}
+          linkTo="/settings"
+          active={isActive('/settings')}
+          disabled={false}
+        />
       </StyledList>
 
       {anyLowerButtonVisible && (
