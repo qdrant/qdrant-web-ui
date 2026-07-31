@@ -1,116 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
-import { NumberField as BaseNumberField } from '@base-ui/react/number-field';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { TextField, InputAdornment } from '@mui/material';
 
-// A numeric input built on Base UI's NumberField, styled to match the app's
-// MUI outlined inputs. Supports an optional suffix (e.g. "%") and up/down
-// stepper buttons. Values are real numbers (`null` when empty), with min/max
-// clamping and keyboard/scroll stepping handled by Base UI.
+// Numeric input built on MUI's TextField. The native number spin buttons are
+// hidden (WebKit/Blink expose them as pseudo-elements, Gecko via appearance),
+// so the field stays clean. Values are surfaced as numbers (`null` when empty)
+// and clamped to any provided min/max.
 
-const resolveBorder = (theme) => theme.palette.inputOutlinedEnabledBorder ?? theme.palette.divider;
+const hideSpinButtonsSx = {
+  '& input[type=number]': { MozAppearance: 'textfield' },
+  '& input[type=number]::-webkit-outer-spin-button': { WebkitAppearance: 'none', margin: 0 },
+  '& input[type=number]::-webkit-inner-spin-button': { WebkitAppearance: 'none', margin: 0 },
+};
 
-const Group = styled(BaseNumberField.Group)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'stretch',
-  width: '100%',
-  borderRadius: '0.5rem',
-  border: `1px solid ${resolveBorder(theme)}`,
-  backgroundColor: theme.palette.background.paper,
-  overflow: 'hidden',
-  transition: theme.transitions.create(['border-color', 'box-shadow'], {
-    duration: theme.transitions.duration.shortest,
-  }),
-  '&:hover': {
-    borderColor: theme.palette.inputOutlinedHoverBorder ?? theme.palette.text.primary,
-  },
-  '&:focus-within': {
-    borderColor: theme.palette.primary.main,
-    boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
-  },
-  '&[data-disabled]': {
-    backgroundColor: 'transparent',
-    borderColor: theme.palette.action.disabledBackground,
-    '&:hover': {
-      borderColor: theme.palette.action.disabledBackground,
-    },
-  },
-}));
-
-const Input = styled(BaseNumberField.Input)(({ theme }) => ({
-  flex: 1,
-  minWidth: 0,
-  border: 0,
-  outline: 0,
-  background: 'transparent',
-  color: theme.palette.text.primary,
-  font: 'inherit',
-  fontSize: '1rem',
-  lineHeight: 1.4375,
-  padding: '8.5px 12px',
-  MozAppearance: 'textfield',
-  '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
-    WebkitAppearance: 'none',
-    margin: 0,
-  },
-  '&::placeholder': {
-    color: theme.palette.text.secondary,
-    opacity: 1,
-  },
-  '&:disabled': {
-    color: theme.palette.text.disabled,
-    WebkitTextFillColor: theme.palette.text.disabled,
-  },
-}));
-
-const Suffix = styled('span')(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  paddingRight: 12,
-  color: theme.palette.text.secondary,
-  fontSize: '0.9375rem',
-  pointerEvents: 'none',
-}));
-
-const Steppers = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  flexShrink: 0,
-  borderLeft: `1px solid ${resolveBorder(theme)}`,
-}));
-
-const stepButton = ({ theme }) => ({
-  display: 'flex',
-  flex: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 28,
-  padding: 0,
-  border: 0,
-  background: 'transparent',
-  color: theme.palette.text.secondary,
-  cursor: 'pointer',
-  transition: theme.transitions.create(['background-color', 'color'], {
-    duration: theme.transitions.duration.shortest,
-  }),
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-    color: theme.palette.text.primary,
-  },
-  '&:disabled': {
-    opacity: 0.4,
-    cursor: 'default',
-    backgroundColor: 'transparent',
-  },
-});
-
-const IncrementButton = styled(BaseNumberField.Increment)(({ theme }) => ({
-  ...stepButton({ theme }),
-  borderBottom: `1px solid ${resolveBorder(theme)}`,
-}));
-
-const DecrementButton = styled(BaseNumberField.Decrement)(stepButton);
+const clamp = (value, min, max) => {
+  let next = value;
+  if (typeof min === 'number') next = Math.max(min, next);
+  if (typeof max === 'number') next = Math.min(max, next);
+  return next;
+};
 
 export function NumberField({
   id,
@@ -123,35 +31,42 @@ export function NumberField({
   placeholder,
   suffix,
   ariaLabel,
-  showSteppers = true,
   sx,
 }) {
+  const handleChange = (event) => {
+    const raw = event.target.value;
+    if (raw === '') {
+      onValueChange(null);
+      return;
+    }
+    const parsed = Number(raw);
+    if (Number.isNaN(parsed)) return;
+    onValueChange(clamp(parsed, min, max));
+  };
+
   return (
-    <BaseNumberField.Root
+    <TextField
       id={id}
-      value={value}
-      onValueChange={onValueChange}
-      min={min}
-      max={max}
-      step={step}
+      type="number"
+      fullWidth
+      size="small"
+      value={value ?? ''}
+      onChange={handleChange}
       disabled={disabled}
-      style={{ width: '100%' }}
-    >
-      <Group sx={sx}>
-        <Input placeholder={placeholder} aria-label={ariaLabel} style={suffix ? { textAlign: 'right' } : undefined} />
-        {suffix ? <Suffix>{suffix}</Suffix> : null}
-        {showSteppers ? (
-          <Steppers>
-            <IncrementButton aria-label="Increase value">
-              <ChevronUp size={14} />
-            </IncrementButton>
-            <DecrementButton aria-label="Decrease value">
-              <ChevronDown size={14} />
-            </DecrementButton>
-          </Steppers>
-        ) : null}
-      </Group>
-    </BaseNumberField.Root>
+      placeholder={placeholder}
+      slotProps={{
+        htmlInput: {
+          min,
+          max,
+          step,
+          inputMode: 'numeric',
+          'aria-label': ariaLabel,
+          style: suffix ? { textAlign: 'right' } : undefined,
+        },
+        input: suffix ? { endAdornment: <InputAdornment position="end">{suffix}</InputAdornment> } : undefined,
+      }}
+      sx={{ ...hideSpinButtonsSx, ...sx }}
+    />
   );
 }
 
@@ -166,7 +81,6 @@ NumberField.propTypes = {
   placeholder: PropTypes.string,
   suffix: PropTypes.node,
   ariaLabel: PropTypes.string,
-  showSteppers: PropTypes.bool,
   sx: PropTypes.oneOfType([PropTypes.object, PropTypes.array, PropTypes.func]),
 };
 

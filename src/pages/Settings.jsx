@@ -102,7 +102,6 @@ function PercentField({ id, label, value, onChange, disabled }) {
           step={1}
           disabled={disabled}
           suffix="%"
-          showSteppers={false}
           ariaLabel={`${label} percentage value`}
         />
       </Box>
