@@ -6,6 +6,7 @@ import { MemoryStick, HardDrive, Database } from 'lucide-react';
 import StyledSlider from '../components/Common/StyledSlider';
 import NumberField from '../components/Common/NumberField';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 
 const labelSx = {
   color: 'text.primary',
@@ -127,7 +128,7 @@ function Settings() {
 
   return (
     <CenteredFrame>
-      <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
+      <Grid container maxWidth={PAGE_CONTENT_WIDTH.narrow} width={'100%'} spacing={3}>
         <Grid size={12}>
           <Typography variant="h4" component="h1">
             Settings

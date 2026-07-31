@@ -7,6 +7,7 @@ import * as jose from 'jose';
 import { useSnackbar } from 'notistack';
 import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 
 async function getJwt(apiKey, token, setJwt) {
   try {
@@ -108,7 +109,7 @@ function Jwt() {
         sx={{
           pb: 12,
           width: '100%',
-          maxWidth: '900px',
+          maxWidth: PAGE_CONTENT_WIDTH.narrow,
           display: 'flex',
           flexDirection: 'column',
           gap: 4,

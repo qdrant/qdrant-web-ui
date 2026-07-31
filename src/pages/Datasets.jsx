@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 import { Grid, Table, Typography, Alert } from '@mui/material';
 import { StyledTableContainer, StyledTableBody } from '../components/Common/StyledTable';
 import { DatasetsHeader } from '../components/Datasets/DatasetsTableHeader';
@@ -101,7 +102,7 @@ function Datasets() {
   return (
     <>
       <CenteredFrame>
-        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
+        <Grid container maxWidth={PAGE_CONTENT_WIDTH.wide} width={'100%'} spacing={3}>
           <Grid size={12}>
             <Typography variant="h4">Datasets</Typography>
           </Grid>
