@@ -61,7 +61,6 @@ export function NumberField({
           step,
           inputMode: 'numeric',
           'aria-label': ariaLabel,
-          style: suffix ? { textAlign: 'right' } : undefined,
         },
         input: suffix ? { endAdornment: <InputAdornment position="end">{suffix}</InputAdornment> } : undefined,
       }}
