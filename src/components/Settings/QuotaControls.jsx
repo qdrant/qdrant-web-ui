@@ -123,32 +123,6 @@ const USAGE_STATUS_COLOR = {
 
 const shortPeerId = (id) => `…${String(id).slice(-4)}`;
 
-// Reduce the per-node quota usage from GET /quotas into a headline number.
-// The quota is enforced per node, so the busiest node is what matters; fall
-// back to the serving node's usage when the cluster is single-node.
-export function summarizeUsage(status, key) {
-  const entries = status && status.peers ? Object.entries(status.peers) : [];
-  if (entries.length) {
-    let peak = null;
-    const peers = entries.map(([id, peer]) => {
-      const percent = peer[key] ?? null;
-      if (percent != null && (peak == null || percent > peak)) peak = percent;
-      return { id, percent };
-    });
-    return { percent: peak, peers, distributed: true };
-  }
-  return { percent: status?.usage?.[key] ?? null, peers: [], distributed: false };
-}
-
-// Classify current usage against the configured limit (minus the release
-// margin) so the meter can colour itself. 'neutral' while the quota is off.
-export function usageStatus(percent, limit, margin, enabled) {
-  if (!enabled || limit == null || percent == null) return 'neutral';
-  if (percent >= limit) return 'exceeded';
-  if (percent >= limit - (margin ?? 0)) return 'warning';
-  return 'ok';
-}
-
 // One node's usage inside the "Usage by node" disclosure: a mini bar coloured
 // red when that node is over the configured limit.
 function PeerUsageRow({ peer, limitPercent, showLimit }) {

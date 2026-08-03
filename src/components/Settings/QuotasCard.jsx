@@ -16,31 +16,12 @@ import {
 import { alpha } from '@mui/material/styles';
 import { MemoryStick, HardDrive, TriangleAlert } from 'lucide-react';
 import { axiosInstance as axios } from '../../common/axios';
-import { QuotaRow, PercentQuotaControl, summarizeUsage, usageStatus } from './QuotaControls';
+import { QuotaRow, PercentQuotaControl } from './QuotaControls';
+import { configToForm, formToConfig, summarizeUsage, usageStatus } from './quotaHelpers';
 
-// Default percentage shown when a quota is first switched on with no value set.
-const DEFAULT_LIMIT_PERCENT = 80;
 // Fallback release margin when the API doesn't report one; used for the
 // near-limit ("warning") band on the usage meters.
 const DEFAULT_RELEASE_MARGIN = 5;
-
-// Map the GET /quotas config to the editable form. A `null` max means that
-// resource is uncapped, i.e. its row switch is off.
-const configToForm = (config = {}) => ({
-  enabled: Boolean(config.enabled),
-  memoryEnabled: config.max_resident_memory_percent != null,
-  memory: config.max_resident_memory_percent ?? DEFAULT_LIMIT_PERCENT,
-  diskEnabled: config.max_disk_usage_percent != null,
-  disk: config.max_disk_usage_percent ?? DEFAULT_LIMIT_PERCENT,
-});
-
-// Map the form back to a PUT /quotas body, preserving the release margin.
-const formToConfig = (form, releaseMargin) => ({
-  enabled: form.enabled,
-  max_resident_memory_percent: form.memoryEnabled ? form.memory : null,
-  max_disk_usage_percent: form.diskEnabled ? form.disk : null,
-  release_margin_percent: releaseMargin,
-});
 
 const readErrorMessage = (err) =>
   err?.response?.data?.status?.error || err?.message || 'Failed to reach the quotas API.';
