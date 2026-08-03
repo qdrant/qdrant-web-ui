@@ -321,7 +321,7 @@ function PercentQuotaControl({ id, label, value, onChange, disabled, usage, stat
         <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, flexShrink: 0 }}>
           <Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2, mb: 0.5 }}>
-              Current
+              Usage
             </Typography>
             <Box sx={{ height: 40, display: 'flex', alignItems: 'center' }}>
               <Typography component="span" sx={{ fontWeight: 600, fontSize: '1rem', color: statusColor }}>
@@ -332,7 +332,7 @@ function PercentQuotaControl({ id, label, value, onChange, disabled, usage, stat
 
           <Box sx={{ width: 96 }}>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2, mb: 0.5 }}>
-              New
+              Threshold
             </Typography>
             <NumberField
               id={id}
