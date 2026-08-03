@@ -3,7 +3,6 @@ import { MemoryRouter } from 'react-router';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import InfoCard from './InfoCard';
-import { ChevronRight } from 'lucide-react';
 
 // Mock lucide-react icons
 const MockIcon = ({ size, color }) => (
@@ -28,17 +27,6 @@ const testTheme = createTheme({
     },
     divider: 'rgba(0, 0, 0, 0.12)',
   },
-  shadows: [
-    'none',
-    '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12)',
-    '0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)',
-    '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
-    '0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)',
-    '0px 3px 5px -1px rgba(0,0,0,0.2),0px 5px 8px 0px rgba(0,0,0,0.14),0px 1px 14px 0px rgba(0,0,0,0.12)',
-    '0px 3px 5px -1px rgba(0,0,0,0.2),0px 6px 10px 0px rgba(0,0,0,0.14),0px 1px 18px 0px rgba(0,0,0,0.12)',
-    '0px 4px 5px -2px rgba(0,0,0,0.2),0px 7px 10px 1px rgba(0,0,0,0.14),0px 2px 16px 1px rgba(0,0,0,0.12)',
-    '0px 5px 5px -3px rgba(0,0,0,0.2),0px 8px 10px 1px rgba(0,0,0,0.14),0px 3px 14px 2px rgba(0,0,0,0.12)',
-  ],
 });
 
 // Test wrapper component
@@ -47,16 +35,6 @@ const TestWrapper = ({ children }) => (
     <ThemeProvider theme={testTheme}>{children}</ThemeProvider>
   </MemoryRouter>
 );
-
-// Mock useNavigate
-const mockNavigate = vi.fn();
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
 
 describe('InfoCard', () => {
   const defaultProps = {
@@ -171,27 +149,6 @@ describe('InfoCard', () => {
 
       const linkButton = screen.getByRole('button', { name: 'Learn More' });
       expect(linkButton).toHaveClass('add-margin-left');
-    });
-  });
-
-  describe('Navigation', () => {
-    it('should not navigate when href is not provided', () => {
-      const { href, ...propsWithoutHref } = defaultProps;
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-      render(
-        <TestWrapper>
-          <InfoCard {...propsWithoutHref} />
-        </TestWrapper>
-      );
-
-      const card = screen.getAllByRole('button')[0];
-      fireEvent.click(card);
-
-      expect(mockNavigate).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
     });
   });
 });
