@@ -151,5 +151,4 @@ describe('InfoCard', () => {
       expect(linkButton).toHaveClass('add-margin-left');
     });
   });
-
 });
