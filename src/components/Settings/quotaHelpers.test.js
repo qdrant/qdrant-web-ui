@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  DEFAULT_LIMIT_PERCENT,
-  configToForm,
-  formToConfig,
-  summarizeUsage,
-  usageStatus,
-} from './quotaHelpers';
+import { DEFAULT_LIMIT_PERCENT, configToForm, formToConfig, summarizeUsage, usageStatus } from './quotaHelpers';
 
 describe('configToForm / formToConfig', () => {
   it('treats null max as disabled and fills the default limit for editing', () => {
