@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
@@ -16,12 +16,42 @@ import {
   ButtonBase,
   Tooltip,
   Chip,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { alpha, keyframes } from '@mui/material/styles';
-import { MemoryStick, HardDrive, Database, TriangleAlert, ChevronDown } from 'lucide-react';
+import { MemoryStick, HardDrive, TriangleAlert, ChevronDown } from 'lucide-react';
 import NumberField from '../components/Common/NumberField';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { PAGE_CONTENT_WIDTH } from '../theme/constants';
+import { axiosInstance as axios } from '../common/axios';
+
+// Default percentage shown when a quota is first switched on with no value set.
+const DEFAULT_LIMIT_PERCENT = 80;
+// Fallback release margin when the API doesn't report one; used for the
+// near-limit ("warning") band on the usage meters.
+const DEFAULT_RELEASE_MARGIN = 5;
+
+// Map the GET /quotas config to the editable form. A `null` max means that
+// resource is uncapped, i.e. its row switch is off.
+const configToForm = (config = {}) => ({
+  enabled: Boolean(config.enabled),
+  memoryEnabled: config.max_resident_memory_percent != null,
+  memory: config.max_resident_memory_percent ?? DEFAULT_LIMIT_PERCENT,
+  diskEnabled: config.max_disk_usage_percent != null,
+  disk: config.max_disk_usage_percent ?? DEFAULT_LIMIT_PERCENT,
+});
+
+// Map the form back to a PUT /quotas body, preserving the release margin.
+const formToConfig = (form, releaseMargin) => ({
+  enabled: form.enabled,
+  max_resident_memory_percent: form.memoryEnabled ? form.memory : null,
+  max_disk_usage_percent: form.diskEnabled ? form.disk : null,
+  release_margin_percent: releaseMargin,
+});
+
+const readErrorMessage = (err) =>
+  err?.response?.data?.status?.error || err?.message || 'Failed to reach the quotas API.';
 
 const labelSx = {
   color: 'text.primary',
@@ -130,8 +160,10 @@ QuotaRow.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+// Colour for the "Current" usage number by status. 'ok' stays plain text so
+// only the near-limit (amber) and exceeded (red) states draw the eye.
 const USAGE_STATUS_COLOR = {
-  ok: 'success.main',
+  ok: 'text.primary',
   warning: 'warning.main',
   exceeded: 'error.main',
   neutral: 'text.disabled',
@@ -143,7 +175,7 @@ const shortPeerId = (id) => `…${String(id).slice(-4)}`;
 // The quota is enforced per node, so the busiest node is what matters; fall
 // back to the serving node's usage when the cluster is single-node.
 function summarizeUsage(status, key) {
-  const entries = status.peers ? Object.entries(status.peers) : [];
+  const entries = status && status.peers ? Object.entries(status.peers) : [];
   if (entries.length) {
     let peak = null;
     const peers = entries.map(([id, peer]) => {
@@ -153,7 +185,7 @@ function summarizeUsage(status, key) {
     });
     return { percent: peak, peers, distributed: true };
   }
-  return { percent: status.usage?.[key] ?? null, peers: [], distributed: false };
+  return { percent: status?.usage?.[key] ?? null, peers: [], distributed: false };
 }
 
 // Classify current usage against the configured limit (minus the release
@@ -186,7 +218,7 @@ function PeerUsageRow({ peer, limitPercent, showLimit }) {
               left: 0,
               width: `${Math.min(100, peer.percent)}%`,
               borderRadius: 3,
-              backgroundColor: over ? 'error.main' : 'success.main',
+              backgroundColor: over ? 'error.main' : 'primary.main',
             }}
           />
         )}
@@ -240,34 +272,49 @@ function PercentQuotaControl({ id, label, value, onChange, disabled, usage, stat
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
       <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: { xs: 2, sm: 3 } }}>
-        <Box sx={{ flex: 1, minWidth: 0, px: 0.5, pt: 2.75 }}>
-          <Slider
-            value={typeof value === 'number' ? value : 0}
-            onChange={(_, next) => onChange(next)}
-            disabled={disabled}
-            min={0}
-            max={100}
-            track={false}
-            valueLabelDisplay="auto"
-            aria-label={`${label} limit`}
-            marks={usageKnown ? [{ value: usage, label: `${usage}%` }] : []}
-            sx={{
-              py: 1,
-              '& .MuiSlider-markLabel': {
-                top: -18,
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                color: 'text.secondary',
-              },
-              '& .MuiSlider-mark': {
-                height: 14,
-                width: 3,
-                borderRadius: 1,
-                backgroundColor: 'text.secondary',
-                opacity: disabled ? 0.4 : 1,
-              },
-            }}
-          />
+        <Box sx={{ flex: 1, minWidth: 0, px: 0.5 }}>
+          {/* Empty caption keeps the same top offset as the Current/New columns,
+              so the slider track lands level with those values. */}
+          <Typography
+            aria-hidden
+            variant="caption"
+            sx={{ display: 'block', lineHeight: 1.2, mb: 0.5, visibility: 'hidden' }}
+          >
+            &nbsp;
+          </Typography>
+          <Box sx={{ height: 40, display: 'flex', alignItems: 'center' }}>
+            <Slider
+              value={typeof value === 'number' ? value : 0}
+              onChange={(_, next) => onChange(next)}
+              disabled={disabled}
+              min={0}
+              max={100}
+              track={false}
+              valueLabelDisplay="auto"
+              aria-label={`${label} limit`}
+              marks={usageKnown ? [{ value: usage, label: `${usage}%` }] : []}
+              sx={{
+                flex: 1,
+                py: 0.5,
+                // Marks add a reserved bottom margin that pushes the track up
+                // when centred; drop it so the track lines up with the values.
+                '&.MuiSlider-marked': { mb: 0 },
+                '& .MuiSlider-markLabel': {
+                  top: -18,
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: 'text.secondary',
+                },
+                '& .MuiSlider-mark': {
+                  height: 14,
+                  width: 3,
+                  borderRadius: 1,
+                  backgroundColor: 'text.secondary',
+                  opacity: disabled ? 0.4 : 1,
+                },
+              }}
+            />
+          </Box>
         </Box>
 
         {/* Current usage vs. new limit, aligned like a two-column table */}
@@ -327,7 +374,7 @@ function PercentQuotaControl({ id, label, value, onChange, disabled, usage, stat
             />
           </ButtonBase>
           <Collapse in={nodesOpen}>
-            <Box sx={{ pt: 1, pb: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <Box sx={{ pt: 1, pb: 0.5, pl: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {peers.map((peer) => (
                 <PeerUsageRow key={peer.id} peer={peer} limitPercent={value} showLimit={!disabled} />
               ))}
@@ -351,100 +398,90 @@ PercentQuotaControl.propTypes = {
   distributed: PropTypes.bool,
 };
 
-const INITIAL_QUOTAS = {
-  quotasEnabled: false,
-  memoryEnabled: false,
-  diskEnabled: false,
-  collectionsEnabled: false,
-  memory: 80,
-  disk: 80,
-  maxCollections: null,
-};
-
-// Value to pre-fill the collections field with the first time the collections
-// quota is enabled without a value already set.
-const DEFAULT_MAX_COLLECTIONS = 10000;
-
-// Live cluster quota usage, shaped like the `result` of `GET /quotas`
-// (qdrant PR #10035): per-node resident-memory and disk percentages plus an
-// `exceeded` flag. Sample data for now — swap for the API response once wired.
-// `peers` is absent on single-node deployments; `usage` is the serving node.
-const QUOTA_STATUS = {
-  config: {
-    enabled: false,
-    max_resident_memory_percent: 80,
-    max_disk_usage_percent: 80,
-    release_margin_percent: 5,
-  },
-  usage: { resident_memory_percent: 71, disk_usage_percent: 44 },
-  peers: {
-    5644950770669488: { resident_memory_percent: 71, disk_usage_percent: 44, exceeded: false },
-    5255497362296823: { resident_memory_percent: 88, disk_usage_percent: 39, exceeded: true },
-    8741461806010521: { resident_memory_percent: 63, disk_usage_percent: 52, exceeded: false },
-  },
-};
-
 function Settings() {
-  // The whole card is a draft: switches and values change freely and are only
-  // committed to `saved` when the user clicks Save. Comparing the two tells us
-  // whether there are unsaved changes.
-  const [draft, setDraft] = useState(INITIAL_QUOTAS);
-  const [saved, setSaved] = useState(INITIAL_QUOTAS);
+  // Latest GET /quotas result ({ config, usage, peers }); refreshed on a timer
+  // so the usage meters stay live.
+  const [status, setStatus] = useState(null);
+  // Editable form derived from the config, plus the last-saved baseline so we
+  // know when there are unsaved changes. `null` until the first load.
+  const [draft, setDraft] = useState(null);
+  const [saved, setSaved] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
   // Set on each "Quota exceeded" chip click: a bumped nonce plus a snapshot of
-  // which rows were exceeded at that moment, so the flicker fires only on click
-  // — not when a limit change makes a metric cross its threshold.
+  // which rows were exceeded at that moment, so the flicker fires only on click.
   const [flash, setFlash] = useState({ nonce: 0, memory: false, disk: false });
+
+  // Fetch the quota status. `initForm` seeds the editable form on first load;
+  // background refreshes only update the usage meters, never the form.
+  const loadStatus = useCallback(async ({ initForm = false } = {}) => {
+    const result = (await axios.get('/quotas')).data?.result ?? {};
+    setStatus(result);
+    if (initForm) {
+      const form = configToForm(result.config);
+      setDraft(form);
+      setSaved(form);
+    }
+    return result;
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    loadStatus({ initForm: true })
+      .then(() => active && setError(null))
+      .catch((err) => active && setError(readErrorMessage(err)))
+      .finally(() => active && setLoading(false));
+    const interval = setInterval(() => loadStatus().catch(() => {}), 5000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [loadStatus]);
+
+  const releaseMargin = status?.config?.release_margin_percent ?? DEFAULT_RELEASE_MARGIN;
 
   const patch = (changes) => setDraft((prev) => ({ ...prev, ...changes }));
 
-  const memoryActive = draft.quotasEnabled && draft.memoryEnabled;
-  const diskActive = draft.quotasEnabled && draft.diskEnabled;
-  const collectionsActive = draft.quotasEnabled && draft.collectionsEnabled;
+  // The master switch enables/disables every quota at once; turning a single
+  // quota on while quotas are globally off also turns quotas on.
+  const toggleMaster = (next) => patch({ enabled: next, memoryEnabled: next, diskEnabled: next });
+  const toggleRow = (key, next) => patch({ [key]: next, ...(next && !draft.enabled ? { enabled: true } : {}) });
+
   const hasUnsavedChanges =
-    draft.quotasEnabled !== saved.quotasEnabled ||
-    draft.memoryEnabled !== saved.memoryEnabled ||
-    draft.diskEnabled !== saved.diskEnabled ||
-    draft.collectionsEnabled !== saved.collectionsEnabled ||
-    draft.memory !== saved.memory ||
-    draft.disk !== saved.disk ||
-    draft.maxCollections !== saved.maxCollections;
+    !!draft &&
+    !!saved &&
+    (draft.enabled !== saved.enabled ||
+      draft.memoryEnabled !== saved.memoryEnabled ||
+      draft.memory !== saved.memory ||
+      draft.diskEnabled !== saved.diskEnabled ||
+      draft.disk !== saved.disk);
 
-  // Pre-fills the collections field with a default the first time its quota is
-  // enabled while empty, so an enabled quota always has a concrete cap.
-  const collectionsDefault = (enabling) =>
-    enabling && draft.maxCollections == null ? { maxCollections: DEFAULT_MAX_COLLECTIONS } : {};
-
-  // The master switch enables/disables every quota at once, keeping the
-  // invariant that no individual quota is on while quotas are globally off.
-  const toggleMaster = (next) => {
-    patch({
-      quotasEnabled: next,
-      memoryEnabled: next,
-      diskEnabled: next,
-      collectionsEnabled: next,
-      ...collectionsDefault(next),
-    });
+  const save = async () => {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      await axios.put('/quotas?wait=true', formToConfig(draft, releaseMargin));
+      setSaved(draft);
+      await loadStatus();
+      setError(null);
+    } catch (err) {
+      setError(readErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
   };
-
-  // Turning a single quota on while quotas are globally off also turns quotas on.
-  const toggleRow = (key, next) => {
-    patch({
-      [key]: next,
-      ...(next && !draft.quotasEnabled ? { quotasEnabled: true } : {}),
-      ...(key === 'collectionsEnabled' ? collectionsDefault(next) : {}),
-    });
-  };
-
-  const save = () => setSaved(draft);
   const discard = () => setDraft(saved);
 
-  // Current cluster usage vs. the (draft) limits, so the control gives live
-  // feedback while the slider moves.
-  const margin = QUOTA_STATUS.config.release_margin_percent;
-  const memoryUsage = summarizeUsage(QUOTA_STATUS, 'resident_memory_percent');
-  const diskUsage = summarizeUsage(QUOTA_STATUS, 'disk_usage_percent');
-  const memoryExceeded = usageStatus(memoryUsage.percent, draft.memory, margin, memoryActive) === 'exceeded';
-  const diskExceeded = usageStatus(diskUsage.percent, draft.disk, margin, diskActive) === 'exceeded';
+  const memoryActive = Boolean(draft?.enabled && draft?.memoryEnabled);
+  const diskActive = Boolean(draft?.enabled && draft?.diskEnabled);
+  const memoryUsage = summarizeUsage(status, 'resident_memory_percent');
+  const diskUsage = summarizeUsage(status, 'disk_usage_percent');
+  const memoryStatus = usageStatus(memoryUsage.percent, draft?.memory, releaseMargin, memoryActive);
+  const diskStatus = usageStatus(diskUsage.percent, draft?.disk, releaseMargin, diskActive);
+  const memoryExceeded = memoryStatus === 'exceeded';
+  const diskExceeded = diskStatus === 'exceeded';
   const exceededResources = [memoryExceeded && 'memory', diskExceeded && 'disk'].filter(Boolean);
   const exceededMessage = exceededResources.length
     ? `${exceededResources.join(' and ').replace(/^./, (c) => c.toUpperCase())} usage ${
@@ -501,19 +538,20 @@ function Settings() {
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{ color: draft.quotasEnabled ? 'text.secondary' : 'text.primary', fontWeight: 500 }}
+                      sx={{ color: draft?.enabled ? 'text.secondary' : 'text.primary', fontWeight: 500 }}
                     >
                       Off
                     </Typography>
                     <Switch
-                      checked={draft.quotasEnabled}
+                      checked={Boolean(draft?.enabled)}
                       onChange={(event) => toggleMaster(event.target.checked)}
+                      disabled={loading || saving || !draft}
                       inputProps={{ 'aria-label': 'Enable quotas' }}
                     />
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{ color: draft.quotasEnabled ? 'text.primary' : 'text.secondary', fontWeight: 500 }}
+                      sx={{ color: draft?.enabled ? 'text.primary' : 'text.secondary', fontWeight: 500 }}
                     >
                       On
                     </Typography>
@@ -521,104 +559,115 @@ function Settings() {
                 }
               />
               <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} role="form">
-                  <Typography variant="body2" color="text.secondary">
-                    Cap how much memory and disk this instance may use, and how many collections it may hold.
-                  </Typography>
-
-                  <QuotaRow
-                    icon={<MemoryStick size="1.25rem" />}
-                    label="Memory"
-                    description="Share of available RAM this instance may use."
-                    htmlFor="memory-quota"
-                    enabled={draft.memoryEnabled}
-                    onToggle={(next) => toggleRow('memoryEnabled', next)}
-                    dimmed={!memoryActive}
-                    flash={flash.memory ? flash.nonce : 0}
+                {loading ? (
+                  <Box
+                    sx={{
+                      minHeight: 160,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1.5,
+                    }}
                   >
-                    <PercentQuotaControl
-                      id="memory-quota"
-                      label="Memory"
-                      value={draft.memory}
-                      onChange={(value) => patch({ memory: value })}
-                      disabled={!memoryActive}
-                      usage={memoryUsage.percent}
-                      status={usageStatus(memoryUsage.percent, draft.memory, margin, memoryActive)}
-                      peers={memoryUsage.peers}
-                      distributed={memoryUsage.distributed}
-                    />
-                  </QuotaRow>
-
-                  <Divider />
-
-                  <QuotaRow
-                    icon={<HardDrive size="1.25rem" />}
-                    label="Disk space"
-                    description="Share of available disk this instance may use."
-                    htmlFor="disk-quota"
-                    enabled={draft.diskEnabled}
-                    onToggle={(next) => toggleRow('diskEnabled', next)}
-                    dimmed={!diskActive}
-                    flash={flash.disk ? flash.nonce : 0}
-                  >
-                    <PercentQuotaControl
-                      id="disk-quota"
-                      label="Disk space"
-                      value={draft.disk}
-                      onChange={(value) => patch({ disk: value })}
-                      disabled={!diskActive}
-                      usage={diskUsage.percent}
-                      status={usageStatus(diskUsage.percent, draft.disk, margin, diskActive)}
-                      peers={diskUsage.peers}
-                      distributed={diskUsage.distributed}
-                    />
-                  </QuotaRow>
-
-                  <Divider />
-
-                  <QuotaRow
-                    icon={<Database size="1.25rem" />}
-                    label="Collections"
-                    description="Maximum number of collections allowed."
-                    htmlFor="max-collections"
-                    enabled={draft.collectionsEnabled}
-                    onToggle={(next) => toggleRow('collectionsEnabled', next)}
-                    dimmed={!collectionsActive}
-                  >
-                    <Box sx={{ display: 'flex', justifyContent: { sm: 'flex-end' } }}>
-                      <Box sx={{ width: { xs: '100%', sm: 200 } }}>
-                        <NumberField
-                          id="max-collections"
-                          value={draft.collectionsEnabled ? draft.maxCollections : null}
-                          onValueChange={(value) => patch({ maxCollections: value })}
-                          min={0}
-                          step={1}
-                          disabled={!collectionsActive}
-                          placeholder="Unlimited"
-                          ariaLabel="Maximum number of collections"
-                        />
-                      </Box>
-                    </Box>
-                  </QuotaRow>
-
-                  <Divider />
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mr: 'auto', visibility: hasUnsavedChanges ? 'visible' : 'hidden' }}
-                    >
-                      You have unsaved changes.
+                    <CircularProgress size={20} />
+                    <Typography variant="body2" color="text.secondary">
+                      Loading quotas…
                     </Typography>
-                    <Button variant="text" color="inherit" onClick={discard} disabled={!hasUnsavedChanges}>
-                      Discard
-                    </Button>
-                    <Button variant="contained" onClick={save} disabled={!hasUnsavedChanges}>
-                      Save changes
+                  </Box>
+                ) : !draft ? (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'flex-start' }}>
+                    <Alert severity="error" sx={{ width: '100%' }}>
+                      {error || 'Could not load quotas.'}
+                    </Alert>
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={() => {
+                        setLoading(true);
+                        loadStatus({ initForm: true })
+                          .then(() => setError(null))
+                          .catch((err) => setError(readErrorMessage(err)))
+                          .finally(() => setLoading(false));
+                      }}
+                    >
+                      Retry
                     </Button>
                   </Box>
-                </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} role="form">
+                    {error && (
+                      <Alert severity="error" onClose={() => setError(null)}>
+                        {error}
+                      </Alert>
+                    )}
+
+                    <QuotaRow
+                      icon={<MemoryStick size="1.25rem" />}
+                      label="Memory"
+                      description="Share of available RAM this instance may use."
+                      htmlFor="memory-quota"
+                      enabled={draft.memoryEnabled}
+                      onToggle={(next) => toggleRow('memoryEnabled', next)}
+                      dimmed={!memoryActive}
+                      flash={flash.memory ? flash.nonce : 0}
+                    >
+                      <PercentQuotaControl
+                        id="memory-quota"
+                        label="Memory"
+                        value={draft.memory}
+                        onChange={(value) => patch({ memory: value })}
+                        disabled={!memoryActive}
+                        usage={memoryUsage.percent}
+                        status={memoryStatus}
+                        peers={memoryUsage.peers}
+                        distributed={memoryUsage.distributed}
+                      />
+                    </QuotaRow>
+
+                    <Divider />
+
+                    <QuotaRow
+                      icon={<HardDrive size="1.25rem" />}
+                      label="Disk space"
+                      description="Share of available disk this instance may use."
+                      htmlFor="disk-quota"
+                      enabled={draft.diskEnabled}
+                      onToggle={(next) => toggleRow('diskEnabled', next)}
+                      dimmed={!diskActive}
+                      flash={flash.disk ? flash.nonce : 0}
+                    >
+                      <PercentQuotaControl
+                        id="disk-quota"
+                        label="Disk space"
+                        value={draft.disk}
+                        onChange={(value) => patch({ disk: value })}
+                        disabled={!diskActive}
+                        usage={diskUsage.percent}
+                        status={diskStatus}
+                        peers={diskUsage.peers}
+                        distributed={diskUsage.distributed}
+                      />
+                    </QuotaRow>
+
+                    <Divider />
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mr: 'auto', visibility: hasUnsavedChanges ? 'visible' : 'hidden' }}
+                      >
+                        You have unsaved changes.
+                      </Typography>
+                      <Button variant="text" color="inherit" onClick={discard} disabled={!hasUnsavedChanges || saving}>
+                        Discard
+                      </Button>
+                      <Button variant="contained" onClick={save} disabled={!hasUnsavedChanges || saving}>
+                        {saving ? 'Saving…' : 'Save changes'}
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
               </CardContent>
             </Card>
           </Box>
