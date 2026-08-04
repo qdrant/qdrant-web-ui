@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { Typography, Grid, Tabs, Tab, Box } from '@mui/material';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 import { SnapshotsTab } from '../components/Snapshots/SnapshotsTab';
 import CollectionInfo from '../components/Collections/CollectionInfo';
 import PointsTabs from '../components/Points/PointsTabs';
@@ -61,7 +62,7 @@ function Collection() {
   return (
     <>
       <CenteredFrame>
-        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
+        <Grid container maxWidth={PAGE_CONTENT_WIDTH.wide} width={'100%'} spacing={3}>
           <Grid size={12}>
             <Typography variant="h4" component="h1">
               {collectionName}

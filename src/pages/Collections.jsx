@@ -6,6 +6,7 @@ import { keyframes } from '@mui/material/styles';
 import { RefreshCw } from 'lucide-react';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 import { SnapshotsUpload } from '../components/Snapshots/SnapshotsUpload';
 import { getErrorMessage } from '../lib/get-error-message';
 import CollectionsList from '../components/Collections/CollectionsList';
@@ -212,7 +213,7 @@ function Collections() {
       <CenteredFrame>
         {errorMessage !== null && <ErrorNotifier message={errorMessage} />}
 
-        <Grid container maxWidth={'xl'} width={'100%'} spacing={3}>
+        <Grid container maxWidth={PAGE_CONTENT_WIDTH.wide} width={'100%'} spacing={3}>
           <Grid
             size={{
               xs: 12,

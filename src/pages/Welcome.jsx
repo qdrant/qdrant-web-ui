@@ -7,6 +7,7 @@ import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode, BrainCircuit } from 'lucide-react';
 import { useExternalInfo } from '../context/external-info-context';
 import { getFullPath } from '../lib/common-helpers';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -44,7 +45,7 @@ const Welcome = () => {
         gap: '40px',
         p: 5,
         margin: 'auto',
-        maxWidth: '1120px',
+        maxWidth: PAGE_CONTENT_WIDTH.content,
       }}
     >
       {displayBannerContent()}

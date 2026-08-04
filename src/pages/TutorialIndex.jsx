@@ -4,6 +4,7 @@ import { useClient } from '../context/client-context';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Zap, FileCode } from 'lucide-react';
+import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 
 export const TutorialIndex = () => {
   const { isRestricted } = useClient();
@@ -29,7 +30,7 @@ export const TutorialIndex = () => {
         gap: '40px',
         p: 5,
         margin: 'auto',
-        maxWidth: '1120px',
+        maxWidth: PAGE_CONTENT_WIDTH.content,
       }}
     >
       <Box component="header">
