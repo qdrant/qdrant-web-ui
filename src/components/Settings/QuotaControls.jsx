@@ -123,15 +123,15 @@ const USAGE_STATUS_COLOR = {
 
 const shortPeerId = (id) => `…${String(id).slice(-4)}`;
 
-// One node's usage inside the "Usage by node" disclosure: a mini bar coloured
-// red when that node is over the configured limit.
+// One peer's usage inside the "Usage by peer" disclosure: a mini bar coloured
+// red when that peer is over the configured limit.
 function PeerUsageRow({ peer, limitPercent, showLimit }) {
   const known = peer.percent != null;
   const over = showLimit && limitPercent != null && known && peer.percent >= limitPercent;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
       <Typography variant="caption" color="text.secondary" sx={{ width: 96, flexShrink: 0, whiteSpace: 'nowrap' }}>
-        Node {shortPeerId(peer.id)}
+        Peer {shortPeerId(peer.id)}
       </Typography>
       <Box sx={{ flex: 1, position: 'relative', height: 6 }}>
         <Box sx={{ position: 'absolute', inset: 0, borderRadius: 3, backgroundColor: 'action.hover' }} />
@@ -189,9 +189,9 @@ PeerUsageRow.propTypes = {
 // Merged limit + usage control for a percentage quota: one slider whose thumb
 // sets the limit (edited precisely in the "New" field) and whose coloured mark
 // shows current cluster usage ("Current"). In a cluster, a collapsible section
-// breaks usage down per node.
+// breaks usage down per peer.
 export function PercentQuotaControl({ id, label, value, onChange, disabled, usage, status, peers, distributed }) {
-  const [nodesOpen, setNodesOpen] = useState(false);
+  const [peersOpen, setPeersOpen] = useState(false);
   const statusColor = usage != null ? USAGE_STATUS_COLOR[status] : 'text.disabled';
   const usageKnown = usage != null;
 
@@ -278,8 +278,8 @@ export function PercentQuotaControl({ id, label, value, onChange, disabled, usag
       {distributed && peers.length > 0 && (
         <Box>
           <ButtonBase
-            onClick={() => setNodesOpen((open) => !open)}
-            aria-expanded={nodesOpen}
+            onClick={() => setPeersOpen((open) => !open)}
+            aria-expanded={peersOpen}
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -292,14 +292,14 @@ export function PercentQuotaControl({ id, label, value, onChange, disabled, usag
             }}
           >
             <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              Usage by node
+              Usage by peer
             </Typography>
             <ChevronDown
               size={14}
-              style={{ transform: nodesOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
+              style={{ transform: peersOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
             />
           </ButtonBase>
-          <Collapse in={nodesOpen}>
+          <Collapse in={peersOpen}>
             <Box sx={{ pt: 1, pb: 0.5, pl: 0.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
               {peers.map((peer) => (
                 <PeerUsageRow key={peer.id} peer={peer} limitPercent={value} showLimit={!disabled} />

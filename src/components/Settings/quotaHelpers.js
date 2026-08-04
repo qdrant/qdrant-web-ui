@@ -19,18 +19,34 @@ export const formToConfig = (form, releaseMargin) => ({
   release_margin_percent: releaseMargin,
 });
 
-// Reduce the per-node quota usage from GET /quotas into a headline number.
-// The quota is enforced per node, so the busiest node is what matters; fall
-// back to the serving node's usage when the cluster is single-node.
+// Order peer ids deterministically so the list doesn't reshuffle on refresh.
+// Peer ids are u64 and can exceed Number.MAX_SAFE_INTEGER, so compare digit
+// strings by length first; anything non-numeric falls back to plain ordering.
+export function comparePeerIds(a, b) {
+  const left = String(a);
+  const right = String(b);
+  const numeric = /^\d+$/;
+  if (numeric.test(left) && numeric.test(right)) {
+    if (left.length !== right.length) return left.length - right.length;
+    return left < right ? -1 : left > right ? 1 : 0;
+  }
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
+// Reduce the per-peer quota usage from GET /quotas into a headline number.
+// The quota is enforced per peer, so the busiest peer is what matters; fall
+// back to the serving peer's usage when the cluster is single-node.
 export function summarizeUsage(status, key) {
   const entries = status && status.peers ? Object.entries(status.peers) : [];
   if (entries.length) {
     let peak = null;
-    const peers = entries.map(([id, peer]) => {
-      const percent = peer[key] ?? null;
-      if (percent != null && (peak == null || percent > peak)) peak = percent;
-      return { id, percent };
-    });
+    const peers = entries
+      .map(([id, peer]) => {
+        const percent = peer[key] ?? null;
+        if (percent != null && (peak == null || percent > peak)) peak = percent;
+        return { id, percent };
+      })
+      .sort((a, b) => comparePeerIds(a.id, b.id));
     return { percent: peak, peers, distributed: true };
   }
   return { percent: status?.usage?.[key] ?? null, peers: [], distributed: false };

@@ -114,7 +114,7 @@ function QuotasCard() {
   const exceededMessage = exceededResources.length
     ? `${exceededResources.join(' and ').replace(/^./, (c) => c.toUpperCase())} usage ${
         exceededResources.length > 1 ? 'have' : 'has'
-      } exceeded the configured quota on at least one node.`
+      } exceeded the configured quota on at least one peer.`
     : null;
 
   return (
@@ -220,7 +220,7 @@ function QuotasCard() {
             <QuotaRow
               icon={<MemoryStick size="1.25rem" />}
               label="Memory"
-              description="Share of available RAM this instance may use."
+              description="Blocks writes once the Qdrant process uses more than this share of total RAM."
               htmlFor="memory-quota"
               enabled={draft.memoryEnabled}
               onToggle={(next) => toggleRow('memoryEnabled', next)}
@@ -245,7 +245,7 @@ function QuotasCard() {
             <QuotaRow
               icon={<HardDrive size="1.25rem" />}
               label="Disk space"
-              description="Share of available disk this instance may use."
+              description="Blocks writes once overall disk usage exceeds this share of total disk space."
               htmlFor="disk-quota"
               enabled={draft.diskEnabled}
               onToggle={(next) => toggleRow('diskEnabled', next)}

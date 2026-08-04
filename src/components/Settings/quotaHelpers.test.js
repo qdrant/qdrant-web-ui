@@ -62,6 +62,17 @@ describe('summarizeUsage', () => {
       { id: 'ccc', percent: null },
     ]);
   });
+
+  it('sorts peers by id so the list is stable across refreshes', () => {
+    const ids = ['9007199254740993123', '42', '9007199254740993122', '7'];
+    const peers = Object.fromEntries(ids.map((id, i) => [id, { resident_memory_percent: i }]));
+    expect(summarizeUsage({ peers }, 'resident_memory_percent').peers.map((p) => p.id)).toEqual([
+      '7',
+      '42',
+      '9007199254740993122',
+      '9007199254740993123',
+    ]);
+  });
 });
 
 describe('usageStatus', () => {
