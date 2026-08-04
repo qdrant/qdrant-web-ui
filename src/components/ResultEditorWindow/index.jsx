@@ -22,7 +22,7 @@ const ResultEditorWindow = ({ code }) => {
         automaticLayout: true,
         readOnly: true,
         mouseWheelZoom: true,
-        folding: false,
+        folding: true,
         lineHeight: lineHeight,
         padding: { top: padding, bottom: padding },
       }}
