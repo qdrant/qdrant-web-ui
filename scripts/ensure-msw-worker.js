@@ -1,0 +1,35 @@
+/* eslint-disable no-console */
+// Runs as `predev:msw` before `npm run dev:msw`.
+//
+// public/mockServiceWorker.js is a generated, git-ignored artifact that MSW
+// needs to intercept requests in the browser. It's normally recreated on
+// `npm install` (via the `msw.workerDirectory` field in package.json), but a
+// clean checkout with --ignore-scripts, or deleting the file, can leave it
+// missing. This regenerates it when absent and, if it can't, prints exactly
+// what to run.
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const workerPath = path.join('public', 'mockServiceWorker.js');
+
+if (fs.existsSync(workerPath)) {
+  process.exit(0);
+}
+
+console.log(`\n[dev:msw] ${workerPath} is missing — generating the MSW service worker...\n`);
+
+try {
+  // --no-save: the worker directory is already recorded in package.json, so
+  // skip msw's interactive "save worker directory?" prompt (which would hang
+  // or crash in this non-interactive script).
+  execSync('npx msw init public --no-save', { stdio: 'inherit' });
+  console.log('\n[dev:msw] Service worker ready. Starting the dev server...\n');
+} catch (error) {
+  console.error(
+    '\n[dev:msw] Could not generate the MSW service worker automatically.\n' +
+      '          Generate it once with the command below, then re-run `npm run dev:msw`:\n\n' +
+      '              npx msw init public/\n'
+  );
+  process.exit(1);
+}

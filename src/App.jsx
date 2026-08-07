@@ -5,6 +5,7 @@ import useTitle from './components/UseTitle';
 import { CssBaseline } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import StyledMain from './components/Common/StyledMain';
+import MockModeBadge from './components/Common/MockModeBadge';
 import { ColorModeProvider } from './context/color-context';
 
 function NewApp() {
@@ -27,6 +28,7 @@ function NewApp() {
     <ColorModeProvider initialMode={resolvedMode}>
       <CssBaseline />
       <StyledMain>{routing}</StyledMain>
+      <MockModeBadge />
     </ColorModeProvider>
   );
 }
