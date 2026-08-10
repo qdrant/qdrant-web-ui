@@ -5,14 +5,10 @@
 //
 // Layered on top of base.js: only the cluster-related endpoints are overridden.
 // Run with `npm run dev:msw -- cluster`.
-import { http } from 'msw';
-import { BASE_URL, ok } from '../lib';
-import { makeTelemetry, makeCollectionInfo } from '../data';
+import { makeClusterHandlers } from './cluster-common';
 
 const SHARD_COUNT = 6;
 const REPLICATION_FACTOR = 2;
-
-// The peer that serves this dashboard.
 const SELF_PEER = 1;
 
 // GET /cluster — the 4 peers of the cluster.
@@ -33,7 +29,8 @@ const clusterInfo = {
 // GET /collections/{name}/cluster — 6 shards, replication factor 2, spread over
 // the 4 peers (each shard has 2 replicas). Shard 4 is being moved from peer 2
 // to peer 3 (Partial replica + a matching entry in shard_transfers), and one
-// replica of shard 5 is Dead, so the monitor shows a range of states.
+// replica of shard 5 is Dead, so the monitor shows a range of states. With each
+// shard on only 2 of the 4 peers, plenty of grid slots stay empty.
 const collectionClusterInfo = {
   peer_id: SELF_PEER,
   shard_count: SHARD_COUNT,
@@ -56,19 +53,10 @@ const collectionClusterInfo = {
   shard_transfers: [{ shard_id: 4, from: 2, to: 3, sync: false, method: 'stream_records' }],
 };
 
-export const clusterHandlers = [
-  http.get(`${BASE_URL}/telemetry`, ({ request }) =>
-    ok(
-      makeTelemetry({
-        hasApiKey: Boolean(request.headers.get('api-key')),
-        clusterEnabled: true,
-        reshardingEnabled: true,
-      })
-    )
-  ),
-  http.get(`${BASE_URL}/cluster`, () => ok(clusterInfo)),
-  http.get(`${BASE_URL}/collections/:collection`, () =>
-    ok(makeCollectionInfo({ shardNumber: SHARD_COUNT, replicationFactor: REPLICATION_FACTOR }))
-  ),
-  http.get(`${BASE_URL}/collections/:collection/cluster`, () => ok(collectionClusterInfo)),
-];
+export const clusterHandlers = makeClusterHandlers({
+  clusterInfo,
+  collectionClusterInfo,
+  shardNumber: SHARD_COUNT,
+  replicationFactor: REPLICATION_FACTOR,
+  reshardingEnabled: true,
+});
