@@ -73,7 +73,7 @@
     "format": "prettier ./src --write",
     "format:check": "prettier ./src --check",
     "predev:msw": "node scripts/ensure-msw-worker.js",
-    "dev:msw": "VITE_DEV_WITH_MSW=true vite"
+    "dev:msw": "node scripts/dev-msw.js"
   },
   "browserslist": {
     "production": [
