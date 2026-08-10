@@ -17,6 +17,19 @@ if (fs.existsSync(workerPath)) {
   process.exit(0);
 }
 
+// `msw init` pulls in @inquirer, which imports util.styleText — a function
+// added in Node 20.12.0 (and 21.7.0). On older Node it throws an opaque
+// "does not provide an export named 'styleText'" SyntaxError on import. Detect
+// that here and explain, instead of letting the CLI crash. We probe for the API
+// directly because it was backported unevenly across the 20.x / 21.x lines.
+if (typeof require('node:util').styleText !== 'function') {
+  console.error(
+    `\n[dev:msw] Node ${process.versions.node} is too old to generate the MSW service worker.\n` +
+      '          `msw init` needs util.styleText, added in Node 20.12.0\n'
+  );
+  process.exit(1);
+}
+
 console.log(`\n[dev:msw] ${workerPath} is missing — generating the MSW service worker...\n`);
 
 try {
