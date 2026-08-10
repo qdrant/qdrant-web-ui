@@ -25,4 +25,7 @@ export const scenarios = {
   'cluster-big': compose(clusterBigHandlers, baseHandlers),
   optimizations: compose(optimizationsHandlers, baseHandlers),
   resharding: compose(reshardingHandlers, baseHandlers),
+  // Everything populated at once: a distributed cluster mid-resharding plus rich
+  // optimizations (their endpoints don't overlap), on top of the base data.
+  showcase: compose(optimizationsHandlers, reshardingHandlers, baseHandlers),
 };
