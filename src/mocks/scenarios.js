@@ -8,6 +8,7 @@ import { catchAll } from './lib';
 import { baseHandlers } from './handlers/base';
 import { clusterHandlers } from './handlers/cluster';
 import { optimizationsHandlers } from './handlers/optimizations';
+import { reshardingHandlers } from './handlers/resharding';
 import { clusterBigHandlers } from './handlers/cluster-big';
 import { clusterSmallHandlers } from './handlers/cluster-small';
 
@@ -23,4 +24,5 @@ export const scenarios = {
   'cluster-small': compose(clusterSmallHandlers, baseHandlers),
   'cluster-big': compose(clusterBigHandlers, baseHandlers),
   optimizations: compose(optimizationsHandlers, baseHandlers),
+  resharding: compose(reshardingHandlers, baseHandlers),
 };
