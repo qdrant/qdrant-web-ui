@@ -138,7 +138,15 @@ export const baseHandlers = [
   }),
 
   // --- optimizations / memory ---
-  http.get(`${BASE_URL}/collections/:collection/optimizations`, () => ok({ ongoing: [], completed: [] })),
+  http.get(`${BASE_URL}/collections/:collection/optimizations`, () =>
+    ok({
+      summary: { queued_optimizations: 0, queued_segments: 0, queued_points: 0, idle_segments: 0 },
+      running: [],
+      queued: [],
+      completed: [],
+      idle_segments: [],
+    })
+  ),
   http.get(`${BASE_URL}/collections/:collection/memory`, () =>
     ok({
       vectors: [

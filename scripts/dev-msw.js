@@ -6,7 +6,14 @@
 //   npm run dev:msw -- cluster -> "cluster" scenario
 //
 // Any extra flags are forwarded to Vite, e.g. `npm run dev:msw -- cluster --host`.
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
+const path = require('path');
+
+// Make sure public/mockServiceWorker.js is present; bail if it can't be created.
+const ensure = spawnSync('node', [path.join(__dirname, 'ensure-msw-worker.js')], { stdio: 'inherit' });
+if (ensure.status !== 0) {
+  process.exit(ensure.status ?? 1);
+}
 
 const args = process.argv.slice(2);
 const scenario = args.find((arg) => !arg.startsWith('-'));

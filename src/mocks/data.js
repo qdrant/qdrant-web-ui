@@ -31,7 +31,6 @@ export const makeTelemetry = ({ hasApiKey = false, clusterEnabled = false, resha
 export const makeCollectionInfo = ({ shardNumber = 1, replicationFactor = 1 } = {}) => ({
   status: 'green',
   optimizer_status: { ok: true, error: null },
-  vectors_count: POINTS.length,
   indexed_vectors_count: POINTS.length,
   points_count: POINTS.length,
   segments_count: 1,

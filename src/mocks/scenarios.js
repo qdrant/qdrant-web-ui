@@ -7,6 +7,10 @@
 import { catchAll } from './lib';
 import { baseHandlers } from './handlers/base';
 import { clusterHandlers } from './handlers/cluster';
+import { optimizationsHandlers } from './handlers/optimizations';
+import { reshardingHandlers } from './handlers/resharding';
+import { clusterBigHandlers } from './handlers/cluster-big';
+import { clusterSmallHandlers } from './handlers/cluster-small';
 
 export const DEFAULT_SCENARIO = 'single-node';
 
@@ -17,4 +21,11 @@ const compose = (...groups) => [...groups.flat(), catchAll];
 export const scenarios = {
   'single-node': compose(baseHandlers),
   cluster: compose(clusterHandlers, baseHandlers),
+  'cluster-small': compose(clusterSmallHandlers, baseHandlers),
+  'cluster-big': compose(clusterBigHandlers, baseHandlers),
+  optimizations: compose(optimizationsHandlers, baseHandlers),
+  resharding: compose(reshardingHandlers, baseHandlers),
+  // Everything populated at once: a distributed cluster mid-resharding plus rich
+  // optimizations (their endpoints don't overlap), on top of the base data.
+  showcase: compose(optimizationsHandlers, reshardingHandlers, baseHandlers),
 };
