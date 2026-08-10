@@ -25,3 +25,7 @@ yarn-error.log*
 
 # ide
 .idea
+
+# MSW: generated service worker for `npm run dev:msw`.
+# Recreated on `npm install` (msw.workerDirectory) and by the predev:msw script.
+/public/mockServiceWorker.js
