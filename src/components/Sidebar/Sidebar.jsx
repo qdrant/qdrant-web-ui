@@ -8,6 +8,7 @@ import {
   Rocket,
   SquareTerminal,
   RectangleEllipsis,
+  ChartSpline,
   FileCode,
   KeyRound,
   BookMarked,
@@ -84,6 +85,14 @@ export default function Sidebar() {
           icon={<RectangleEllipsis size="16px" />}
           linkTo="/collections"
           active={isActive('/collections')}
+          disabled={false}
+        />
+
+        <SidebarItem
+          title="Metrics"
+          icon={<ChartSpline size="16px" />}
+          linkTo="/metrics"
+          active={isActive('/metrics')}
           disabled={false}
         />
 
