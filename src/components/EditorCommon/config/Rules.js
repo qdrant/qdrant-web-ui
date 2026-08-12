@@ -56,7 +56,7 @@ export const langConfig = {
 };
 
 export const options = {
-  scrollBeyondLastLine: false,
+  scrollBeyondLastLine: true,
   readOnly: false,
   fontSize: 12,
   wordWrap: 'on',
