@@ -61,6 +61,25 @@ describe('parsePrometheus', () => {
     expect(metrics.y.samples[0].value).toBe(-Infinity);
     expect(Number.isNaN(metrics.z.samples[0].value)).toBe(true);
   });
+
+  it('parses histogram buckets with their le label (real Qdrant format)', () => {
+    const HIST = `# HELP rest_responses_duration_seconds response duration histogram
+# TYPE rest_responses_duration_seconds histogram
+rest_responses_duration_seconds_bucket{method="PUT",endpoint="/x",status="200",le="0.005"} 0
+rest_responses_duration_seconds_bucket{method="PUT",endpoint="/x",status="200",le="0.01"} 1
+rest_responses_duration_seconds_bucket{method="PUT",endpoint="/x",status="200",le="+Inf"} 1
+rest_responses_duration_seconds_sum{method="PUT",endpoint="/x",status="200"} 0.005271
+rest_responses_duration_seconds_count{method="PUT",endpoint="/x",status="200"} 1
+`;
+    const metrics = parsePrometheus(HIST);
+    const buckets = metrics.rest_responses_duration_seconds_bucket.samples;
+    expect(buckets).toHaveLength(3);
+    // le labels are preserved (including +Inf) and values parsed
+    expect(buckets.map((s) => s.labels.le)).toEqual(['0.005', '0.01', '+Inf']);
+    expect(buckets.map((s) => s.value)).toEqual([0, 1, 1]);
+    // sum/count land under their own suffixed metric names
+    expect(metrics.rest_responses_duration_seconds_count.samples[0].value).toBe(1);
+  });
 });
 
 describe('buildSeriesKey', () => {
@@ -147,7 +166,7 @@ describe('formatValue', () => {
   it('formats by unit', () => {
     expect(formatValue(1048576, 'bytes')).toBe('1.05 MB');
     expect(formatValue(0.5, 'seconds')).toBe('500.0ms');
-    expect(formatValue(1234, 'number')).toBe('1,234');
+    expect(formatValue(1234, 'number')).toBe('1 234');
   });
 
   it('handles missing and non-finite values', () => {

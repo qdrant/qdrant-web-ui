@@ -4,7 +4,7 @@
 // Don't use these mocks for testing! They're a developer workflow aid.
 import { http, HttpResponse } from 'msw';
 import { BASE_URL, ok, acknowledged } from '../lib';
-import { COLLECTION, POINTS, makeTelemetry, makeCollectionInfo, singleNodeClusterInfo } from '../data';
+import { COLLECTION, POINTS, makeTelemetry, makeCollectionInfo, makeMetrics, singleNodeClusterInfo } from '../data';
 
 // Quotas shown on the Settings page. Mutable so that saving in the UI sticks
 // for the session. Single node, so usage is reported via `usage` (no `peers`).
@@ -30,6 +30,9 @@ export const baseHandlers = [
     // sets a key in the API key dialog (telemetry is refetched on key change).
     ok(makeTelemetry({ hasApiKey: Boolean(request.headers.get('api-key')) }))
   ),
+
+  // Prometheus metrics (Metrics dashboard). Plain text, not the JSON envelope.
+  http.get(`${BASE_URL}/metrics`, () => new HttpResponse(makeMetrics(), { headers: { 'Content-Type': 'text/plain' } })),
 
   http.get(`${BASE_URL}/issues`, () => ok({ issues: [] })),
   http.delete(`${BASE_URL}/issues`, () => ok(true)),

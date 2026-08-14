@@ -1,191 +1,93 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  IconButton,
-  Stack,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { Plus, Trash2, ChartSpline } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Alert, Box, Divider, Grid, Stack, Typography } from '@mui/material';
 import MetricChart from './MetricChart';
-import AddSeriesField from './AddSeriesField';
-import { seriesColor } from './colors';
-import { PRESETS } from './presets';
+import MetricBarChart from './MetricBarChart';
+import LatencyHeatmap from './LatencyHeatmap';
+import StatTile from './StatTile';
+import PanelCard from './PanelCard';
+import CustomChartsDashboard from './CustomChartsDashboard';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
-import { useScrollToId } from '../../hooks/useScrollToId';
-import {
-  listSeries,
-  seriesLabel,
-  buildSeriesKey,
-  indexTypesByName,
-  detectUnit,
-  isCounter,
-} from '../../lib/metrics-parser';
+import { listSeries, indexByKey, seriesLabel } from '../../lib/metrics-parser';
 
-// todo (ai agents have to ignore this!): do the same for all hard-coded storage keys
-const STORAGE_KEY = 'metricsDashboard.charts';
 const POLL_INTERVAL_MS = 5000;
 const MAX_POINTS = 120; // ~10 minutes at a 5s interval
 
-// todo: looks like a good candidate to move to helpers and becoming a function (and maybe rename if
-// moved, to express better what type of id it returns
-const newId = () =>
-  typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `c-${Date.now()}-${Math.random()}`;
+// Big-number tiles (Grafana "stat" panels).
+const STAT_TILES = [
+  { label: 'Collections', key: 'collections_total' },
+  { label: 'Vectors', key: 'collections_vector_total' },
+  { label: 'Pending operations', key: 'pending_operations' },
+  { label: 'Cluster peers', key: 'cluster_peers_total' },
+];
 
-const loadCharts = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+// Format a histogram `le` bucket boundary (seconds) as a short latency label.
+const formatLe = (sec) => {
+  if (!Number.isFinite(sec)) return '+Inf';
+  if (sec < 1) return `${Math.round(sec * 1000)}ms`;
+  return `${sec}s`;
 };
 
-// A chart's series carry only { key, name, labels }; the human label is derived
-// on render so it stays consistent with the parser's formatting.
-const makeSeries = (name, labels = {}) => ({ key: buildSeriesKey(name, labels), name, labels });
+// Turn parsed series descriptors into the shape MetricChart consumes.
+const toChartSeries = (entries) =>
+  entries.map((s) => ({ key: s.key, name: s.name, labels: s.labels, label: seriesLabel(s), type: s.type }));
 
-// Series can share a chart only if they'd share a meaningful Y axis: the same
-// display unit (bytes / seconds / count) and the same plotting kind (a gauge is
-// drawn raw, a counter as a per-second rate). This groups them into a single
-// compatibility bucket used to filter the in-chart "add metric" options.
-const compatKey = (name, type) => `${detectUnit(name)}:${isCounter(type) ? 'rate' : 'raw'}`;
-
-// DOM id for a chart card, so a freshly added chart can be scrolled into view.
-const chartElementId = (chartId) => `metrics-chart-${chartId}`;
-
+// The Metrics page: a fixed set of panels, auto-populated from Qdrant's
+// /metrics endpoint with no user interaction. Panel types mirror Qdrant's
+// Grafana dashboards (github.com/qdrant/prometheus-monitoring), bound to the
+// metrics a self-hosted instance actually exposes.
 function MetricsDashboard() {
-  const theme = useTheme();
-  const [charts, setCharts] = useState(loadCharts);
-  // Id of a just-added chart to scroll to once it mounts (cleared after).
-  const [scrollToId, setScrollToId] = useState(null);
-  const clearScrollTo = useCallback(() => setScrollToId(null), []);
-  useScrollToId(scrollToId, { onScrolled: clearScrollTo });
-
-  // Persist the dashboard layout so it survives reloads
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(charts));
-    } catch {
-      /* ignore quota / private-mode failures */
-    }
-  }, [charts]);
-
-  // Every distinct series key referenced by any chart — the set we accumulate
-  // history for.
-  const subscribedKeys = useMemo(() => {
-    const keys = new Set();
-    charts.forEach((chart) => chart.series.forEach((s) => keys.add(s.key)));
-    return [...keys];
-  }, [charts]);
-
   const { snapshot, history, loading, error } = useMetricsHistory({
-    subscribedKeys,
+    recordAll: true,
     intervalMs: POLL_INTERVAL_MS,
     maxPoints: MAX_POINTS,
   });
 
-  const availableSeries = useMemo(() => listSeries(snapshot), [snapshot]);
-  const typesByName = useMemo(() => indexTypesByName(snapshot), [snapshot]);
+  const all = useMemo(() => listSeries(snapshot), [snapshot]);
+  const latest = useMemo(() => indexByKey(snapshot), [snapshot]);
 
-  const addChart = useCallback((title, series) => {
-    const id = newId();
-    setCharts((prev) => [...prev, { id, title, series }]);
-    setScrollToId(chartElementId(id));
-  }, []);
+  const restSeries = useMemo(() => all.filter((s) => s.name === 'rest_responses_total'), [all]);
+  const grpcSeries = useMemo(() => all.filter((s) => s.name === 'grpc_responses_total'), [all]);
+  const memorySeries = useMemo(() => all.filter((s) => /^memory_.*_bytes$/.test(s.name)), [all]);
+  const vectorSeries = useMemo(() => all.filter((s) => s.name === 'collections_vector_total'), [all]);
 
-  // Create one chart from a list of staged series (the top-bar builder). The
-  // title is the metric name, or "<name> +N" when several distinct metrics are
-  // combined, so a multi-series chart still reads clearly in its header.
-  const createChart = useCallback(
-    (seriesList) => {
-      if (!seriesList?.length) return;
-      const names = [...new Set(seriesList.map((s) => s.name))];
-      const title = names.length === 1 ? names[0] : `${names[0]} +${names.length - 1}`;
-      addChart(
-        title,
-        seriesList.map((s) => makeSeries(s.name, s.labels))
-      );
-    },
-    [addChart]
-  );
+  // Bar chart: total REST requests summed per endpoint (latest snapshot).
+  const requestsByEndpoint = useMemo(() => {
+    const sums = {};
+    restSeries.forEach((s) => {
+      const endpoint = s.labels.endpoint || s.name;
+      sums[endpoint] = (sums[endpoint] || 0) + (latest[s.key] || 0);
+    });
+    const entries = Object.entries(sums).sort((a, b) => b[1] - a[1]);
+    return { labels: entries.map((e) => e[0]), values: entries.map((e) => e[1]) };
+  }, [restSeries, latest]);
 
-  const addPreset = useCallback((preset) => {
-    const created = preset.charts.map((chart) => ({
-      id: newId(),
-      title: chart.title,
-      series: chart.metrics.map((name) => makeSeries(name)),
-    }));
-    setCharts((prev) => [...prev, ...created]);
-    if (created.length) setScrollToId(chartElementId(created[created.length - 1].id));
-  }, []);
-
-  const removeChart = useCallback((chartId) => {
-    setCharts((prev) => prev.filter((chart) => chart.id !== chartId));
-  }, []);
-
-  const addSeriesToChart = useCallback((chartId, series) => {
-    setCharts((prev) =>
-      prev.map((chart) => {
-        if (chart.id !== chartId) return chart;
-        if (chart.series.some((s) => s.key === series.key)) return chart; // no duplicates
-        return { ...chart, series: [...chart.series, makeSeries(series.name, series.labels)] };
-      })
-    );
-  }, []);
-
-  const removeSeriesFromChart = useCallback((chartId, key) => {
-    setCharts((prev) =>
-      prev.map((chart) =>
-        chart.id === chartId ? { ...chart, series: chart.series.filter((s) => s.key !== key) } : chart
-      )
-    );
-  }, []);
+  // Latency-distribution heatmap: group the response-duration histogram's
+  // `_bucket` series by their `le` boundary (across every endpoint/method/
+  // status, matching Grafana's `sum by (le)`), ordered ascending.
+  const latencyBuckets = useMemo(() => {
+    const groups = new Map(); // le string -> { sec, keys[] }
+    all
+      .filter((s) => /_responses_duration_seconds_bucket$/.test(s.name) && s.labels.le !== undefined)
+      .forEach((s) => {
+        const le = s.labels.le;
+        if (!groups.has(le)) groups.set(le, { sec: le === '+Inf' ? Infinity : Number(le), keys: [] });
+        groups.get(le).keys.push(s.key);
+      });
+    return [...groups.entries()]
+      .sort((a, b) => a[1].sec - b[1].sec)
+      .map(([, g]) => ({ label: formatLe(g.sec), keys: g.keys }));
+  }, [all]);
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" component="h1">
-            Metrics
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Live cluster metrics, sampled every {POLL_INTERVAL_MS / 1000}s. Build your own charts or start from a
-            preset.
-          </Typography>
-        </Box>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Metrics
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Live cluster metrics from the Qdrant <code>/metrics</code> endpoint, sampled every {POLL_INTERVAL_MS / 1000}s.
+        </Typography>
       </Box>
-
-      {/* Presets */}
-      <Stack direction="row" spacing={1.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-        {PRESETS.map((preset) => (
-          <Button
-            key={preset.id}
-            variant="outlined"
-            size="small"
-            startIcon={<Plus size={16} />}
-            onClick={() => addPreset(preset)}
-          >
-            {preset.label}
-          </Button>
-        ))}
-      </Stack>
-
-      {/* Add-chart bar */}
-      <Card variant="outlined" sx={{ mb: 3, p: 1.5 }}>
-        <AddSeriesField options={availableSeries} onCreate={createChart} placeholder="Add a metric as a new chart…" />
-      </Card>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -193,129 +95,59 @@ function MetricsDashboard() {
         </Alert>
       )}
 
+      {/* Stat tiles */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {STAT_TILES.map((tile) => (
+          <Grid key={tile.key} size={{ xs: 6, sm: 3 }}>
+            <StatTile label={tile.label} value={loading ? undefined : latest[tile.key]} />
+          </Grid>
+        ))}
+      </Grid>
+
       {/* Charts */}
-      {charts.length === 0 ? (
-        <EmptyState loading={loading} />
-      ) : (
-        <Stack spacing={3}>
-          {charts.map((chart) => {
-            const chartSeries = chart.series.map((s) => ({
-              ...s,
-              label: seriesLabel(s),
-              type: typesByName[s.name] || '',
-            }));
-            // Options for this chart's adder: drop series already on the chart,
-            // and — once the chart has at least one series — keep only those
-            // that share its unit and gauge/counter kind. An empty chart offers
-            // everything.
-            const existingKeys = new Set(chart.series.map((s) => s.key));
-            const chartCompat = chart.series.length
-              ? compatKey(chart.series[0].name, typesByName[chart.series[0].name])
-              : null;
-            const addOptions = availableSeries.filter(
-              (option) =>
-                !existingKeys.has(option.key) &&
-                (chartCompat === null || compatKey(option.name, option.type) === chartCompat)
-            );
-            return (
-              <Card
-                key={chart.id}
-                id={chartElementId(chart.id)}
-                variant="outlined"
-                // Leave room for the fixed AppBar when scrolled into view.
-                sx={{ scrollMarginTop: (t) => t.spacing(10) }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    px: 2,
-                    py: 1.5,
-                    borderBottom: `1px solid ${theme.palette.divider}`,
-                  }}
-                >
-                  {/* todo: move styles in `sx` if possible */}
-                  <Typography variant="subtitle1" fontWeight={600} noWrap>
-                    {chart.title}
-                  </Typography>
-                  <Tooltip title="Remove chart">
-                    <IconButton size="small" onClick={() => removeChart(chart.id)} aria-label="Remove chart">
-                      <Trash2 size={16} />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <CardContent>
-                  <MetricChart series={chartSeries} history={history} />
+      <Stack spacing={3}>
+        <PanelCard title="REST request rate" subtitle="Requests per second, by endpoint and status">
+          <MetricChart series={toChartSeries(restSeries)} history={history} showLegend />
+        </PanelCard>
 
-                  <Divider sx={{ my: 2 }} />
+        <PanelCard
+          title="Latency distribution"
+          subtitle="Response time by bucket, requests/s (from the duration histogram)"
+        >
+          <LatencyHeatmap buckets={latencyBuckets} history={history} />
+        </PanelCard>
 
-                  {/* Series chips (left) double as the chart legend — each
-                      filled with its line's color (matched by position). The
-                      "+" adder is pinned to the bottom-right corner. */}
-                  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                    <Box sx={{ flexGrow: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
-                      {chartSeries.map((s, i) => {
-                        const { main, contrastText } = seriesColor(theme, i);
-                        return (
-                          <Chip
-                            key={s.key}
-                            label={s.label}
-                            size="small"
-                            onDelete={() => removeSeriesFromChart(chart.id, s.key)}
-                            sx={{
-                              maxWidth: 320,
-                              bgcolor: main,
-                              color: contrastText,
-                              '& .MuiChip-deleteIcon': {
-                                color: contrastText,
-                                opacity: 0.7,
-                                '&:hover': { opacity: 1, color: contrastText },
-                              },
-                            }}
-                          />
-                        );
-                      })}
-                    </Box>
-                    <Box sx={{ flexShrink: 0, width: 220 }}>
-                      <AddSeriesField
-                        variant="inline"
-                        options={addOptions}
-                        onAdd={(series) => addSeriesToChart(chart.id, series)}
-                        placeholder="Add a metric…"
-                      />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </Stack>
-      )}
+        <PanelCard title="gRPC request rate" subtitle="Requests per second, by endpoint">
+          <MetricChart series={toChartSeries(grpcSeries)} history={history} />
+        </PanelCard>
+
+        <PanelCard title="Total requests by endpoint" subtitle="Cumulative REST responses">
+          <MetricBarChart labels={requestsByEndpoint.labels} values={requestsByEndpoint.values} />
+        </PanelCard>
+
+        <PanelCard title="Approximate vector count" subtitle="Total vectors across collections">
+          <MetricChart series={toChartSeries(vectorSeries)} history={history} />
+        </PanelCard>
+
+        <PanelCard title="Memory usage">
+          <MetricChart series={toChartSeries(memorySeries)} history={history} />
+        </PanelCard>
+      </Stack>
+
+      {/* TEMPORARY: the earlier custom-chart builder, reconnected at the end of
+          the page. Embedded (its own page header suppressed). */}
+      <Divider sx={{ my: 4 }} />
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h5" component="h2">
+          Custom charts
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Build an ad-hoc chart from any exposed metric.
+        </Typography>
+      </Box>
+      <CustomChartsDashboard embedded />
     </Box>
   );
 }
-
-function EmptyState({ loading }) {
-  return (
-    <Card variant="outlined" sx={{ py: 8 }}>
-      <Box
-        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, textAlign: 'center', px: 2 }}
-      >
-        <ChartSpline size={40} strokeWidth={1.5} opacity={0.5} />
-        <Typography variant="h6">No charts yet</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420 }}>
-          {loading
-            ? 'Connecting to the metrics endpoint…'
-            : 'Add a preset above, or search for a metric to create your first chart.'}
-        </Typography>
-      </Box>
-    </Card>
-  );
-}
-
-EmptyState.propTypes = {
-  loading: PropTypes.bool,
-};
 
 export default MetricsDashboard;

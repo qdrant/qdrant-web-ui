@@ -12,12 +12,21 @@ import { parsePrometheus, indexByKey } from '../lib/metrics-parser';
 // always samples the latest set of series without being torn down and
 // recreated whenever the dashboard changes.
 //
+// Pass `recordAll: true` to accumulate history for every series in each
+// response (used by the preset dashboard, which charts whatever the server
+// exposes); otherwise only `subscribedKeys` are recorded.
+//
 // Returns:
 //   snapshot   latest parsed metrics map (name -> descriptor), or null
 //   history    [{ t, values: { seriesKey: number } }] oldest-first, capped
 //   loading    true until the first response (success or failure) arrives
 //   error      last error message, or null
-export const useMetricsHistory = ({ subscribedKeys = [], intervalMs = 5000, maxPoints = 120 } = {}) => {
+export const useMetricsHistory = ({
+  subscribedKeys = [],
+  recordAll = false,
+  intervalMs = 5000,
+  maxPoints = 120,
+} = {}) => {
   const [snapshot, setSnapshot] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +34,8 @@ export const useMetricsHistory = ({ subscribedKeys = [], intervalMs = 5000, maxP
 
   const keysRef = useRef(subscribedKeys);
   keysRef.current = subscribedKeys;
+  const recordAllRef = useRef(recordAll);
+  recordAllRef.current = recordAll;
 
   useEffect(() => {
     let active = true;
@@ -42,9 +53,14 @@ export const useMetricsHistory = ({ subscribedKeys = [], intervalMs = 5000, maxP
 
         const parsed = parsePrometheus(response.data);
         const index = indexByKey(parsed);
-        const values = {};
-        for (const key of keysRef.current) {
-          if (key in index) values[key] = index[key];
+        let values;
+        if (recordAllRef.current) {
+          values = index;
+        } else {
+          values = {};
+          for (const key of keysRef.current) {
+            if (key in index) values[key] = index[key];
+          }
         }
 
         setSnapshot(parsed);
