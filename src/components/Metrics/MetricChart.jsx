@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -9,18 +9,24 @@ import { seriesColor } from './colors';
 const formatTick = (t) =>
   new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
+const formatStat = (value, unit, rate) => (value == null ? '—' : `${formatValue(value, unit)}${rate ? '/s' : ''}`);
+
 // A single time-series line chart rendering one or more metric series that
 // share an X axis (the poll timestamps accumulated by useMetricsHistory).
-const MetricChart = ({ series, history }) => {
+// Pass `showLegend` to render the Grafana-style table legend (Name / Mean / Max)
+// below the chart; clicking a row toggles that series.
+const MetricChart = ({ series, history = false }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
+  const [hidden] = useState(() => new Set());
 
   // Signature that identifies the current set of series; a change means the
   // chart's datasets must be rebuilt rather than merely re-fed with data. The
   // type is part of it so the chart rebuilds once the first snapshot resolves a
   // series' type (gauge vs counter changes how it's plotted and labelled).
   const seriesSignature = useMemo(() => series.map((s) => `${s.key}:${s.type || ''}`).join('|'), [series]);
+  const hiddenSignature = [...hidden].join('|');
   // The Y axis carries a single unit; use the first series' unit for it while
   // tooltips format each point by its own unit.
   const axisUnit = series.length ? detectUnit(series[0].name) : 'number';
@@ -66,8 +72,8 @@ const MetricChart = ({ series, history }) => {
         animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          // The legend is intentionally off — the metric chips below the chart
-          // carry the same colors and serve as an interactive legend.
+          // The custom table legend below (or the dashboard's chips) is the
+          // legend; chart.js's own legend stays off.
           legend: { display: false },
           tooltip: {
             callbacks: {
@@ -100,7 +106,8 @@ const MetricChart = ({ series, history }) => {
     };
   }, [seriesSignature, theme.palette.mode]);
 
-  // Feed the accumulated history into the existing chart on every poll.
+  // Feed the accumulated history into the existing chart on every poll, and
+  // apply per-series visibility toggled from the legend.
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
@@ -108,33 +115,36 @@ const MetricChart = ({ series, history }) => {
     series.forEach((s, i) => {
       if (chart.data.datasets[i]) {
         chart.data.datasets[i].data = computeData(s);
+        chart.data.datasets[i].hidden = hidden.has(s.key);
       }
     });
     chart.update('none');
-  }, [history, seriesSignature, series]);
+  }, [history, seriesSignature, hiddenSignature]);
 
   const hasData = series.some((s) => computeData(s).some((v) => v != null));
 
   return (
-    <Box sx={{ position: 'relative', height: 240, width: '100%' }}>
-      <canvas ref={canvasRef} />
-      {!hasData && (
-        <Box
-          sx={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
-            Collecting data…
-          </Typography>
-        </Box>
-      )}
-    </Box>
+    <>
+      <Box sx={{ position: 'relative', height: 240, width: '100%' }}>
+        <canvas ref={canvasRef} />
+        {!hasData && (
+          <Box
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              Collecting data…
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </>
   );
 };
 
@@ -148,6 +158,86 @@ MetricChart.propTypes = {
     })
   ).isRequired,
   history: PropTypes.array.isRequired,
+  showLegend: PropTypes.bool,
+};
+
+// Grafana-style table legend: colored line marker + name, with right-aligned
+// Mean/Max stat columns. Scrolls when there are many series; clicking a row
+// toggles that series on the chart.
+const STAT_WIDTH = 96;
+const MARKER_SLOT = 22;
+
+function ChartLegend({ rows, hidden, onToggle }) {
+  const theme = useTheme();
+  const headColor = theme.palette.primary.main;
+  const statCell = {
+    width: STAT_WIDTH,
+    flexShrink: 0,
+    pl: 1,
+    textAlign: 'right',
+    whiteSpace: 'nowrap',
+    fontVariantNumeric: 'tabular-nums',
+  };
+
+  return (
+    <Box sx={{ mt: 1.5, maxHeight: 168, overflowY: 'auto', fontSize: 13, lineHeight: 1.6 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          px: 0.5,
+          py: 0.25,
+          position: 'sticky',
+          top: 0,
+          bgcolor: 'background.paper',
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Box sx={{ width: MARKER_SLOT, flexShrink: 0 }} />
+        <Box sx={{ flexGrow: 1, minWidth: 0, color: headColor, fontWeight: 600 }}>Name</Box>
+        <Box sx={{ ...statCell, color: headColor, fontWeight: 600 }}>Mean</Box>
+        <Box sx={{ ...statCell, color: headColor, fontWeight: 600 }}>Max</Box>
+      </Box>
+      {rows.map((row) => {
+        const isHidden = hidden.has(row.key);
+        return (
+          <Box
+            key={row.key}
+            onClick={() => onToggle(row.key)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              px: 0.5,
+              py: 0.25,
+              cursor: 'pointer',
+              borderRadius: 1,
+              opacity: isHidden ? 0.4 : 1,
+              '&:hover': { bgcolor: 'action.hover' },
+            }}
+          >
+            <Box sx={{ width: MARKER_SLOT, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ width: 14, height: 3, borderRadius: 1, bgcolor: row.color }} />
+            </Box>
+            <Typography
+              variant="body2"
+              noWrap
+              sx={{ flexGrow: 1, minWidth: 0, textDecoration: isHidden ? 'line-through' : 'none' }}
+            >
+              {row.label}
+            </Typography>
+            <Box sx={{ ...statCell, color: 'text.secondary' }}>{formatStat(row.mean, row.unit, row.rate)}</Box>
+            <Box sx={{ ...statCell, color: 'text.secondary' }}>{formatStat(row.max, row.unit, row.rate)}</Box>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+ChartLegend.propTypes = {
+  rows: PropTypes.array.isRequired,
+  hidden: PropTypes.instanceOf(Set).isRequired,
+  onToggle: PropTypes.func.isRequired,
 };
 
 export default MetricChart;

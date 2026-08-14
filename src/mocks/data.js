@@ -26,6 +26,160 @@ export const makeTelemetry = ({ hasApiKey = false, clusterEnabled = false, resha
   cluster: { enabled: clusterEnabled, resharding_enabled: reshardingEnabled },
 });
 
+// GET /metrics — Prometheus text exposition format. Values wobble over time so
+// the live Metrics dashboard shows movement in mock mode: gauges oscillate
+// around a baseline and counters grow monotonically with elapsed time.
+export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {}) => {
+  const now = Date.now();
+  const t = now / 1000;
+  const wobble = (base, amp, periodSec, phase = 0) =>
+    Math.round(base + amp * Math.sin((t / periodSec) * 2 * Math.PI + phase));
+  const since = Math.floor(now / 1000); // steadily increasing seconds, for counters
+  const MB = 1024 * 1024;
+
+  const block = (name, help, type, samples) =>
+    [`# HELP ${name} ${help}`, `# TYPE ${name} ${type}`, ...samples].join('\n');
+
+  // Monotonic counter value: a baseline plus steady growth, so the dashboard's
+  // rate() view shows a roughly constant per-second request rate.
+  const counter = (base, rate) => base + Math.floor(since * rate);
+  const latSeconds = (baseUs, ampUs, periodSec) => (wobble(baseUs, ampUs, periodSec) / 1e6).toFixed(6);
+
+  // REST endpoints: request counters (mostly 2xx, a few errors), avg latency,
+  // and a full duration histogram. `center` is the latency-bucket index the
+  // endpoint's requests cluster around, `sigma` the spread — together they
+  // shape the histogram so the latency-distribution heatmap has realistic bands.
+  const restEndpoints = [
+    { method: 'GET', endpoint: '/collections', rate: 3, base: 1200, lat: [1200, 300, 25], center: 0, sigma: 1 },
+    {
+      method: 'POST',
+      endpoint: '/collections/{name}/points/search',
+      rate: 11,
+      base: 5400,
+      lat: [9000, 2500, 35],
+      center: 4,
+      sigma: 1.4,
+    },
+    {
+      method: 'PUT',
+      endpoint: '/collections/{name}/points',
+      rate: 2,
+      base: 800,
+      lat: [4200, 1200, 30],
+      center: 2,
+      sigma: 1.2,
+    },
+    {
+      method: 'POST',
+      endpoint: '/collections/{name}/points/scroll',
+      rate: 1.5,
+      base: 640,
+      lat: [3100, 900, 28],
+      center: 3,
+      sigma: 1.2,
+    },
+    {
+      method: 'DELETE',
+      endpoint: '/collections/{name}/points',
+      rate: 0.4,
+      base: 120,
+      lat: [2500, 700, 22],
+      center: 1,
+      sigma: 1,
+    },
+  ];
+  const restTotals = restEndpoints.map(
+    (e) => `rest_responses_total{method="${e.method}",endpoint="${e.endpoint}",status="2xx"} ${counter(e.base, e.rate)}`
+  );
+  // A handful of non-2xx responses so "requests by status" has variety.
+  restTotals.push(
+    `rest_responses_total{method="POST",endpoint="/collections/{name}/points/search",status="4xx"} ${counter(90, 0.3)}`,
+    `rest_responses_total{method="PUT",endpoint="/collections/{name}/points",status="4xx"} ${counter(40, 0.1)}`,
+    `rest_responses_total{method="POST",endpoint="/collections/{name}/points/search",status="5xx"} ${counter(6, 0.02)}`
+  );
+  const restLatency = restEndpoints.map(
+    (e) =>
+      `rest_responses_avg_duration_seconds{method="${e.method}",endpoint="${e.endpoint}"} ${latSeconds(
+        e.lat[0],
+        e.lat[1],
+        e.lat[2]
+      )}`
+  );
+
+  // Prometheus histogram: cumulative `_bucket{le}` counts (+ `_sum`, `_count`)
+  // per endpoint. Counts grow with elapsed time and are spread across buckets by
+  // a Gaussian kernel around each endpoint's `center`, so `rate(bucket)` yields
+  // a realistic latency-distribution heatmap.
+  const LE = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.5, 1, 5, 10, 50];
+  const bandCdf = (center, sigma) => {
+    const n = LE.length + 1; // finite buckets + "+Inf"
+    const weights = Array.from({ length: n }, (_, i) => Math.exp(-((i - center) ** 2) / (2 * sigma * sigma)));
+    const total = weights.reduce((a, b) => a + b, 0);
+    let acc = 0;
+    return weights.map((w) => (acc += w / total));
+  };
+  const restHistogram = restEndpoints.flatMap((e) => {
+    const count = counter(e.base, e.rate);
+    const cdf = bandCdf(e.center, e.sigma);
+    const labels = `method="${e.method}",endpoint="${e.endpoint}",status="2xx"`;
+    const lines = LE.map(
+      (le, i) => `rest_responses_duration_seconds_bucket{${labels},le="${le}"} ${Math.round(count * cdf[i])}`
+    );
+    lines.push(`rest_responses_duration_seconds_bucket{${labels},le="+Inf"} ${count}`);
+    lines.push(`rest_responses_duration_seconds_sum{${labels}} ${((count * e.lat[0]) / 1e6).toFixed(6)}`);
+    lines.push(`rest_responses_duration_seconds_count{${labels}} ${count}`);
+    return lines;
+  });
+
+  // gRPC endpoints: request counters and avg latency.
+  const grpcEndpoints = [
+    { endpoint: '/qdrant.Points/Search', rate: 9, base: 4200, lat: [7000, 2000, 32] },
+    { endpoint: '/qdrant.Points/Upsert', rate: 2, base: 900, lat: [3800, 1000, 27] },
+    { endpoint: '/qdrant.Collections/Get', rate: 0.5, base: 300, lat: [900, 250, 24] },
+  ];
+  const grpcTotals = grpcEndpoints.map(
+    (e) => `grpc_responses_total{endpoint="${e.endpoint}"} ${counter(e.base, e.rate)}`
+  );
+  const grpcLatency = grpcEndpoints.map(
+    (e) => `grpc_responses_avg_duration_seconds{endpoint="${e.endpoint}"} ${latSeconds(e.lat[0], e.lat[1], e.lat[2])}`
+  );
+
+  return [
+    block('app_info', 'information about qdrant server', 'gauge', [`app_info{name="qdrant",version="${version}"} 1`]),
+    block('cluster_enabled', 'is cluster support enabled', 'gauge', [`cluster_enabled ${clusterEnabled ? 1 : 0}`]),
+    block('cluster_peers_total', 'total number of cluster peers', 'gauge', [
+      `cluster_peers_total ${clusterEnabled ? 3 : 1}`,
+    ]),
+    block('collections_total', 'number of collections', 'gauge', ['collections_total 1']),
+    block('collections_vector_total', 'total number of vectors in all collections', 'gauge', [
+      `collections_vector_total ${wobble(125000, 400, 45)}`,
+    ]),
+    block('pending_operations', 'total number of pending operations', 'gauge', [
+      `pending_operations ${Math.max(0, wobble(2, 3, 20))}`,
+    ]),
+    block('memory_active_bytes', 'total number of bytes in active pages', 'gauge', [
+      `memory_active_bytes ${wobble(760 * MB, 30 * MB, 40)}`,
+    ]),
+    block('memory_allocated_bytes', 'total number of bytes allocated by the application', 'gauge', [
+      `memory_allocated_bytes ${wobble(910 * MB, 25 * MB, 55, 1)}`,
+    ]),
+    block('memory_metadata_bytes', 'total number of bytes dedicated to metadata', 'gauge', [
+      `memory_metadata_bytes ${wobble(48 * MB, 2 * MB, 60)}`,
+    ]),
+    block('memory_resident_bytes', 'total number of bytes in physically resident data pages', 'gauge', [
+      `memory_resident_bytes ${wobble(830 * MB, 28 * MB, 50, 0.5)}`,
+    ]),
+    block('memory_retained_bytes', 'total number of bytes in virtual memory mappings', 'gauge', [
+      `memory_retained_bytes ${wobble(210 * MB, 12 * MB, 70)}`,
+    ]),
+    block('rest_responses_total', 'total number of responses through REST API', 'counter', restTotals),
+    block('rest_responses_avg_duration_seconds', 'average response duration in REST API', 'gauge', restLatency),
+    block('rest_responses_duration_seconds', 'response duration histogram', 'histogram', restHistogram),
+    block('grpc_responses_total', 'total number of responses through gRPC API', 'counter', grpcTotals),
+    block('grpc_responses_avg_duration_seconds', 'average response duration in gRPC API', 'gauge', grpcLatency),
+  ].join('\n');
+};
+
 // Result of GET /collections/{name}. Override shardNumber / replicationFactor
 // to match a scenario's cluster topology.
 export const makeCollectionInfo = ({ shardNumber = 1, replicationFactor = 1 } = {}) => ({

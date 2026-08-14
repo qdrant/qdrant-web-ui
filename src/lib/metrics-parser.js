@@ -16,6 +16,7 @@
 // sample is identified by a canonical "series key" that folds the labels in.
 
 import prettyBytes from 'pretty-bytes';
+import { formatGroupedDigits } from './common-helpers';
 
 // Build a stable, canonical key for a sample: the metric name plus its labels
 // sorted by name, so the same series always maps to the same string regardless
@@ -195,8 +196,10 @@ const formatSeconds = (value) => {
 };
 
 const formatNumber = (value) => {
-  if (Number.isInteger(value)) return value.toLocaleString();
-  return value.toLocaleString(undefined, { maximumFractionDigits: 3 });
+  // Group digits with the app's locale-independent formatter; round
+  // non-integers to 3 decimals to avoid long floats on the axis/tooltip.
+  const rounded = Number.isInteger(value) ? value : Math.round(value * 1000) / 1000;
+  return formatGroupedDigits(rounded);
 };
 
 // A short, human-friendly label for a series, used in chart legends and chips.
