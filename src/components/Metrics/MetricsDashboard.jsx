@@ -5,10 +5,12 @@ import LatencyHeatmap from './LatencyHeatmap';
 import StatTile from './StatTile';
 import PanelCard from './PanelCard';
 import MetricsScope from './MetricsScope';
+import PollIntervalSelect from './PollIntervalSelect';
 import { useClient } from '../../context/client-context';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
 import { listSeries, indexByKey, seriesLabel } from '../../lib/metrics-parser';
 
+// Default polling cadence; the user can change it live (see PollIntervalSelect).
 const POLL_INTERVAL_MS = 5000;
 // The timeline grows for the whole session; this is only a memory safety limit
 // (beyond it the oldest history is decimated — see useMetricsHistory).
@@ -20,6 +22,14 @@ const REQUEST_TILES = [
   { label: 'Avg latency', stat: 'avgLatency', unit: 'seconds' },
   { label: 'Error rate', stat: 'errorRate', unit: 'percent' },
   { label: 'Total requests', stat: 'total' },
+];
+
+// Big-number tiles for the Memory & CPU tab, keyed by `resourceStats` fields.
+const RESOURCE_TILES = [
+  { label: 'Resident memory', stat: 'residentMemory', unit: 'bytes' },
+  { label: 'CPU cores used', stat: 'cpu' },
+  { label: 'Open file descriptors', stat: 'openFds' },
+  { label: 'Threads', stat: 'threads' },
 ];
 
 const sumKeys = (values, keys) => keys.reduce((acc, k) => acc + (typeof values?.[k] === 'number' ? values[k] : 0), 0);
@@ -66,16 +76,20 @@ function MetricsDashboard() {
   const [scope, setScope] = useState('global');
   const [collection, setCollection] = useState('');
   const [collections, setCollections] = useState([]);
+  const [pollInterval, setPollInterval] = useState(POLL_INTERVAL_MS);
   const { client: qdrantClient } = useClient();
 
-  const perCollection = scope === 'collection';
+  // The Memory & CPU tab is instance-wide, so it must never poll in per-collection
+  // mode — even if the user left the scope on "Per collection" on another tab. The
+  // scope selection itself is preserved and takes effect again on the request tabs.
+  const perCollection = scope === 'collection' && currentTab !== 'resources';
   // Only filter once a collection is picked, so the panels never silently show
   // instance-wide numbers under a collection heading.
   const activeCollection = perCollection ? collection : '';
 
   const { snapshot, history, error } = useMetricsHistory({
     recordAll: true,
-    intervalMs: POLL_INTERVAL_MS,
+    intervalMs: pollInterval,
     maxPoints: MAX_STORED_POINTS,
     perCollection,
   });
@@ -181,6 +195,23 @@ function MetricsDashboard() {
     };
   }, [restSeries, all, latest, requestsHistory, activeCollection]);
 
+  // --- Memory & CPU tab ---
+  // All instance-wide, so this tab ignores the collection scope. Memory is the
+  // active-pages gauge; CPU is `cpu_cores_used`, a gauge of fractional cores in
+  // use (newer Qdrant), plotted raw.
+  const memorySeries = useMemo(() => all.filter((s) => s.name === 'memory_active_bytes'), [all]);
+  const cpuSeries = useMemo(() => all.filter((s) => s.name === 'cpu_cores_used'), [all]);
+
+  const resourceStats = useMemo(
+    () => ({
+      residentMemory: latest.memory_resident_bytes,
+      cpu: latest.cpu_cores_used,
+      openFds: latest.process_open_fds,
+      threads: latest.process_threads,
+    }),
+    [latest]
+  );
+
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
@@ -188,7 +219,7 @@ function MetricsDashboard() {
           Metrics
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Live cluster metrics from the Qdrant <code>/metrics</code> endpoint, sampled every {POLL_INTERVAL_MS / 1000}s.
+          Live cluster metrics from the Qdrant <code>/metrics</code> endpoint.
         </Typography>
       </Box>
 
@@ -212,15 +243,21 @@ function MetricsDashboard() {
           <Tab label="Collections" value="collections" />
           <Tab label="Memory & CPU" value="resources" />
         </Tabs>
-        <Box sx={{ pb: 1 }}>
-          <MetricsScope
-            scope={scope}
-            onScopeChange={setScope}
-            collection={collection}
-            collections={collections}
-            onCollectionChange={setCollection}
-          />
-        </Box>
+        {/* Poll-interval selector is always shown; the scope control applies only
+            to per-collection tabs (Memory & CPU is instance-wide), so it's hidden
+            there. */}
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 1, pb: 1 }}>
+          <PollIntervalSelect value={pollInterval} onChange={setPollInterval} />
+          {currentTab !== 'resources' && (
+            <MetricsScope
+              scope={scope}
+              onScopeChange={setScope}
+              collection={collection}
+              collections={collections}
+              onCollectionChange={setCollection}
+            />
+          )}
+        </Stack>
       </Stack>
 
       {currentTab === 'requests' && perCollection && !collection && (
@@ -264,6 +301,26 @@ function MetricsDashboard() {
             }`}
           >
             <LatencyHeatmap buckets={latencyBuckets} history={requestsHistory} />
+          </PanelCard>
+        </Stack>
+      )}
+
+      {currentTab === 'resources' && (
+        <Stack spacing={3}>
+          <Grid container spacing={2}>
+            {RESOURCE_TILES.map((tile) => (
+              <Grid key={tile.stat} size={{ xs: 6, sm: 3 }}>
+                <StatTile label={tile.label} value={resourceStats[tile.stat]} unit={tile.unit} />
+              </Grid>
+            ))}
+          </Grid>
+
+          <PanelCard title="Memory usage" subtitle="Active memory pages">
+            <MetricChart series={toChartSeries(memorySeries)} history={history} />
+          </PanelCard>
+
+          <PanelCard title="CPU usage" subtitle="CPU cores in use">
+            <MetricChart series={toChartSeries(cpuSeries)} history={history} beginAtZero />
           </PanelCard>
         </Stack>
       )}

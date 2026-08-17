@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import Chart from 'chart.js/auto';
 import { MatrixController, MatrixElement } from 'chartjs-chart-matrix';
 import { formatValue } from '../../lib/metrics-parser';
+import CollectingOverlay from './CollectingOverlay';
 
 // The matrix chart type isn't part of chart.js/auto, so register it once.
 Chart.register(MatrixController, MatrixElement);
@@ -216,13 +217,7 @@ const LatencyHeatmap = ({ buckets, history }) => {
     <>
       <Box sx={{ position: 'relative', height, width: '100%' }}>
         <canvas ref={canvasRef} />
-        {!matrix.hasData && (
-          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Collecting data…
-            </Typography>
-          </Box>
-        )}
+        {!matrix.hasData && <CollectingOverlay />}
       </Box>
 
       {/* Color-scale legend: gradient from the low to the high cell color, with

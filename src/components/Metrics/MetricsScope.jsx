@@ -27,7 +27,9 @@ function MetricsScope({ scope, onScopeChange, collection, collections, onCollect
             fontSize: '0.8125rem',
             lineHeight: 1.4,
             px: 1.5,
-            py: 0.5,
+            // Match the poll-interval / collection field height (~33.7px) so the
+            // controls line up on one row.
+            py: '6.75px',
             color: 'text.secondary',
             borderColor: 'divider',
             '&.Mui-selected': {
@@ -49,7 +51,9 @@ function MetricsScope({ scope, onScopeChange, collection, collections, onCollect
           error={!collection}
           sx={{
             minWidth: 180,
-            // Match the toggle's height/type so the two controls line up.
+            // Match the toggle's height/type and radius (4px) so the controls
+            // line up; overrides the app's larger default select radius.
+            '& .MuiOutlinedInput-root': { borderRadius: 1 },
             '& .MuiSelect-select': { py: '7.5px', minHeight: 'auto', fontSize: '0.8125rem', lineHeight: 1.4 },
           }}
         >

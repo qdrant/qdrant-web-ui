@@ -4,7 +4,6 @@ import {
   buildSeriesKey,
   listSeries,
   indexByKey,
-  indexTypesByName,
   isCounter,
   toRatePerSecond,
   detectUnit,
@@ -110,13 +109,7 @@ describe('listSeries / indexByKey', () => {
   });
 });
 
-describe('indexTypesByName / isCounter', () => {
-  it('maps metric name to its declared Prometheus type', () => {
-    const types = indexTypesByName(parsePrometheus(SAMPLE));
-    expect(types.collections_total).toBe('gauge');
-    expect(types.rest_responses_total).toBe('counter');
-  });
-
+describe('isCounter', () => {
   it('isCounter only accepts the counter type', () => {
     expect(isCounter('counter')).toBe(true);
     expect(isCounter('gauge')).toBe(false);

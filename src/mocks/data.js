@@ -176,8 +176,32 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1', perCol
     (e) => `grpc_responses_avg_duration_seconds{endpoint="${e.endpoint}"} ${latSeconds(e.lat[0], e.lat[1], e.lat[2])}`
   );
 
+  // Per-collection hardware counters (CPU + disk I/O) that a real instance emits.
+  // The dashboard doesn't chart these, but the mock keeps them so it mirrors the
+  // real /metrics payload. Each always carries an `id` (collection) label.
+  const hwScale = [1, 0.5, 0.2];
+  const hwMetric = (name, help, base, rate) =>
+    block(
+      name,
+      help,
+      'counter',
+      COLLECTIONS.map((col, i) => {
+        const scale = hwScale[i] ?? 0.1;
+        return `${name}{id="${col}"} ${counter(Math.round(base * scale), rate * scale)}`;
+      })
+    );
+
   return [
     block('app_info', 'information about qdrant server', 'gauge', [`app_info{name="qdrant",version="${version}"} 1`]),
+    // Average fractional CPU cores used by the process over ~the last 2s (a gauge,
+    // emitted alongside app_info by newer Qdrant — see qdrant/qdrant#10243). A real
+    // instance omits it when unavailable; the mock always reports it. Non-negative.
+    block(
+      'cpu_cores_used',
+      'average number of CPU cores used by this process over roughly the last two seconds',
+      'gauge',
+      [`cpu_cores_used ${(1.4 + 0.5 * Math.sin((t / 45) * 2 * Math.PI)).toFixed(3)}`]
+    ),
     block('cluster_enabled', 'is cluster support enabled', 'gauge', [`cluster_enabled ${clusterEnabled ? 1 : 0}`]),
     block('cluster_peers_total', 'total number of cluster peers', 'gauge', [
       `cluster_peers_total ${clusterEnabled ? 3 : 1}`,
@@ -209,6 +233,32 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1', perCol
     block('rest_responses_duration_seconds', 'response duration histogram', 'histogram', restHistogram),
     block('grpc_responses_total', 'total number of responses through gRPC API', 'counter', grpcTotals),
     block('grpc_responses_avg_duration_seconds', 'average response duration in gRPC API', 'gauge', grpcLatency),
+
+    // --- process / OS (instance-wide) ---
+    block('process_threads', 'count of active threads', 'gauge', [`process_threads ${wobble(24, 3, 30)}`]),
+    block('process_open_fds', 'count of currently open file descriptors', 'gauge', [
+      `process_open_fds ${wobble(41, 6, 25)}`,
+    ]),
+    block('process_max_fds', 'limit for open file descriptors', 'gauge', ['process_max_fds 1048576']),
+
+    // --- per-collection hardware (CPU + disk I/O), not charted by the UI ---
+    hwMetric('collection_hardware_metric_cpu', 'CPU measurements of a collection', 5000, 40),
+    hwMetric('collection_hardware_metric_payload_io_read', 'total IO payload read of a collection', 8000, 120),
+    hwMetric('collection_hardware_metric_payload_io_write', 'total IO payload write of a collection', 3000, 45),
+    hwMetric(
+      'collection_hardware_metric_payload_index_io_read',
+      'total IO payload index read of a collection',
+      2000,
+      30
+    ),
+    hwMetric(
+      'collection_hardware_metric_payload_index_io_write',
+      'total IO payload index write of a collection',
+      1000,
+      15
+    ),
+    hwMetric('collection_hardware_metric_vector_io_read', 'total IO vector read of a collection', 12000, 200),
+    hwMetric('collection_hardware_metric_vector_io_write', 'total IO vector write of a collection', 4000, 60),
   ].join('\n');
 };
 

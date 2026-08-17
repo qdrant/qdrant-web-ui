@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Chart from 'chart.js/auto';
 import { formatValue, detectUnit, isCounter, toRatePerSecond } from '../../lib/metrics-parser';
 import { seriesColor } from './colors';
+import CollectingOverlay from './CollectingOverlay';
 
 const formatTick = (t) =>
   new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -14,7 +15,16 @@ const formatTick = (t) =>
 // Pass `aggregate` to collapse every series into one line: the counters are
 // summed per timestamp and rated once — i.e. `rate(sum(...))`, the same as
 // dropping the per-request labels and treating them as one series.
-const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel = 'Total' }) => {
+// Pass `showLegend` to render chart.js's built-in legend below the chart —
+// useful when several distinct series share it (e.g. memory, disk read/write).
+const MetricChart = ({
+  series,
+  history = [],
+  aggregate = false,
+  aggregateLabel = 'Total',
+  showLegend = false,
+  beginAtZero = false,
+}) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
@@ -96,9 +106,13 @@ const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel =
         animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          // The custom table legend below (or the dashboard's chips) is the
-          // legend; chart.js's own legend stays off.
-          legend: { display: false },
+          legend: showLegend
+            ? {
+                display: true,
+                position: 'bottom',
+                labels: { color: textColor, boxWidth: 12, boxHeight: 12, usePointStyle: true, padding: 16 },
+              }
+            : { display: false },
           tooltip: {
             callbacks: {
               label: (ctx) =>
@@ -114,6 +128,9 @@ const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel =
           y: {
             grid: { color: gridColor },
             border: { display: false },
+            // Rates and other non-negative metrics anchor the axis at zero so the
+            // line never dips below it (e.g. CPU usage can't be negative).
+            min: beginAtZero ? 0 : undefined,
             ticks: {
               color: textColor,
               maxTicksLimit: 5,
@@ -128,7 +145,7 @@ const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel =
       chart.destroy();
       chartRef.current = null;
     };
-  }, [seriesSignature, theme.palette.mode, aggregate, aggregateLabel]);
+  }, [seriesSignature, theme.palette.mode, aggregate, aggregateLabel, showLegend, beginAtZero]);
 
   // Feed the accumulated history into the existing chart on every poll, and
   // apply per-series visibility toggled from the legend.
@@ -149,22 +166,7 @@ const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel =
     <>
       <Box sx={{ position: 'relative', height: 240, width: '100%' }}>
         <canvas ref={canvasRef} />
-        {!hasData && (
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Collecting data…
-            </Typography>
-          </Box>
-        )}
+        {!hasData && <CollectingOverlay />}
       </Box>
     </>
   );
@@ -182,6 +184,8 @@ MetricChart.propTypes = {
   history: PropTypes.array,
   aggregate: PropTypes.bool,
   aggregateLabel: PropTypes.string,
+  showLegend: PropTypes.bool,
+  beginAtZero: PropTypes.bool,
 };
 
 export default MetricChart;

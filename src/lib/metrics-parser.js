@@ -133,17 +133,6 @@ export const indexByKey = (metrics) => {
   return index;
 };
 
-// Index a parsed metrics map as metricName -> Prometheus type ('gauge',
-// 'counter', …). The type is declared per metric name, so it applies to every
-// labelled series of that metric.
-export const indexTypesByName = (metrics) => {
-  const types = {};
-  for (const metric of Object.values(metrics || {})) {
-    types[metric.name] = metric.type;
-  }
-  return types;
-};
-
 // Counters are cumulative, so the meaningful quantity to plot is their rate of
 // change per second rather than the raw total. Gauges are plotted as-is.
 export const isCounter = (type) => type === 'counter';
