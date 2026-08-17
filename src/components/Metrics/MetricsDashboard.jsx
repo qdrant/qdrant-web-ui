@@ -240,7 +240,6 @@ function MetricsDashboard() {
       >
         <Tabs value={currentTab} onChange={(e, tab) => setCurrentTab(tab)} aria-label="Metrics tabs">
           <Tab label="Requests" value="requests" />
-          <Tab label="Collections" value="collections" />
           <Tab label="Memory & CPU" value="resources" />
         </Tabs>
         {/* Poll-interval selector is always shown; the scope control applies only
