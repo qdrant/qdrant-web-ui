@@ -1,24 +1,50 @@
-import React, { useMemo } from 'react';
-import { Alert, Box, Divider, Grid, Stack, Typography } from '@mui/material';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Box, Grid, Stack, Tab, Tabs, Typography } from '@mui/material';
 import MetricChart from './MetricChart';
-import MetricBarChart from './MetricBarChart';
 import LatencyHeatmap from './LatencyHeatmap';
 import StatTile from './StatTile';
 import PanelCard from './PanelCard';
-import CustomChartsDashboard from './CustomChartsDashboard';
+import MetricsScope from './MetricsScope';
+import { useClient } from '../../context/client-context';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
 import { listSeries, indexByKey, seriesLabel } from '../../lib/metrics-parser';
 
 const POLL_INTERVAL_MS = 5000;
-const MAX_POINTS = 120; // ~10 minutes at a 5s interval
+// The timeline grows for the whole session; this is only a memory safety limit
+// (beyond it the oldest history is decimated — see useMetricsHistory).
+const MAX_STORED_POINTS = 3000;
 
-// Big-number tiles (Grafana "stat" panels).
-const STAT_TILES = [
-  { label: 'Collections', key: 'collections_total' },
-  { label: 'Vectors', key: 'collections_vector_total' },
-  { label: 'Pending operations', key: 'pending_operations' },
-  { label: 'Cluster peers', key: 'cluster_peers_total' },
+// Big-number tiles for the Requests tab, keyed by `requestStats` fields.
+const REQUEST_TILES = [
+  { label: 'Requests/s', stat: 'rate' },
+  { label: 'Avg latency', stat: 'avgLatency', unit: 'seconds' },
+  { label: 'Error rate', stat: 'errorRate', unit: 'percent' },
+  { label: 'Total requests', stat: 'total' },
 ];
+
+const sumKeys = (values, keys) => keys.reduce((acc, k) => acc + (typeof values?.[k] === 'number' ? values[k] : 0), 0);
+
+const hasCollectionLabel = (entries) => entries.some((s) => s.labels.collection !== undefined);
+
+// CORS preflights: the browser sends one before most requests the UI makes, so
+// counting them doubles the traffic and drags the latency stats down.
+const isPreflight = (s) => s.labels.method === 'OPTIONS';
+
+// Narrow a family of series to one collection. Qdrant only labels the request
+// counters per collection, so a family without the label (the duration
+// histogram, for one) stays instance-wide and is returned untouched.
+const scopeToCollection = (entries, collection) =>
+  collection && hasCollectionLabel(entries) ? entries.filter((s) => s.labels.collection === collection) : entries;
+
+// Growth of a set of counters between two history points, or undefined when
+// there is no usable interval (too few samples, a gap, or a counter reset).
+const counterDelta = (history, keys, from, to) => {
+  if (!keys.length || !history[from] || !history[to]) return undefined;
+  const dt = (history[to].t - history[from].t) / 1000;
+  const dv = sumKeys(history[to].values, keys) - sumKeys(history[from].values, keys);
+  if (dt <= 0 || dv < 0) return undefined;
+  return { dv, dt };
+};
 
 // Format a histogram `le` bucket boundary (seconds) as a short latency label.
 const formatLe = (sec) => {
@@ -36,47 +62,124 @@ const toChartSeries = (entries) =>
 // Grafana dashboards (github.com/qdrant/prometheus-monitoring), bound to the
 // metrics a self-hosted instance actually exposes.
 function MetricsDashboard() {
-  const { snapshot, history, loading, error } = useMetricsHistory({
+  const [currentTab, setCurrentTab] = useState('requests');
+  const [scope, setScope] = useState('global');
+  const [collection, setCollection] = useState('');
+  const [collections, setCollections] = useState([]);
+  const { client: qdrantClient } = useClient();
+
+  const perCollection = scope === 'collection';
+  // Only filter once a collection is picked, so the panels never silently show
+  // instance-wide numbers under a collection heading.
+  const activeCollection = perCollection ? collection : '';
+
+  const { snapshot, history, error } = useMetricsHistory({
     recordAll: true,
     intervalMs: POLL_INTERVAL_MS,
-    maxPoints: MAX_POINTS,
+    maxPoints: MAX_STORED_POINTS,
+    perCollection,
   });
+
+  // The collection choice is mandatory in per-collection mode, so preselect the
+  // first one and keep the selection valid as collections come and go.
+  useEffect(() => {
+    if (!perCollection) return undefined;
+    let active = true;
+    qdrantClient
+      .getCollections()
+      .then(({ collections: found }) => {
+        if (!active) return;
+        const names = found.map((c) => c.name).sort((a, b) => a.localeCompare(b));
+        setCollections(names);
+        setCollection((current) => (names.includes(current) ? current : names[0] || ''));
+      })
+      .catch(() => active && setCollections([]));
+    return () => {
+      active = false;
+    };
+  }, [perCollection, qdrantClient]);
 
   const all = useMemo(() => listSeries(snapshot), [snapshot]);
   const latest = useMemo(() => indexByKey(snapshot), [snapshot]);
 
-  const restSeries = useMemo(() => all.filter((s) => s.name === 'rest_responses_total'), [all]);
-  const grpcSeries = useMemo(() => all.filter((s) => s.name === 'grpc_responses_total'), [all]);
-  const memorySeries = useMemo(() => all.filter((s) => /^memory_.*_bytes$/.test(s.name)), [all]);
-  const vectorSeries = useMemo(() => all.filter((s) => s.name === 'collections_vector_total'), [all]);
+  const restAll = useMemo(() => all.filter((s) => s.name === 'rest_responses_total' && !isPreflight(s)), [all]);
+  const restSeries = useMemo(() => scopeToCollection(restAll, activeCollection), [restAll, activeCollection]);
 
-  // Bar chart: total REST requests summed per endpoint (latest snapshot).
-  const requestsByEndpoint = useMemo(() => {
-    const sums = {};
-    restSeries.forEach((s) => {
-      const endpoint = s.labels.endpoint || s.name;
-      sums[endpoint] = (sums[endpoint] || 0) + (latest[s.key] || 0);
-    });
-    const entries = Object.entries(sums).sort((a, b) => b[1] - a[1]);
-    return { labels: entries.map((e) => e[0]), values: entries.map((e) => e[1]) };
-  }, [restSeries, latest]);
+  // Qdrant ignores `per_collection` on older versions, and when the feature is
+  // disabled in its config: the counters stay instance-wide. Say so rather than
+  // passing those numbers off as one collection's.
+  const perCollectionUnsupported = Boolean(activeCollection) && restAll.length > 0 && !hasCollectionLabel(restAll);
 
   // Latency-distribution heatmap: group the response-duration histogram's
   // `_bucket` series by their `le` boundary (across every endpoint/method/
   // status, matching Grafana's `sum by (le)`), ordered ascending.
+  const bucketSeries = useMemo(
+    () =>
+      all.filter(
+        (s) => /_responses_duration_seconds_bucket$/.test(s.name) && s.labels.le !== undefined && !isPreflight(s)
+      ),
+    [all]
+  );
+
   const latencyBuckets = useMemo(() => {
     const groups = new Map(); // le string -> { sec, keys[] }
-    all
-      .filter((s) => /_responses_duration_seconds_bucket$/.test(s.name) && s.labels.le !== undefined)
-      .forEach((s) => {
-        const le = s.labels.le;
-        if (!groups.has(le)) groups.set(le, { sec: le === '+Inf' ? Infinity : Number(le), keys: [] });
-        groups.get(le).keys.push(s.key);
-      });
+    scopeToCollection(bucketSeries, activeCollection).forEach((s) => {
+      const le = s.labels.le;
+      if (!groups.has(le)) groups.set(le, { sec: le === '+Inf' ? Infinity : Number(le), keys: [] });
+      groups.get(le).keys.push(s.key);
+    });
     return [...groups.entries()]
       .sort((a, b) => a[1].sec - b[1].sec)
       .map(([, g]) => ({ label: formatLe(g.sec), keys: g.keys }));
-  }, [all]);
+  }, [bucketSeries, activeCollection]);
+
+  // Qdrant may report the duration histogram instance-wide even in
+  // per-collection mode; say so rather than implying the panel is filtered.
+  const latencyIsGlobal = Boolean(activeCollection) && !hasCollectionLabel(bucketSeries);
+
+  // Each scope keeps its own history buffer (see useMetricsHistory), so `history`
+  // already holds only this scope's points. This still drops any point taken
+  // before the selected series existed — e.g. a collection created mid-session —
+  // so a counter delta is never measured against a missing value and read as an
+  // enormous spike.
+  const requestsHistory = useMemo(() => {
+    const keys = [...restSeries.map((s) => s.key), ...latencyBuckets.flatMap((b) => b.keys)];
+    if (!keys.length) return history;
+    return history.filter((point) => keys.some((key) => point.values[key] != null));
+  }, [history, restSeries, latencyBuckets]);
+
+  // Stats for the Requests tab: throughput right now, average latency across
+  // the retained window (total time spent / requests served, from the duration
+  // histogram) and the lifetime totals behind the error share.
+  const requestStats = useMemo(() => {
+    const restKeys = restSeries.map((s) => s.key);
+    const errorKeys = restSeries.filter((s) => /^[45]/.test(s.labels.status || '')).map((s) => s.key);
+    const keysEndingIn = (suffix) =>
+      scopeToCollection(
+        all.filter((s) => s.name.endsWith(`_responses_duration_seconds_${suffix}`) && !isPreflight(s)),
+        activeCollection
+      ).map((s) => s.key);
+    const spentKeys = keysEndingIn('sum');
+    const servedKeys = keysEndingIn('count');
+    const avgOf = (spent, served) => (served > 0 ? spent / served : undefined);
+
+    const last = requestsHistory.length - 1;
+    const throughput = counterDelta(requestsHistory, restKeys, last - 1, last);
+    const spent = counterDelta(requestsHistory, spentKeys, 0, last);
+    const served = counterDelta(requestsHistory, servedKeys, 0, last);
+    const total = sumKeys(latest, restKeys);
+
+    return {
+      rate: throughput ? throughput.dv / throughput.dt : undefined,
+      // Average over the window when there was traffic in it, otherwise the
+      // instance's lifetime average so an idle instance still shows a value.
+      avgLatency:
+        (spent && served && avgOf(spent.dv, served.dv)) ??
+        avgOf(sumKeys(latest, spentKeys), sumKeys(latest, servedKeys)),
+      errorRate: total > 0 ? (sumKeys(latest, errorKeys) / total) * 100 : undefined,
+      total: restKeys.length ? total : undefined,
+    };
+  }, [restSeries, all, latest, requestsHistory, activeCollection]);
 
   return (
     <Box>
@@ -95,57 +198,75 @@ function MetricsDashboard() {
         </Alert>
       )}
 
-      {/* Stat tiles */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {STAT_TILES.map((tile) => (
-          <Grid key={tile.key} size={{ xs: 6, sm: 3 }}>
-            <StatTile label={tile.label} value={loading ? undefined : latest[tile.key]} />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Charts */}
-      <Stack spacing={3}>
-        <PanelCard title="REST request rate" subtitle="Requests per second, by endpoint and status">
-          <MetricChart series={toChartSeries(restSeries)} history={history} showLegend />
-        </PanelCard>
-
-        <PanelCard
-          title="Latency distribution"
-          subtitle="Response time by bucket, requests/s (from the duration histogram)"
-        >
-          <LatencyHeatmap buckets={latencyBuckets} history={history} />
-        </PanelCard>
-
-        <PanelCard title="gRPC request rate" subtitle="Requests per second, by endpoint">
-          <MetricChart series={toChartSeries(grpcSeries)} history={history} />
-        </PanelCard>
-
-        <PanelCard title="Total requests by endpoint" subtitle="Cumulative REST responses">
-          <MetricBarChart labels={requestsByEndpoint.labels} values={requestsByEndpoint.values} />
-        </PanelCard>
-
-        <PanelCard title="Approximate vector count" subtitle="Total vectors across collections">
-          <MetricChart series={toChartSeries(vectorSeries)} history={history} />
-        </PanelCard>
-
-        <PanelCard title="Memory usage">
-          <MetricChart series={toChartSeries(memorySeries)} history={history} />
-        </PanelCard>
+      {/* Charts, grouped by tab, for the instance or a single collection. Below
+          lg the scope control drops to its own row so toggling "Per collection"
+          (wider than "Global") never reflows the tabs. */}
+      <Stack
+        direction={{ xs: 'column', lg: 'row' }}
+        alignItems={{ xs: 'flex-start', lg: 'center' }}
+        justifyContent="space-between"
+        sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, gap: 2 }}
+      >
+        <Tabs value={currentTab} onChange={(e, tab) => setCurrentTab(tab)} aria-label="Metrics tabs">
+          <Tab label="Requests" value="requests" />
+          <Tab label="Collections" value="collections" />
+          <Tab label="Memory & CPU" value="resources" />
+        </Tabs>
+        <Box sx={{ pb: 1 }}>
+          <MetricsScope
+            scope={scope}
+            onScopeChange={setScope}
+            collection={collection}
+            collections={collections}
+            onCollectionChange={setCollection}
+          />
+        </Box>
       </Stack>
 
-      {/* TEMPORARY: the earlier custom-chart builder, reconnected at the end of
-          the page. Embedded (its own page header suppressed). */}
-      <Divider sx={{ my: 4 }} />
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h5" component="h2">
-          Custom charts
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Build an ad-hoc chart from any exposed metric.
-        </Typography>
-      </Box>
-      <CustomChartsDashboard embedded />
+      {currentTab === 'requests' && perCollection && !collection && (
+        <Alert severity="info">Select a collection to see its request metrics.</Alert>
+      )}
+
+      {currentTab === 'requests' && !(perCollection && !collection) && (
+        <Stack spacing={3}>
+          {perCollectionUnsupported && (
+            <Alert severity="warning">
+              This Qdrant reports request metrics instance-wide, so the panels below are not filtered by collection.
+            </Alert>
+          )}
+
+          <Grid container spacing={2}>
+            {REQUEST_TILES.map((tile) => (
+              <Grid key={tile.stat} size={{ xs: 6, sm: 3 }}>
+                <StatTile label={tile.label} value={requestStats[tile.stat]} unit={tile.unit} />
+              </Grid>
+            ))}
+          </Grid>
+
+          <PanelCard
+            title="Request Rate"
+            subtitle={`Total requests per second, all endpoints and statuses${
+              activeCollection && !perCollectionUnsupported ? ` · ${activeCollection}` : ''
+            }`}
+          >
+            <MetricChart
+              series={toChartSeries(restSeries)}
+              history={requestsHistory}
+              aggregate
+              aggregateLabel="Requests"
+            />
+          </PanelCard>
+
+          <PanelCard
+            title="Latency distribution"
+            subtitle={`Response time by bucket, requests/s (from the duration histogram)${
+              latencyIsGlobal ? ' · all collections' : ''
+            }`}
+          >
+            <LatencyHeatmap buckets={latencyBuckets} history={requestsHistory} />
+          </PanelCard>
+        </Stack>
+      )}
     </Box>
   );
 }

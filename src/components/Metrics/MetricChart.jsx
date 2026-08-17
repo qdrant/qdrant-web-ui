@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -9,24 +9,21 @@ import { seriesColor } from './colors';
 const formatTick = (t) =>
   new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-const formatStat = (value, unit, rate) => (value == null ? '—' : `${formatValue(value, unit)}${rate ? '/s' : ''}`);
-
 // A single time-series line chart rendering one or more metric series that
 // share an X axis (the poll timestamps accumulated by useMetricsHistory).
-// Pass `showLegend` to render the Grafana-style table legend (Name / Mean / Max)
-// below the chart; clicking a row toggles that series.
-const MetricChart = ({ series, history = false }) => {
+// Pass `aggregate` to collapse every series into one line: the counters are
+// summed per timestamp and rated once — i.e. `rate(sum(...))`, the same as
+// dropping the per-request labels and treating them as one series.
+const MetricChart = ({ series, history = [], aggregate = false, aggregateLabel = 'Total' }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);
   const chartRef = useRef(null);
-  const [hidden] = useState(() => new Set());
 
   // Signature that identifies the current set of series; a change means the
   // chart's datasets must be rebuilt rather than merely re-fed with data. The
   // type is part of it so the chart rebuilds once the first snapshot resolves a
   // series' type (gauge vs counter changes how it's plotted and labelled).
   const seriesSignature = useMemo(() => series.map((s) => `${s.key}:${s.type || ''}`).join('|'), [series]);
-  const hiddenSignature = [...hidden].join('|');
   // The Y axis carries a single unit; use the first series' unit for it while
   // tooltips format each point by its own unit.
   const axisUnit = series.length ? detectUnit(series[0].name) : 'number';
@@ -42,6 +39,33 @@ const MetricChart = ({ series, history = false }) => {
     return isCounter(s.type) ? toRatePerSecond(points) : points.map((point) => point.v);
   };
 
+  // Aggregate: sum the raw counter values across all series at each timestamp
+  // into one synthetic counter, then take a single rate. This is exactly
+  // "erase the per-request labels and treat them as one series" — `rate(sum(x))`.
+  // Within a scope the series set is stable, so it equals `sum(rate(x))` but is
+  // simpler; toRatePerSecond still drops the first point and any counter reset.
+  const computeTotal = () => {
+    const summed = history.map((point) => ({
+      t: point.t,
+      v: series.reduce((sum, s) => {
+        const value = point.values[s.key];
+        return typeof value === 'number' ? sum + value : sum;
+      }, 0),
+    }));
+    return toRatePerSecond(summed);
+  };
+
+  const datasetsData = () => (aggregate ? [computeTotal()] : series.map(computeData));
+
+  // One dataset per series, or a single summed one in aggregate mode.
+  const lines = aggregate
+    ? [{ label: allRate ? `${aggregateLabel} (rate)` : aggregateLabel, unit: axisUnit, rate: allRate }]
+    : series.map((s) => ({
+        label: isCounter(s.type) ? `${s.label} (rate)` : s.label,
+        unit: detectUnit(s.name),
+        rate: isCounter(s.type),
+      }));
+
   // (Re)create the chart when the series set or the theme mode changes.
   useEffect(() => {
     if (!canvasRef.current) return undefined;
@@ -52,11 +76,11 @@ const MetricChart = ({ series, history = false }) => {
       type: 'line',
       data: {
         labels: [],
-        datasets: series.map((s, i) => ({
-          label: isCounter(s.type) ? `${s.label} (rate)` : s.label,
+        datasets: lines.map((line, i) => ({
+          label: line.label,
           data: [],
-          unit: detectUnit(s.name),
-          rate: isCounter(s.type),
+          unit: line.unit,
+          rate: line.rate,
           borderColor: seriesColor(theme, i).main,
           backgroundColor: seriesColor(theme, i).main,
           borderWidth: 2,
@@ -104,7 +128,7 @@ const MetricChart = ({ series, history = false }) => {
       chart.destroy();
       chartRef.current = null;
     };
-  }, [seriesSignature, theme.palette.mode]);
+  }, [seriesSignature, theme.palette.mode, aggregate, aggregateLabel]);
 
   // Feed the accumulated history into the existing chart on every poll, and
   // apply per-series visibility toggled from the legend.
@@ -112,16 +136,14 @@ const MetricChart = ({ series, history = false }) => {
     const chart = chartRef.current;
     if (!chart) return;
     chart.data.labels = history.map((point) => formatTick(point.t));
-    series.forEach((s, i) => {
-      if (chart.data.datasets[i]) {
-        chart.data.datasets[i].data = computeData(s);
-        chart.data.datasets[i].hidden = hidden.has(s.key);
-      }
+    datasetsData().forEach((data, i) => {
+      if (!chart.data.datasets[i]) return;
+      chart.data.datasets[i].data = data;
     });
     chart.update('none');
-  }, [history, seriesSignature, hiddenSignature]);
+  }, [history, seriesSignature, aggregate]);
 
-  const hasData = series.some((s) => computeData(s).some((v) => v != null));
+  const hasData = datasetsData().some((data) => data.some((v) => v != null));
 
   return (
     <>
@@ -157,87 +179,9 @@ MetricChart.propTypes = {
       type: PropTypes.string,
     })
   ).isRequired,
-  history: PropTypes.array.isRequired,
-  showLegend: PropTypes.bool,
-};
-
-// Grafana-style table legend: colored line marker + name, with right-aligned
-// Mean/Max stat columns. Scrolls when there are many series; clicking a row
-// toggles that series on the chart.
-const STAT_WIDTH = 96;
-const MARKER_SLOT = 22;
-
-function ChartLegend({ rows, hidden, onToggle }) {
-  const theme = useTheme();
-  const headColor = theme.palette.primary.main;
-  const statCell = {
-    width: STAT_WIDTH,
-    flexShrink: 0,
-    pl: 1,
-    textAlign: 'right',
-    whiteSpace: 'nowrap',
-    fontVariantNumeric: 'tabular-nums',
-  };
-
-  return (
-    <Box sx={{ mt: 1.5, maxHeight: 168, overflowY: 'auto', fontSize: 13, lineHeight: 1.6 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          px: 0.5,
-          py: 0.25,
-          position: 'sticky',
-          top: 0,
-          bgcolor: 'background.paper',
-          borderBottom: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Box sx={{ width: MARKER_SLOT, flexShrink: 0 }} />
-        <Box sx={{ flexGrow: 1, minWidth: 0, color: headColor, fontWeight: 600 }}>Name</Box>
-        <Box sx={{ ...statCell, color: headColor, fontWeight: 600 }}>Mean</Box>
-        <Box sx={{ ...statCell, color: headColor, fontWeight: 600 }}>Max</Box>
-      </Box>
-      {rows.map((row) => {
-        const isHidden = hidden.has(row.key);
-        return (
-          <Box
-            key={row.key}
-            onClick={() => onToggle(row.key)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              px: 0.5,
-              py: 0.25,
-              cursor: 'pointer',
-              borderRadius: 1,
-              opacity: isHidden ? 0.4 : 1,
-              '&:hover': { bgcolor: 'action.hover' },
-            }}
-          >
-            <Box sx={{ width: MARKER_SLOT, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ width: 14, height: 3, borderRadius: 1, bgcolor: row.color }} />
-            </Box>
-            <Typography
-              variant="body2"
-              noWrap
-              sx={{ flexGrow: 1, minWidth: 0, textDecoration: isHidden ? 'line-through' : 'none' }}
-            >
-              {row.label}
-            </Typography>
-            <Box sx={{ ...statCell, color: 'text.secondary' }}>{formatStat(row.mean, row.unit, row.rate)}</Box>
-            <Box sx={{ ...statCell, color: 'text.secondary' }}>{formatStat(row.max, row.unit, row.rate)}</Box>
-          </Box>
-        );
-      })}
-    </Box>
-  );
-}
-
-ChartLegend.propTypes = {
-  rows: PropTypes.array.isRequired,
-  hidden: PropTypes.instanceOf(Set).isRequired,
-  onToggle: PropTypes.func.isRequired,
+  history: PropTypes.array,
+  aggregate: PropTypes.bool,
+  aggregateLabel: PropTypes.string,
 };
 
 export default MetricChart;

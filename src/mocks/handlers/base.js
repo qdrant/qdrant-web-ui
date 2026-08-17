@@ -4,7 +4,15 @@
 // Don't use these mocks for testing! They're a developer workflow aid.
 import { http, HttpResponse } from 'msw';
 import { BASE_URL, ok, acknowledged } from '../lib';
-import { COLLECTION, POINTS, makeTelemetry, makeCollectionInfo, makeMetrics, singleNodeClusterInfo } from '../data';
+import {
+  COLLECTION,
+  COLLECTIONS,
+  POINTS,
+  makeTelemetry,
+  makeCollectionInfo,
+  makeMetrics,
+  singleNodeClusterInfo,
+} from '../data';
 
 // Quotas shown on the Settings page. Mutable so that saving in the UI sticks
 // for the session. Single node, so usage is reported via `usage` (no `peers`).
@@ -32,7 +40,12 @@ export const baseHandlers = [
   ),
 
   // Prometheus metrics (Metrics dashboard). Plain text, not the JSON envelope.
-  http.get(`${BASE_URL}/metrics`, () => new HttpResponse(makeMetrics(), { headers: { 'Content-Type': 'text/plain' } })),
+  // `?per_collection=true` swaps the global request counters for per-collection
+  // ones, as the real endpoint does.
+  http.get(`${BASE_URL}/metrics`, ({ request }) => {
+    const perCollection = new URL(request.url).searchParams.get('per_collection') === 'true';
+    return new HttpResponse(makeMetrics({ perCollection }), { headers: { 'Content-Type': 'text/plain' } });
+  }),
 
   http.get(`${BASE_URL}/issues`, () => ok({ issues: [] })),
   http.delete(`${BASE_URL}/issues`, () => ok(true)),
@@ -54,13 +67,13 @@ export const baseHandlers = [
   http.get(`${BASE_URL}/cluster`, () => ok({ status: 'disabled' })),
 
   // --- collections ---
-  http.get(`${BASE_URL}/collections`, () => ok({ collections: [{ name: COLLECTION }] })),
+  http.get(`${BASE_URL}/collections`, () => ok({ collections: COLLECTIONS.map((name) => ({ name })) })),
   http.get(`${BASE_URL}/aliases`, () => ok({ aliases: [] })),
   http.get(`${BASE_URL}/collections/:collection`, () => ok(makeCollectionInfo())),
-  // Only the single mock collection exists; report everything else as absent
-  // so the create form doesn't wrongly think new names already exist.
+  // Only the mock collections exist; report everything else as absent so the
+  // create form doesn't wrongly think new names already exist.
   http.get(`${BASE_URL}/collections/:collection/exists`, ({ params }) =>
-    ok({ exists: params.collection === COLLECTION })
+    ok({ exists: COLLECTIONS.includes(params.collection) })
   ),
   http.get(`${BASE_URL}/collections/:collection/aliases`, () => ok({ aliases: [] })),
   http.get(`${BASE_URL}/collections/:collection/cluster`, () => ok(singleNodeClusterInfo)),
