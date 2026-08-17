@@ -9,8 +9,9 @@ import { formatValue } from '../../lib/metrics-parser';
 // The matrix chart type isn't part of chart.js/auto, so register it once.
 Chart.register(MatrixController, MatrixElement);
 
-// Show at most this many time columns so cells stay readable.
-const MAX_COLUMNS = 30;
+// The timeline grows for the whole session; aggregate it into at most this many
+// columns so cells stay readable however long the page stays open.
+const TARGET_COLUMNS = 60;
 
 const formatTick = (t) =>
   new Date(t).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -69,38 +70,54 @@ const LatencyHeatmap = ({ buckets, history }) => {
   // Build the matrix cells and the value range once, shared by the chart (for
   // color scaling) and the gradient legend (for its min/max labels).
   const matrix = useMemo(() => {
-    // Keep one extra column so the first shown rate has a predecessor to diff.
-    const hist = history.slice(-(MAX_COLUMNS + 1));
+    const n = history.length;
     const rowLabels = buckets.map((b) => b.label);
+    const empty = {
+      labels: [],
+      rowLabels,
+      data: [],
+      min: 0,
+      max: 0,
+      cols: 1,
+      nRows: Math.max(rowLabels.length, 1),
+      hasData: false,
+    };
+    if (n < 2 || buckets.length === 0) return empty;
 
-    // Cumulative count per bucket per time point (summed across series sharing
-    // the same `le`, e.g. all endpoints/methods/statuses).
-    const cum = hist.map((point) =>
+    // Cumulative count per bucket at one history point (summed across the series
+    // that share each `le`, e.g. all endpoints/methods/statuses).
+    const cumAt = (point) =>
       buckets.map((b) =>
-        b.keys.reduce((sum, key) => {
-          const v = point.values[key];
-          return sum + (typeof v === 'number' ? v : 0);
-        }, 0)
-      )
-    );
+        b.keys.reduce((sum, key) => sum + (typeof point.values[key] === 'number' ? point.values[key] : 0), 0)
+      );
 
-    // Un-cumulate consecutive `le` into per-band counts, then take the rate of
-    // change versus the previous poll — the requests/s that fell in each band.
+    // Aggregate the whole (growing) timeline into at most TARGET_COLUMNS columns:
+    // pick evenly spaced boundary points and rate each column over the span
+    // between them. As history grows a column just covers more polls, so cells
+    // never shrink to slivers.
+    const columns = Math.min(TARGET_COLUMNS, n - 1);
+    const boundaries = [];
+    for (let j = 0; j <= columns; j++) boundaries.push(Math.round((j * (n - 1)) / columns));
+    const cums = boundaries.map((idx) => cumAt(history[idx]));
+
+    // Un-cumulate consecutive `le` into per-band counts, then rate the column's
+    // span — the average requests/s that fell in each band over that window.
     const data = [];
     const labels = [];
     let min = Infinity;
     let max = 0;
-    for (let t = 1; t < hist.length; t++) {
-      const dt = (hist[t].t - hist[t - 1].t) / 1000;
-      const label = formatTick(hist[t].t);
+    for (let j = 0; j < columns; j++) {
+      const dt = (history[boundaries[j + 1]].t - history[boundaries[j]].t) / 1000;
+      const label = formatTick(history[boundaries[j + 1]].t);
       labels.push(label);
       for (let i = 0; i < buckets.length; i++) {
-        const bandNow = cum[t][i] - (i > 0 ? cum[t][i - 1] : 0);
-        const bandPrev = cum[t - 1][i] - (i > 0 ? cum[t - 1][i - 1] : 0);
+        const bandNow = cums[j + 1][i] - (i > 0 ? cums[j + 1][i - 1] : 0);
+        const bandPrev = cums[j][i] - (i > 0 ? cums[j][i - 1] : 0);
         let rate = dt > 0 ? (bandNow - bandPrev) / dt : 0;
         if (!Number.isFinite(rate) || rate < 0) rate = 0; // counter reset / gap
         // Every cell is drawn (so the grid shows), but empty ones (rate 0) get a
-        // transparent fill; only non-zero rates drive the color scale / legend.
+        // transparent fill and a border; only non-zero rates drive the color
+        // scale / legend.
         data.push({ x: label, y: rowLabels[i], v: rate });
         if (rate > 0) {
           if (rate < min) min = rate;
@@ -118,7 +135,7 @@ const LatencyHeatmap = ({ buckets, history }) => {
       max,
       cols: Math.max(labels.length, 1),
       nRows: Math.max(rowLabels.length, 1),
-      hasData: labels.length > 0 && buckets.length > 0,
+      hasData: labels.length > 0,
     };
   }, [history, buckets]);
 
@@ -127,6 +144,7 @@ const LatencyHeatmap = ({ buckets, history }) => {
   useEffect(() => {
     if (!canvasRef.current) return undefined;
     const textColor = theme.palette.text.secondary;
+    const gridColor = theme.palette.divider;
     const { lo, hi } = ramp;
     const { labels, rowLabels, data, min, max, cols, nRows } = matrix;
 
@@ -144,9 +162,13 @@ const LatencyHeatmap = ({ buckets, history }) => {
               const norm = max > min ? (v - min) / (max - min) : 1;
               return mix(lo, hi, norm);
             },
-            borderWidth: 0,
-            width: ({ chart: c }) => (c.chartArea?.width || 0) / cols - 1,
-            height: ({ chart: c }) => (c.chartArea?.height || 0) / nRows - 1,
+            // Empty cells are outlined so the grid stays readable. The border is
+            // drawn inside the cell, so neighbours share a seam without gaps.
+            borderWidth: 1,
+            borderColor: (ctx) => (ctx.raw?.v ? 'transparent' : gridColor),
+            // Cells tile the plot area exactly — no spacing between them.
+            width: ({ chart: c }) => (c.chartArea?.width || 0) / cols,
+            height: ({ chart: c }) => (c.chartArea?.height || 0) / nRows,
           },
         ],
       },

@@ -1,6 +1,9 @@
 // Shared mock data and builders used across scenarios. Tweak the numbers here
 // and every scenario that reuses them stays consistent.
 export const COLLECTION = 'demo_collection';
+// Every collection the mock instance knows about. More than one so features that
+// pick a collection (e.g. the Metrics per-collection scope) can be exercised.
+export const COLLECTIONS = [COLLECTION, 'products_index', 'support_docs'];
 export const VECTOR_SIZE = 4;
 
 // A few points with a simple payload. Enough for the Points tab, faceting,
@@ -29,7 +32,10 @@ export const makeTelemetry = ({ hasApiKey = false, clusterEnabled = false, resha
 // GET /metrics — Prometheus text exposition format. Values wobble over time so
 // the live Metrics dashboard shows movement in mock mode: gauges oscillate
 // around a baseline and counters grow monotonically with elapsed time.
-export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {}) => {
+// `perCollection` mirrors `/metrics?per_collection=true`: Qdrant then labels the
+// request counters with the collection they belong to and stops reporting the
+// unlabelled global ones.
+export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1', perCollection = false } = {}) => {
   const now = Date.now();
   const t = now / 1000;
   const wobble = (base, amp, periodSec, phase = 0) =>
@@ -50,6 +56,16 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {})
   // endpoint's requests cluster around, `sigma` the spread — together they
   // shape the histogram so the latency-distribution heatmap has realistic bands.
   const restEndpoints = [
+    // CORS preflights: real Qdrant emits these; the dashboard filters them out.
+    {
+      method: 'OPTIONS',
+      endpoint: '/collections/{name}/points',
+      rate: 8,
+      base: 3200,
+      lat: [13, 4, 20],
+      center: 0,
+      sigma: 0.6,
+    },
     { method: 'GET', endpoint: '/collections', rate: 3, base: 1200, lat: [1200, 300, 25], center: 0, sigma: 1 },
     {
       method: 'POST',
@@ -88,15 +104,24 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {})
       sigma: 1,
     },
   ];
-  const restTotals = restEndpoints.map(
-    (e) => `rest_responses_total{method="${e.method}",endpoint="${e.endpoint}",status="2xx"} ${counter(e.base, e.rate)}`
-  );
-  // A handful of non-2xx responses so "requests by status" has variety.
-  restTotals.push(
-    `rest_responses_total{method="POST",endpoint="/collections/{name}/points/search",status="4xx"} ${counter(90, 0.3)}`,
-    `rest_responses_total{method="PUT",endpoint="/collections/{name}/points",status="4xx"} ${counter(40, 0.1)}`,
-    `rest_responses_total{method="POST",endpoint="/collections/{name}/points/search",status="5xx"} ${counter(6, 0.02)}`
-  );
+  // One stream of request counters per collection when asked for per-collection
+  // metrics, otherwise a single unlabelled global stream. Each collection takes a
+  // different share of the traffic, so switching collection visibly changes the
+  // charts.
+  const streams = perCollection
+    ? COLLECTIONS.map((name, i) => ({ label: `,collection="${name}"`, scale: [1, 0.45, 0.15][i] ?? 0.1 }))
+    : [{ label: '', scale: 1 }];
+
+  // A handful of non-2xx responses so error rate / status breakdowns have variety.
+  const restErrors = [
+    { method: 'POST', endpoint: '/collections/{name}/points/search', status: '4xx', base: 90, rate: 0.3 },
+    { method: 'PUT', endpoint: '/collections/{name}/points', status: '4xx', base: 40, rate: 0.1 },
+    { method: 'POST', endpoint: '/collections/{name}/points/search', status: '5xx', base: 6, rate: 0.02 },
+  ];
+  const restTotal = ({ method, endpoint, status = '2xx', base, rate }, stream) =>
+    `rest_responses_total{method="${method}",endpoint="${endpoint}",status="${status}"${stream.label}} ` +
+    `${counter(Math.round(base * stream.scale), rate * stream.scale)}`;
+  const restTotals = streams.flatMap((stream) => [...restEndpoints, ...restErrors].map((e) => restTotal(e, stream)));
   const restLatency = restEndpoints.map(
     (e) =>
       `rest_responses_avg_duration_seconds{method="${e.method}",endpoint="${e.endpoint}"} ${latSeconds(
@@ -107,9 +132,10 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {})
   );
 
   // Prometheus histogram: cumulative `_bucket{le}` counts (+ `_sum`, `_count`)
-  // per endpoint. Counts grow with elapsed time and are spread across buckets by
-  // a Gaussian kernel around each endpoint's `center`, so `rate(bucket)` yields
-  // a realistic latency-distribution heatmap.
+  // per endpoint, per stream (Qdrant labels the histogram per collection too).
+  // Counts grow with elapsed time and are spread across buckets by a Gaussian
+  // kernel around each endpoint's `center`, so `rate(bucket)` yields a realistic
+  // latency-distribution heatmap.
   const LE = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.5, 1, 5, 10, 50];
   const bandCdf = (center, sigma) => {
     const n = LE.length + 1; // finite buckets + "+Inf"
@@ -118,18 +144,20 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {})
     let acc = 0;
     return weights.map((w) => (acc += w / total));
   };
-  const restHistogram = restEndpoints.flatMap((e) => {
-    const count = counter(e.base, e.rate);
-    const cdf = bandCdf(e.center, e.sigma);
-    const labels = `method="${e.method}",endpoint="${e.endpoint}",status="2xx"`;
-    const lines = LE.map(
-      (le, i) => `rest_responses_duration_seconds_bucket{${labels},le="${le}"} ${Math.round(count * cdf[i])}`
-    );
-    lines.push(`rest_responses_duration_seconds_bucket{${labels},le="+Inf"} ${count}`);
-    lines.push(`rest_responses_duration_seconds_sum{${labels}} ${((count * e.lat[0]) / 1e6).toFixed(6)}`);
-    lines.push(`rest_responses_duration_seconds_count{${labels}} ${count}`);
-    return lines;
-  });
+  const restHistogram = streams.flatMap((stream) =>
+    restEndpoints.flatMap((e) => {
+      const count = counter(Math.round(e.base * stream.scale), e.rate * stream.scale);
+      const cdf = bandCdf(e.center, e.sigma);
+      const labels = `method="${e.method}",endpoint="${e.endpoint}",status="2xx"${stream.label}`;
+      const lines = LE.map(
+        (le, i) => `rest_responses_duration_seconds_bucket{${labels},le="${le}"} ${Math.round(count * cdf[i])}`
+      );
+      lines.push(`rest_responses_duration_seconds_bucket{${labels},le="+Inf"} ${count}`);
+      lines.push(`rest_responses_duration_seconds_sum{${labels}} ${((count * e.lat[0]) / 1e6).toFixed(6)}`);
+      lines.push(`rest_responses_duration_seconds_count{${labels}} ${count}`);
+      return lines;
+    })
+  );
 
   // gRPC endpoints: request counters and avg latency.
   const grpcEndpoints = [
@@ -137,8 +165,12 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1' } = {})
     { endpoint: '/qdrant.Points/Upsert', rate: 2, base: 900, lat: [3800, 1000, 27] },
     { endpoint: '/qdrant.Collections/Get', rate: 0.5, base: 300, lat: [900, 250, 24] },
   ];
-  const grpcTotals = grpcEndpoints.map(
-    (e) => `grpc_responses_total{endpoint="${e.endpoint}"} ${counter(e.base, e.rate)}`
+  const grpcTotals = streams.flatMap((stream) =>
+    grpcEndpoints.map(
+      (e) =>
+        `grpc_responses_total{endpoint="${e.endpoint}"${stream.label}} ` +
+        `${counter(Math.round(e.base * stream.scale), e.rate * stream.scale)}`
+    )
   );
   const grpcLatency = grpcEndpoints.map(
     (e) => `grpc_responses_avg_duration_seconds{endpoint="${e.endpoint}"} ${latSeconds(e.lat[0], e.lat[1], e.lat[2])}`

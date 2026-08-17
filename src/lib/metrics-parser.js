@@ -28,6 +28,7 @@ export const buildSeriesKey = (name, labels) => {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}="${v}"`)
     .join(',');
+  // console.log(`${name}{${inner}}`)
   return `${name}{${inner}}`;
 };
 
@@ -183,6 +184,8 @@ export const formatValue = (value, unit) => {
       return prettyBytes(value);
     case 'seconds':
       return formatSeconds(value);
+    case 'percent':
+      return `${formatNumber(value)}%`;
     default:
       return formatNumber(value);
   }
