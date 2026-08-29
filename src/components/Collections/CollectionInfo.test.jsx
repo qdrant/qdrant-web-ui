@@ -44,10 +44,10 @@ const advanceTimers = async (ms) => {
 
 const selectInterval = async (label) => {
   await act(async () => {
-    fireEvent.mouseDown(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByLabelText('Auto refresh interval'));
   });
   await act(async () => {
-    fireEvent.click(screen.getByRole('option', { name: label }));
+    fireEvent.click(screen.getByRole('menuitem', { name: label }));
   });
 };
 

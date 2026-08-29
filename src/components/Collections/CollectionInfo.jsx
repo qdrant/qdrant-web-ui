@@ -1,9 +1,9 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardContent, IconButton, MenuItem, Select, Tooltip } from '@mui/material';
+import { Box, Button, CardContent, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { Clock } from 'lucide-react';
+import { Check, ChevronDown, Clock } from 'lucide-react';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
@@ -50,6 +50,10 @@ export const CollectionInfo = ({ collectionName }) => {
   const [addMetadataOpen, setAddMetadataOpen] = useState(false);
   const [createIndexOpen, setCreateIndexOpen] = useState(false);
   const [refreshIntervalMs, setRefreshIntervalMs] = useState(0);
+  const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
+  const refreshMenuOpen = Boolean(refreshAnchorEl);
+  const refreshIntervalLabel =
+    REFRESH_INTERVAL_OPTIONS.find(({ value }) => value === refreshIntervalMs)?.label || 'Off';
 
   const fetchClusterInfo = (silent = false) => {
     if (isRestricted) {
@@ -164,24 +168,39 @@ export const CollectionInfo = ({ collectionName }) => {
               triggerOptimizersDisabled={triggerOptimizersDisabled}
             />
             <CopyButton text={bigIntJSON.stringify(collection)} />
-            <Tooltip title="Auto refresh interval">
-              <Box display="flex" alignItems="center" gap={0.5}>
-                <Clock size={16} />
-                <Select
-                  value={refreshIntervalMs}
-                  onChange={(e) => setRefreshIntervalMs(e.target.value)}
-                  size="small"
-                  aria-label="Auto refresh interval"
-                  sx={{ minWidth: 72 }}
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<Clock size={16} />}
+              endIcon={<ChevronDown size={16} />}
+              onClick={(e) => setRefreshAnchorEl(e.currentTarget)}
+              aria-label="Auto refresh interval"
+              aria-haspopup="true"
+              aria-expanded={refreshMenuOpen ? 'true' : undefined}
+              sx={{ py: 0.75, mb: 0.2 }}
+            >
+              {refreshIntervalLabel}
+            </Button>
+            <Menu
+              anchorEl={refreshAnchorEl}
+              open={refreshMenuOpen}
+              onClose={() => setRefreshAnchorEl(null)}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              {REFRESH_INTERVAL_OPTIONS.map(({ value, label }) => (
+                <MenuItem
+                  key={value}
+                  value={value}
+                  selected={value === refreshIntervalMs}
+                  onClick={() => setRefreshIntervalMs(value)}
+                  sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}
                 >
-                  {REFRESH_INTERVAL_OPTIONS.map(({ value, label }) => (
-                    <MenuItem key={value} value={value}>
-                      {label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
-            </Tooltip>
+                  {label}
+                  {value === refreshIntervalMs && <Check size={16} />}
+                </MenuItem>
+              ))}
+            </Menu>
             <Tooltip title="Refresh collection info">
               <IconButton
                 size="small"
