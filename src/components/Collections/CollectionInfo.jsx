@@ -1,6 +1,18 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, CardContent, IconButton, Menu, MenuItem } from '@mui/material';
+import {
+  Box,
+  Button,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+} from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Check, ChevronDown, Clock } from 'lucide-react';
@@ -41,6 +53,47 @@ const REFRESH_INTERVAL_OPTIONS = [
   { value: 300_000, label: '5m' },
 ];
 
+const INTERVAL_UNITS = { ms: 1, s: 1000, m: 60_000, h: 3_600_000 };
+
+/**
+ * Parse a user-typed refresh interval like "45s", "2m", "500ms" or "1h".
+ * A bare number is treated as seconds. Returns milliseconds, or null when invalid.
+ *
+ * @param {string} text - raw input from the custom interval dialog
+ * @return {number|null} interval in milliseconds
+ */
+export const parseRefreshInterval = (text) => {
+  const match = /^\s*(\d+(?:\.\d+)?)\s*(ms|s|m|h)?\s*$/i.exec(String(text));
+  if (!match) {
+    return null;
+  }
+  const value = parseFloat(match[1]);
+  if (!Number.isFinite(value) || value <= 0) {
+    return null;
+  }
+  const unit = (match[2] || 's').toLowerCase();
+  return Math.round(value * INTERVAL_UNITS[unit]);
+};
+
+/**
+ * Render an interval in milliseconds as the shortest readable label.
+ *
+ * @param {number} ms - interval in milliseconds
+ * @return {string} label like "30s", "2m" or "500ms"
+ */
+export const formatRefreshInterval = (ms) => {
+  if (ms >= 3_600_000 && ms % 3_600_000 === 0) {
+    return `${ms / 3_600_000}h`;
+  }
+  if (ms >= 60_000 && ms % 60_000 === 0) {
+    return `${ms / 60_000}m`;
+  }
+  if (ms >= 1_000 && ms % 1_000 === 0) {
+    return `${ms / 1_000}s`;
+  }
+  return `${ms}ms`;
+};
+
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const { client: qdrantClient, isRestricted } = useClient();
@@ -51,9 +104,44 @@ export const CollectionInfo = ({ collectionName }) => {
   const [createIndexOpen, setCreateIndexOpen] = useState(false);
   const [refreshIntervalMs, setRefreshIntervalMs] = useState(0);
   const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
+  const [customDialogOpen, setCustomDialogOpen] = useState(false);
+  const [customInput, setCustomInput] = useState('');
+  const [customError, setCustomError] = useState('');
+  const [customLabel, setCustomLabel] = useState(null);
   const refreshMenuOpen = Boolean(refreshAnchorEl);
   const refreshIntervalLabel =
-    REFRESH_INTERVAL_OPTIONS.find(({ value }) => value === refreshIntervalMs)?.label || 'Off';
+    customLabel ?? (REFRESH_INTERVAL_OPTIONS.find(({ value }) => value === refreshIntervalMs)?.label || 'Off');
+
+  const openCustomDialog = () => {
+    setCustomInput(customLabel || formatRefreshInterval(refreshIntervalMs) || '');
+    setCustomError('');
+    setRefreshAnchorEl(null);
+    setCustomDialogOpen(true);
+  };
+
+  const closeCustomDialog = () => {
+    setCustomDialogOpen(false);
+    setCustomError('');
+  };
+
+  const applyCustomInterval = () => {
+    const ms = parseRefreshInterval(customInput);
+    if (ms == null) {
+      setCustomError('Invalid interval. Use a number with an optional unit, e.g. 45s, 2m, 500ms, 1h');
+      return;
+    }
+    setRefreshIntervalMs(ms);
+    setCustomLabel(formatRefreshInterval(ms));
+    setCustomDialogOpen(false);
+    setCustomInput('');
+    setCustomError('');
+  };
+
+  const selectPresetInterval = (value) => {
+    setRefreshIntervalMs(value);
+    setCustomLabel(null);
+    setRefreshAnchorEl(null);
+  };
 
   const fetchClusterInfo = (silent = false) => {
     if (isRestricted) {
@@ -203,14 +291,22 @@ export const CollectionInfo = ({ collectionName }) => {
                 <MenuItem
                   key={value}
                   value={value}
-                  selected={value === refreshIntervalMs}
-                  onClick={() => setRefreshIntervalMs(value)}
+                  selected={value === refreshIntervalMs && !customLabel}
+                  onClick={() => selectPresetInterval(value)}
                   sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}
                 >
                   {label}
-                  {value === refreshIntervalMs && <Check size={16} />}
+                  {value === refreshIntervalMs && !customLabel && <Check size={16} />}
                 </MenuItem>
               ))}
+              <MenuItem
+                onClick={openCustomDialog}
+                selected={Boolean(customLabel)}
+                sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}
+              >
+                Custom…
+                {customLabel && <Check size={16} />}
+              </MenuItem>
             </Menu>
             {refreshButton}
           </Box>
@@ -251,6 +347,40 @@ export const CollectionInfo = ({ collectionName }) => {
       />
 
       {clusterInfo && <ClusterInfo collectionCluster={clusterInfo} />}
+
+      <Dialog open={customDialogOpen} onClose={closeCustomDialog} fullWidth maxWidth="xs">
+        <DialogTitle>Custom refresh interval</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            value={customInput}
+            onChange={(e) => {
+              setCustomInput(e.target.value);
+              setCustomError('');
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                applyCustomInterval();
+              }
+            }}
+            error={Boolean(customError)}
+            helperText={customError || 'Examples: 45s, 2m, 500ms, 1h'}
+            placeholder="e.g. 45s"
+            slotProps={{
+              htmlInput: { 'aria-label': 'Custom refresh interval value' },
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={closeCustomDialog} color="inherit" variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={applyCustomInterval} color="primary" variant="contained">
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
