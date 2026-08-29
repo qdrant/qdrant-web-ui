@@ -1,7 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { act } from 'react';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import CollectionInfo, { parseRefreshInterval, formatRefreshInterval } from './CollectionInfo';
+import CollectionInfo from './CollectionInfo';
+import { parseRefreshInterval, formatRefreshInterval } from './AutoRefreshControl';
 
 const { enqueueSnackbarMock, closeSnackbarMock } = vi.hoisted(() => ({
   enqueueSnackbarMock: vi.fn(),
@@ -210,6 +211,22 @@ describe('CollectionInfo', () => {
     });
 
     expect(screen.getByText(/Invalid interval/)).toBeInTheDocument();
+    expect(client.getCollection).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a custom interval below the 100ms minimum', async () => {
+    render(<CollectionInfo collectionName={COLLECTION_NAME} />);
+    await flushMicrotasks();
+
+    await selectInterval('Custom…');
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('Custom refresh interval value'), { target: { value: '50ms' } });
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    });
+
+    expect(screen.getByText(/at least 100ms/)).toBeInTheDocument();
     expect(client.getCollection).toHaveBeenCalledTimes(1);
   });
 });
