@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, CardContent, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Box, Button, CardContent, IconButton, Menu, MenuItem } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Check, ChevronDown, Clock } from 'lucide-react';
@@ -148,6 +148,17 @@ export const CollectionInfo = ({ collectionName }) => {
 
   const metadata = collection.config?.metadata;
 
+  const refreshButton = (
+    <IconButton
+      size="small"
+      aria-label="Refresh collection info"
+      sx={{ color: 'text.primary' }}
+      onClick={() => refreshAll()}
+    >
+      <RefreshIcon sx={{ animation: isRefreshing ? `${spin} 1s linear infinite` : 'none' }} />
+    </IconButton>
+  );
+
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases
@@ -201,16 +212,7 @@ export const CollectionInfo = ({ collectionName }) => {
                 </MenuItem>
               ))}
             </Menu>
-            <Tooltip title="Refresh collection info">
-              <IconButton
-                size="small"
-                aria-label="Refresh collection info"
-                sx={{ color: 'text.primary' }}
-                onClick={() => refreshAll()}
-              >
-                <RefreshIcon sx={{ animation: isRefreshing ? `${spin} 1s linear infinite` : 'none' }} />
-              </IconButton>
-            </Tooltip>
+            {refreshButton}
           </Box>
         }
       >
