@@ -1,7 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Box, CardContent, IconButton } from '@mui/material';
-import { keyframes } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
@@ -26,11 +25,6 @@ import {
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
 import { useAutoRefresh } from '../../hooks/useAutoRefresh';
 import AutoRefreshControl from './AutoRefreshControl';
-
-const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-`;
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -91,7 +85,7 @@ export const CollectionInfo = ({ collectionName }) => {
     refreshAll();
   }, [collectionName]);
 
-  const { isRefreshing } = useAutoRefresh({
+  useAutoRefresh({
     enabled: refreshIntervalMs > 0,
     intervalMs: refreshIntervalMs,
     onTick: () => refreshAll(true),
@@ -142,7 +136,7 @@ export const CollectionInfo = ({ collectionName }) => {
       sx={{ color: 'text.primary' }}
       onClick={() => refreshAll()}
     >
-      <RefreshIcon sx={{ animation: isRefreshing ? `${spin} 1s linear infinite` : 'none' }} />
+      <RefreshIcon />
     </IconButton>
   );
 
