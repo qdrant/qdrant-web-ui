@@ -12,6 +12,7 @@ const { enqueueSnackbarMock, closeSnackbarMock } = vi.hoisted(() => ({
 vi.mock('../../context/client-context', () => {
   const client = {
     getCollection: vi.fn().mockResolvedValue({ status: 'green' }),
+    getCollectionAliases: vi.fn().mockResolvedValue({ aliases: [] }),
     updateCollection: vi.fn().mockResolvedValue({}),
     api: vi.fn().mockReturnValue({
       collectionClusterInfo: vi.fn().mockResolvedValue({ data: { result: {} } }),
@@ -23,6 +24,8 @@ vi.mock('../../context/client-context', () => {
 });
 
 vi.mock('notistack', () => ({
+  enqueueSnackbar: enqueueSnackbarMock,
+  closeSnackbar: closeSnackbarMock,
   useSnackbar: () => ({
     enqueueSnackbar: enqueueSnackbarMock,
     closeSnackbar: closeSnackbarMock,
