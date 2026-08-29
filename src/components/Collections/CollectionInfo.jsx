@@ -1,7 +1,9 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardContent, IconButton, Tooltip } from '@mui/material';
+import { Box, CardContent, IconButton, MenuItem, Select, Tooltip } from '@mui/material';
+import { keyframes } from '@mui/material/styles';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { Clock } from 'lucide-react';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
 import ClusterInfo from './CollectionCluster/ClusterInfo';
@@ -23,6 +25,21 @@ import {
   buildPathMap,
 } from './CollectionInfoKeyRenderer';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
+import { useAutoRefresh } from '../../hooks/useAutoRefresh';
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const REFRESH_INTERVAL_OPTIONS = [
+  { value: 0, label: 'Off' },
+  { value: 5_000, label: '5s' },
+  { value: 10_000, label: '10s' },
+  { value: 30_000, label: '30s' },
+  { value: 60_000, label: '1m' },
+  { value: 300_000, label: '5m' },
+];
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -32,8 +49,9 @@ export const CollectionInfo = ({ collectionName }) => {
   const [createAliasOpen, setCreateAliasOpen] = useState(false);
   const [addMetadataOpen, setAddMetadataOpen] = useState(false);
   const [createIndexOpen, setCreateIndexOpen] = useState(false);
+  const [refreshIntervalMs, setRefreshIntervalMs] = useState(0);
 
-  const fetchClusterInfo = () => {
+  const fetchClusterInfo = (silent = false) => {
     if (isRestricted) {
       return;
     }
@@ -47,7 +65,9 @@ export const CollectionInfo = ({ collectionName }) => {
         });
       })
       .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        if (!silent) {
+          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        }
       });
   };
 
@@ -56,7 +76,7 @@ export const CollectionInfo = ({ collectionName }) => {
     typeof collection.config.metadata === 'object' &&
     Object.keys(collection.config.metadata).length > 0;
 
-  const fetchCollection = () => {
+  const fetchCollection = (silent = false) => {
     qdrantClient
       .getCollection(collectionName)
       .then((res) => {
@@ -65,18 +85,26 @@ export const CollectionInfo = ({ collectionName }) => {
         });
       })
       .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        if (!silent) {
+          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        }
       });
   };
 
-  const refreshAll = () => {
-    fetchCollection();
-    fetchClusterInfo();
+  const refreshAll = (silent = false) => {
+    fetchCollection(silent);
+    fetchClusterInfo(silent);
   };
 
   useEffect(() => {
     refreshAll();
   }, [collectionName]);
+
+  const { isRefreshing } = useAutoRefresh({
+    enabled: refreshIntervalMs > 0,
+    intervalMs: refreshIntervalMs,
+    onTick: () => refreshAll(true),
+  });
 
   const triggerOptimizers = () => {
     qdrantClient
@@ -136,9 +164,32 @@ export const CollectionInfo = ({ collectionName }) => {
               triggerOptimizersDisabled={triggerOptimizersDisabled}
             />
             <CopyButton text={bigIntJSON.stringify(collection)} />
+            <Tooltip title="Auto refresh interval">
+              <Box display="flex" alignItems="center" gap={0.5}>
+                <Clock size={16} />
+                <Select
+                  value={refreshIntervalMs}
+                  onChange={(e) => setRefreshIntervalMs(e.target.value)}
+                  size="small"
+                  aria-label="Auto refresh interval"
+                  sx={{ minWidth: 72 }}
+                >
+                  {REFRESH_INTERVAL_OPTIONS.map(({ value, label }) => (
+                    <MenuItem key={value} value={value}>
+                      {label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+            </Tooltip>
             <Tooltip title="Refresh collection info">
-              <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
-                <RefreshIcon />
+              <IconButton
+                size="small"
+                aria-label="Refresh collection info"
+                sx={{ color: 'text.primary' }}
+                onClick={() => refreshAll()}
+              >
+                <RefreshIcon sx={{ animation: isRefreshing ? `${spin} 1s linear infinite` : 'none' }} />
               </IconButton>
             </Tooltip>
           </Box>
