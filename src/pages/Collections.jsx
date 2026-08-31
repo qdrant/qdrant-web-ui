@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClient } from '../context/client-context';
 import SearchBar from '../components/Collections/SearchBar';
-import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip, Button } from '@mui/material';
+import { Typography, Grid, Pagination, Box, Skeleton, IconButton, Tooltip } from '@mui/material';
 import { keyframes } from '@mui/material/styles';
 import { RefreshCw } from 'lucide-react';
 import ErrorNotifier from '../components/ToastNotifications/ErrorNotifier';
@@ -14,10 +14,11 @@ import { debounce } from 'lodash';
 import { useMaxCollections } from '../context/telemetry-context';
 import CreateCollectionButton from '../components/Collections/CreateCollection/CreateCollectionButton';
 import ConfirmationDialog from '../components/Common/ConfirmationDialog';
+import BulkActionsButton from '../components/Collections/BulkActionsButton';
 
 const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 `;
 
 function Collections() {
@@ -33,6 +34,7 @@ function Collections() {
   const [selectedCollections, setSelectedCollections] = useState(new Set());
   const [openBulkDeleteDialog, setOpenBulkDeleteDialog] = useState(false);
   const [bulkDeleteError, setBulkDeleteError] = useState(null);
+  const [bulkSnapshotError, setBulkSnapshotError] = useState(null);
 
   const { maxCollections } = useMaxCollections();
 
@@ -206,6 +208,31 @@ function Collections() {
     }
   }, [selectedCollections, qdrantClient, getCollectionsCall, currentPage]);
 
+  const handleBulkDownloadSnapshot = useCallback(async () => {
+    const names = Array.from(selectedCollections);
+    const errors = [];
+    for (const name of names) {
+      try {
+        const snapshot = await qdrantClient.createSnapshot(name);
+        const response = await qdrantClient.downloadSnapshot(name, snapshot.name);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = snapshot.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        errors.push(`${name}: ${error.message}`);
+      }
+    }
+    if (errors.length > 0) {
+      setBulkSnapshotError(`Failed to download snapshot for: ${errors.join('; ')}`);
+    }
+  }, [selectedCollections, qdrantClient]);
+
   const displayCollections = searchQuery ? filteredCollections : collections;
 
   return (
@@ -255,14 +282,11 @@ function Collections() {
             }}
           >
             {selectedCollections.size > 0 && (
-              <Button
-                variant="contained"
-                color="error"
-                onClick={() => setOpenBulkDeleteDialog(true)}
-                aria-label={`Delete ${selectedCollections.size} selected collection(s)`}
-              >
-                Delete ({selectedCollections.size})
-              </Button>
+              <BulkActionsButton
+                count={selectedCollections.size}
+                onDelete={() => setOpenBulkDeleteDialog(true)}
+                onDownloadSnapshot={handleBulkDownloadSnapshot}
+              />
             )}
             <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
@@ -317,6 +341,7 @@ function Collections() {
         </Grid>
       </CenteredFrame>
       {bulkDeleteError && <ErrorNotifier message={bulkDeleteError} />}
+      {bulkSnapshotError && <ErrorNotifier message={bulkSnapshotError} />}
       <ConfirmationDialog
         open={openBulkDeleteDialog}
         onClose={() => setOpenBulkDeleteDialog(false)}
