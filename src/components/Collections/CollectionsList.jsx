@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import { Checkbox, MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
+import { Box, Checkbox, MenuItem, TableCell, TableRow, Tooltip, Typography, Table } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   StyledTableBody,
@@ -72,6 +72,44 @@ const CollectionNameCell = ({ collection }) => {
 
 CollectionNameCell.propTypes = {
   collection: PropTypes.object.isRequired,
+};
+
+// With custom sharding `shard_number` is only the *default* number of shards per shard key:
+// every shard key can be created with its own `shards_number`. So the total number of shards
+// comes from the collection cluster info, and is never derived from `shard_number`.
+const ShardsCell = ({ collectionParams, shardCount, shardKeysCount }) => {
+  const shardNumber = collectionParams.shard_number;
+
+  if (collectionParams.sharding_method !== 'custom') {
+    return <Typography>{shardNumber}</Typography>;
+  }
+
+  if (shardCount == null) {
+    return (
+      <Tooltip arrow title={`Custom sharding: ${shardNumber} shard(s) per shard key by default, keys may differ`}>
+        <Typography>{`${shardNumber} / key`}</Typography>
+      </Tooltip>
+    );
+  }
+
+  const keysLabel = shardKeysCount === 1 ? '1 shard key' : `${shardKeysCount} shard keys`;
+
+  return (
+    <Tooltip arrow title={`Custom sharding: ${shardCount} shard(s) across ${keysLabel}`}>
+      <Box>
+        <Typography>{shardCount}</Typography>
+        <Typography component={'p'} variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+          {keysLabel}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
+};
+
+ShardsCell.propTypes = {
+  collectionParams: PropTypes.object.isRequired,
+  shardCount: PropTypes.number,
+  shardKeysCount: PropTypes.number,
 };
 
 const CollectionTableRow = ({
@@ -145,7 +183,11 @@ const CollectionTableRow = ({
         <Typography>{collection.segments_count}</Typography>
       </TableCell>
       <TableCell align="center">
-        <Typography>{collection.config.params.shard_number}</Typography>
+        <ShardsCell
+          collectionParams={collection.config.params}
+          shardCount={collection.shard_count}
+          shardKeysCount={collection.shard_keys_count}
+        />
       </TableCell>
       <TableCell align="center">
         <VectorsConfigChips collectionConfigParams={collection.config.params} collectionName={collection.name} />

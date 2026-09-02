@@ -27,7 +27,7 @@ function Collections() {
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { client: qdrantClient } = useClient();
+  const { client: qdrantClient, isRestricted } = useClient();
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 5;
   const [selectedCollections, setSelectedCollections] = useState(new Set());
@@ -42,6 +42,35 @@ function Collections() {
       return getErrorMessage(error, { withApiKey: { apiKey } });
     },
     [qdrantClient]
+  );
+
+  // `shard_number` is only the *default* number of shards per shard key for custom sharding
+  // (each shard key can be created with its own `shards_number`), so the actual total shard
+  // count has to be read from the collection cluster info.
+  const getShardInfo = useCallback(
+    async (collectionName, collectionData) => {
+      if (isRestricted || collectionData.config?.params?.sharding_method !== 'custom') {
+        return {};
+      }
+      try {
+        const res = await qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName });
+        const clusterInfo = res.data?.result ?? {};
+        const shards = [...(clusterInfo.local_shards ?? []), ...(clusterInfo.remote_shards ?? [])];
+        const shardKeys = new Set(shards.filter((shard) => shard.shard_key != null).map((shard) => shard.shard_key));
+        const shardCount = Number(clusterInfo.shard_count);
+        if (!Number.isFinite(shardCount)) {
+          return {};
+        }
+        return {
+          shard_count: shardCount,
+          shard_keys_count: shardKeys.size,
+        };
+      } catch {
+        // Cluster info is unavailable (e.g. insufficient permissions), fall back to `shard_number`
+        return {};
+      }
+    },
+    [qdrantClient, isRestricted]
   );
 
   const getCollectionsCall = useCallback(
@@ -61,9 +90,11 @@ function Collections() {
               .map((alias) => alias.alias_name);
             try {
               const collectionData = await qdrantClient.getCollection(collection.name);
+              const shardInfo = await getShardInfo(collection.name, collectionData);
               return {
                 name: collection.name,
                 ...collectionData,
+                ...shardInfo,
                 aliases: [...collectionAliases],
               };
             } catch (error) {
@@ -84,7 +115,7 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey]
+    [qdrantClient, getErrorMessageWithApiKey, getShardInfo]
   );
 
   const getFilteredCollectionsCall = useCallback(
@@ -97,9 +128,11 @@ function Collections() {
           filtered.map(async (collection) => {
             try {
               const collectionData = await qdrantClient.getCollection(collection.name);
+              const shardInfo = await getShardInfo(collection.name, collectionData);
               return {
                 name: collection.name,
                 ...collectionData,
+                ...shardInfo,
               };
             } catch (error) {
               return {
@@ -118,7 +151,7 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [collections, qdrantClient, getErrorMessageWithApiKey]
+    [collections, qdrantClient, getErrorMessageWithApiKey, getShardInfo]
   );
 
   useEffect(() => {
@@ -150,8 +183,9 @@ function Collections() {
       setIsRefreshing(true);
       try {
         const collectionData = await qdrantClient.getCollection(collectionName);
+        const shardInfo = await getShardInfo(collectionName, collectionData);
         setRawCollections((prev) =>
-          prev.map((c) => (c.name === collectionName ? { ...c, ...collectionData, error: null } : c))
+          prev.map((c) => (c.name === collectionName ? { ...c, ...collectionData, ...shardInfo, error: null } : c))
         );
         setErrorMessage(null);
       } catch (error) {
@@ -161,7 +195,7 @@ function Collections() {
         setIsRefreshing(false);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey]
+    [qdrantClient, getErrorMessageWithApiKey, getShardInfo]
   );
 
   const handlePageChange = (event, value) => {
