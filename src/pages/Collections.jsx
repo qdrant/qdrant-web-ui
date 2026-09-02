@@ -57,8 +57,12 @@ function Collections() {
         const clusterInfo = res.data?.result ?? {};
         const shards = [...(clusterInfo.local_shards ?? []), ...(clusterInfo.remote_shards ?? [])];
         const shardKeys = new Set(shards.filter((shard) => shard.shard_key != null).map((shard) => shard.shard_key));
+        const shardCount = Number(clusterInfo.shard_count);
+        if (!Number.isFinite(shardCount)) {
+          return {};
+        }
         return {
-          shard_count: Number(clusterInfo.shard_count),
+          shard_count: shardCount,
           shard_keys_count: shardKeys.size,
         };
       } catch {

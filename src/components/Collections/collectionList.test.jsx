@@ -328,7 +328,6 @@ describe('CollectionsList', () => {
       </MemoryRouter>
     );
     expect(screen.getByText('4 / key')).toBeInTheDocument();
-    expect(screen.getByText('default')).toBeInTheDocument();
   });
 
   it('should not derive the total from shard_number when shard keys have different shard counts', () => {

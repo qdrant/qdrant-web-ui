@@ -74,35 +74,32 @@ CollectionNameCell.propTypes = {
   collection: PropTypes.object.isRequired,
 };
 
+// With custom sharding `shard_number` is only the *default* number of shards per shard key:
+// every shard key can be created with its own `shards_number`. So the total number of shards
+// comes from the collection cluster info, and is never derived from `shard_number`.
 const ShardsCell = ({ collectionParams, shardCount, shardKeysCount }) => {
-  const defaultShardsPerKey = collectionParams.shard_number;
+  const shardNumber = collectionParams.shard_number;
 
   if (collectionParams.sharding_method !== 'custom') {
-    return <Typography>{defaultShardsPerKey}</Typography>;
+    return <Typography>{shardNumber}</Typography>;
   }
 
-  // With custom sharding `shard_number` is only the *default* number of shards per shard key:
-  // every shard key can be created with its own `shards_number`. So the total number of shards
-  // can only be read from the collection cluster info, never derived from `shard_number`.
-  const total = Number(shardCount);
-  const isTotalKnown = Number.isFinite(total);
+  if (shardCount == null) {
+    return (
+      <Tooltip arrow title={`Custom sharding: ${shardNumber} shard(s) per shard key by default, keys may differ`}>
+        <Typography>{`${shardNumber} / key`}</Typography>
+      </Tooltip>
+    );
+  }
+
   const keysLabel = shardKeysCount === 1 ? '1 shard key' : `${shardKeysCount} shard keys`;
 
   return (
-    <Tooltip
-      arrow
-      title={
-        isTotalKnown
-          ? `Custom sharding: ${total} shard(s) across ${keysLabel}. ` +
-            `Default for a new shard key is ${defaultShardsPerKey} shard(s), but keys may differ.`
-          : `Custom sharding: default is ${defaultShardsPerKey} shard(s) per shard key, but keys may differ. ` +
-            `Total shard count unavailable.`
-      }
-    >
+    <Tooltip arrow title={`Custom sharding: ${shardCount} shard(s) across ${keysLabel}`}>
       <Box>
-        <Typography>{isTotalKnown ? total : `${defaultShardsPerKey} / key`}</Typography>
+        <Typography>{shardCount}</Typography>
         <Typography component={'p'} variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-          {isTotalKnown ? shardKeysCount != null && keysLabel : 'default'}
+          {keysLabel}
         </Typography>
       </Box>
     </Tooltip>
@@ -111,7 +108,7 @@ const ShardsCell = ({ collectionParams, shardCount, shardKeysCount }) => {
 
 ShardsCell.propTypes = {
   collectionParams: PropTypes.object.isRequired,
-  shardCount: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  shardCount: PropTypes.number,
   shardKeysCount: PropTypes.number,
 };
 
