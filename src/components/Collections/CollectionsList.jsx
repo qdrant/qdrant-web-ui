@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import { Checkbox, MenuItem, TableCell, TableRow, Typography, Table } from '@mui/material';
+import { Box, Checkbox, MenuItem, TableCell, TableRow, Tooltip, Typography, Table } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   StyledTableBody,
@@ -72,6 +72,47 @@ const CollectionNameCell = ({ collection }) => {
 
 CollectionNameCell.propTypes = {
   collection: PropTypes.object.isRequired,
+};
+
+const ShardsCell = ({ collectionParams, shardCount, shardKeysCount }) => {
+  const defaultShardsPerKey = collectionParams.shard_number;
+
+  if (collectionParams.sharding_method !== 'custom') {
+    return <Typography>{defaultShardsPerKey}</Typography>;
+  }
+
+  // With custom sharding `shard_number` is only the *default* number of shards per shard key:
+  // every shard key can be created with its own `shards_number`. So the total number of shards
+  // can only be read from the collection cluster info, never derived from `shard_number`.
+  const total = Number(shardCount);
+  const isTotalKnown = Number.isFinite(total);
+  const keysLabel = shardKeysCount === 1 ? '1 shard key' : `${shardKeysCount} shard keys`;
+
+  return (
+    <Tooltip
+      arrow
+      title={
+        isTotalKnown
+          ? `Custom sharding: ${total} shard(s) across ${keysLabel}. ` +
+            `Default for a new shard key is ${defaultShardsPerKey} shard(s), but keys may differ.`
+          : `Custom sharding: default is ${defaultShardsPerKey} shard(s) per shard key, but keys may differ. ` +
+            `Total shard count unavailable.`
+      }
+    >
+      <Box>
+        <Typography>{isTotalKnown ? total : `${defaultShardsPerKey} / key`}</Typography>
+        <Typography component={'p'} variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+          {isTotalKnown ? shardKeysCount != null && keysLabel : 'default'}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
+};
+
+ShardsCell.propTypes = {
+  collectionParams: PropTypes.object.isRequired,
+  shardCount: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  shardKeysCount: PropTypes.number,
 };
 
 const CollectionTableRow = ({
@@ -145,7 +186,11 @@ const CollectionTableRow = ({
         <Typography>{collection.segments_count}</Typography>
       </TableCell>
       <TableCell align="center">
-        <Typography>{collection.config.params.shard_number}</Typography>
+        <ShardsCell
+          collectionParams={collection.config.params}
+          shardCount={collection.shard_count}
+          shardKeysCount={collection.shard_keys_count}
+        />
       </TableCell>
       <TableCell align="center">
         <VectorsConfigChips collectionConfigParams={collection.config.params} collectionName={collection.name} />

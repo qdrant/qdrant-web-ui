@@ -60,6 +60,65 @@ const COLLECTIONS = [
   },
 ];
 
+const CUSTOM_SHARDED_COLLECTIONS = [
+  {
+    name: 'Custom sharded',
+    status: 'green',
+    points_count: 100,
+    segments_count: 7,
+    config: {
+      params: {
+        shard_number: 2,
+        sharding_method: 'custom',
+        vectors: {
+          size: 128,
+          distance: 'cosine',
+        },
+      },
+    },
+    shard_count: 6,
+    shard_keys_count: 3,
+    aliases: [],
+  },
+  {
+    name: 'Custom sharded without cluster info',
+    status: 'green',
+    points_count: 200,
+    segments_count: 8,
+    config: {
+      params: {
+        shard_number: 4,
+        sharding_method: 'custom',
+        vectors: {
+          size: 128,
+          distance: 'cosine',
+        },
+      },
+    },
+    aliases: [],
+  },
+  {
+    // shard keys created with their own `shards_number`: 2 + 2 + 1 shards
+    name: 'Custom sharded with uneven shard keys',
+    status: 'green',
+    points_count: 300,
+    segments_count: 9,
+    config: {
+      params: {
+        shard_number: 2,
+        sharding_method: 'custom',
+        vectors: {
+          size: 128,
+          distance: 'cosine',
+        },
+      },
+    },
+    shard_count: 5,
+    shard_keys_count: 3,
+    aliases: [],
+  },
+];
+
 const DEFAULT_SELECTION_PROPS = {
   selectedCollections: new Set(),
   handleToggleSelect: vi.fn(),
@@ -221,5 +280,71 @@ describe('CollectionsList', () => {
     refreshButtons.forEach((btn) => {
       expect(btn.closest('li')).toHaveAttribute('aria-disabled', 'true');
     });
+  });
+  it('should render shard_number as-is for automatic sharding', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.queryByText(/shard keys/)).not.toBeInTheDocument();
+  });
+
+  it('should render the total number of shards for custom sharding', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={CUSTOM_SHARDED_COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    // 6 shards in total (3 shard keys x 2 shards per key), not the `shard_number` of 2
+    expect(screen.getByText('6')).toBeInTheDocument();
+    expect(screen.getAllByText('3 shard keys')).toHaveLength(2);
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
+  });
+
+  it('should mark shard_number as per-key when the total is unknown for custom sharding', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={CUSTOM_SHARDED_COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('4 / key')).toBeInTheDocument();
+    expect(screen.getByText('default')).toBeInTheDocument();
+  });
+
+  it('should not derive the total from shard_number when shard keys have different shard counts', () => {
+    render(
+      <MemoryRouter>
+        <CollectionsList
+          collections={CUSTOM_SHARDED_COLLECTIONS}
+          getCollectionsCall={() => {}}
+          refreshCollection={vi.fn()}
+          isRefreshing={false}
+          {...DEFAULT_SELECTION_PROPS}
+        />
+      </MemoryRouter>
+    );
+    // 3 shard keys with 2 + 2 + 1 shards, which is not `shard_keys_count` * `shard_number`
+    expect(screen.getByText('5')).toBeInTheDocument();
+    expect(screen.getByLabelText(/5 shard\(s\) across 3 shard keys/)).toBeInTheDocument();
   });
 });
