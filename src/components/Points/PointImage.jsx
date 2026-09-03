@@ -10,6 +10,11 @@ function PointImage({ data, sx }) {
     const images = [];
 
     function isImgUrl(string) {
+      // Handle data URIs
+      if (/^data:image\//.test(string)) {
+        return true;
+      }
+
       let url;
       try {
         url = new URL(string);
@@ -17,7 +22,8 @@ function PointImage({ data, sx }) {
         return false;
       }
       if (url) {
-        return /\.(jpg|jpeg|png|webp|gif|svg)$/.test(url.pathname);
+        const pathname = url.pathname.split('?')[0].split('#')[0];
+        return /\.(jpg|jpeg|png|webp|gif|svg|bmp|ico|tiff|tif|avif|heic|heif)$/i.test(pathname);
       }
       return false;
     }
