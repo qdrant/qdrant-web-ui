@@ -27,9 +27,18 @@ function Datasets() {
       setIsLoading(true);
       try {
         const response = await fetch('https://snapshots.qdrant.io/manifest-v1.16.0.json');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch datasets manifest: ${response.status}`);
+        }
         const responseJson = await response.json();
+        if (!Array.isArray(responseJson)) {
+          throw new Error('Datasets manifest has an unexpected format');
+        }
         const datasets = responseJson
           .filter((dataset) => {
+            if (typeof dataset !== 'object' || dataset === null || typeof dataset.name !== 'string') {
+              return false;
+            }
             if (dataset.version === undefined) {
               return true;
             }
@@ -49,12 +58,12 @@ function Datasets() {
           })
           .map((dataset) => {
             return {
-              name: dataset.name,
-              fileName: dataset.file_name,
-              size: dataset.size,
+              name: String(dataset.name),
+              fileName: String(dataset.file_name ?? ''),
+              size: Number(dataset.size) || 0,
               vectors: dataset.vectors,
-              vectorCount: dataset.vector_count,
-              description: dataset.description,
+              vectorCount: Number(dataset.vector_count) || 0,
+              description: String(dataset.description ?? ''),
             };
           });
         setDatasets(datasets);
