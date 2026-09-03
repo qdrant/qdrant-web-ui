@@ -140,9 +140,7 @@ const InfoCard = ({ icon: Icon, iconVariant, title, description, iconColor, link
     >
       <StyledCardActionArea>
         <StyledCardContent className={displayIconVariant}>
-          <IconWrapper>
-            <Icon size="20px" color={displayIconColor} />
-          </IconWrapper>
+          <IconWrapper>{React.isValidElement(Icon) ? Icon : <Icon size="20px" color={displayIconColor} />}</IconWrapper>
           <ContentWrapper>
             <StyledTitle component="h3">{title}</StyledTitle>
             <StyledDescription component="p">{description}</StyledDescription>
