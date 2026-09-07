@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Card, Typography } from '@mui/material';
 import { formatValue } from '../../lib/metrics-parser';
 
-// A single big-number tile, mirroring Grafana's "stat" panels.
+// A single big-number tile for a headline metric value.
 function StatTile({ label, value, unit = 'number' }) {
   return (
     <Card variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column', gap: 0.5 }}>

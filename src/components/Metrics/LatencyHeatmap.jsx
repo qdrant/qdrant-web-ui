@@ -56,11 +56,11 @@ const fmtRate = (v) => {
   return `${n}/s`;
 };
 
-// The Grafana "Latency Distribution" heatmap: Y = response-time buckets, X =
-// time, cell color = the per-second rate of requests landing in that latency
-// band. Reads Qdrant's `*_responses_duration_seconds` Prometheus histogram —
-// `buckets` are the `le` groups (ascending) with the series keys per bucket, and
-// history holds their cumulative counts, which we un-cumulate and rate here.
+// A latency-distribution heatmap: Y = response-time buckets, X = time, cell
+// color = the per-second rate of requests landing in that latency band. Reads
+// Qdrant's `*_responses_duration_seconds` Prometheus histogram — `buckets` are
+// the `le` groups (ascending) with the series keys per bucket, and history holds
+// their cumulative counts, which we un-cumulate and rate here.
 const LatencyHeatmap = ({ buckets, history }) => {
   const theme = useTheme();
   const canvasRef = useRef(null);

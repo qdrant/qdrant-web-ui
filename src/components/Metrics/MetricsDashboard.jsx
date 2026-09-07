@@ -69,9 +69,8 @@ const toChartSeries = (entries) =>
 
 // The Metrics page: panels grouped into Requests and Memory & CPU tabs,
 // auto-populated from Qdrant's /metrics endpoint and optionally scoped to a
-// single collection. Panel types mirror Qdrant's Grafana dashboards
-// (github.com/qdrant/prometheus-monitoring), bound to the metrics a self-hosted
-// instance actually exposes.
+// single collection, bound to the metrics a self-hosted instance actually
+// exposes.
 function MetricsDashboard() {
   const [currentTab, setCurrentTab] = useState('requests');
   const [scope, setScope] = useState('global');
