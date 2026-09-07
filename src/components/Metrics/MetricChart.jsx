@@ -49,20 +49,27 @@ const MetricChart = ({
     return isCounter(s.type) ? toRatePerSecond(points) : points.map((point) => point.v);
   };
 
-  // Aggregate: sum the raw counter values across all series at each timestamp
-  // into one synthetic counter, then take a single rate. This is exactly
-  // "erase the per-request labels and treat them as one series" — `rate(sum(x))`.
-  // Within a scope the series set is stable, so it equals `sum(rate(x))` but is
-  // simpler; toRatePerSecond still drops the first point and any counter reset.
+  // Aggregate: rate each series independently, then sum the rates at each
+  // timestamp — `sum(rate(x))`. Summing the raw counters first (`rate(sum(x))`)
+  // would be simpler but assumes the series set never changes: a label that only
+  // starts being reported mid-session would jump from an implicit 0 to its full
+  // count in one interval and spike the total. Rating per series first lets a
+  // newly-appearing (or reset) series contribute a gap on that step instead of a
+  // spike; a step is null only when no series has a value yet (the first point).
   const computeTotal = () => {
-    const summed = history.map((point) => ({
-      t: point.t,
-      v: series.reduce((sum, s) => {
-        const value = point.values[s.key];
-        return typeof value === 'number' ? sum + value : sum;
-      }, 0),
-    }));
-    return toRatePerSecond(summed);
+    const perSeries = series.map(computeData);
+    return history.map((_, i) => {
+      let sum = 0;
+      let any = false;
+      for (const data of perSeries) {
+        const v = data[i];
+        if (typeof v === 'number') {
+          sum += v;
+          any = true;
+        }
+      }
+      return any ? sum : null;
+    });
   };
 
   const datasetsData = () => (aggregate ? [computeTotal()] : series.map(computeData));

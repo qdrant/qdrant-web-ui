@@ -69,10 +69,12 @@ export const useMetricsHistory = ({
     const mode = perCollection ? 'collection' : 'global';
 
     // Resume this mode's buffer (empty on first visit); the other mode's buffer
-    // is left untouched. The snapshot is dropped so nothing reads the previous
-    // mode's series until the first response of the new one lands.
+    // is left untouched. The snapshot is dropped and any error from the previous
+    // mode cleared so nothing reads the previous mode's series — or shows its
+    // stale error banner — until the first response of the new one lands.
     setSnapshot(null);
     setLoading(true);
+    setError(null);
     setHistory(buffersRef.current[mode] || []);
 
     const tick = async () => {

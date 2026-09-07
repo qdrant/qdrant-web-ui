@@ -206,7 +206,7 @@ export const makeMetrics = ({ clusterEnabled = false, version = '1.15.1', perCol
     block('cluster_peers_total', 'total number of cluster peers', 'gauge', [
       `cluster_peers_total ${clusterEnabled ? 3 : 1}`,
     ]),
-    block('collections_total', 'number of collections', 'gauge', ['collections_total 1']),
+    block('collections_total', 'number of collections', 'gauge', [`collections_total ${COLLECTIONS.length}`]),
     block('collections_vector_total', 'total number of vectors in all collections', 'gauge', [
       `collections_vector_total ${wobble(125000, 400, 45)}`,
     ]),
