@@ -34,14 +34,78 @@ const FIELD_TYPES = ['keyword', 'integer', 'float', 'uuid', 'datetime', 'text', 
 
 const TEXT_TOKENIZERS = ['prefix', 'whitespace', 'word', 'multilingual'];
 
+// Snowball stemmer languages supported by Qdrant.
+const STEMMER_LANGUAGES = [
+  'none',
+  'arabic',
+  'armenian',
+  'danish',
+  'dutch',
+  'english',
+  'finnish',
+  'french',
+  'german',
+  'greek',
+  'hungarian',
+  'italian',
+  'norwegian',
+  'portuguese',
+  'romanian',
+  'russian',
+  'spanish',
+  'swedish',
+  'tamil',
+  'turkish',
+];
+
+// Stopword languages supported by Qdrant.
+const STOPWORDS_LANGUAGES = [
+  'none',
+  'arabic',
+  'azerbaijani',
+  'basque',
+  'bengali',
+  'catalan',
+  'chinese',
+  'danish',
+  'dutch',
+  'english',
+  'finnish',
+  'french',
+  'german',
+  'greek',
+  'hebrew',
+  'hinglish',
+  'hungarian',
+  'indonesian',
+  'italian',
+  'japanese',
+  'kazakh',
+  'nepali',
+  'norwegian',
+  'portuguese',
+  'romanian',
+  'russian',
+  'slovene',
+  'spanish',
+  'swedish',
+  'tajik',
+  'turkish',
+];
+
 const DEFAULT_STATE = {
   // integer
   range: true,
   lookup: true,
+  // keyword
+  prefix: false,
   // text
   tokenizer: 'whitespace',
   lowercase: true,
   phrase_matching: true,
+  ascii_folding: false,
+  stemmer_language: 'none',
+  stopwords: 'none',
   min_token_len: '',
   max_token_len: '',
 };
@@ -60,10 +124,16 @@ function paramsFromSchema(indexInfo) {
     state.range = params.range ?? true;
     state.lookup = params.lookup ?? true;
   }
+  if (indexInfo?.data_type === 'keyword') {
+    state.prefix = params.prefix ?? false;
+  }
   if (indexInfo?.data_type === 'text') {
     state.tokenizer = params.tokenizer || 'whitespace';
     state.lowercase = params.lowercase ?? true;
     state.phrase_matching = params.phrase_matching ?? true;
+    state.ascii_folding = params.ascii_folding ?? false;
+    state.stemmer_language = params.stemmer?.language ?? 'none';
+    state.stopwords = typeof params.stopwords === 'string' ? params.stopwords : 'none';
     state.min_token_len = params.min_token_len ?? '';
     state.max_token_len = params.max_token_len ?? '';
   }
@@ -237,6 +307,17 @@ const PayloadIndexDialog = ({
           ))}
         </Box>
 
+        {selectedType === 'keyword' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
+            <FormControlLabel
+              control={
+                <Checkbox checked={params.prefix} onChange={(e) => set('prefix', e.target.checked)} size="small" />
+              }
+              label={<Typography variant="body2">Prefix matching</Typography>}
+            />
+          </Box>
+        )}
+
         {selectedType === 'integer' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
             <FormControlLabel
@@ -287,6 +368,42 @@ const PayloadIndexDialog = ({
                 }
                 label={<Typography variant="body2">Phrase matching</Typography>}
               />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={params.ascii_folding}
+                    onChange={(e) => set('ascii_folding', e.target.checked)}
+                    size="small"
+                  />
+                }
+                label={<Typography variant="body2">ASCII folding</Typography>}
+              />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Stemmer</InputLabel>
+                <Select
+                  value={params.stemmer_language}
+                  label="Stemmer"
+                  onChange={(e) => set('stemmer_language', e.target.value)}
+                >
+                  {STEMMER_LANGUAGES.map((lang) => (
+                    <MenuItem key={lang} value={lang}>
+                      {lang}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" fullWidth>
+                <InputLabel>Stopwords</InputLabel>
+                <Select value={params.stopwords} label="Stopwords" onChange={(e) => set('stopwords', e.target.value)}>
+                  {STOPWORDS_LANGUAGES.map((lang) => (
+                    <MenuItem key={lang} value={lang}>
+                      {lang}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
