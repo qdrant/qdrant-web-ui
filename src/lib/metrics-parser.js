@@ -28,7 +28,6 @@ export const buildSeriesKey = (name, labels) => {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}="${v}"`)
     .join(',');
-  // console.log(`${name}{${inner}}`)
   return `${name}{${inner}}`;
 };
 

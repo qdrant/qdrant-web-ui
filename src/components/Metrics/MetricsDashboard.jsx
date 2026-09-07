@@ -67,10 +67,11 @@ const formatLe = (sec) => {
 const toChartSeries = (entries) =>
   entries.map((s) => ({ key: s.key, name: s.name, labels: s.labels, label: seriesLabel(s), type: s.type }));
 
-// The Metrics page: a fixed set of panels, auto-populated from Qdrant's
-// /metrics endpoint with no user interaction. Panel types mirror Qdrant's
-// Grafana dashboards (github.com/qdrant/prometheus-monitoring), bound to the
-// metrics a self-hosted instance actually exposes.
+// The Metrics page: panels grouped into Requests and Memory & CPU tabs,
+// auto-populated from Qdrant's /metrics endpoint and optionally scoped to a
+// single collection. Panel types mirror Qdrant's Grafana dashboards
+// (github.com/qdrant/prometheus-monitoring), bound to the metrics a self-hosted
+// instance actually exposes.
 function MetricsDashboard() {
   const [currentTab, setCurrentTab] = useState('requests');
   const [scope, setScope] = useState('global');
