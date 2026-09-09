@@ -18,7 +18,10 @@ import {
   TextField,
   InputLabel,
   FormControl,
+  Collapse,
+  Link,
 } from '@mui/material';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import JsonView from '../Common/JsonViewBase';
 import { useTheme } from '@mui/material/styles';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
@@ -140,6 +143,24 @@ function paramsFromSchema(indexInfo) {
   return state;
 }
 
+/**
+ * Whether a text params state uses any of the advanced options (kept collapsed
+ * by default). Used to auto-expand the advanced section when editing an index
+ * that already relies on them, so no active setting stays hidden.
+ *
+ * @param {Object} state - params state
+ * @return {boolean} true when an advanced option is set
+ */
+function hasAdvancedTextParams(state) {
+  return (
+    !!state.ascii_folding ||
+    (state.stemmer_language && state.stemmer_language !== 'none') ||
+    (state.stopwords && state.stopwords !== 'none') ||
+    state.min_token_len !== '' ||
+    state.max_token_len !== ''
+  );
+}
+
 const PayloadIndexDialog = ({
   open,
   onClose,
@@ -158,6 +179,7 @@ const PayloadIndexDialog = ({
   const [params, setParams] = useState(DEFAULT_STATE);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const indexInfo = selectedField ? payloadSchema?.[selectedField] : null;
   const isEditing = !!indexInfo;
@@ -173,8 +195,11 @@ const PayloadIndexDialog = ({
     if (!open) return;
     const info = selectedField ? payloadSchema?.[selectedField] : null;
     if (info) {
+      const presetParams = paramsFromSchema(info);
       setSelectedType(info.data_type);
-      setParams(paramsFromSchema(info));
+      setParams(presetParams);
+      // Reveal advanced options up front when the existing index already uses them.
+      setShowAdvanced(info.data_type === 'text' && hasAdvancedTextParams(presetParams));
     } else {
       const sample =
         selectedField && selectedField === fieldName
@@ -182,6 +207,7 @@ const PayloadIndexDialog = ({
           : availableFields?.find((field) => field.name === selectedField)?.value;
       setSelectedType(suggestFieldType(sample));
       setParams(DEFAULT_STATE);
+      setShowAdvanced(false);
     }
   }, [open, selectedField]);
 
@@ -196,6 +222,7 @@ const PayloadIndexDialog = ({
     setSelectedField(null);
     setSelectedType(null);
     setParams(DEFAULT_STATE);
+    setShowAdvanced(false);
     onClose();
   };
 
@@ -347,7 +374,7 @@ const PayloadIndexDialog = ({
                 ))}
               </Select>
             </FormControl>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2 }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -368,63 +395,90 @@ const PayloadIndexDialog = ({
                 }
                 label={<Typography variant="body2">Phrase matching</Typography>}
               />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={params.ascii_folding}
-                    onChange={(e) => set('ascii_folding', e.target.checked)}
+            </Box>
+
+            <Link
+              component="button"
+              type="button"
+              variant="body2"
+              underline="none"
+              onClick={() => setShowAdvanced((prev) => !prev)}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                alignSelf: 'flex-start',
+                color: 'text.secondary',
+              }}
+            >
+              {showAdvanced ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              Advanced options
+            </Link>
+
+            <Collapse in={showAdvanced} unmountOnExit>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={params.ascii_folding}
+                      onChange={(e) => set('ascii_folding', e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label={<Typography variant="body2">ASCII folding</Typography>}
+                />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Stemmer</InputLabel>
+                    <Select
+                      value={params.stemmer_language}
+                      label="Stemmer"
+                      onChange={(e) => set('stemmer_language', e.target.value)}
+                    >
+                      {STEMMER_LANGUAGES.map((lang) => (
+                        <MenuItem key={lang} value={lang}>
+                          {lang}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Stopwords</InputLabel>
+                    <Select
+                      value={params.stopwords}
+                      label="Stopwords"
+                      onChange={(e) => set('stopwords', e.target.value)}
+                    >
+                      {STOPWORDS_LANGUAGES.map((lang) => (
+                        <MenuItem key={lang} value={lang}>
+                          {lang}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Min Token Length"
+                    type="number"
                     size="small"
+                    fullWidth
+                    value={params.min_token_len}
+                    onChange={(e) => set('min_token_len', e.target.value)}
+                    inputProps={{ min: 1 }}
                   />
-                }
-                label={<Typography variant="body2">ASCII folding</Typography>}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Stemmer</InputLabel>
-                <Select
-                  value={params.stemmer_language}
-                  label="Stemmer"
-                  onChange={(e) => set('stemmer_language', e.target.value)}
-                >
-                  {STEMMER_LANGUAGES.map((lang) => (
-                    <MenuItem key={lang} value={lang}>
-                      {lang}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl size="small" fullWidth>
-                <InputLabel>Stopwords</InputLabel>
-                <Select value={params.stopwords} label="Stopwords" onChange={(e) => set('stopwords', e.target.value)}>
-                  {STOPWORDS_LANGUAGES.map((lang) => (
-                    <MenuItem key={lang} value={lang}>
-                      {lang}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Min Token Length"
-                type="number"
-                size="small"
-                fullWidth
-                value={params.min_token_len}
-                onChange={(e) => set('min_token_len', e.target.value)}
-                inputProps={{ min: 1 }}
-              />
-              <TextField
-                label="Max Token Length"
-                type="number"
-                size="small"
-                fullWidth
-                value={params.max_token_len}
-                onChange={(e) => set('max_token_len', e.target.value)}
-                inputProps={{ min: 1 }}
-              />
-            </Box>
+                  <TextField
+                    label="Max Token Length"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={params.max_token_len}
+                    onChange={(e) => set('max_token_len', e.target.value)}
+                    inputProps={{ min: 1 }}
+                  />
+                </Box>
+              </Box>
+            </Collapse>
           </Box>
         )}
 
