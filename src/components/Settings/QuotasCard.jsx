@@ -244,7 +244,7 @@ function QuotasCard() {
 
             <QuotaRow
               icon={<HardDrive size="1.25rem" />}
-              label="Disk space"
+              label="Disk Space"
               description="Blocks writes once overall disk usage exceeds this share of total disk space."
               htmlFor="disk-quota"
               enabled={draft.diskEnabled}
@@ -254,7 +254,7 @@ function QuotasCard() {
             >
               <PercentQuotaControl
                 id="disk-quota"
-                label="Disk space"
+                label="Disk Space"
                 value={draft.disk}
                 onChange={(value) => patch({ disk: value })}
                 disabled={!diskActive}
