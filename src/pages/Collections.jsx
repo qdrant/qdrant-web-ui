@@ -298,7 +298,7 @@ function Collections() {
                 Delete ({selectedCollections.size})
               </Button>
             )}
-            <CreateCollectionButton onComplete={() => getCollectionsCall(currentPage)} />
+            <CreateCollectionButton />
             <SnapshotsUpload onComplete={() => getCollectionsCall(currentPage)} key={'snapshots'} />
           </Grid>
           <Grid size={12} mb={2}>

@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import Console from './pages/Console';
 import Collections from './pages/Collections';
 import Collection from './pages/Collection';
+import CollectionCreation from './pages/CollectionCreation';
 import Visualize from './pages/Visualize';
 import TutorialIndex from './pages/TutorialIndex';
 import Tutorial from './pages/Tutorial';
@@ -22,6 +23,7 @@ const routes = () => [
       { path: '/welcome', element: <Welcome /> },
       { path: '/console', element: <Console /> },
       { path: '/datasets', element: <Datasets /> },
+      { path: '/collection/create', element: <CollectionCreation /> },
       { path: '/collections', element: <Collections /> },
       { path: '/collections/:collectionName', element: <Collection /> },
       {
