@@ -13,3 +13,8 @@
 .dark .blockSelectorStrip {
   background: #525100cc;
 }
+
+/* Prevent code lens text from clipping when editor panel is narrow */
+.codelens-decoration {
+  white-space: normal !important;
+}
