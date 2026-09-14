@@ -18,7 +18,10 @@ import {
   TextField,
   InputLabel,
   FormControl,
+  Collapse,
+  Link,
 } from '@mui/material';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import JsonView from '../Common/JsonViewBase';
 import { useTheme } from '@mui/material/styles';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
@@ -34,14 +37,78 @@ const FIELD_TYPES = ['keyword', 'integer', 'float', 'uuid', 'datetime', 'text', 
 
 const TEXT_TOKENIZERS = ['prefix', 'whitespace', 'word', 'multilingual'];
 
+// Snowball stemmer languages supported by Qdrant.
+const STEMMER_LANGUAGES = [
+  'none',
+  'arabic',
+  'armenian',
+  'danish',
+  'dutch',
+  'english',
+  'finnish',
+  'french',
+  'german',
+  'greek',
+  'hungarian',
+  'italian',
+  'norwegian',
+  'portuguese',
+  'romanian',
+  'russian',
+  'spanish',
+  'swedish',
+  'tamil',
+  'turkish',
+];
+
+// Stopword languages supported by Qdrant.
+const STOPWORDS_LANGUAGES = [
+  'none',
+  'arabic',
+  'azerbaijani',
+  'basque',
+  'bengali',
+  'catalan',
+  'chinese',
+  'danish',
+  'dutch',
+  'english',
+  'finnish',
+  'french',
+  'german',
+  'greek',
+  'hebrew',
+  'hinglish',
+  'hungarian',
+  'indonesian',
+  'italian',
+  'japanese',
+  'kazakh',
+  'nepali',
+  'norwegian',
+  'portuguese',
+  'romanian',
+  'russian',
+  'slovene',
+  'spanish',
+  'swedish',
+  'tajik',
+  'turkish',
+];
+
 const DEFAULT_STATE = {
   // integer
   range: true,
   lookup: true,
+  // keyword
+  prefix: false,
   // text
   tokenizer: 'whitespace',
   lowercase: true,
   phrase_matching: true,
+  ascii_folding: false,
+  stemmer_language: 'none',
+  stopwords: 'none',
   min_token_len: '',
   max_token_len: '',
 };
@@ -60,14 +127,38 @@ function paramsFromSchema(indexInfo) {
     state.range = params.range ?? true;
     state.lookup = params.lookup ?? true;
   }
+  if (indexInfo?.data_type === 'keyword') {
+    state.prefix = params.prefix ?? false;
+  }
   if (indexInfo?.data_type === 'text') {
     state.tokenizer = params.tokenizer || 'whitespace';
     state.lowercase = params.lowercase ?? true;
     state.phrase_matching = params.phrase_matching ?? true;
+    state.ascii_folding = params.ascii_folding ?? false;
+    state.stemmer_language = params.stemmer?.language ?? 'none';
+    state.stopwords = typeof params.stopwords === 'string' ? params.stopwords : 'none';
     state.min_token_len = params.min_token_len ?? '';
     state.max_token_len = params.max_token_len ?? '';
   }
   return state;
+}
+
+/**
+ * Whether a text params state uses any of the advanced options (kept collapsed
+ * by default). Used to auto-expand the advanced section when editing an index
+ * that already relies on them, so no active setting stays hidden.
+ *
+ * @param {Object} state - params state
+ * @return {boolean} true when an advanced option is set
+ */
+function hasAdvancedTextParams(state) {
+  return (
+    !!state.ascii_folding ||
+    (state.stemmer_language && state.stemmer_language !== 'none') ||
+    (state.stopwords && state.stopwords !== 'none') ||
+    state.min_token_len !== '' ||
+    state.max_token_len !== ''
+  );
 }
 
 const PayloadIndexDialog = ({
@@ -88,6 +179,7 @@ const PayloadIndexDialog = ({
   const [params, setParams] = useState(DEFAULT_STATE);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const indexInfo = selectedField ? payloadSchema?.[selectedField] : null;
   const isEditing = !!indexInfo;
@@ -103,8 +195,11 @@ const PayloadIndexDialog = ({
     if (!open) return;
     const info = selectedField ? payloadSchema?.[selectedField] : null;
     if (info) {
+      const presetParams = paramsFromSchema(info);
       setSelectedType(info.data_type);
-      setParams(paramsFromSchema(info));
+      setParams(presetParams);
+      // Reveal advanced options up front when the existing index already uses them.
+      setShowAdvanced(info.data_type === 'text' && hasAdvancedTextParams(presetParams));
     } else {
       const sample =
         selectedField && selectedField === fieldName
@@ -112,6 +207,7 @@ const PayloadIndexDialog = ({
           : availableFields?.find((field) => field.name === selectedField)?.value;
       setSelectedType(suggestFieldType(sample));
       setParams(DEFAULT_STATE);
+      setShowAdvanced(false);
     }
   }, [open, selectedField]);
 
@@ -126,6 +222,7 @@ const PayloadIndexDialog = ({
     setSelectedField(null);
     setSelectedType(null);
     setParams(DEFAULT_STATE);
+    setShowAdvanced(false);
     onClose();
   };
 
@@ -237,6 +334,17 @@ const PayloadIndexDialog = ({
           ))}
         </Box>
 
+        {selectedType === 'keyword' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
+            <FormControlLabel
+              control={
+                <Checkbox checked={params.prefix} onChange={(e) => set('prefix', e.target.checked)} size="small" />
+              }
+              label={<Typography variant="body2">Prefix matching</Typography>}
+            />
+          </Box>
+        )}
+
         {selectedType === 'integer' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
             <FormControlLabel
@@ -266,7 +374,7 @@ const PayloadIndexDialog = ({
                 ))}
               </Select>
             </FormControl>
-            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 2 }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -288,26 +396,89 @@ const PayloadIndexDialog = ({
                 label={<Typography variant="body2">Phrase matching</Typography>}
               />
             </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label="Min Token Length"
-                type="number"
-                size="small"
-                fullWidth
-                value={params.min_token_len}
-                onChange={(e) => set('min_token_len', e.target.value)}
-                inputProps={{ min: 1 }}
-              />
-              <TextField
-                label="Max Token Length"
-                type="number"
-                size="small"
-                fullWidth
-                value={params.max_token_len}
-                onChange={(e) => set('max_token_len', e.target.value)}
-                inputProps={{ min: 1 }}
-              />
-            </Box>
+
+            <Link
+              component="button"
+              type="button"
+              variant="body2"
+              underline="none"
+              onClick={() => setShowAdvanced((prev) => !prev)}
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                alignSelf: 'flex-start',
+                color: 'text.secondary',
+              }}
+            >
+              {showAdvanced ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              Advanced options
+            </Link>
+
+            <Collapse in={showAdvanced} unmountOnExit>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={params.ascii_folding}
+                      onChange={(e) => set('ascii_folding', e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label={<Typography variant="body2">ASCII folding</Typography>}
+                />
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Stemmer</InputLabel>
+                    <Select
+                      value={params.stemmer_language}
+                      label="Stemmer"
+                      onChange={(e) => set('stemmer_language', e.target.value)}
+                    >
+                      {STEMMER_LANGUAGES.map((lang) => (
+                        <MenuItem key={lang} value={lang}>
+                          {lang}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl size="small" fullWidth>
+                    <InputLabel>Stopwords</InputLabel>
+                    <Select
+                      value={params.stopwords}
+                      label="Stopwords"
+                      onChange={(e) => set('stopwords', e.target.value)}
+                    >
+                      {STOPWORDS_LANGUAGES.map((lang) => (
+                        <MenuItem key={lang} value={lang}>
+                          {lang}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <TextField
+                    label="Min Token Length"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={params.min_token_len}
+                    onChange={(e) => set('min_token_len', e.target.value)}
+                    inputProps={{ min: 1 }}
+                  />
+                  <TextField
+                    label="Max Token Length"
+                    type="number"
+                    size="small"
+                    fullWidth
+                    value={params.max_token_len}
+                    onChange={(e) => set('max_token_len', e.target.value)}
+                    inputProps={{ min: 1 }}
+                  />
+                </Box>
+              </Box>
+            </Collapse>
           </Box>
         )}
 

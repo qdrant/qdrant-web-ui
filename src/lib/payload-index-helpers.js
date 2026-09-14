@@ -25,6 +25,7 @@ export function payloadFieldFormToIndexConfig(fieldName, fieldFormData) {
     params.lowercase = fieldFormData?.lowercase ?? true;
     params.tokenizer = fieldFormData?.tokenizer || 'whitespace';
     params.phrase_matching = fieldFormData?.phrase_matching ?? true;
+    params.ascii_folding = fieldFormData?.ascii_folding ?? false;
 
     const minLength = fieldFormData?.min_token_len;
     const maxLength = fieldFormData?.max_token_len;
@@ -37,9 +38,21 @@ export function payloadFieldFormToIndexConfig(fieldName, fieldFormData) {
       const value = typeof maxLength === 'number' ? maxLength : parseInt(maxLength, 10);
       if (!isNaN(value) && value >= 0) params.max_token_len = value;
     }
+
+    const stemmerLanguage = fieldFormData?.stemmer_language;
+    if (stemmerLanguage && stemmerLanguage !== 'none') {
+      params.stemmer = { type: 'snowball', language: stemmerLanguage };
+    }
+
+    const stopwords = fieldFormData?.stopwords;
+    if (stopwords && stopwords !== 'none') {
+      params.stopwords = stopwords;
+    }
   } else if (type === 'integer') {
     params.range = fieldFormData?.range ?? true;
     params.lookup = fieldFormData?.lookup ?? true;
+  } else if (type === 'keyword') {
+    params.prefix = fieldFormData?.prefix ?? false;
   }
 
   return { name: fieldName, type, params };

@@ -8,9 +8,14 @@ import {
 import { createPayloadIndexParams } from '../../components/Collections/CreateCollection/create-collection';
 
 describe('payloadFieldFormToIndexConfig', () => {
-  it('converts keyword type with no extra params', () => {
+  it('converts keyword type with prefix defaulting to false', () => {
     const result = payloadFieldFormToIndexConfig('color', { field_config_enum: 'keyword' });
-    expect(result).toEqual({ name: 'color', type: 'keyword', params: {} });
+    expect(result).toEqual({ name: 'color', type: 'keyword', params: { prefix: false } });
+  });
+
+  it('converts keyword type with prefix matching enabled', () => {
+    const result = payloadFieldFormToIndexConfig('color', { field_config_enum: 'keyword', prefix: true });
+    expect(result).toEqual({ name: 'color', type: 'keyword', params: { prefix: true } });
   });
 
   it('converts integer type with range and lookup', () => {
@@ -33,6 +38,9 @@ describe('payloadFieldFormToIndexConfig', () => {
       lowercase: false,
       tokenizer: 'word',
       phrase_matching: false,
+      ascii_folding: true,
+      stemmer_language: 'english',
+      stopwords: 'english',
       min_token_len: 2,
       max_token_len: 10,
     });
@@ -43,6 +51,9 @@ describe('payloadFieldFormToIndexConfig', () => {
         lowercase: false,
         tokenizer: 'word',
         phrase_matching: false,
+        ascii_folding: true,
+        stemmer: { type: 'snowball', language: 'english' },
+        stopwords: 'english',
         min_token_len: 2,
         max_token_len: 10,
       },
@@ -55,9 +66,20 @@ describe('payloadFieldFormToIndexConfig', () => {
       lowercase: true,
       tokenizer: 'whitespace',
       phrase_matching: true,
+      ascii_folding: false,
     });
     expect(result.params.min_token_len).toBeUndefined();
     expect(result.params.max_token_len).toBeUndefined();
+  });
+
+  it('omits stemmer and stopwords when set to "none"', () => {
+    const result = payloadFieldFormToIndexConfig('body', {
+      field_config_enum: 'text',
+      stemmer_language: 'none',
+      stopwords: 'none',
+    });
+    expect(result.params.stemmer).toBeUndefined();
+    expect(result.params.stopwords).toBeUndefined();
   });
 
   it('ignores blank min/max token length values', () => {
