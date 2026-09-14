@@ -5,6 +5,7 @@ import { ArcherContainer } from 'react-archer';
 import { Typography, Box, LinearProgress, Divider } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
 import { useClient } from '../../../context/client-context';
+import { getErrorMessage } from '../../../lib/get-error-message';
 import { useTelemetry } from '../../../context/telemetry-context';
 import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
@@ -302,7 +303,7 @@ const ClusterMonitor = ({ collectionName }) => {
       await refreshClusterInfo();
     } catch (err) {
       console.error('Error moving shard:', err);
-      enqueueSnackbar(`Failed to transfer shard: ${err.message}`, getSnackbarOptions('error', closeSnackbar));
+      enqueueSnackbar(`Failed to transfer shard: ${getErrorMessage(err)}`, getSnackbarOptions('error', closeSnackbar));
     } finally {
       setTransferLoading(false);
     }
@@ -354,7 +355,7 @@ const ClusterMonitor = ({ collectionName }) => {
     } catch (err) {
       console.error(`Error starting resharding ${direction}:`, err);
       enqueueSnackbar(
-        `Failed to start resharding ${direction}: ${err.message}`,
+        `Failed to start resharding ${direction}: ${getErrorMessage(err)}`,
         getSnackbarOptions('error', closeSnackbar)
       );
     } finally {
@@ -388,7 +389,10 @@ const ClusterMonitor = ({ collectionName }) => {
       await refreshClusterInfo();
     } catch (err) {
       console.error('Error aborting resharding:', err);
-      enqueueSnackbar(`Failed to abort resharding: ${err.message}`, getSnackbarOptions('error', closeSnackbar));
+      enqueueSnackbar(
+        `Failed to abort resharding: ${getErrorMessage(err)}`,
+        getSnackbarOptions('error', closeSnackbar)
+      );
     } finally {
       setReshardingLoading(false);
     }
@@ -409,7 +413,7 @@ const ClusterMonitor = ({ collectionName }) => {
     } catch (err) {
       console.error('Error updating replication factor:', err);
       enqueueSnackbar(
-        `Failed to update replication factor: ${err.message}`,
+        `Failed to update replication factor: ${getErrorMessage(err)}`,
         getSnackbarOptions('error', closeSnackbar)
       );
     } finally {

@@ -230,7 +230,7 @@ function Collections() {
       try {
         await qdrantClient.deleteCollection(name);
       } catch (error) {
-        errors.push(`${name}: ${error.message}`);
+        errors.push(`${name}: ${getErrorMessageWithApiKey(error) || 'Deletion failed'}`);
       }
     }
     setSelectedCollections(new Set());
@@ -238,7 +238,7 @@ function Collections() {
     if (errors.length > 0) {
       setBulkDeleteError(`Failed to delete: ${errors.join('; ')}`);
     }
-  }, [selectedCollections, qdrantClient, getCollectionsCall, currentPage]);
+  }, [selectedCollections, qdrantClient, getCollectionsCall, currentPage, getErrorMessageWithApiKey]);
 
   const displayCollections = searchQuery ? filteredCollections : collections;
 

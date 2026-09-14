@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
+import { getErrorMessage } from '../../lib/get-error-message';
 import ErrorNotifier from '../ToastNotifications/ErrorNotifier';
 import ConfirmationDialog from '../Common/ConfirmationDialog';
 
@@ -17,7 +18,7 @@ export default function DeleteDialog({ open, setOpen, collectionName, getCollect
       setOpen(false);
       setHasError(false);
     } catch (error) {
-      setErrorMessage(`Deletion Unsuccessful, error: ${error.message}`);
+      setErrorMessage(`Deletion Unsuccessful, error: ${getErrorMessage(error)}`);
       setHasError(true);
       setOpen(false);
     }

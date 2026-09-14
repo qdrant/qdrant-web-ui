@@ -24,6 +24,7 @@ import TabPanel from '../components/Common/TabPanel';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { getSimilarPoints } from '../lib/graph-visualization-helpers';
+import { getErrorMessage } from '../lib/get-error-message';
 import { useSnackbar } from 'notistack';
 
 // Lazy: SelectionPanel pulls in @mui/x-data-grid (~90 KB gzipped), which is
@@ -161,7 +162,7 @@ function Visualize() {
       const result = await requestData(qdrantClient, collectionName, data);
       setResult(result);
     } catch (e) {
-      enqueueSnackbar(`Request error: ${e.message}`, { variant: 'error' });
+      enqueueSnackbar(`Request error: ${getErrorMessage(e)}`, { variant: 'error' });
     } finally {
       setFetching(false);
     }
@@ -187,7 +188,7 @@ function Visualize() {
       });
       setSimilarPoints(neighbors);
     } catch (e) {
-      enqueueSnackbar(`Failed to load similar points: ${e.message}`, { variant: 'error' });
+      enqueueSnackbar(`Failed to load similar points: ${getErrorMessage(e)}`, { variant: 'error' });
     }
   };
 
