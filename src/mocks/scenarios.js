@@ -11,6 +11,7 @@ import { optimizationsHandlers } from './handlers/optimizations';
 import { reshardingHandlers } from './handlers/resharding';
 import { clusterBigHandlers } from './handlers/cluster-big';
 import { clusterSmallHandlers } from './handlers/cluster-small';
+import { clusterLiveHandlers } from './handlers/cluster-live';
 
 export const DEFAULT_SCENARIO = 'single-node';
 
@@ -23,6 +24,7 @@ export const scenarios = {
   cluster: compose(clusterHandlers, baseHandlers),
   'cluster-small': compose(clusterSmallHandlers, baseHandlers),
   'cluster-big': compose(clusterBigHandlers, baseHandlers),
+  'cluster-live': compose(clusterLiveHandlers, baseHandlers),
   optimizations: compose(optimizationsHandlers, baseHandlers),
   resharding: compose(reshardingHandlers, baseHandlers),
   // Everything populated at once: a distributed cluster mid-resharding plus rich

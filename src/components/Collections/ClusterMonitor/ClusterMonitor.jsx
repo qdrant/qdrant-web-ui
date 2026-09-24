@@ -22,10 +22,11 @@ import AbortReshardingDialog from './AbortReshardingDialog';
 import ReshardingButtons from './ReshardingButtons';
 import ReshardingStatus from './ReshardingStatus';
 import { useReshardingProgress } from './reshardingProgress';
+import AutoRefreshControl from './AutoRefreshControl';
 import ReplicationControl from './ReplicationButtons';
 
-/** How often the cluster info is re-fetched while a resharding operation is running. */
-const RESHARDING_POLL_INTERVAL_MS = 5000;
+/** How often the cluster info is re-fetched while auto-refresh is on or a resharding operation is running. */
+const REFRESH_INTERVAL_MS = 5000;
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -132,6 +133,8 @@ const ClusterMonitor = ({ collectionName }) => {
   const [contentInnerWidth, setContentInnerWidth] = useState(null);
   const shardsCellRef = useRef(null);
   const [isLongCluster, setIsLongCluster] = useState(false);
+  // Id of the latest cluster info request; responses of older ones are dropped.
+  const latestRequestRef = useRef(0);
 
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return undefined;
@@ -245,42 +248,50 @@ const ClusterMonitor = ({ collectionName }) => {
     setDragState({ isDragging: false, draggedSlot: null });
   };
 
-  // Helper function to refresh cluster info
-  const refreshClusterInfo = useCallback(async () => {
-    try {
-      const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
-        axios.get(`/cluster`),
-        qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName }),
-        qdrantClient.getCollection(collectionName),
-      ]);
+  // Helper function to refresh cluster info. Only the latest request updates the
+  // state, so a slow poll cannot overwrite the result of a newer refresh.
+  const refreshClusterInfo = useCallback(
+    async ({ signal } = {}) => {
+      const requestId = ++latestRequestRef.current;
+      try {
+        const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
+          axios.get(`/cluster`, { signal }),
+          qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName }, { signal }),
+          qdrantClient.api('collections').getCollection({ collection_name: collectionName }, { signal }),
+        ]);
 
-      setReplicationFactor(collectionInfo?.config?.params?.replication_factor ?? 1);
+        if (requestId !== latestRequestRef.current) return;
 
-      const newCluster = collectionClusterInfo.data.result;
-      const localShards =
-        newCluster.local_shards && newCluster.local_shards.length > 0
-          ? newCluster.local_shards.map((shard) => {
-              return {
-                ...shard,
-                peer_id: newCluster.peer_id,
-              };
-            })
+        setReplicationFactor(collectionInfo?.data?.result?.config?.params?.replication_factor ?? 1);
+
+        const newCluster = collectionClusterInfo.data.result;
+        const localShards =
+          newCluster.local_shards && newCluster.local_shards.length > 0
+            ? newCluster.local_shards.map((shard) => {
+                return {
+                  ...shard,
+                  peer_id: newCluster.peer_id,
+                };
+              })
+            : [];
+        newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
+
+        newCluster.peers = clusterInfo?.data?.result?.peers
+          ? Object.keys(clusterInfo.data.result.peers)
+              .map((peerId) => parseInt(peerId))
+              .sort((a, b) => a - b)
           : [];
-      newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
-
-      newCluster.peers = clusterInfo?.data?.result?.peers
-        ? Object.keys(clusterInfo.data.result.peers)
-            .map((peerId) => parseInt(peerId))
-            .sort((a, b) => a - b)
-        : [];
-      newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
-      // shard_count and resharding_operations are already included in newCluster from the API response
-      setCluster({ ...newCluster });
-    } catch (err) {
-      console.error('Error refreshing cluster info:', err);
-      throw err;
-    }
-  }, [collectionName, qdrantClient]);
+        newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
+        // shard_count and resharding_operations are already included in newCluster from the API response
+        setCluster({ ...newCluster });
+      } catch (err) {
+        if (signal?.aborted) return;
+        console.error('Error refreshing cluster info:', err);
+        throw err;
+      }
+    },
+    [collectionName, qdrantClient]
+  );
 
   const handleTransferConfirm = async (transferRequest) => {
     setTransferLoading(true);
@@ -450,40 +461,23 @@ const ClusterMonitor = ({ collectionName }) => {
 
   // Fetch cluster info and update cluster state
   useEffect(() => {
-    const fetchClusterInfo = async () => {
-      if (isRestricted) {
-        return;
-      }
+    if (isRestricted) {
+      return undefined;
+    }
 
-      try {
-        await refreshClusterInfo();
-      } catch (err) {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      }
-    };
+    const controller = new AbortController();
+    refreshClusterInfo({ signal: controller.signal }).catch((err) => {
+      enqueueSnackbar(getErrorMessage(err), getSnackbarOptions('error', closeSnackbar));
+    });
 
-    fetchClusterInfo();
-  }, [collectionName, isRestricted, qdrantClient]);
+    return () => controller.abort();
+  }, [isRestricted, refreshClusterInfo]);
 
   const reshardingOperations = cluster?.resharding_operations ?? [];
   const isResharding = reshardingOperations.length > 0;
   const reshardingProgress = useReshardingProgress(collectionName, isResharding);
 
-  // Resharding advances through several stages, so its reported progress has to
-  // be re-fetched. Paused while dragging a shard to not disturb the interaction.
-  useEffect(() => {
-    if (!isResharding || isRestricted || dragState.isDragging) {
-      return undefined;
-    }
-
-    const interval = setInterval(() => {
-      // Errors are already logged by refreshClusterInfo; a failed poll is retried
-      // by the next tick and should not raise a snackbar on every attempt.
-      refreshClusterInfo().catch(() => {});
-    }, RESHARDING_POLL_INTERVAL_MS);
-
-    return () => clearInterval(interval);
-  }, [isResharding, isRestricted, dragState.isDragging, refreshClusterInfo]);
+  const pollClusterInfo = useCallback((signal) => refreshClusterInfo({ signal }), [refreshClusterInfo]);
 
   // Extract unique shard keys from all shards (must be before conditional return)
   const shardKeys = React.useMemo(() => {
@@ -619,7 +613,15 @@ const ClusterMonitor = ({ collectionName }) => {
             )}
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, gap: 1 }}>
+          {/* A running resharding is always polled, since it advances through several stages.
+              Polling is paused while dragging a shard to not disturb the interaction. */}
+          <AutoRefreshControl
+            onRefresh={pollClusterInfo}
+            interval={REFRESH_INTERVAL_MS}
+            forceEnabled={isResharding}
+            paused={isRestricted || dragState.isDragging}
+          />
           <Legend dragState={dragState} />
         </Box>
       </Box>
