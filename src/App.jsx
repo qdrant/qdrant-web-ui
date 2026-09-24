@@ -6,6 +6,7 @@ import { CssBaseline } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import StyledMain from './components/Common/StyledMain';
 import MockModeBadge from './components/Common/MockModeBadge';
+import ErrorDetailsDialog from './components/ToastNotifications/ErrorDetailsDialog';
 import { ColorModeProvider } from './context/color-context';
 
 function NewApp() {
@@ -29,6 +30,7 @@ function NewApp() {
       <CssBaseline />
       <StyledMain>{routing}</StyledMain>
       <MockModeBadge />
+      <ErrorDetailsDialog />
     </ColorModeProvider>
   );
 }

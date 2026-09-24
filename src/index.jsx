@@ -7,6 +7,7 @@ import reportWebVitals from './reportWebVitals';
 import { HashRouter } from 'react-router';
 import { ClientProvider } from './context/client-context';
 import { SnackbarProvider, closeSnackbar } from 'notistack';
+import ErrorSnackbar from './components/ToastNotifications/ErrorSnackbar';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -21,6 +22,7 @@ function renderApp() {
               horizontal: 'center',
             }}
             style={{ flexWrap: 'nowrap' }}
+            Components={{ error: ErrorSnackbar }}
             action={(snackbarId) => (
               <Button
                 variant="outlined"
