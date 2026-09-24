@@ -12,11 +12,14 @@ import IconButton from '@mui/material/IconButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useClient } from '../../context/client-context';
+import qdrantClient from '../../common/client';
+import { getErrorMessage } from '../../lib/get-error-message';
 
 export function ApiKeyDialog({ open, setOpen, onApply }) {
   const { settings, setSettings } = useClient();
   const [showApiKey, setShowApiKey] = React.useState(false);
-  const [error, setError] = React.useState(false);
+  const [error, setError] = React.useState(null);
+  const [isValidating, setIsValidating] = React.useState(false);
 
   const handleClickShowApiKey = () => setShowApiKey((show) => !show);
 
@@ -27,15 +30,39 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
   const [apiKey, setApiKey] = React.useState('');
 
   const handleClose = () => {
-    setError(false);
+    if (isValidating) {
+      return;
+    }
+    setError(null);
     setOpen(false);
   };
 
-  const handleApply = () => {
-    if (!apiKey) {
-      setError(true);
+  const handleApply = async () => {
+    if (isValidating) {
       return;
     }
+    if (!apiKey) {
+      setError('API Key is required');
+      return;
+    }
+
+    // Check the key against the server before applying it,
+    // so the user is not left with a silently rejected key after reload.
+    setIsValidating(true);
+    try {
+      await qdrantClient({ apiKey }).getCollections();
+    } catch (e) {
+      setError(
+        e?.status === 401 || e?.status === 403
+          ? 'API Key is invalid. Please check it and try again.'
+          : getErrorMessage(e, { fallbackMessage: 'Could not verify API Key.' })
+      );
+      setIsValidating(false);
+      return;
+    }
+    setIsValidating(false);
+
+    setError(null);
     setSettings({ ...settings, apiKey });
     setOpen(false);
     onApply();
@@ -63,7 +90,10 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             This instance of Qdrant might be protected by an API Key. If so, please enter your API Key to continue.
           </DialogContentText>
           <TextField
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => {
+              setApiKey(e.target.value);
+              setError(null);
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -73,8 +103,9 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
             autoFocus
             id="api-key-input"
             placeholder="API Key"
-            error={error}
-            helperText={error ? 'API Key is required' : ''}
+            error={Boolean(error)}
+            helperText={error || ''}
+            disabled={isValidating}
             type={showApiKey ? 'text' : 'password'}
             fullWidth
             variant="outlined"
@@ -96,10 +127,10 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button variant="outlined" color="inherit" onClick={handleClose}>
+          <Button variant="outlined" color="inherit" onClick={handleClose} disabled={isValidating}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleApply}>
+          <Button variant="contained" onClick={handleApply} loading={isValidating}>
             Apply
           </Button>
         </DialogActions>
