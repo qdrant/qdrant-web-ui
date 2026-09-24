@@ -29,6 +29,8 @@ export function setupAxios(axios, { apiKey }) {
   }
   if (apiKey) {
     axios.defaults.headers.common['api-key'] = apiKey;
+  } else {
+    delete axios.defaults.headers.common['api-key'];
   }
   axios.defaults.transformRequest = [
     function (data, headers) {

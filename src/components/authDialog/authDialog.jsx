@@ -15,7 +15,7 @@ import { useClient } from '../../context/client-context';
 import qdrantClient from '../../common/client';
 import { getErrorMessage } from '../../lib/get-error-message';
 
-export function ApiKeyDialog({ open, setOpen, onApply }) {
+export function ApiKeyDialog({ open, setOpen }) {
   const { settings, setSettings } = useClient();
   const [showApiKey, setShowApiKey] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -47,7 +47,7 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
     }
 
     // Check the key against the server before applying it,
-    // so the user is not left with a silently rejected key after reload.
+    // so a rejected key is never silently saved.
     setIsValidating(true);
     try {
       await qdrantClient({ apiKey }).getCollections();
@@ -65,7 +65,6 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
     setError(null);
     setSettings({ ...settings, apiKey });
     setOpen(false);
-    onApply();
   };
 
   return (
@@ -142,5 +141,4 @@ export function ApiKeyDialog({ open, setOpen, onApply }) {
 ApiKeyDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired,
-  onApply: PropTypes.func.isRequired,
 };

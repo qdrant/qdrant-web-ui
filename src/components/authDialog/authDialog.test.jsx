@@ -15,9 +15,8 @@ vi.mock('../../common/client', () => ({
 
 const renderDialog = () => {
   const setOpen = vi.fn();
-  const onApply = vi.fn();
-  render(<ApiKeyDialog open={true} setOpen={setOpen} onApply={onApply} />);
-  return { setOpen, onApply };
+  render(<ApiKeyDialog open={true} setOpen={setOpen} />);
+  return { setOpen };
 };
 
 const submitKey = (key) => {
@@ -32,34 +31,32 @@ describe('ApiKeyDialog', () => {
 
   it('applies a valid key', async () => {
     getCollections.mockResolvedValue({ collections: [] });
-    const { setOpen, onApply } = renderDialog();
+    const { setOpen } = renderDialog();
 
     submitKey('valid-key');
 
-    await waitFor(() => expect(onApply).toHaveBeenCalled());
-    expect(setSettings).toHaveBeenCalledWith({ apiKey: 'valid-key' });
+    await waitFor(() => expect(setSettings).toHaveBeenCalledWith({ apiKey: 'valid-key' }));
     expect(setOpen).toHaveBeenCalledWith(false);
   });
 
   it('shows an error and does not apply an invalid key', async () => {
     getCollections.mockRejectedValue(Object.assign(new Error('Unauthorized'), { status: 401 }));
-    const { setOpen, onApply } = renderDialog();
+    const { setOpen } = renderDialog();
 
     submitKey('wrong-key');
 
     expect(await screen.findByText('API Key is invalid. Please check it and try again.')).toBeInTheDocument();
     expect(setSettings).not.toHaveBeenCalled();
-    expect(onApply).not.toHaveBeenCalled();
     expect(setOpen).not.toHaveBeenCalled();
   });
 
   it('requires a key', () => {
-    const { onApply } = renderDialog();
+    renderDialog();
 
     fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
 
     expect(screen.getByText('API Key is required')).toBeInTheDocument();
     expect(getCollections).not.toHaveBeenCalled();
-    expect(onApply).not.toHaveBeenCalled();
+    expect(setSettings).not.toHaveBeenCalled();
   });
 });
