@@ -6,6 +6,14 @@ import { Typography } from '@mui/material';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import { StyledTooltip } from './StyledComponents/StyledTooltip';
+import TransferProgressMarker from './TransferProgressMarker';
+
+/**
+ * Where arrows between neighboring peers start and end: this far inside the slot
+ * from its edge facing the other peer. The gap between neighboring columns alone
+ * is too short to show the arrow and its progress marker.
+ */
+const NEIGHBOR_ARROW_INSET = 'min(30%, 24px)';
 
 const TooltipRow = ({ label, value }) => (
   <Typography variant="caption">
@@ -23,6 +31,7 @@ TooltipRow.propTypes = {
  * @param {number} currentPeerId - The id of the current peer.
  * @param {object} shard - The shard object.
  * @param {object} transfer - The transfer object.
+ * @param {?('left'|'right')} innerAnchor - Side of the anchor inside the slot for an arrow from or to a neighboring peer.
  * @param {number} peersNumber - The number of peers.
  * @param {string} dragAndDropState - The current drag and drop state.
  * @param {function} onSlotGrab - Function called when slot is grabbed.
@@ -36,6 +45,7 @@ const Slot = ({
   currentPeerId,
   shard,
   transfer,
+  innerAnchor = null,
   slotIndices,
   peersNumber,
   dragAndDropState,
@@ -45,6 +55,8 @@ const Slot = ({
 }) => {
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('md'));
+  // Narrow slots (small screens or many peers) get shorter labels and a smaller transfer marker.
+  const compactLabels = matches || peersNumber > 12;
 
   const relations = [];
   if (transfer?.transfer) {
@@ -72,10 +84,13 @@ const Slot = ({
       sourceAnchorDirection = 'left';
     }
 
+    const targetSlotId = `${transfer.transfer.to}-${targetShardId}`;
     relations.push({
-      targetId: `${transfer.transfer.to}-${transfer.transfer.to_shard_id ?? transfer.transfer.shard_id}`,
+      targetId: transfer.toNeighbor ? `${targetSlotId}-inner` : targetSlotId,
       targetAnchor: targetAnchorDirection,
       sourceAnchor: sourceAnchorDirection,
+      // Rendered in the middle of the arrow.
+      label: <TransferProgressMarker transfer={transfer.transfer} compact={compactLabels} />,
       style: {
         strokeWidth: '2',
         endMarker: true,
@@ -110,7 +125,7 @@ const Slot = ({
   };
 
   return (
-    <ArcherElement id={`${currentPeerId}-${id}`} relations={relations}>
+    <ArcherElement id={`${currentPeerId}-${id}`} relations={transfer?.toNeighbor ? [] : relations}>
       <div style={{ position: 'static' }}>
         <StyledTooltip
           arrow
@@ -191,7 +206,7 @@ const Slot = ({
           >
             {shard && (
               <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-                {`${!matches && peersNumber <= 12 ? 'Shard' : ''} ${shard.shard_id}`}
+                {`${!compactLabels ? 'Shard' : ''} ${shard.shard_id}`}
               </Typography>
             )}
             {shard?.shard_key && (
@@ -201,6 +216,14 @@ const Slot = ({
                   {peersNumber <= 10 ? `${shard.shard_key}` : ''}
                 </Typography>
               </>
+            )}
+            {innerAnchor && (
+              <ArcherElement id={`${currentPeerId}-${id}-inner`} relations={transfer?.toNeighbor ? relations : []}>
+                <span
+                  aria-hidden="true"
+                  style={{ position: 'absolute', top: '50%', [innerAnchor]: NEIGHBOR_ARROW_INSET, width: 0, height: 0 }}
+                />
+              </ArcherElement>
             )}
           </StyledShardSlot>
         </StyledTooltip>
@@ -227,8 +250,12 @@ Slot.propTypes = {
       from: PropTypes.number,
       to: PropTypes.number,
       to_shard_id: PropTypes.number,
+      method: PropTypes.string,
+      comment: PropTypes.string,
     }),
+    toNeighbor: PropTypes.bool,
   }),
+  innerAnchor: PropTypes.oneOf(['left', 'right', null]),
   slotIndices: PropTypes.arrayOf(PropTypes.number).isRequired,
   peersNumber: PropTypes.number,
   dragAndDropState: PropTypes.oneOf(['grabbed', 'awaiting', null]),

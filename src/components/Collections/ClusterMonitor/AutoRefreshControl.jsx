@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import { FormControlLabel, Switch, Typography } from '@mui/material';
 import { usePolling } from '../../../hooks/usePolling';
 
-/** localStorage key remembering whether auto-refresh is on; it is on unless turned off. */
+/** localStorage key remembering whether auto-refresh is on; it is off unless turned on. */
 const AUTO_REFRESH_STORAGE_KEY = 'qdrant-web-ui-cluster-monitor-auto-refresh';
 
 const readAutoRefresh = () => {
   try {
-    return localStorage.getItem(AUTO_REFRESH_STORAGE_KEY) !== 'false';
+    return localStorage.getItem(AUTO_REFRESH_STORAGE_KEY) === 'true';
   } catch {
-    return true;
+    return false;
   }
 };
 

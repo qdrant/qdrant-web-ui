@@ -13,7 +13,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import ClusterNode from './ClusterNode';
 import ClusterNodeSummary from './ClusterNodeSummary';
 import { Circle } from '../../Common/Circle';
-import { CLUSTER_COLORS, getHighContrastClusterColors } from './constants';
+import { CLUSTER_COLORS, getHighContrastClusterColors, getTransferArrowColors } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
@@ -492,6 +492,7 @@ const ClusterMonitor = ({ collectionName }) => {
   }, [cluster?.shards]);
 
   const peers = cluster?.peers ?? [];
+  const arrowColors = getTransferArrowColors(theme);
 
   const slotIndices = useMemo(() => {
     const shards = cluster?.shards ?? [];
@@ -716,7 +717,12 @@ const ClusterMonitor = ({ collectionName }) => {
           <Box ref={contentInnerRef} sx={{ minWidth: '100%', width: 'max-content' }}>
             <ArcherContainer
               ref={archerContainerRef}
-              strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
+              strokeColor={arrowColors.stroke}
+              svgContainerStyle={
+                arrowColors.halo
+                  ? { filter: `drop-shadow(0 0 1px ${arrowColors.halo}) drop-shadow(0 0 1px ${arrowColors.halo})` }
+                  : undefined
+              }
               lineStyle={'angle'}
             >
               <Box
