@@ -1,12 +1,11 @@
-import React from 'react';
-import { useTheme } from '@mui/material/styles';
+import React, { memo } from 'react';
 import { ArcherElement } from 'react-archer';
 import PropTypes from 'prop-types';
 import { Typography } from '@mui/material';
-import useMediaQuery from '@mui/material/useMediaQuery';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
-import { StyledTooltip } from './StyledComponents/StyledTooltip';
+import { slotTooltipAttributes } from './SlotTooltip';
 import TransferProgressMarker from './TransferProgressMarker';
+import { areSlotPropsEqual } from './helpers';
 
 /**
  * Where arrows between neighboring peers start and end: this far inside the slot
@@ -15,24 +14,17 @@ import TransferProgressMarker from './TransferProgressMarker';
  */
 const NEIGHBOR_ARROW_INSET = 'min(30%, 24px)';
 
-const TooltipRow = ({ label, value }) => (
-  <Typography variant="caption">
-    <b>{label}:</b> {value}
-  </Typography>
-);
-TooltipRow.propTypes = {
-  label: PropTypes.string.isRequired,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-};
-
 /**
  * Legend component to explain the status of shards in the cluster.
  * @param {number} id - The id of the slot.
  * @param {number} currentPeerId - The id of the current peer.
  * @param {object} shard - The shard object.
  * @param {object} transfer - The transfer object.
+ * @param {boolean} isArrowEnd - Whether a transfer arrow starts or ends at this slot.
  * @param {?('left'|'right')} innerAnchor - Side of the anchor inside the slot for an arrow from or to a neighboring peer.
+ * @param {?('up'|'down')} rowDirection - For a transfer within the peer: whether its target row is above or below.
  * @param {number} peersNumber - The number of peers.
+ * @param {boolean} compactLabels - Narrow slots (small screens or many peers): shorter labels, smaller transfer marker.
  * @param {string} dragAndDropState - The current drag and drop state.
  * @param {function} onSlotGrab - Function called when slot is grabbed.
  * @param {function} onSlotDrop - Function called when slot is dropped.
@@ -46,18 +38,15 @@ const Slot = ({
   shard,
   transfer,
   innerAnchor = null,
-  slotIndices,
+  isArrowEnd = false,
+  rowDirection = null,
   peersNumber,
+  compactLabels = false,
   dragAndDropState,
   onSlotGrab,
   onSlotDrop,
   onDragCancel,
 }) => {
-  const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down('md'));
-  // Narrow slots (small screens or many peers) get shorter labels and a smaller transfer marker.
-  const compactLabels = matches || peersNumber > 12;
-
   const relations = [];
   if (transfer?.transfer) {
     let targetAnchorDirection;
@@ -67,9 +56,7 @@ const Slot = ({
 
     if (transfer.transfer.to === transfer.transfer.from) {
       // Same peer transfer — use top/bottom anchors based on visual row position
-      const sourceVisualIndex = slotIndices.indexOf(transfer.transfer.shard_id);
-      const targetVisualIndex = slotIndices.indexOf(targetShardId);
-      if (sourceVisualIndex > targetVisualIndex) {
+      if (rowDirection === 'up') {
         sourceAnchorDirection = 'top';
         targetAnchorDirection = 'bottom';
       } else {
@@ -124,110 +111,57 @@ const Slot = ({
     }
   };
 
+  const slot = (
+    <div style={{ position: 'static' }}>
+      <StyledShardSlot
+        state={shard ? shard.state.toLowerCase() : 'empty'}
+        dragAndDropState={dragAndDropState}
+        isTransferring={!!transfer?.transfer}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onDragEnd={handleDragEnd}
+        draggable={shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer}
+        data-cluster-slot="true"
+        {...slotTooltipAttributes({
+          peerId: currentPeerId,
+          slotId: id,
+          shard,
+          transferTo: transfer?.transfer?.to,
+          isDropTarget: dragAndDropState === 'awaiting',
+        })}
+      >
+        {shard && (
+          <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+            {`${!compactLabels ? 'Shard' : ''} ${shard.shard_id}`}
+          </Typography>
+        )}
+        {shard?.shard_key && (
+          <>
+            <br />
+            <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
+              {peersNumber <= 10 ? `${shard.shard_key}` : ''}
+            </Typography>
+          </>
+        )}
+        {innerAnchor && (
+          <ArcherElement id={`${currentPeerId}-${id}-inner`} relations={transfer?.toNeighbor ? relations : []}>
+            <span
+              aria-hidden="true"
+              style={{ position: 'absolute', top: '50%', [innerAnchor]: NEIGHBOR_ARROW_INSET, width: 0, height: 0 }}
+            />
+          </ArcherElement>
+        )}
+      </StyledShardSlot>
+    </div>
+  );
+
+  // Only slots with an arrow are registered with react-archer: it measures every
+  // registered element whenever arrows may have moved, and large clusters have
+  // thousands of slots.
+  if (!isArrowEnd) return slot;
   return (
     <ArcherElement id={`${currentPeerId}-${id}`} relations={transfer?.toNeighbor ? [] : relations}>
-      <div style={{ position: 'static' }}>
-        <StyledTooltip
-          arrow
-          placement="top"
-          title={
-            shard ? (
-              <>
-                <TooltipRow label="Peer Id" value={currentPeerId} />
-                {'shard_id' in shard && (
-                  <>
-                    <br />
-                    <TooltipRow label="Shard Id" value={shard.shard_id} />
-                  </>
-                )}
-                {shard.shard_key && (
-                  <>
-                    <br />
-                    <TooltipRow label="Shard Key" value={shard.shard_key} />
-                  </>
-                )}
-                {shard.state && (
-                  <>
-                    <br />
-                    <TooltipRow label="Shard State" value={shard.state} />
-                  </>
-                )}
-                {shard.state === 'Active' && !transfer?.transfer && (
-                  <>
-                    <br />
-                    <Typography variant="caption" sx={{ color: theme.palette.success.main, fontWeight: 'bold' }}>
-                      Drag to an empty slot to transfer
-                    </Typography>
-                  </>
-                )}
-                {transfer?.transfer && (
-                  <>
-                    <br />
-                    <Typography variant="caption" sx={{ color: theme.palette.warning.main, fontWeight: 'bold' }}>
-                      Transferring to peer {transfer.transfer.to}
-                    </Typography>
-                    <br />
-                    <Typography variant="caption" sx={{ color: theme.palette.error.main, fontStyle: 'italic' }}>
-                      Cannot be dragged during transfer
-                    </Typography>
-                  </>
-                )}
-              </>
-            ) : dragAndDropState === 'awaiting' ? (
-              <>
-                <TooltipRow label="Peer Id" value={currentPeerId} />
-                <br />
-                <TooltipRow label="Slot Id" value={id} />
-                <br />
-                <Typography variant="caption" sx={{ color: 'common.white', fontWeight: 'bold' }}>
-                  Drop here to move shard
-                </Typography>
-              </>
-            ) : (
-              <>
-                <TooltipRow label="Peer Id" value={currentPeerId} />
-                <br />
-                <TooltipRow label="Slot Id" value={id} />
-                <br />
-                <Typography variant="caption">Empty slot</Typography>
-              </>
-            )
-          }
-        >
-          <StyledShardSlot
-            state={shard ? shard.state.toLowerCase() : 'empty'}
-            dragAndDropState={dragAndDropState}
-            isTransferring={!!transfer?.transfer}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onDragEnd={handleDragEnd}
-            draggable={shard && shard.state === 'Active' && !dragAndDropState && !transfer?.transfer}
-            data-cluster-slot="true"
-          >
-            {shard && (
-              <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-                {`${!compactLabels ? 'Shard' : ''} ${shard.shard_id}`}
-              </Typography>
-            )}
-            {shard?.shard_key && (
-              <>
-                <br />
-                <Typography variant="subtitle2" sx={{ textAlign: 'center', fontWeight: 'bold' }}>
-                  {peersNumber <= 10 ? `${shard.shard_key}` : ''}
-                </Typography>
-              </>
-            )}
-            {innerAnchor && (
-              <ArcherElement id={`${currentPeerId}-${id}-inner`} relations={transfer?.toNeighbor ? relations : []}>
-                <span
-                  aria-hidden="true"
-                  style={{ position: 'absolute', top: '50%', [innerAnchor]: NEIGHBOR_ARROW_INSET, width: 0, height: 0 }}
-                />
-              </ArcherElement>
-            )}
-          </StyledShardSlot>
-        </StyledTooltip>
-      </div>
+      {slot}
     </ArcherElement>
   );
 };
@@ -256,12 +190,14 @@ Slot.propTypes = {
     toNeighbor: PropTypes.bool,
   }),
   innerAnchor: PropTypes.oneOf(['left', 'right', null]),
-  slotIndices: PropTypes.arrayOf(PropTypes.number).isRequired,
+  isArrowEnd: PropTypes.bool,
+  rowDirection: PropTypes.oneOf(['up', 'down', null]),
   peersNumber: PropTypes.number,
+  compactLabels: PropTypes.bool,
   dragAndDropState: PropTypes.oneOf(['grabbed', 'awaiting', null]),
   onSlotGrab: PropTypes.func.isRequired,
   onSlotDrop: PropTypes.func.isRequired,
   onDragCancel: PropTypes.func.isRequired,
 };
 
-export default Slot;
+export default memo(Slot, areSlotPropsEqual);

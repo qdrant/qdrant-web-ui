@@ -11,9 +11,13 @@ const COMPACT_MARKER_SIZE = 12;
 /** Invisible margin around the marker that still reacts to the pointer, so it is easier to hit. */
 const HIT_BUFFER = 4;
 const BORDER_WIDTH = 2;
+/** Height of the chip the marker turns into on hover, focus and while its tooltip is open. */
+const CHIP_HEIGHT = 20;
+const CHIP_LABEL = 'Progress';
 
 /**
- * Circle in the middle of a shard transfer arrow. Its tooltip shows the progress
+ * Circle in the middle of a shard transfer arrow. On hover it turns into a small
+ * chip with a label, to make clear it can be clicked. Its tooltip shows the progress
  * Qdrant reports for the transfer (`ShardTransferInfo.comment`) as is, since the
  * comment is free text without a fixed format. The tooltip opens on click and
  * stays open until the next click on the marker or outside of it (or Escape).
@@ -38,7 +42,10 @@ const TransferProgressMarker = ({ transfer, compact = false }) => {
 
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <span>
+      {/* Flex, so the wrapper is exactly as tall as the marker: the arrow label is
+          centered on the arrow by its wrapper's box, and an inline line box would be
+          taller than the marker and put it off center. */}
+      <span style={{ display: 'flex' }}>
         <StyledTooltip
           arrow
           describeChild
@@ -78,25 +85,51 @@ const TransferProgressMarker = ({ transfer, compact = false }) => {
             onClick={() => setOpen((value) => !value)}
             onKeyDown={handleKeyDown}
             sx={{
-              display: 'block',
-              width: size,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: size,
               height: size,
-              borderRadius: '50%',
+              px: 0,
+              borderRadius: CHIP_HEIGHT,
               border: `${BORDER_WIDTH}px solid ${color}`,
               backgroundColor: open ? color : theme.palette.background.paper,
+              color: open ? theme.palette.getContrastText(color) : color,
               boxShadow: open ? `0 0 0 3px ${theme.palette.action.selected}` : 'none',
               cursor: 'pointer',
-              transition: theme.transitions.create(['transform', 'background-color']),
-              '&:hover, &.Mui-focusVisible': { transform: 'scale(1.25)' },
+              transition: theme.transitions.create(['height', 'padding', 'background-color', 'color'], {
+                duration: theme.transitions.duration.shorter,
+              }),
+              '& .transfer-marker-label': {
+                maxWidth: 0,
+                opacity: 0,
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                fontSize: 11,
+                fontWeight: 600,
+                lineHeight: 1,
+                transition: theme.transitions.create(['max-width', 'opacity'], {
+                  duration: theme.transitions.duration.shorter,
+                }),
+              },
+              '&:hover, &.Mui-focusVisible, &[aria-expanded="true"]': {
+                height: CHIP_HEIGHT,
+                px: 1,
+                '& .transfer-marker-label': { maxWidth: 80, opacity: 1 },
+              },
               '&::before': {
                 content: '""',
                 position: 'absolute',
                 inset: -(HIT_BUFFER + BORDER_WIDTH),
-                borderRadius: '50%',
+                borderRadius: CHIP_HEIGHT,
               },
               '&.Mui-focusVisible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 2 },
             }}
-          />
+          >
+            <span className="transfer-marker-label" aria-hidden="true">
+              {CHIP_LABEL}
+            </span>
+          </ButtonBase>
         </StyledTooltip>
       </span>
     </ClickAwayListener>
