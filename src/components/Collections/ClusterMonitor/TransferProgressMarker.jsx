@@ -13,11 +13,11 @@ const HIT_BUFFER = 4;
 const BORDER_WIDTH = 2;
 /** Height of the chip the marker turns into on hover, focus and while its tooltip is open. */
 const CHIP_HEIGHT = 20;
-const CHIP_LABEL = 'Progress';
+const CHIP_LABEL = 'i';
 
 /**
  * Circle in the middle of a shard transfer arrow. On hover it turns into a small
- * chip with a label, to make clear it can be clicked. Its tooltip shows the progress
+ * chip with an "i" label, to make clear it can be clicked. Its tooltip shows the progress
  * Qdrant reports for the transfer (`ShardTransferInfo.comment`) as is, since the
  * comment is free text without a fixed format. The tooltip opens on click and
  * stays open until the next click on the marker or outside of it (or Escape).
@@ -105,8 +105,8 @@ const TransferProgressMarker = ({ transfer, compact = false }) => {
                 opacity: 0,
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
-                fontSize: 11,
-                fontWeight: 600,
+                fontSize: 13,
+                fontWeight: 700,
                 lineHeight: 1,
                 transition: theme.transitions.create(['max-width', 'opacity'], {
                   duration: theme.transitions.duration.shorter,
