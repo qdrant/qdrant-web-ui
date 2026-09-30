@@ -27,5 +27,10 @@ export const getErrorMessage = (e, options = {}) => {
     // error is not instance of ApiError
     message = e?.message || fallbackMessage;
   }
-  return message;
+
+  if (!message || !message.trim()) {
+    message = fallbackMessage;
+  }
+
+  return message.trim();
 };
