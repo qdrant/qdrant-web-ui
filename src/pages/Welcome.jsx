@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Link, Grid } from '@mui/material';
+import { Box, Typography, Link } from '@mui/material';
 import AnnouncementBanner from '../components/Common/AnnouncementBanner';
 import CardBanner from '../components/Common/CardBanner';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
@@ -8,6 +8,10 @@ import { Workflow, FileCode, BrainCircuit } from 'lucide-react';
 import { useExternalInfo } from '../context/external-info-context';
 import { getFullPath } from '../lib/common-helpers';
 import { PAGE_CONTENT_WIDTH } from '../theme/constants';
+
+// Three side-icon cards only read well once each has ~300px; below that they
+// stack into a single full-width column.
+const RESOURCES_WIDE_QUERY = '@container gettingStarted (min-width: 960px)';
 
 const Welcome = () => {
   const [showBanner, setShowBanner] = useState(true);
@@ -77,46 +81,45 @@ const Welcome = () => {
         />
       </Box>
 
-      <Box component="section">
+      <Box component="section" sx={{ containerType: 'inline-size', containerName: 'gettingStarted' }}>
         <Typography component="h2" variant="h6" mb="1rem">
           Getting Started Resources
         </Typography>
 
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 8, md: 4 }}>
-            <InfoCard
-              icon={BrainCircuit}
-              title="Agent Skills"
-              description={
-                'Download our AI Agent Skills, crafted by our team of experts to strengthen your Qdrant development.'
-              }
-              href="https://qdrant.tech/documentation/skills/"
-              showCta={false}
-            />
-          </Grid>
-          <Grid size={{ xs: 8, md: 4 }}>
-            <InfoCard
-              icon={Workflow}
-              title="API Reference"
-              description={
-                "Explore Qdrant's REST API and SDKs to connect, query, and manage your vector data with ease."
-              }
-              href="https://api.qdrant.tech/"
-              showCta={false}
-            />
-          </Grid>
-          <Grid size={{ xs: 8, md: 4 }}>
-            <InfoCard
-              icon={FileCode}
-              title="Sample Data"
-              description={
-                'Easily import a remote data snapshot and explore vector search with real data in just a few steps.'
-              }
-              href="/datasets"
-              showCta={false}
-            />
-          </Grid>
-        </Grid>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: 2,
+            [RESOURCES_WIDE_QUERY]: { gridTemplateColumns: 'repeat(3, 1fr)' },
+          }}
+        >
+          <InfoCard
+            icon={BrainCircuit}
+            title="Agent Skills"
+            description={
+              'Download our AI Agent Skills, crafted by our team of experts to strengthen your Qdrant development.'
+            }
+            href="https://qdrant.tech/documentation/skills/"
+            showCta={false}
+          />
+          <InfoCard
+            icon={Workflow}
+            title="API Reference"
+            description={"Explore Qdrant's REST API and SDKs to connect, query, and manage your vector data with ease."}
+            href="https://api.qdrant.tech/"
+            showCta={false}
+          />
+          <InfoCard
+            icon={FileCode}
+            title="Sample Data"
+            description={
+              'Easily import a remote data snapshot and explore vector search with real data in just a few steps.'
+            }
+            href="/datasets"
+            showCta={false}
+          />
+        </Box>
       </Box>
 
       <Box component="section">
