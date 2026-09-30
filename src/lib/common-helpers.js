@@ -151,3 +151,16 @@ export const formatGroupedDigits = (value) => {
   }
   return String(value);
 };
+
+/**
+ * Compare two objects by their own top-level keys, using strict equality for values.
+ * @param {Object|null|undefined} a
+ * @param {Object|null|undefined} b
+ * @return {boolean}
+ */
+export const shallowEqual = (a, b) => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+};

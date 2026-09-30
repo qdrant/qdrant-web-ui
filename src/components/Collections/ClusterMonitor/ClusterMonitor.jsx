@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 import { ArcherContainer } from 'react-archer';
 import { Typography, Box, LinearProgress, Divider } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
@@ -10,10 +11,11 @@ import { useTelemetry } from '../../../context/telemetry-context';
 import { useCloudInfo } from '../../../context/cloud-info-context';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import ClusterNode from './ClusterNode';
 import ClusterNodeSummary from './ClusterNodeSummary';
 import { Circle } from '../../Common/Circle';
-import { CLUSTER_COLORS, getHighContrastClusterColors } from './constants';
+import { CLUSTER_COLORS, getHighContrastClusterColors, getTransferArrowColors } from './constants';
 import InfoBanner from '../../Common/InfoBanner';
 import { StyledShardSlot } from './StyledComponents/StyledShardSlot';
 import ShardTransferDialog from './ShardTransferDialog';
@@ -22,10 +24,15 @@ import AbortReshardingDialog from './AbortReshardingDialog';
 import ReshardingButtons from './ReshardingButtons';
 import ReshardingStatus from './ReshardingStatus';
 import { useReshardingProgress } from './reshardingProgress';
+import AutoRefreshControl from './AutoRefreshControl';
+import SlotTooltip from './SlotTooltip';
 import ReplicationControl from './ReplicationButtons';
 
-/** How often the cluster info is re-fetched while a resharding operation is running. */
-const RESHARDING_POLL_INTERVAL_MS = 5000;
+/** How often the cluster info is re-fetched while auto-refresh is on or a resharding operation is running. */
+const REFRESH_INTERVAL_MS = 5000;
+const NO_RESHARDING_OPERATIONS = [];
+/** More peers than this make the slots too narrow for full labels. */
+const COMPACT_LABELS_PEER_COUNT = 12;
 
 /**
  * Legend component to explain the status of shards in the cluster.
@@ -110,7 +117,12 @@ const ClusterMonitor = ({ collectionName }) => {
     isDragging: false,
     draggedSlot: null,
   });
-  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
+  // Where the drag started; the floating shard then follows the cursor through
+  // `dragPreviewRef`, so moving the mouse does not re-render the whole monitor.
+  const [dragStartPosition, setDragStartPosition] = React.useState({ x: 0, y: 0 });
+  const dragPreviewRef = useRef(null);
+  const dragStateRef = useRef(dragState);
+  dragStateRef.current = dragState;
   const [transferDialog, setTransferDialog] = React.useState({
     open: false,
     transferRequest: null,
@@ -132,6 +144,11 @@ const ClusterMonitor = ({ collectionName }) => {
   const [contentInnerWidth, setContentInnerWidth] = useState(null);
   const shardsCellRef = useRef(null);
   const [isLongCluster, setIsLongCluster] = useState(false);
+  // Id of the latest cluster info request; responses of older ones are dropped.
+  const latestRequestRef = useRef(0);
+  // The data of the last rendered cluster info, to skip polls that bring no change.
+  const lastClusterDataRef = useRef(null);
+  const isClusterShown = cluster?.status === 'enabled';
 
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return undefined;
@@ -163,7 +180,7 @@ const ClusterMonitor = ({ collectionName }) => {
       contentObserver?.disconnect();
       shardsObserver?.disconnect();
     };
-  }, [cluster]);
+  }, [isClusterShown]);
 
   const syncScroll = (toRef) => (e) => {
     if (syncingRef.current) return;
@@ -179,24 +196,26 @@ const ClusterMonitor = ({ collectionName }) => {
   const onSummaryScroll = syncScroll(contentScrollRef);
   const onContentScroll = syncScroll(summaryScrollRef);
 
-  const handleSlotGrab = (e, peerId, slotId, shard) => {
+  // Handlers passed to the slots are stable, so the (memoized) slots do not re-render with the monitor.
+  const handleSlotGrab = useCallback((e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
 
     setDragState({
       isDragging: true,
       draggedSlot: { peerId, slotId, shard },
     });
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
+    setDragStartPosition({ x: e.clientX, y: e.clientY });
+  }, []);
 
   // Handle mouse move for drag element positioning
   const handleMouseMove = (e) => {
-    if (dragState.isDragging) {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+    if (dragStateRef.current.isDragging && dragPreviewRef.current) {
+      dragPreviewRef.current.style.left = `${e.clientX + 10}px`;
+      dragPreviewRef.current.style.top = `${e.clientY + 10}px`;
     }
 
     // scroll long monitor if the user reaches the edge
-    const clusterMonitor = document.querySelector('[data-cluster-monitor]');
+    const clusterMonitor = contentScrollRef.current;
     if (clusterMonitor) {
       const rect = clusterMonitor.getBoundingClientRect();
       const scrollLeft = clusterMonitor.scrollLeft;
@@ -221,7 +240,8 @@ const ClusterMonitor = ({ collectionName }) => {
     }
   };
 
-  const handleSlotDrop = (targetPeerId, targetSlotId) => {
+  const handleSlotDrop = useCallback((targetPeerId, targetSlotId) => {
+    const dragState = dragStateRef.current;
     if (!dragState.isDragging || !dragState.draggedSlot) return;
 
     const { peerId: sourcePeerId, slotId: sourceSlotId } = dragState.draggedSlot;
@@ -243,44 +263,62 @@ const ClusterMonitor = ({ collectionName }) => {
     });
 
     setDragState({ isDragging: false, draggedSlot: null });
-  };
+  }, []);
 
-  // Helper function to refresh cluster info
-  const refreshClusterInfo = useCallback(async () => {
-    try {
-      const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
-        axios.get(`/cluster`),
-        qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName }),
-        qdrantClient.getCollection(collectionName),
-      ]);
+  // Helper function to refresh cluster info. Only the latest request updates the
+  // state, so a slow poll cannot overwrite the result of a newer refresh.
+  const refreshClusterInfo = useCallback(
+    async ({ signal } = {}) => {
+      const requestId = ++latestRequestRef.current;
+      try {
+        const [clusterInfo, collectionClusterInfo, collectionInfo] = await Promise.all([
+          axios.get(`/cluster`, { signal }),
+          qdrantClient.api('cluster').collectionClusterInfo({ collection_name: collectionName }, { signal }),
+          qdrantClient.api('collections').getCollection({ collection_name: collectionName }, { signal }),
+        ]);
 
-      setReplicationFactor(collectionInfo?.config?.params?.replication_factor ?? 1);
+        if (requestId !== latestRequestRef.current) return;
 
-      const newCluster = collectionClusterInfo.data.result;
-      const localShards =
-        newCluster.local_shards && newCluster.local_shards.length > 0
-          ? newCluster.local_shards.map((shard) => {
-              return {
-                ...shard,
-                peer_id: newCluster.peer_id,
-              };
-            })
+        setReplicationFactor(collectionInfo?.data?.result?.config?.params?.replication_factor ?? 1);
+
+        // Only the peers and status of /cluster are shown (its raft info changes all the time).
+        const clusterData = bigIntJSON.stringify([
+          collectionName,
+          clusterInfo?.data?.result?.peers,
+          clusterInfo?.data?.result?.status,
+          collectionClusterInfo.data.result,
+        ]);
+        if (clusterData === lastClusterDataRef.current) return;
+        lastClusterDataRef.current = clusterData;
+
+        const newCluster = collectionClusterInfo.data.result;
+        const localShards =
+          newCluster.local_shards && newCluster.local_shards.length > 0
+            ? newCluster.local_shards.map((shard) => {
+                return {
+                  ...shard,
+                  peer_id: newCluster.peer_id,
+                };
+              })
+            : [];
+        newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
+
+        newCluster.peers = clusterInfo?.data?.result?.peers
+          ? Object.keys(clusterInfo.data.result.peers)
+              .map((peerId) => parseInt(peerId))
+              .sort((a, b) => a - b)
           : [];
-      newCluster.shards = [...localShards, ...(newCluster.remote_shards || [])];
-
-      newCluster.peers = clusterInfo?.data?.result?.peers
-        ? Object.keys(clusterInfo.data.result.peers)
-            .map((peerId) => parseInt(peerId))
-            .sort((a, b) => a - b)
-        : [];
-      newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
-      // shard_count and resharding_operations are already included in newCluster from the API response
-      setCluster({ ...newCluster });
-    } catch (err) {
-      console.error('Error refreshing cluster info:', err);
-      throw err;
-    }
-  }, [collectionName, qdrantClient]);
+        newCluster.status = clusterInfo?.data?.result?.status || 'disabled';
+        // shard_count and resharding_operations are already included in newCluster from the API response
+        setCluster({ ...newCluster });
+      } catch (err) {
+        if (signal?.aborted) return;
+        console.error('Error refreshing cluster info:', err);
+        throw err;
+      }
+    },
+    [collectionName, qdrantClient]
+  );
 
   const handleTransferConfirm = async (transferRequest) => {
     setTransferLoading(true);
@@ -313,9 +351,9 @@ const ClusterMonitor = ({ collectionName }) => {
     setTransferDialog({ open: false, transferRequest: null });
   };
 
-  const handleDragCancel = () => {
+  const handleDragCancel = useCallback(() => {
     setDragState({ isDragging: false, draggedSlot: null });
-  };
+  }, []);
 
   const handleResharding = (direction) => {
     // Open confirmation dialog
@@ -450,40 +488,23 @@ const ClusterMonitor = ({ collectionName }) => {
 
   // Fetch cluster info and update cluster state
   useEffect(() => {
-    const fetchClusterInfo = async () => {
-      if (isRestricted) {
-        return;
-      }
-
-      try {
-        await refreshClusterInfo();
-      } catch (err) {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
-      }
-    };
-
-    fetchClusterInfo();
-  }, [collectionName, isRestricted, qdrantClient]);
-
-  const reshardingOperations = cluster?.resharding_operations ?? [];
-  const isResharding = reshardingOperations.length > 0;
-  const reshardingProgress = useReshardingProgress(collectionName, isResharding);
-
-  // Resharding advances through several stages, so its reported progress has to
-  // be re-fetched. Paused while dragging a shard to not disturb the interaction.
-  useEffect(() => {
-    if (!isResharding || isRestricted || dragState.isDragging) {
+    if (isRestricted) {
       return undefined;
     }
 
-    const interval = setInterval(() => {
-      // Errors are already logged by refreshClusterInfo; a failed poll is retried
-      // by the next tick and should not raise a snackbar on every attempt.
-      refreshClusterInfo().catch(() => {});
-    }, RESHARDING_POLL_INTERVAL_MS);
+    const controller = new AbortController();
+    refreshClusterInfo({ signal: controller.signal }).catch((err) => {
+      enqueueSnackbar(getErrorMessage(err), getSnackbarOptions('error', closeSnackbar));
+    });
 
-    return () => clearInterval(interval);
-  }, [isResharding, isRestricted, dragState.isDragging, refreshClusterInfo]);
+    return () => controller.abort();
+  }, [isRestricted, refreshClusterInfo]);
+
+  const reshardingOperations = cluster?.resharding_operations ?? NO_RESHARDING_OPERATIONS;
+  const isResharding = reshardingOperations.length > 0;
+  const reshardingProgress = useReshardingProgress(collectionName, isResharding);
+
+  const pollClusterInfo = useCallback((signal) => refreshClusterInfo({ signal }), [refreshClusterInfo]);
 
   // Extract unique shard keys from all shards (must be before conditional return)
   const shardKeys = React.useMemo(() => {
@@ -498,6 +519,16 @@ const ClusterMonitor = ({ collectionName }) => {
   }, [cluster?.shards]);
 
   const peers = cluster?.peers ?? [];
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const compactLabels = isSmallScreen || peers.length > COMPACT_LABELS_PEER_COUNT;
+  const arrowColors = getTransferArrowColors(theme);
+  const arrowSvgStyle = useMemo(
+    () =>
+      arrowColors.halo
+        ? { filter: `drop-shadow(0 0 1px ${arrowColors.halo}) drop-shadow(0 0 1px ${arrowColors.halo})` }
+        : undefined,
+    [arrowColors.halo]
+  );
 
   const slotIndices = useMemo(() => {
     const shards = cluster?.shards ?? [];
@@ -517,9 +548,9 @@ const ClusterMonitor = ({ collectionName }) => {
     });
   }, [cluster?.shards, sortByPeer]);
 
-  const handleSetSort = (peerId, direction) => {
+  const handleSetSort = useCallback((peerId, direction) => {
     setSortByPeer(direction ? { peerId, direction } : null);
-  };
+  }, []);
 
   useEffect(() => {
     archerContainerRef.current?.refreshScreen();
@@ -619,7 +650,15 @@ const ClusterMonitor = ({ collectionName }) => {
             )}
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', flexShrink: 0, gap: 1 }}>
+          {/* A running resharding is always polled, since it advances through several stages.
+              Polling is paused while dragging a shard to not disturb the interaction. */}
+          <AutoRefreshControl
+            onRefresh={pollClusterInfo}
+            interval={REFRESH_INTERVAL_MS}
+            forceEnabled={isResharding}
+            paused={isRestricted || dragState.isDragging}
+          />
           <Legend dragState={dragState} />
         </Box>
       </Box>
@@ -714,7 +753,8 @@ const ClusterMonitor = ({ collectionName }) => {
           <Box ref={contentInnerRef} sx={{ minWidth: '100%', width: 'max-content' }}>
             <ArcherContainer
               ref={archerContainerRef}
-              strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
+              strokeColor={arrowColors.stroke}
+              svgContainerStyle={arrowSvgStyle}
               lineStyle={'angle'}
             >
               <Box
@@ -732,6 +772,7 @@ const ClusterMonitor = ({ collectionName }) => {
                       peerId={peerId}
                       cluster={cluster}
                       slotIndices={slotIndices}
+                      compactLabels={compactLabels}
                       dragState={dragState}
                       onSlotGrab={handleSlotGrab}
                       onSlotDrop={handleSlotDrop}
@@ -742,6 +783,7 @@ const ClusterMonitor = ({ collectionName }) => {
               </Box>
             </ArcherContainer>
           </Box>
+          <SlotTooltip containerRef={contentScrollRef} />
         </Box>
       </Box>
 
@@ -749,10 +791,11 @@ const ClusterMonitor = ({ collectionName }) => {
       {dragState.isDragging && dragState.draggedSlot && (
         <>
           <Box
+            ref={dragPreviewRef}
             sx={{
               position: 'fixed',
-              left: mousePosition.x + 10,
-              top: mousePosition.y + 10,
+              left: dragStartPosition.x + 10,
+              top: dragStartPosition.y + 10,
               width: '50px',
               height: '50px',
               zIndex: 9999,
