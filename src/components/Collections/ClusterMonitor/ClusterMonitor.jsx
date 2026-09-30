@@ -581,11 +581,10 @@ const ClusterMonitor = ({ collectionName }) => {
             flexWrap: 'wrap',
             gap: 1,
             rowGap: 0.5,
-            flex: 1,
-            minWidth: 0,
+            flex: '1 1 auto',
           }}
         >
-          <Typography variant="subtitle1" sx={{ mr: 1 }}>
+          <Typography variant="subtitle1" sx={{ mr: 1, whiteSpace: 'nowrap' }}>
             Cluster Nodes
           </Typography>
           <Box
