@@ -283,6 +283,7 @@ const ClusterMonitor = ({ collectionName }) => {
 
         // Only the peers and status of /cluster are shown (its raft info changes all the time).
         const clusterData = bigIntJSON.stringify([
+          collectionName,
           clusterInfo?.data?.result?.peers,
           clusterInfo?.data?.result?.status,
           collectionClusterInfo.data.result,
