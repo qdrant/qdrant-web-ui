@@ -16,6 +16,12 @@ const growWidth = keyframes`
   }
 `;
 
+// On narrow trees every row puts its bar on its own line under the title. The query is on the
+// whole tree (not per row), so all rows switch together and the bars keep one shared scale.
+const STACKED_QUERY = '@container optimizationsTree (max-width: 499px)';
+// Stacked bars start at the same x for every depth: just past the chevron gutter (24px + 8px).
+const STACKED_BAR_OFFSET = '32px';
+
 const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
   const theme = useTheme();
   const [open, setOpen] = useState(true);
@@ -75,12 +81,22 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
           justifyContent: 'space-between',
           py: 0.5,
           pl: level * 2,
+          [STACKED_QUERY]: { flexWrap: 'wrap', rowGap: 0.5 },
           '&:hover': {
             bgcolor: theme.palette.action.hover,
           },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, overflow: 'hidden', mr: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            flexGrow: 1,
+            overflow: 'hidden',
+            mr: 2,
+            [STACKED_QUERY]: { flexBasis: '100%', mr: 0 },
+          }}
+        >
           <Box sx={{ width: 24, display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
             {hasChildren && (
               <IconButton size="small" onClick={handleToggle} sx={{ p: 0.5 }}>
@@ -93,6 +109,8 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
               variant="body2"
               sx={{
                 ml: 1,
+                // the title keeps at least a few characters; the (done/total) counter gives way first
+                minWidth: '6ch',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -116,7 +134,10 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
                   color: 'text.secondary',
                   fontFamily: 'Menlo, monospace',
                   fontSize: '0.7rem',
-                  flexShrink: 0,
+                  flexShrink: 100,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -127,7 +148,22 @@ const OptimizationNode = ({ node, level = 0, totalDuration, maxTime }) => {
         </Box>
 
         {(duration > 0 || progressText) && (!hasChildren || !open) && (
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '300px', flexShrink: 0 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              // Sized against the tree container (cqw), not the row, so every row's bar shares
+              // one scale; capped at 45% so the title column always keeps room on small screens.
+              width: 'min(300px, 45cqw)',
+              flexShrink: 0,
+              // Own line, same left edge and width in every row regardless of indentation:
+              // the negative indent cancels the row's depth padding.
+              [STACKED_QUERY]: {
+                width: `calc(100cqw - ${STACKED_BAR_OFFSET})`,
+                ml: `calc(${STACKED_BAR_OFFSET} - ${theme.spacing(level * 2)})`,
+              },
+            }}
+          >
             {/* Bar container */}
             <Box
               sx={{

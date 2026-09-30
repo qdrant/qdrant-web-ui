@@ -72,6 +72,9 @@ const OptimizationsTree = ({ data, requestTime, ...other }) => {
         <Box
           sx={{
             overflow: 'auto',
+            // query container for the node bars' cqw-based width and stacked layout
+            containerType: 'inline-size',
+            containerName: 'optimizationsTree',
             borderRadius: 1,
             pt: 2,
             pr: 0.5,
