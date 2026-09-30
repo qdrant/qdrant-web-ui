@@ -74,6 +74,11 @@ function Collection() {
               <Tabs
                 value={currentTab}
                 onChange={handleTabChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
+                // keep the disabled arrow visible (faded) instead of leaving an empty gap before the first tab
+                sx={{ '& .MuiTabs-scrollButtons.Mui-disabled': { opacity: 0.3 } }}
                 aria-label="tabs"
                 aria-description="Collection tabs menu"
               >

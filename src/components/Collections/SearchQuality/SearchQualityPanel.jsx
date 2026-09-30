@@ -23,6 +23,8 @@ import { checkIndexRecall } from './check-index-precision';
 import { useClient } from '../../../context/client-context';
 import CodeEditorWindow from '../../FilterEditorWindow';
 
+const COMPACT_QUERY = '@container annRecall (max-width: 559px)';
+
 const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, recall, isInProgress, isDisabled }) => {
   return (
     <TableRow data-testid="vector-row">
@@ -44,7 +46,14 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, recall, isInProg
       <TableCell>
         {isInProgress && <LinearProgress />}
         {!isInProgress && (
-          <Box display="flex" alignItems="center" gap={1.5}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              [COMPACT_QUERY]: { flexDirection: 'column', alignItems: 'flex-start', gap: 0.5 },
+            }}
+          >
             <Typography variant="subtitle1" component={'span'} color="text.secondary">
               {recall ? `${(recall * 100).toFixed(2)}%` : '—'}
             </Typography>
@@ -56,8 +65,20 @@ const VectorTableRow = ({ vectorObj, name, onCheckIndexQuality, recall, isInProg
               onClick={onCheckIndexQuality}
               disabled={isDisabled}
               startIcon={<SearchCheck size={18} />}
+              sx={{
+                whiteSpace: 'nowrap',
+                [COMPACT_QUERY]: {
+                  whiteSpace: 'normal',
+                  textAlign: 'left',
+                  fontSize: '0.75rem',
+                  lineHeight: 1.2,
+                  px: 1,
+                  py: 0.5,
+                  '& .MuiButton-startIcon': { ml: 0, mr: 0.75 },
+                },
+              }}
             >
-              Check&nbsp;Index&nbsp;Quality
+              Check Index Quality
             </Button>
           </Box>
         )}
@@ -239,7 +260,12 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
   };
 
   return (
-    <Card elevation={0} data-testid="vectors-info" {...other}>
+    <Card
+      elevation={0}
+      data-testid="vectors-info"
+      {...other}
+      sx={{ containerType: 'inline-size', containerName: 'annRecall', ...other.sx }}
+    >
       <CardHeader
         title="ANN Recall"
         variant="heading"
@@ -262,58 +288,61 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
         }
       />
       {!advancedMod && (
-        <Table>
-          <TableHead>
-            <TableRow
+        // fallback for very narrow screens: scroll the table instead of overflowing the card
+        <Box sx={{ overflowX: 'auto' }}>
+          <Table sx={{ [COMPACT_QUERY]: { '& th, & td': { px: 1 } } }}>
+            <TableHead>
+              <TableRow
+                sx={{
+                  '& th': {
+                    borderBottom: 'none',
+                  },
+                }}
+              >
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Vector Name
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Size
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Distance
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ width: '25%' }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Recall
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody
               sx={{
-                '& th': {
+                '& tr:last-of-type td': {
                   borderBottom: 'none',
                 },
               }}
             >
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Vector Name
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Size
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Distance
-                </Typography>
-              </TableCell>
-              <TableCell sx={{ width: '25%' }}>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Recall
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody
-            sx={{
-              '& tr:last-of-type td': {
-                borderBottom: 'none',
-              },
-            }}
-          >
-            {Object.keys(vectors).map((vectorName) => (
-              <VectorTableRow
-                vectorObj={vectors[vectorName]}
-                name={vectorName}
-                onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
-                recall={recall ? recall[vectorName] : null}
-                key={vectorName}
-                isInProgress={inProgressVector === vectorName}
-                isDisabled={inProgressVector !== null && inProgressVector !== vectorName}
-              />
-            ))}
-          </TableBody>
-        </Table>
+              {Object.keys(vectors).map((vectorName) => (
+                <VectorTableRow
+                  vectorObj={vectors[vectorName]}
+                  name={vectorName}
+                  onCheckIndexQuality={() => onCheckIndexQuality({ using: vectorName })}
+                  recall={recall ? recall[vectorName] : null}
+                  key={vectorName}
+                  isInProgress={inProgressVector === vectorName}
+                  isDisabled={inProgressVector !== null && inProgressVector !== vectorName}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
       )}
 
       {advancedMod && (
