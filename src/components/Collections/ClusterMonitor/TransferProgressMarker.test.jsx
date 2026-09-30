@@ -29,6 +29,14 @@ const renderMarker = (props) =>
 const marker = () => screen.getByRole('button', { name: 'Progress of the transfer of shard 3 from peer 1 to peer 3' });
 
 describe('TransferProgressMarker', () => {
+  it('should name the target shard of a resharding transfer', () => {
+    renderMarker({ to_shard_id: 5 });
+
+    expect(
+      screen.getByRole('button', { name: 'Progress of the transfer of shard 3 from peer 1 to peer 3 (shard 5)' })
+    ).toBeInTheDocument();
+  });
+
   it('should not show the tooltip on hover', async () => {
     renderMarker();
 

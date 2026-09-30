@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { axiosInstance as axios } from '../../../common/axios';
+import { bigIntJSON } from '../../../common/bigIntJSON';
 import { ArcherContainer } from 'react-archer';
 import { Typography, Box, LinearProgress, Divider } from '@mui/material';
 import { getSnackbarOptions } from '../../Common/utils/snackbarOptions';
@@ -281,7 +282,7 @@ const ClusterMonitor = ({ collectionName }) => {
         setReplicationFactor(collectionInfo?.data?.result?.config?.params?.replication_factor ?? 1);
 
         // Only the peers and status of /cluster are shown (its raft info changes all the time).
-        const clusterData = JSON.stringify([
+        const clusterData = bigIntJSON.stringify([
           clusterInfo?.data?.result?.peers,
           clusterInfo?.data?.result?.status,
           collectionClusterInfo.data.result,

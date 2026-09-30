@@ -80,7 +80,7 @@ const TransferProgressMarker = ({ transfer, compact = false }) => {
           }
         >
           <ButtonBase
-            aria-label={`Progress of the transfer of shard ${shardId} from peer ${from} to peer ${to}`}
+            aria-label={`Progress of the transfer of shard ${shardId} from peer ${from} to peer ${to}${target}`}
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
             onKeyDown={handleKeyDown}
