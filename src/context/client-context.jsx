@@ -1,4 +1,5 @@
-import React, { useContext, createContext, useState, useEffect } from 'react';
+import React, { useContext, createContext, useState, useEffect, useMemo, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { axiosInstance, setupAxios } from '../common/axios';
 import qdrantClient from '../common/client';
 import { bigIntJSON } from '../common/bigIntJSON';
@@ -40,18 +41,33 @@ export const useClient = () => {
 };
 
 // Client Context Provider
-export const ClientProvider = (props) => {
+export const ClientProvider = ({ children }) => {
   // TODO: Switch to Reducer if we have more settings to track.
   const [settings, setSettings] = useState(getPersistedSettings());
+  const { apiKey } = settings;
 
-  const client = qdrantClient(settings);
-
-  setupAxios(axiosInstance, settings);
+  // The REST client and the shared axios instance are both derived from the API key,
+  // so they are rebuilt together, and only when the key changes.
+  const client = useMemo(() => {
+    setupAxios(axiosInstance, { apiKey });
+    return qdrantClient({ apiKey });
+  }, [apiKey]);
 
   useEffect(() => {
-    setupAxios(axiosInstance, settings);
     persistSettings(settings);
   }, [settings]);
 
-  return <ClientContext.Provider value={{ client, settings, setSettings }} {...props} />;
+  const value = useMemo(() => ({ client, settings, setSettings }), [client, settings]);
+
+  // Remount everything below the provider when the API key changes,
+  // so all pages and contexts start over and refetch their data with the new key.
+  return (
+    <ClientContext.Provider value={value}>
+      <Fragment key={apiKey}>{children}</Fragment>
+    </ClientContext.Provider>
+  );
+};
+
+ClientProvider.propTypes = {
+  children: PropTypes.node,
 };

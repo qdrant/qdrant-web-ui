@@ -47,11 +47,6 @@ function HomeContent() {
     }
   };
 
-  const OnApyKeyApply = () => {
-    // Reload the page to apply the new API Key
-    window.location.reload();
-  };
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -146,7 +141,7 @@ function HomeContent() {
         {!isInIframe ? <DrawerHeader /> : <></>}
         <Outlet />
       </Box>
-      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} onApply={OnApyKeyApply} />
+      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} />
     </Box>
   );
 }

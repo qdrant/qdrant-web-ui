@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
+import { useState } from 'react';
 import { useClient, ClientProvider } from './client-context';
 import { bigIntJSON } from '../common/bigIntJSON';
 
@@ -45,5 +46,38 @@ describe('useClient', () => {
     const { result } = renderHook(() => useClient(), { wrapper: ClientProvider });
 
     expect(result.current.isRestricted).toBe(false);
+  });
+
+  it('should remount children when the API key changes', () => {
+    mockLocalStorage.getItem.mockReturnValue(null);
+
+    // State inside the provider survives re-renders, but is lost on remount.
+    const { result } = renderHook(
+      () => {
+        const [marker, setMarker] = useState('initial');
+        return { ...useClient(), marker, setMarker };
+      },
+      { wrapper: ClientProvider }
+    );
+
+    act(() => result.current.setMarker('changed'));
+    const oldClient = result.current.client;
+
+    act(() => result.current.setSettings({ ...result.current.settings, apiKey: 'new-key' }));
+
+    expect(result.current.marker).toBe('initial');
+    expect(result.current.client).not.toBe(oldClient);
+    expect(result.current.client.getApiKey()).toBe('new-key');
+  });
+
+  it('should keep the same client when settings change without a new API key', () => {
+    mockLocalStorage.getItem.mockReturnValue(bigIntJSON.stringify({ apiKey: 'key' }));
+
+    const { result } = renderHook(() => useClient(), { wrapper: ClientProvider });
+    const oldClient = result.current.client;
+
+    act(() => result.current.setSettings({ ...result.current.settings }));
+
+    expect(result.current.client).toBe(oldClient);
   });
 });
