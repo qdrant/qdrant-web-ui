@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography, Button } from '@mui/material';
+import {
+  Box,
+  Toolbar,
+  CssBaseline,
+  Tooltip,
+  AppBar,
+  IconButton,
+  Typography,
+  Button,
+  useMediaQuery,
+} from '@mui/material';
 import { Link, Outlet } from 'react-router';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { Key, Rocket } from 'lucide-react';
+import { Key, Menu, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
 import AccessibilityToggle from '../components/Common/AccessibilityToggle';
 import { Logo } from '../components/Logo';
@@ -29,6 +39,9 @@ function HomeContent() {
 
   const [isInIframe, setIsInIframe] = useState(false);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  // On phones the sidebar is hidden and opened from the menu button in the header.
+  const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsInIframe(window.self !== window.top);
@@ -62,9 +75,14 @@ function HomeContent() {
             }}
           >
             <Toolbar>
+              {isPhone && (
+                <IconButton edge="start" aria-label="Open menu" onClick={() => setMobileMenuOpen(true)} sx={{ mr: 1 }}>
+                  <Menu size={20} />
+                </IconButton>
+              )}
               <Logo width={200} />
               {cloudInfo?.cluster_name ? (
-                <Box sx={{ flexGrow: 1, pl: '140px', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ flexGrow: 1, pl: { xs: 2, sm: '140px' }, display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
                     cluster
                   </Typography>
@@ -121,7 +139,7 @@ function HomeContent() {
           >
             Get Managed Cloud
           </Button> */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 } }}>
                 <Tooltip title="API Key">
                   <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
                     <Key size={20} />
@@ -132,7 +150,11 @@ function HomeContent() {
               </Box>
             </Toolbar>
           </AppBar>
-          <Sidebar />
+          <Sidebar
+            variant={isPhone ? 'temporary' : 'permanent'}
+            open={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+          />
         </>
       ) : (
         <></>

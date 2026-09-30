@@ -31,7 +31,7 @@ import { useCloudInfo } from '../../context/cloud-info-context';
 import { useExternalInfo } from '../../context/external-info-context';
 import { isSemverGreater, buildReleaseLink } from '../../lib/common-helpers';
 
-export default function Sidebar() {
+export default function Sidebar({ variant = 'permanent', open = false, onClose }) {
   const { version } = useVersion();
   const { jwtEnabled, jwtVisible } = useJwt();
   const { isRestricted } = useClient();
@@ -44,10 +44,21 @@ export default function Sidebar() {
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
+  // close the temporary (phone) menu after navigating
+  React.useEffect(() => {
+    onClose?.();
+  }, [location.pathname]);
+
   const anyLowerButtonVisible = cloudInfo?.support_url || (isUpdateNewer && updateLink);
 
   return (
-    <Drawer variant="permanent">
+    <Drawer
+      variant={variant}
+      open={open}
+      onClose={onClose}
+      // a temporary drawer's root is the full-screen modal, so it must not get the sidebar width
+      sx={variant === 'temporary' ? { width: 'auto' } : undefined}
+    >
       <DrawerHeader sx={{ justifyContent: 'start', paddingLeft: '24px', paddingRight: '24px' }}>
         <Logo width={120} />
       </DrawerHeader>
@@ -150,6 +161,12 @@ export default function Sidebar() {
     </Drawer>
   );
 }
+
+Sidebar.propTypes = {
+  variant: PropTypes.oneOf(['permanent', 'temporary']),
+  open: PropTypes.bool,
+  onClose: PropTypes.func,
+};
 
 function sidebarItem(title, icon, linkPath, location, enabled = true) {
   const isActive = location.pathname === linkPath || location.pathname.startsWith(linkPath + '/');
