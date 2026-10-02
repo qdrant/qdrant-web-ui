@@ -141,7 +141,7 @@ function HomeContent() {
         {!isInIframe ? <DrawerHeader /> : <></>}
         <Outlet />
       </Box>
-      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} />
+      <ApiKeyDialog open={apiKeyDialogOpen} setOpen={handleDialogClose} required={Boolean(authError)} />
     </Box>
   );
 }

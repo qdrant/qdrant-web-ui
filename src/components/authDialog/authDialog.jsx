@@ -15,7 +15,7 @@ import { useClient } from '../../context/client-context';
 import qdrantClient from '../../common/client';
 import { getErrorMessage } from '../../lib/get-error-message';
 
-export function ApiKeyDialog({ open, setOpen }) {
+export function ApiKeyDialog({ open, setOpen, required = false }) {
   const { settings, setSettings } = useClient();
   const [showApiKey, setShowApiKey] = React.useState(false);
   const [error, setError] = React.useState(null);
@@ -30,7 +30,8 @@ export function ApiKeyDialog({ open, setOpen }) {
   const [apiKey, setApiKey] = React.useState('');
 
   const handleClose = () => {
-    if (isValidating) {
+    // When a key is required, the dialog can only be closed by applying a valid key.
+    if (isValidating || required) {
       return;
     }
     setError(null);
@@ -126,9 +127,11 @@ export function ApiKeyDialog({ open, setOpen }) {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button variant="outlined" color="inherit" onClick={handleClose} disabled={isValidating}>
-            Cancel
-          </Button>
+          {!required && (
+            <Button variant="outlined" color="inherit" onClick={handleClose} disabled={isValidating}>
+              Cancel
+            </Button>
+          )}
           <Button variant="contained" onClick={handleApply} loading={isValidating}>
             Apply
           </Button>
@@ -141,4 +144,5 @@ export function ApiKeyDialog({ open, setOpen }) {
 ApiKeyDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired,
+  required: PropTypes.bool,
 };
