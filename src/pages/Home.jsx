@@ -49,6 +49,13 @@ function HomeContent() {
     setIsInIframe(window.self !== window.top);
   }, []);
 
+  // Leaving phone layout closes the menu, so it doesn't reopen by itself on the way back.
+  useEffect(() => {
+    if (!isPhone) {
+      setMobileMenuOpen(false);
+    }
+  }, [isPhone]);
+
   useEffect(() => {
     if (authError) {
       setApiKeyDialogOpen(true);
