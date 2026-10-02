@@ -36,6 +36,13 @@ const Badge = styled(Box)(({ theme }) => ({
   '@media (prefers-reduced-motion: reduce)': {
     animation: 'none',
   },
+  // On phones dialogs are full screen with their buttons pinned to the bottom (mostly right-aligned),
+  // so the badge moves to the left, above the height of a dialog button row.
+  [theme.breakpoints.down('sm')]: {
+    right: 'auto',
+    left: theme.spacing(2),
+    bottom: theme.spacing(11),
+  },
 }));
 
 const Dot = styled('span')(({ theme }) => ({

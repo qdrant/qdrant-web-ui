@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Toolbar, CssBaseline, Tooltip, AppBar, IconButton, Typography, Button } from '@mui/material';
+import {
+  Box,
+  Toolbar,
+  CssBaseline,
+  Tooltip,
+  AppBar,
+  IconButton,
+  Typography,
+  Button,
+  useMediaQuery,
+} from '@mui/material';
 import { Link, Outlet } from 'react-router';
 import { ApiKeyDialog } from '../components/authDialog/authDialog';
-import { Key, Rocket } from 'lucide-react';
+import { Key, Menu, Rocket } from 'lucide-react';
 import ColorModeToggle from '../components/Common/ColorModeToggle';
 import AccessibilityToggle from '../components/Common/AccessibilityToggle';
 import { Logo } from '../components/Logo';
@@ -29,6 +39,11 @@ function HomeContent() {
 
   const [isInIframe, setIsInIframe] = useState(false);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  // On phones the sidebar is hidden and opened from the menu button in the header.
+  const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
+  // Below 768px the full Upgrade Cluster button leaves no room for the cluster name.
+  const isCompactHeader = useMediaQuery('(max-width: 767.95px)');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsInIframe(window.self !== window.top);
@@ -61,21 +76,49 @@ function HomeContent() {
               borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <Toolbar>
-              <Logo width={200} />
+            <Toolbar sx={{ [theme.breakpoints.down('sm')]: { px: 1 } }}>
+              {isPhone && (
+                <IconButton
+                  edge="start"
+                  aria-label="Open menu"
+                  onClick={() => setMobileMenuOpen(true)}
+                  sx={{ ml: -1, mr: 0.5 }}
+                >
+                  <Menu size={20} />
+                </IconButton>
+              )}
+              <Logo compact={isPhone} />
               {cloudInfo?.cluster_name ? (
-                <Box sx={{ flexGrow: 1, pl: '140px', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                    pl: { xs: 0.5, sm: '140px' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', md: 'block' } }}
+                  >
                     cluster
                   </Typography>
-                  <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', md: 'block' } }}
+                  >
                     /
                   </Typography>
                   <Typography
                     component={Link}
                     to={cloudInfo.cloud_backlink}
                     variant="body1"
+                    noWrap
                     sx={{
+                      display: 'block',
+                      minWidth: 0,
                       color: theme.palette.text.primary,
                       fontWeight: 500,
                       textDecoration: 'none',
@@ -93,20 +136,37 @@ function HomeContent() {
                 <Box sx={{ flexGrow: 1 }}></Box>
               )}
 
-              {cloudInfo?.scale_url && (
-                <Button
-                  component={Link}
-                  to={cloudInfo.scale_url}
-                  target="_blank"
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  endIcon={<Rocket size={16} />}
-                  sx={{ mr: 2 }}
-                >
-                  Upgrade Cluster
-                </Button>
-              )}
+              {cloudInfo?.scale_url &&
+                (isCompactHeader ? (
+                  // on phones the full button is also in the side menu
+                  <Tooltip title="Upgrade Cluster">
+                    <Button
+                      component={Link}
+                      to={cloudInfo.scale_url}
+                      target="_blank"
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      aria-label="Upgrade Cluster"
+                      sx={{ minWidth: 0, p: 0.75, mr: 0.5, flexShrink: 0 }}
+                    >
+                      <Rocket size={16} />
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    component={Link}
+                    to={cloudInfo.scale_url}
+                    target="_blank"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    endIcon={<Rocket size={16} />}
+                    sx={{ mr: 2, flexShrink: 0, whiteSpace: 'nowrap' }}
+                  >
+                    Upgrade Cluster
+                  </Button>
+                ))}
 
               {/* <Button
             component={Link}
@@ -121,7 +181,18 @@ function HomeContent() {
           >
             Get Managed Cloud
           </Button> */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  gap: { xs: 0.5, sm: 2 },
+                  [theme.breakpoints.down('sm')]: {
+                    '& .MuiIconButton-root': { p: 0.75 },
+                    '& .MuiToggleButton-root': { minWidth: 36, px: 1 },
+                  },
+                }}
+              >
                 <Tooltip title="API Key">
                   <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
                     <Key size={20} />
@@ -132,7 +203,11 @@ function HomeContent() {
               </Box>
             </Toolbar>
           </AppBar>
-          <Sidebar />
+          <Sidebar
+            variant={isPhone ? 'temporary' : 'permanent'}
+            open={mobileMenuOpen}
+            onClose={() => setMobileMenuOpen(false)}
+          />
         </>
       ) : (
         <></>

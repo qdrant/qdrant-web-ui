@@ -70,7 +70,7 @@ const CommandsTableRow = forwardRef((props, ref) => {
       onClick={onClick}
       tabIndex={tabIndex}
     >
-      <TableCell sx={rowStyle} width={'50px'}>
+      <TableCell sx={rowStyle} width={'72px'}>
         <Tooltip title={'Insert command into the console window'} disableFocusListener>
           <IconButton onClick={onClick} className={'insert-button'}>
             <ArrowBack />
@@ -81,18 +81,41 @@ const CommandsTableRow = forwardRef((props, ref) => {
         sx={{
           ...rowStyle,
           pl: 0,
+          // becomes the last cell when the tags cell is hidden on small screens
+          [theme.breakpoints.down('sm')]: {
+            borderRight: theme.palette.mode === 'dark' ? 0 : '1px solid',
+            borderTopRightRadius: theme.shape.borderRadius,
+            borderBottomRightRadius: theme.shape.borderRadius,
+          },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Chip color={colorName} label={method} size="small" />
-          <Box>
-            <Typography component={'code'} ml={2}>
-              {command}
+        {/* on small screens the method chip goes above the path to leave more room for it */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: { xs: 0.5, sm: 0 },
+          }}
+        >
+          <Chip color={colorName} label={method} size="small" sx={{ flexShrink: 0 }} />
+          <Box sx={{ minWidth: 0, ml: { xs: 0, sm: 2 } }}>
+            <Typography component={'code'} sx={{ overflowWrap: 'anywhere' }}>
+              {/* allow long paths to wrap after each slash */}
+              {command.split('/').map((part, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && (
+                    <>
+                      /<wbr />
+                    </>
+                  )}
+                  {part}
+                </React.Fragment>
+              ))}
             </Typography>
             <br />
             <Typography
               variant={'caption'}
-              ml={2}
               color={theme.palette.mode === 'light' ? theme.palette.grey[700] : theme.palette.grey[400]}
             >
               {description}
@@ -100,7 +123,7 @@ const CommandsTableRow = forwardRef((props, ref) => {
           </Box>
         </Box>
       </TableCell>
-      <TableCell sx={rowStyle} align="right">
+      <TableCell sx={{ ...rowStyle, display: { xs: 'none', sm: 'table-cell' } }} align="right" width={'128px'}>
         {tagList}
       </TableCell>
     </TableRow>
@@ -199,7 +222,7 @@ const CommandsTable = ({ commands, handleInsertCommand }) => {
   ));
 
   return (
-    <TableWithGaps data-testid="commands-table">
+    <TableWithGaps data-testid="commands-table" sx={{ minWidth: 0, tableLayout: 'fixed' }}>
       <TableBodyWithGaps>{rows}</TableBodyWithGaps>
     </TableWithGaps>
   );

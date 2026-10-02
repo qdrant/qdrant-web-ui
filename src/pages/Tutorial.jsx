@@ -4,6 +4,7 @@ import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { useParams } from 'react-router';
 import { Alert, Box, Grid } from '@mui/material';
 import { useClient } from '../context/client-context';
+import { PAGE_PADDING_X } from '../theme/constants';
 
 export const Tutorial = () => {
   const { pageSlug } = useParams();
@@ -11,7 +12,7 @@ export const Tutorial = () => {
 
   if (isRestricted) {
     return (
-      <Box sx={{ p: 5, width: '100%' }}>
+      <Box sx={{ p: 5, px: PAGE_PADDING_X, width: '100%' }}>
         <Grid size={12}>
           <Alert severity="warning">
             Access Denied: Because of the serverless mode, tutorial will not work here properly. Please contact your

@@ -9,7 +9,7 @@ import './editor.css';
 import EditorCommon from '../EditorCommon';
 import { bigIntJSON } from '../../common/bigIntJSON';
 
-const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) => {
+const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount, customHeight }) => {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const lensesRef = useRef(null);
@@ -137,6 +137,7 @@ const CodeEditorWindow = ({ onChange, code, onChangeResult, setRequestCount }) =
   return (
     <>
       <EditorCommon
+        customHeight={customHeight}
         language={'custom-language'}
         value={code}
         theme={'custom-language-theme'}
@@ -158,6 +159,7 @@ CodeEditorWindow.propTypes = {
   onChangeResult: PropTypes.func.isRequired,
   code: PropTypes.string.isRequired,
   setRequestCount: PropTypes.func.isRequired,
+  customHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
 
 export default CodeEditorWindow;

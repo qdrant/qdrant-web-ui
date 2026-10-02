@@ -200,8 +200,19 @@ const themeOptions = {
     },
     MuiDialog: {
       styleOverrides: {
-        paper: ({ ownerState }) => ({
+        paper: ({ ownerState, theme }) => ({
           borderRadius: ownerState.fullScreen ? 0 : '0.5rem',
+          // every dialog takes the whole screen on phones
+          [theme.breakpoints.down('sm')]: {
+            margin: 0,
+            width: '100%',
+            maxWidth: '100%',
+            height: '100%',
+            maxHeight: '100%',
+            borderRadius: 0,
+            // pins the button row (the last block) to the bottom; a growing DialogContent leaves no free space, so it's unaffected
+            '& > :last-child': { marginTop: 'auto' },
+          },
         }),
       },
     },

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import EditorCommon from '../EditorCommon';
 import { useFormattedJSON } from '../../hooks/useFormattedJSON';
 
-const ResultEditorWindow = ({ code }) => {
+const ResultEditorWindow = ({ code, customHeight }) => {
   const lineHeight = 21;
   const padding = 16;
 
@@ -11,6 +11,7 @@ const ResultEditorWindow = ({ code }) => {
 
   return (
     <EditorCommon
+      customHeight={customHeight}
       language="json"
       theme={'custom-language-theme'}
       value={formattedCode}
@@ -32,6 +33,7 @@ const ResultEditorWindow = ({ code }) => {
 
 ResultEditorWindow.propTypes = {
   code: PropTypes.string.isRequired,
+  customHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
 
 export default ResultEditorWindow;

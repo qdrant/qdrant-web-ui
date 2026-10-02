@@ -5,12 +5,21 @@ import { styled, alpha, useTheme } from '@mui/material/styles';
 import { indigo } from '@mui/material/colors';
 import { Link } from 'react-router';
 
+// Side by side, the illustration keeps its full size and is cropped on the
+// right when space runs out; below this width it moves under the text.
+const WIDE_QUERY = '@container cardBanner (min-width: 600px)';
+// On middle widths the text wraps into a taller block, so the illustration is
+// enlarged to match its height (and cropped further on the right).
+const MIDDLE_QUERY = '@container cardBanner (min-width: 600px) and (max-width: 959px)';
+
 const BannerContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
   borderRadius: 8,
   position: 'relative',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   overflow: 'hidden',
+  containerType: 'inline-size',
+  containerName: 'cardBanner',
 }));
 
 const GradientOverlay = styled(Box)({
@@ -28,47 +37,48 @@ const GradientOverlay = styled(Box)({
   zIndex: 1,
 });
 
-const ContentContainer = styled(Box)(({ theme }) => ({
+const ContentContainer = styled(Box)({
   display: 'flex',
-  flexWrap: 'wrap',
-  [theme.breakpoints.up('md')]: {
-    flexWrap: 'nowrap',
+  flexDirection: 'column',
+  [WIDE_QUERY]: {
+    flexDirection: 'row',
   },
-}));
+});
 
-const ContentSection = styled(Box)(({ theme }) => ({
-  width: '100%',
+const ContentSection = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
-  padding: '1.5rem',
-  flexGrow: 1,
   alignItems: 'flex-start',
-  [theme.breakpoints.up('md')]: {
-    maxWidth: '64%',
+  padding: '1.5rem',
+  flex: '1 1 auto',
+  minWidth: 0,
+  [WIDE_QUERY]: {
+    flex: '1 0 18rem',
   },
-}));
+});
 
-const TextSection = styled(Box)(({ theme }) => ({
-  width: '100%',
+const TextSection = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  [theme.breakpoints.up('md')]: {
-    maxWidth: '30rem',
-  },
-}));
+  gap: '0.5rem',
+  maxWidth: '30rem',
+});
 
-const ConsoleIllustration = styled(Box)(({ theme }) => ({
-  height: '100%',
+const ConsoleIllustration = styled(Box)({
   zIndex: 3,
-  flexShrink: 0,
   display: 'flex',
-  alignSelf: 'flex-end',
-  paddingRight: '1.5rem',
-  [theme.breakpoints.up('md')]: {
-    maxWidth: '25rem',
+  padding: '0 1.5rem',
+  [WIDE_QUERY]: {
+    alignSelf: 'flex-end',
+    flex: '0 0 25rem',
+    paddingLeft: 0,
+    paddingTop: '1.5rem',
   },
-}));
+  [MIDDLE_QUERY]: {
+    flexBasis: '32rem',
+  },
+});
 
 const CardBanner = ({ title, description, buttonText, linkTo, imgSrc }) => {
   const theme = useTheme();

@@ -74,6 +74,7 @@ const ReshardingButtons = ({
             aria-label="Cancel resharding"
             sx={{
               minWidth: 'auto',
+              whiteSpace: 'nowrap',
               fontSize: '0.8125rem',
               padding: '0.25rem 0.625rem',
             }}
@@ -99,6 +100,7 @@ const ReshardingButtons = ({
             aria-label="Reshard up"
             sx={{
               minWidth: 'auto',
+              whiteSpace: 'nowrap',
               fontSize: '0.8125rem',
               padding: '0.25rem 0.625rem',
             }}
@@ -118,6 +120,7 @@ const ReshardingButtons = ({
             aria-label="Reshard down"
             sx={{
               minWidth: 'auto',
+              whiteSpace: 'nowrap',
               fontSize: '0.8125rem',
               padding: '0.25rem 0.625rem',
             }}
