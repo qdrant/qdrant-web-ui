@@ -54,14 +54,14 @@ function Console() {
   // Below md side-by-side editors get too narrow, so the panels are stacked vertically instead.
   const isVertical = useMediaQuery(theme.breakpoints.down('md'));
   const panelsRef = useRef(null);
-  const { height: windowHeight } = useWindowResize();
+  const { width: windowWidth, height: windowHeight } = useWindowResize();
   const [panelsHeight, setPanelsHeight] = useState(0);
 
   // In vertical layout both editors share the remaining window height,
   // so the panel group gets an explicit height and the editors fill their panels.
   useEffect(() => {
     setPanelsHeight(windowHeight - (panelsRef.current?.offsetTop ?? 0));
-  }, [windowHeight, isVertical]);
+  }, [windowWidth, windowHeight, isVertical]);
 
   const editorHeight = isVertical ? '100%' : undefined;
 

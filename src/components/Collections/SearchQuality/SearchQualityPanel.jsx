@@ -264,7 +264,10 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       elevation={0}
       data-testid="vectors-info"
       {...other}
-      sx={{ containerType: 'inline-size', containerName: 'annRecall', ...other.sx }}
+      sx={[
+        { containerType: 'inline-size', containerName: 'annRecall' },
+        ...(Array.isArray(other.sx) ? other.sx : [other.sx]),
+      ]}
     >
       <CardHeader
         title="ANN Recall"
