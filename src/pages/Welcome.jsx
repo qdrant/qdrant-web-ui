@@ -7,7 +7,7 @@ import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Workflow, FileCode, BrainCircuit } from 'lucide-react';
 import { useExternalInfo } from '../context/external-info-context';
 import { getFullPath } from '../lib/common-helpers';
-import { PAGE_CONTENT_WIDTH } from '../theme/constants';
+import { PAGE_CONTENT_WIDTH, PAGE_PADDING_X } from '../theme/constants';
 
 // Three side-icon cards only read well once each has ~300px; below that they
 // stack into a single full-width column.
@@ -48,6 +48,7 @@ const Welcome = () => {
         flexDirection: 'column',
         gap: '40px',
         p: 5,
+        px: PAGE_PADDING_X,
         margin: 'auto',
         maxWidth: PAGE_CONTENT_WIDTH.content,
       }}

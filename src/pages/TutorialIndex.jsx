@@ -4,14 +4,14 @@ import { useClient } from '../context/client-context';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
 import { Zap, FileCode } from 'lucide-react';
-import { PAGE_CONTENT_WIDTH } from '../theme/constants';
+import { PAGE_CONTENT_WIDTH, PAGE_PADDING_X } from '../theme/constants';
 
 export const TutorialIndex = () => {
   const { isRestricted } = useClient();
 
   if (isRestricted) {
     return (
-      <Box sx={{ p: 5, width: '100%' }}>
+      <Box sx={{ p: 5, px: PAGE_PADDING_X, width: '100%' }}>
         <Grid size={12}>
           <Alert severity="warning">
             Access Denied: Because of the serverless mode, tutorial will not work here properly. Please contact your
@@ -29,6 +29,7 @@ export const TutorialIndex = () => {
         flexDirection: 'column',
         gap: '40px',
         p: 5,
+        px: PAGE_PADDING_X,
         margin: 'auto',
         maxWidth: PAGE_CONTENT_WIDTH.content,
       }}

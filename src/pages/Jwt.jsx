@@ -7,7 +7,7 @@ import * as jose from 'jose';
 import { useSnackbar } from 'notistack';
 import JwtTokenViewer from '../components/JwtSection/JwtTokenViewer';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
-import { PAGE_CONTENT_WIDTH } from '../theme/constants';
+import { PAGE_CONTENT_WIDTH, PAGE_PADDING_X } from '../theme/constants';
 
 async function getJwt(apiKey, token, setJwt) {
   try {
@@ -90,7 +90,7 @@ function Jwt() {
 
   if (isRestricted) {
     return (
-      <Box sx={{ p: 5, width: '100%' }}>
+      <Box sx={{ p: 5, px: PAGE_PADDING_X, width: '100%' }}>
         <Grid size={12}>
           <Alert severity="warning">
             Access Denied: Because of the serverless mode, jwt tools will not work correctly. Please contact your

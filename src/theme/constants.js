@@ -12,3 +12,6 @@ export const PAGE_CONTENT_WIDTH = {
   // Wide dashboard/list pages (e.g. Collections, Datasets, Collection).
   wide: 'xl',
 };
+
+// Horizontal page padding: the regular 40px from tablets up, 16px on phones (below `sm`).
+export const PAGE_PADDING_X = { xs: 2, sm: 5 };

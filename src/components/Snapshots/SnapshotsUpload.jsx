@@ -9,6 +9,8 @@ import UploadFile from '@mui/icons-material/UploadFile';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import { X } from 'lucide-react';
 import { SnapshotUploadForm } from './SnapshotUploadForm';
 import { useClient } from '../../context/client-context';
 
@@ -67,7 +69,10 @@ export const SnapshotsUpload = ({ onComplete, sx }) => {
         aria-labelledby="Snapshot upload dialog"
         aria-describedby="Snapshot upload dialog"
       >
-        <DialogTitle>Upload a Snapshot</DialogTitle>
+        <DialogTitle sx={{ pr: 7 }}>Upload a Snapshot</DialogTitle>
+        <IconButton aria-label="close" onClick={() => setOpen(false)} sx={{ position: 'absolute', right: 12, top: 12 }}>
+          <X size={20} />
+        </IconButton>
         <DialogContent>
           <SnapshotUploadForm onSubmit={handleUpload} onComplete={onComplete} />
         </DialogContent>
