@@ -84,6 +84,33 @@ describe('SearchQualityPannel', () => {
     });
   });
 
+  it('should exclude all-zero-vector points from the sample', async () => {
+    const scrollMock = vi.fn().mockResolvedValue({
+      points: [
+        { id: 'zero-marker', vector: [0, 0, 0] },
+        { id: 'normal-1', vector: [0.1, 0.2, 0.3] },
+      ],
+    });
+    const queryPointsMock = vi.fn().mockResolvedValue({
+      data: { result: { points: [{ id: 1 }, { id: 2 }] }, status: 'ok', time: 0.005 },
+    });
+    useClient.mockReturnValue({
+      client: { scroll: scrollMock, api: vi.fn().mockReturnValue({ queryPoints: queryPointsMock }) },
+    });
+
+    render(
+      <MemoryRouter>
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getAllByTestId('index-quality-check-button')[0]);
+
+    await waitFor(() => expect(queryPointsMock).toHaveBeenCalled());
+    const queriedIds = queryPointsMock.mock.calls.map(([args]) => args.query);
+    expect(queriedIds).not.toContain('zero-marker');
+    expect(queriedIds).toContain('normal-1');
+  });
+
   it('should toggle advanced mode', () => {
     render(
       <MemoryRouter>

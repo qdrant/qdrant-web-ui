@@ -76,6 +76,11 @@ VectorTableRow.propTypes = {
 };
 
 const SAMPLE_SIZE = 100;
+// Over-fetch so all-zero-vector points (e.g. bookkeeping markers) can be dropped
+// and still leave SAMPLE_SIZE usable points. All-zero vectors score 0.0 against
+// everything, corrupting the recall average.
+const OVERFETCH_FACTOR = 2;
+const isZeroVector = (vec) => Array.isArray(vec) && vec.length > 0 && vec.every((v) => v === 0);
 
 const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo, ...other }) => {
   const { client } = useClient();
@@ -180,11 +185,12 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
     try {
       const sampleResult = await client.scroll(collectionName, {
         with_payload: false,
-        with_vector: false,
-        limit: SAMPLE_SIZE,
+        with_vector: true,
+        limit: SAMPLE_SIZE * OVERFETCH_FACTOR,
       });
 
-      const pointIds = sampleResult.points.map((point) => point.id);
+      const usablePoints = sampleResult.points.filter((p) => !isZeroVector(p.vector));
+      const pointIds = usablePoints.slice(0, SAMPLE_SIZE).map((point) => point.id);
       const total = pointIds.length;
 
       loggingFoo &&
