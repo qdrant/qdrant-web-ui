@@ -44,10 +44,8 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
 
   const isActive = (linkTo) => location.pathname === linkTo || location.pathname.startsWith(linkTo + '/');
 
-  // close the temporary (phone) menu after navigating
-  React.useEffect(() => {
-    onClose?.();
-  }, [location.pathname]);
+  // the temporary (phone) menu closes on every item click, including the already active page
+  const onItemClick = variant === 'temporary' ? onClose : undefined;
 
   const anyLowerButtonVisible = cloudInfo?.support_url || (isUpdateNewer && updateLink);
 
@@ -66,6 +64,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
       <StyledList>
         {cloudInfo?.cloud_backlink && (
           <SidebarItem
+            onClick={onItemClick}
             title="Back to Cloud"
             icon={<CornerUpLeft size="16px" />}
             linkTo={cloudInfo.cloud_backlink}
@@ -76,6 +75,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
 
         {!isRestricted && (
           <SidebarItem
+            onClick={onItemClick}
             title="Welcome"
             icon={<Rocket size="16px" />}
             linkTo="/welcome"
@@ -84,6 +84,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
           />
         )}
         <SidebarItem
+          onClick={onItemClick}
           title="Console"
           icon={<SquareTerminal size="16px" />}
           linkTo="/console"
@@ -91,6 +92,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
           disabled={false}
         />
         <SidebarItem
+          onClick={onItemClick}
           title="Collections"
           icon={<RectangleEllipsis size="16px" />}
           linkTo="/collections"
@@ -100,6 +102,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
 
         {!isRestricted && (
           <SidebarItem
+            onClick={onItemClick}
             title="Tutorial"
             icon={<BookMarked size="16px" />}
             linkTo="/tutorial"
@@ -108,10 +111,11 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
           />
         )}
 
-        {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location)}
+        {!isRestricted && sidebarItem('Datasets', <FileCode size="16px" />, '/datasets', location, true, onItemClick)}
 
         {!isRestricted && jwtVisible && (
           <SidebarItem
+            onClick={onItemClick}
             title="Access Tokens"
             icon={<KeyRound size="16px" />}
             linkTo="/jwt"
@@ -121,6 +125,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
         )}
 
         <SidebarItem
+          onClick={onItemClick}
           title="Settings"
           icon={<Settings size="16px" />}
           linkTo="/settings"
@@ -133,6 +138,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
         <StyledSidebarFooterList>
           {cloudInfo?.support_url && (
             <SidebarItem
+              onClick={onItemClick}
               title="Get Support"
               icon={<CircleHelp size="16px" />}
               linkTo={cloudInfo.support_url}
@@ -143,6 +149,7 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
 
           {isUpdateNewer && updateLink && (
             <SidebarItem
+              onClick={onItemClick}
               title="Update Available"
               icon={<HardDriveUpload size="16px" />}
               linkTo={updateLink}
@@ -168,12 +175,12 @@ Sidebar.propTypes = {
   onClose: PropTypes.func,
 };
 
-function sidebarItem(title, icon, linkPath, location, enabled = true) {
+function sidebarItem(title, icon, linkPath, location, enabled = true, onClick) {
   const isActive = location.pathname === linkPath || location.pathname.startsWith(linkPath + '/');
 
   return (
     <ListItem key={title} disablePadding sx={{ display: 'block' }}>
-      <StyledListItemButton component={Link} to={linkPath} disabled={!enabled} isActive={isActive}>
+      <StyledListItemButton component={Link} to={linkPath} disabled={!enabled} isActive={isActive} onClick={onClick}>
         <ListItemIcon
           sx={{
             minWidth: 0,
@@ -189,10 +196,10 @@ function sidebarItem(title, icon, linkPath, location, enabled = true) {
   );
 }
 
-function SidebarItem({ title, icon, linkTo, active = false, disabled = false }) {
+function SidebarItem({ title, icon, linkTo, active = false, disabled = false, onClick }) {
   return (
     <ListItem key={title} disablePadding sx={{ display: 'block' }}>
-      <StyledListItemButton component={Link} to={linkTo} disabled={disabled} isActive={active}>
+      <StyledListItemButton component={Link} to={linkTo} disabled={disabled} isActive={active} onClick={onClick}>
         <ListItemIcon
           sx={{
             minWidth: 0,
@@ -214,4 +221,5 @@ SidebarItem.propTypes = {
   linkTo: PropTypes.string.isRequired,
   active: PropTypes.bool,
   disabled: PropTypes.bool,
+  onClick: PropTypes.func,
 };

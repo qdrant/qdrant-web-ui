@@ -74,26 +74,49 @@ function HomeContent() {
               borderBottom: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <Toolbar>
+            <Toolbar sx={{ [theme.breakpoints.down('sm')]: { px: 1 } }}>
               {isPhone && (
-                <IconButton edge="start" aria-label="Open menu" onClick={() => setMobileMenuOpen(true)} sx={{ mr: 1 }}>
+                <IconButton
+                  edge="start"
+                  aria-label="Open menu"
+                  onClick={() => setMobileMenuOpen(true)}
+                  sx={{ mr: 0.5 }}
+                >
                   <Menu size={20} />
                 </IconButton>
               )}
               <Logo width={200} />
               {cloudInfo?.cluster_name ? (
-                <Box sx={{ flexGrow: 1, pl: { xs: 2, sm: '140px' }, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                <Box
+                  sx={{
+                    flexGrow: 1,
+                    minWidth: 0,
+                    pl: { xs: 1, sm: '140px' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', sm: 'block' } }}
+                  >
                     cluster
                   </Typography>
-                  <Typography variant="body1" sx={{ color: theme.palette.text.primary }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', sm: 'block' } }}
+                  >
                     /
                   </Typography>
                   <Typography
                     component={Link}
                     to={cloudInfo.cloud_backlink}
                     variant="body1"
+                    noWrap
                     sx={{
+                      display: 'block',
+                      minWidth: 0,
                       color: theme.palette.text.primary,
                       fontWeight: 500,
                       textDecoration: 'none',
@@ -139,7 +162,18 @@ function HomeContent() {
           >
             Get Managed Cloud
           </Button> */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 2 } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  gap: { xs: 0.5, sm: 2 },
+                  [theme.breakpoints.down('sm')]: {
+                    '& .MuiIconButton-root': { p: 1 },
+                    '& .MuiToggleButton-root': { minWidth: 36, px: 1 },
+                  },
+                }}
+              >
                 <Tooltip title="API Key">
                   <IconButton size="large" onClick={() => setApiKeyDialogOpen(true)}>
                     <Key size={20} />
