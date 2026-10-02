@@ -21,7 +21,13 @@ export function requestFromCode(text, withHistory = true) {
       })
       .catch((err) => {
         console.log(err);
-        return err.response?.data?.status ? err.response?.data?.status : err;
+        if (err.response?.data?.status) {
+          return err.response.data.status;
+        }
+        // Errors without a JSON body (e.g. plain-text auth errors) or without a response at all
+        // are returned in the same `{ error }` shape as Qdrant errors, so the result window shows them as JSON.
+        const text = typeof err.response?.data === 'string' ? err.response.data : '';
+        return { error: text || err.message };
       });
   }
 }

@@ -458,7 +458,7 @@ const ClusterMonitor = ({ collectionName }) => {
       try {
         await refreshClusterInfo();
       } catch (err) {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        enqueueSnackbar(getErrorMessage(err), getSnackbarOptions('error', closeSnackbar));
       }
     };
 

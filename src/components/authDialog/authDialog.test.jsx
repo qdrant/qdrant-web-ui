@@ -13,9 +13,9 @@ vi.mock('../../common/client', () => ({
   default: () => ({ getCollections }),
 }));
 
-const renderDialog = () => {
+const renderDialog = (props = {}) => {
   const setOpen = vi.fn();
-  render(<ApiKeyDialog open={true} setOpen={setOpen} />);
+  render(<ApiKeyDialog open={true} setOpen={setOpen} {...props} />);
   return { setOpen };
 };
 
@@ -58,5 +58,32 @@ describe('ApiKeyDialog', () => {
     expect(screen.getByText('API Key is required')).toBeInTheDocument();
     expect(getCollections).not.toHaveBeenCalled();
     expect(setSettings).not.toHaveBeenCalled();
+  });
+
+  it('can be dismissed when no key is required', () => {
+    const { setOpen } = renderDialog();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(setOpen).toHaveBeenCalledWith(false);
+  });
+
+  it('cannot be dismissed while a key is required', () => {
+    const { setOpen } = renderDialog({ required: true });
+
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+
+    expect(setOpen).not.toHaveBeenCalled();
+  });
+
+  it('closes after a valid key is applied while a key is required', async () => {
+    getCollections.mockResolvedValue({ collections: [] });
+    const { setOpen } = renderDialog({ required: true });
+
+    submitKey('valid-key');
+
+    await waitFor(() => expect(setOpen).toHaveBeenCalledWith(false));
+    expect(setSettings).toHaveBeenCalledWith({ apiKey: 'valid-key' });
   });
 });

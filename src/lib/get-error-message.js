@@ -1,3 +1,19 @@
+// Status and body of a failed response, for errors of the Qdrant client (ApiError) and of axios.
+// Returns null for other errors.
+const getErrorResponse = (e) => {
+  if (e?.isAxiosError) {
+    return e.response ? { status: e.response.status, data: e.response.data } : null;
+  }
+  try {
+    // error is instance of ApiError
+    const { status, data } = e.getActualType();
+    return { status, data };
+  } catch {
+    // error is not instance of ApiError
+    return null;
+  }
+};
+
 /**
  * Get error message from error object
  * @param {Error} e - error object
@@ -10,22 +26,20 @@
 export const getErrorMessage = (e, options = {}) => {
   const { fallbackMessage = 'Something went wrong.', withApiKey = null } = options;
   const { apiKey } = withApiKey || {};
-  let message;
 
-  try {
-    // error is instance of ApiError
-    const error = e.getActualType();
-    if ((error.status === 401 || error.status === 403) && withApiKey) {
-      if (!apiKey) {
-        return null;
-      } else {
-        return 'Your API key is invalid. Please, set a new one.';
-      }
-    }
-    message = error.data?.status?.error || e.message || fallbackMessage;
-  } catch (err) {
-    // error is not instance of ApiError
-    message = e?.message || fallbackMessage;
+  const response = getErrorResponse(e);
+  if (!response) {
+    return e?.message || fallbackMessage;
   }
-  return message;
+
+  if ((response.status === 401 || response.status === 403) && withApiKey) {
+    if (!apiKey) {
+      return null;
+    } else {
+      return 'Your API key is invalid. Please, set a new one.';
+    }
+  }
+  // Qdrant errors are JSON with the message in `status.error`, auth errors are plain text.
+  const text = typeof response.data === 'string' ? response.data.trim() : '';
+  return response.data?.status?.error || text || e.message || fallbackMessage;
 };
