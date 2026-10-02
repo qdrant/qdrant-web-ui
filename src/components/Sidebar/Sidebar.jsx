@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Button, Divider, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { Link, useLocation } from 'react-router';
 
 import { useClient } from '../../context/client-context';
@@ -133,6 +133,24 @@ export default function Sidebar({ variant = 'permanent', open = false, onClose }
           disabled={false}
         />
       </StyledList>
+
+      {/* on phones the header shows only an icon for this button */}
+      {variant === 'temporary' && cloudInfo?.scale_url && (
+        <Box sx={{ px: 1.5, pb: 2 }}>
+          <Button
+            component={Link}
+            to={cloudInfo.scale_url}
+            target="_blank"
+            variant="contained"
+            color="primary"
+            fullWidth
+            endIcon={<Rocket size={16} />}
+            onClick={onItemClick}
+          >
+            Upgrade Cluster
+          </Button>
+        </Box>
+      )}
 
       {anyLowerButtonVisible && (
         <StyledSidebarFooterList>

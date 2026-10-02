@@ -41,6 +41,8 @@ function HomeContent() {
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
   // On phones the sidebar is hidden and opened from the menu button in the header.
   const isPhone = useMediaQuery(theme.breakpoints.down('sm'));
+  // Below 768px the full Upgrade Cluster button leaves no room for the cluster name.
+  const isCompactHeader = useMediaQuery('(max-width: 767.95px)');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -80,18 +82,18 @@ function HomeContent() {
                   edge="start"
                   aria-label="Open menu"
                   onClick={() => setMobileMenuOpen(true)}
-                  sx={{ mr: 0.5 }}
+                  sx={{ ml: -1, mr: 0.5 }}
                 >
                   <Menu size={20} />
                 </IconButton>
               )}
-              <Logo width={200} />
+              <Logo compact={isPhone} />
               {cloudInfo?.cluster_name ? (
                 <Box
                   sx={{
                     flexGrow: 1,
                     minWidth: 0,
-                    pl: { xs: 1, sm: '140px' },
+                    pl: { xs: 0.5, sm: '140px' },
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
@@ -99,13 +101,13 @@ function HomeContent() {
                 >
                   <Typography
                     variant="body1"
-                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', sm: 'block' } }}
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', md: 'block' } }}
                   >
                     cluster
                   </Typography>
                   <Typography
                     variant="body1"
-                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', sm: 'block' } }}
+                    sx={{ color: theme.palette.text.primary, display: { xs: 'none', md: 'block' } }}
                   >
                     /
                   </Typography>
@@ -134,20 +136,37 @@ function HomeContent() {
                 <Box sx={{ flexGrow: 1 }}></Box>
               )}
 
-              {cloudInfo?.scale_url && (
-                <Button
-                  component={Link}
-                  to={cloudInfo.scale_url}
-                  target="_blank"
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  endIcon={<Rocket size={16} />}
-                  sx={{ mr: 2 }}
-                >
-                  Upgrade Cluster
-                </Button>
-              )}
+              {cloudInfo?.scale_url &&
+                (isCompactHeader ? (
+                  // on phones the full button is also in the side menu
+                  <Tooltip title="Upgrade Cluster">
+                    <Button
+                      component={Link}
+                      to={cloudInfo.scale_url}
+                      target="_blank"
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      aria-label="Upgrade Cluster"
+                      sx={{ minWidth: 0, p: 0.75, mr: 0.5, flexShrink: 0 }}
+                    >
+                      <Rocket size={16} />
+                    </Button>
+                  </Tooltip>
+                ) : (
+                  <Button
+                    component={Link}
+                    to={cloudInfo.scale_url}
+                    target="_blank"
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    endIcon={<Rocket size={16} />}
+                    sx={{ mr: 2, flexShrink: 0, whiteSpace: 'nowrap' }}
+                  >
+                    Upgrade Cluster
+                  </Button>
+                ))}
 
               {/* <Button
             component={Link}
@@ -169,7 +188,7 @@ function HomeContent() {
                   flexShrink: 0,
                   gap: { xs: 0.5, sm: 2 },
                   [theme.breakpoints.down('sm')]: {
-                    '& .MuiIconButton-root': { p: 1 },
+                    '& .MuiIconButton-root': { p: 0.75 },
                     '& .MuiToggleButton-root': { minWidth: 36, px: 1 },
                   },
                 }}
