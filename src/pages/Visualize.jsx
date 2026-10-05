@@ -34,9 +34,8 @@ const SelectionPanel = React.lazy(() => import('../components/VisualizeChart/Sel
 
 const SIMILAR_POINTS_LIMIT = 12;
 
-// Stacked (phone) layout: the chart is on top and the tabs live in a
-// bottom sheet below it, like a map with a details sheet
-const SHEET_DEFAULT_SIZE = 45; // % of the page height
+// Stacked (phone) layout: the chart is on top, the tabs in a bottom sheet below it
+const SHEET_DEFAULT_SIZE = 45; // % of the panel group
 const SHEET_MIN_SIZE = 25;
 // When collapsed, the sheet still shows its tab bar
 const SHEET_TABS_HEIGHT = 48; // px
@@ -130,8 +129,7 @@ function Visualize() {
   const isFirstLayout = useRef(true);
 
   // The panel group keeps its sizes (in %) when its direction flips, so a
-  // collapsed phone sheet would turn into a squeezed desktop side panel.
-  // Start each orientation from its own default split instead
+  // collapsed sheet would become a squeezed side panel: reset the split
   useLayoutEffect(() => {
     if (isFirstLayout.current) {
       isFirstLayout.current = false;
@@ -188,14 +186,13 @@ function Visualize() {
     setChartHeaderHeight(chartHeaderRef.current?.offsetHeight ?? 0);
   }, [width, height, isVertical]);
 
-  // Collapsed sheet keeps its tab bar visible, in % of the panel group
+  // Collapsed sheet size (in % of the panel group) that leaves its tab bar visible
   const sheetCollapsedSize = panelsHeight
     ? Math.min(SHEET_MIN_SIZE - 1, (SHEET_TABS_HEIGHT / Math.max(1, panelsHeight - SHEET_HANDLE_HEIGHT)) * 100)
     : 10;
 
-  // Phone layout: the chart picture is laid out for the chart's height with
-  // the sheet collapsed, and never shrinks below it - an opened sheet slides
-  // over the bottom of the picture instead of squeezing it, like over a map
+  // Phone layout: points are laid out for the chart height with the sheet
+  // collapsed, so opening the sheet covers the chart instead of squeezing it
   const minPictureHeight =
     isVertical && panelsHeight
       ? Math.round((panelsHeight - SHEET_HANDLE_HEIGHT) * (1 - sheetCollapsedSize / 100) - chartHeaderHeight)
@@ -251,16 +248,14 @@ function Visualize() {
     }
   };
 
-  // Shift+drag: the selection becomes the working set - selected points
-  // stay bright, the rest is dimmed, and the Selection tab opens with
-  // the list of selected points
+  // Box selection: the selected points stay bright, the rest is dimmed,
+  // and the Selection tab opens with their list
   const onBoxSelect = (points) => {
     if (!points.length) {
       clearSelection();
       return;
     }
-    // A new selection starts a new context: a point clicked before it
-    // would otherwise stay marked and bright outside of the selection
+    // Otherwise a point clicked before would stay marked outside the selection
     setActivePoint(null);
     setSimilarPoints(null);
     setSelectedPoints(points);
@@ -272,7 +267,7 @@ function Visualize() {
   // (plus the clicked point, which may lie outside of it), then the clicked
   // point with its neighbors, then the 'highlight' filter
   // Memoized: the page re-renders on every window resize, and a new array
-  // would make the chart rebuild and re-upload the colors of all points
+  // makes the chart re-upload the colors of all points
   const focusIds = useMemo(() => {
     if (selectedPoints?.length) {
       const ids = selectedPoints.map((point) => point.id);
@@ -483,10 +478,9 @@ function Visualize() {
                   collapsedSize={isVertical ? sheetCollapsedSize : 0}
                   onCollapse={() => setSheetCollapsed(true)}
                   onExpand={() => setSheetCollapsed(false)}
-                  // The sheet toggle reaches up over the grab bar, so the panel
-                  // must not clip it - the content below clips itself instead.
-                  // minHeight: 0 keeps the content from stretching the panel,
-                  // which overflow: hidden otherwise takes care of
+                  // Not clipped, so the sheet toggle can reach over the grab bar
+                  // (the content box clips instead). minHeight: 0 keeps the
+                  // content from stretching the panel, as overflow: hidden did
                   style={isVertical ? { overflow: 'visible', position: 'relative', minHeight: 0 } : undefined}
                 >
                   <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -594,8 +588,8 @@ function Visualize() {
                     )}
                   </Box>
                   {isVertical && (
-                    // Centered on the grab bar + tab bar together, as one sheet header.
-                    // Being stacked above the grab bar, pressing it doesn't start a resize
+                    // Centered on the grab bar and tab bar together. Stacked above
+                    // the grab bar, so pressing it doesn't start a resize
                     <Box
                       sx={{
                         position: 'absolute',
