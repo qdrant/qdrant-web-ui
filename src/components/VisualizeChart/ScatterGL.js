@@ -70,6 +70,18 @@ const CLICK_TOLERANCE_PX = 4;
 const TAP_TOLERANCE_PX = 10;
 // A tap picks the nearest point within this radius (CSS px)
 const TAP_PICK_RADIUS_PX = 16;
+// Default smallest size (CSS px) of the picture, see setMinFrameSize.
+// In a smaller chart the picture keeps this size and is partly hidden,
+// instead of being squeezed into a sliver
+const MIN_FRAME_WIDTH = 300;
+const MIN_FRAME_HEIGHT = 240;
+// The selected point is kept at least this far (CSS px) from the chart edges
+// when the view pans to keep it in sight
+const SELECTED_EDGE_MARGIN_PX = 32;
+// The view is pinned to the top-left corner of the canvas: clip-space
+// coordinate of that corner per axis, and the direction into the canvas
+const ANCHOR = [-1, 1];
+const INWARD = [1, -1];
 // Positions arriving from the layout worker are tweened over this duration,
 // so the animation reads as continuous motion instead of discrete jumps
 const POSITION_TWEEN_MS = 260;
@@ -132,6 +144,14 @@ export default class ScatterGL {
     this.viewScale = [1, 1];
     this.viewOffset = [0, 0];
     this.userAdjustedView = false;
+    // CSS size of the canvas the view transform was last computed for
+    this.viewSize = null;
+    // CSS size of the area the picture is laid out in (see keepViewOnResize)
+    this.frame = null;
+    this.minFrame = [MIN_FRAME_WIDTH, MIN_FRAME_HEIGHT];
+    // CSS px the view was panned by automatically to keep the selected point
+    // in sight, given back when the chart grows again (see keepSelectedInView)
+    this.autoPan = [0, 0];
 
     this.hoveredIndex = null;
     this.highlightIndex = null;
@@ -152,8 +172,12 @@ export default class ScatterGL {
     this.resize();
 
     this.resizeObserver = new ResizeObserver(() => {
-      this.resize();
-      this.requestRender();
+      // Resizing clears the canvas. Observers run after this frame's
+      // animation callbacks, so a scheduled render would leave one blank
+      // frame on screen (a flicker while resizing) - draw right away instead
+      if (this.resize() && !this.destroyed) {
+        this.render();
+      }
     });
     this.resizeObserver.observe(canvas.parentElement ?? canvas);
   }
@@ -322,8 +346,11 @@ export default class ScatterGL {
     this.requestRender();
   }
 
+  // Fit all points into the frame: the canvas, but at least the minimal
+  // frame size, laid out from the top-left corner
   fitView() {
     if (!this.positions || this.n === 0) return;
+    this.autoPan = [0, 0];
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
@@ -336,16 +363,38 @@ export default class ScatterGL {
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
     }
-    const spanX = maxX - minX || 1;
-    const spanY = maxY - minY || 1;
+    const width = Math.max(1, this.canvas.clientWidth);
+    const height = Math.max(1, this.canvas.clientHeight);
+    this.viewSize = [width, height];
+    this.frame = this.frameFor([width, height]);
     const padding = 1.1;
-    this.viewScale = [2 / (spanX * padding), 2 / (spanY * padding)];
-    this.viewOffset = [(-(minX + maxX) / 2 / (spanX * padding)) * 2, (-(minY + maxY) / 2 / (spanY * padding)) * 2];
+    const ranges = [
+      [minX, maxX],
+      [minY, maxY],
+    ];
+    for (const axis of [0, 1]) {
+      const [min, max] = ranges[axis];
+      const span = (max - min || 1) * padding;
+      // Share of the canvas the frame takes (above 1 when it overflows)
+      const k = this.frame[axis] / this.viewSize[axis];
+      const center = ANCHOR[axis] + INWARD[axis] * k;
+      this.viewScale[axis] = (2 * k) / span;
+      this.viewOffset[axis] = center - ((min + max) / 2) * this.viewScale[axis];
+    }
+  }
+
+  // Scale the view by a factor around the top-left corner
+  scaleViewFromAnchor(axis, factor) {
+    this.viewScale[axis] *= factor;
+    this.viewOffset[axis] = ANCHOR[axis] + (this.viewOffset[axis] - ANCHOR[axis]) * factor;
   }
 
   // Drop any pan/zoom and fit all points into the view again
   resetView() {
     this.userAdjustedView = false;
+    // Fit for the size the canvas has right now, even if the resize
+    // observer hasn't reported it yet
+    this.resize();
     this.fitView();
     this.pickingDirty = true;
     this.requestRender();
@@ -355,6 +404,7 @@ export default class ScatterGL {
 
   resize() {
     const canvas = this.canvas;
+    this.keepViewOnResize();
     const dpr = window.devicePixelRatio || 1;
     const width = Math.max(1, Math.floor(canvas.clientWidth * dpr));
     const height = Math.max(1, Math.floor(canvas.clientHeight * dpr));
@@ -363,7 +413,116 @@ export default class ScatterGL {
       canvas.height = height;
       this.resizePickingTarget(width, height);
       this.pickingDirty = true;
+      return true;
     }
+    return false;
+  }
+
+  // The view transform maps world to clip space, which ties the picture to
+  // the canvas size. Instead it is tied to the frame - the canvas, but not
+  // smaller than the minimal frame size - pinned to the top-left corner.
+  // Per axis:
+  // - above the minimal size the picture shrinks and grows with the canvas
+  // - below it the picture keeps the minimal size, and the part that no
+  //   longer fits slides under the neighbouring panel
+  // Pan and zoom are kept, relative to the frame.
+  keepViewOnResize() {
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+    const prev = this.viewSize;
+    if (width < 1 || height < 1) return;
+    this.viewSize = [width, height];
+    if (!prev || !this.frame || !this.positions || this.n === 0) return;
+    if (prev[0] === width && prev[1] === height) return;
+    // From a (nearly) zero size there is no meaningful view to keep
+    if (prev[0] < 2 || prev[1] < 2) {
+      this.fitView();
+      return;
+    }
+    const wasSelectedInView = this.isSelectedInView(prev);
+    const size = [width, height];
+    for (const axis of [0, 1]) {
+      // Same zoom level in pixels, then scaled along with the frame
+      this.scaleViewFromAnchor(axis, prev[axis] / size[axis]);
+    }
+    this.applyFrame(this.frameFor(size));
+    // A panel opening over the selected point must not hide it. Only if it
+    // was in sight, though - a point panned away on purpose stays away
+    if (wasSelectedInView) {
+      this.keepSelectedInView();
+    }
+  }
+
+  // CSS px position of a point within a canvas of the given size
+  pointToPixels(index, size) {
+    const clipX = this.positions[index * 2] * this.viewScale[0] + this.viewOffset[0];
+    const clipY = this.positions[index * 2 + 1] * this.viewScale[1] + this.viewOffset[1];
+    return [((clipX + 1) / 2) * size[0], ((1 - clipY) / 2) * size[1]];
+  }
+
+  isSelectedInView(size) {
+    const index = this.selectedIndex;
+    if (index === null || !this.positions || index >= this.n || this.visibleMask?.[index] === 0) return false;
+    const [x, y] = this.pointToPixels(index, size);
+    return x >= 0 && x <= size[0] && y >= 0 && y <= size[1];
+  }
+
+  // Pan the least needed to bring the selected point inside the chart, with
+  // a margin from the edges. With `fromOrigin`, aim for where the point was
+  // before any automatic panning, so an earlier pan is given back as far as
+  // the chart has room again, e.g. when the panel over it closes
+  panSelectedIntoView({ fromOrigin = false } = {}) {
+    const index = this.selectedIndex;
+    if (index === null || !this.positions || index >= this.n || !this.viewSize) return [0, 0];
+    // Hidden with the legend: nothing to bring into view
+    if (this.visibleMask?.[index] === 0) return [0, 0];
+    const size = this.viewSize;
+    const position = this.pointToPixels(index, size);
+    const shift = [0, 0];
+    for (const axis of [0, 1]) {
+      const margin = Math.min(SELECTED_EDGE_MARGIN_PX, size[axis] / 2);
+      const wanted = fromOrigin ? position[axis] - this.autoPan[axis] : position[axis];
+      const target = Math.min(Math.max(wanted, margin), size[axis] - margin);
+      shift[axis] = target - position[axis];
+    }
+    if (shift[0] === 0 && shift[1] === 0) return shift;
+    // Not a user adjustment: a running layout may keep fitting the view
+    this.viewOffset[0] += (shift[0] / size[0]) * 2;
+    this.viewOffset[1] -= (shift[1] / size[1]) * 2;
+    this.pickingDirty = true;
+    this.requestRender();
+    return shift;
+  }
+
+  // After a resize: keep the selected point in sight, and undo earlier
+  // automatic panning where it's no longer needed
+  keepSelectedInView() {
+    const shift = this.panSelectedIntoView({ fromOrigin: true });
+    this.autoPan[0] += shift[0];
+    this.autoPan[1] += shift[1];
+  }
+
+  frameFor(size) {
+    return [Math.max(size[0], this.minFrame[0]), Math.max(size[1], this.minFrame[1])];
+  }
+
+  // Scale the picture from the current frame to a new one
+  applyFrame(frame) {
+    for (const axis of [0, 1]) {
+      this.scaleViewFromAnchor(axis, frame[axis] / this.frame[axis]);
+    }
+    this.frame = frame;
+  }
+
+  // Smallest size of the picture, in CSS px; null for an axis keeps its default
+  setMinFrameSize(width, height) {
+    const next = [width ?? MIN_FRAME_WIDTH, height ?? MIN_FRAME_HEIGHT];
+    if (next[0] === this.minFrame[0] && next[1] === this.minFrame[1]) return;
+    this.minFrame = next;
+    if (!this.frame || !this.viewSize || !this.positions || this.n === 0) return;
+    this.applyFrame(this.frameFor(this.viewSize));
+    this.pickingDirty = true;
+    this.requestRender();
   }
 
   resizePickingTarget(width, height) {
@@ -453,7 +612,14 @@ export default class ScatterGL {
       this.selectedRing = [c[0] / 255, c[1] / 255, c[2] / 255, c[3]];
     }
     if (index !== this.selectedIndex || color) {
+      const changed = index !== this.selectedIndex;
       this.selectedIndex = index;
+      // E.g. picked from the list of similar points while out of sight
+      if (changed && index !== null && this.viewSize && !this.isSelectedInView(this.viewSize)) {
+        // A deliberate jump to the point, not to be undone later
+        this.panSelectedIntoView();
+        this.autoPan = [0, 0];
+      }
       this.requestRender();
     }
   }
@@ -528,6 +694,7 @@ export default class ScatterGL {
 
   // Zoom by a factor around a client-space point
   zoomAt(clientX, clientY, factor) {
+    this.autoPan = [0, 0];
     const rect = this.canvas.getBoundingClientRect();
     const cx = ((clientX - rect.left) / rect.width) * 2 - 1;
     const cy = -(((clientY - rect.top) / rect.height) * 2 - 1);
@@ -542,6 +709,7 @@ export default class ScatterGL {
   }
 
   panBy(dx, dy) {
+    this.autoPan = [0, 0];
     const rect = this.canvas.getBoundingClientRect();
     this.viewOffset[0] += (dx / rect.width) * 2;
     this.viewOffset[1] -= (dy / rect.height) * 2;

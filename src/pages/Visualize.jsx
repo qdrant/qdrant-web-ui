@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   Paper,
@@ -119,11 +119,27 @@ function Visualize() {
   const params = useParams();
   const [panelsHeight, setPanelsHeight] = useState(0);
   const panelsWrapper = useRef(null);
+  const chartHeaderRef = useRef(null);
+  const [chartHeaderHeight, setChartHeaderHeight] = useState(0);
   const { width, height } = useWindowResize();
   // Below md two side-by-side panes get too narrow, so they are stacked
   const isVertical = useMediaQuery(theme.breakpoints.down('md'));
+  const panelGroupRef = useRef(null);
   const sheetRef = useRef(null);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
+  const isFirstLayout = useRef(true);
+
+  // The panel group keeps its sizes (in %) when its direction flips, so a
+  // collapsed phone sheet would turn into a squeezed desktop side panel.
+  // Start each orientation from its own default split instead
+  useLayoutEffect(() => {
+    if (isFirstLayout.current) {
+      isFirstLayout.current = false;
+      return;
+    }
+    panelGroupRef.current?.setLayout(isVertical ? [100 - SHEET_DEFAULT_SIZE, SHEET_DEFAULT_SIZE] : [50, 50]);
+    setSheetCollapsed(false);
+  }, [isVertical]);
   const [activePoint, setActivePoint] = useState(null);
   const [similarPoints, setSimilarPoints] = useState(null);
   const [selectedPoints, setSelectedPoints] = useState(null);
@@ -169,21 +185,21 @@ function Visualize() {
     if (panelsWrapper.current) {
       setPanelsHeight(height - panelsWrapper.current.getBoundingClientRect().top);
     }
+    setChartHeaderHeight(chartHeaderRef.current?.offsetHeight ?? 0);
   }, [width, height, isVertical]);
-
-  useEffect(() => {
-    if (activePoint != null) {
-      if (tabValue !== 1) {
-        setTabValue(1);
-      }
-      revealSheet();
-    }
-  }, [activePoint]);
 
   // Collapsed sheet keeps its tab bar visible, in % of the panel group
   const sheetCollapsedSize = panelsHeight
     ? Math.min(SHEET_MIN_SIZE - 1, (SHEET_TABS_HEIGHT / Math.max(1, panelsHeight - SHEET_HANDLE_HEIGHT)) * 100)
     : 10;
+
+  // Phone layout: the chart picture is laid out for the chart's height with
+  // the sheet collapsed, and never shrinks below it - an opened sheet slides
+  // over the bottom of the picture instead of squeezing it, like over a map
+  const minPictureHeight =
+    isVertical && panelsHeight
+      ? Math.round((panelsHeight - SHEET_HANDLE_HEIGHT) * (1 - sheetCollapsedSize / 100) - chartHeaderHeight)
+      : undefined;
 
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
@@ -215,6 +231,10 @@ function Visualize() {
       setSimilarPoints(null);
       return;
     }
+    // Done here rather than in an effect on activePoint: tapping the point
+    // that is already active must bring a collapsed sheet back up, too
+    setTabValue(1);
+    revealSheet();
     setActivePoint(point);
     setSimilarPoints(null);
     try {
@@ -246,14 +266,20 @@ function Visualize() {
 
   // Points to emphasize in the chart, by precedence: the active selection,
   // then the neighbors of the clicked point, then the 'highlight' filter
-  let focusIds = null;
-  if (selectedPoints?.length) {
-    focusIds = selectedPoints.map((point) => point.id);
-  } else if (similarPoints && activePoint) {
-    focusIds = [activePoint.id, ...similarPoints.map((point) => point.id)];
-  } else if (result?.highlightIds?.length) {
-    focusIds = result.highlightIds;
-  }
+  // Memoized: the page re-renders on every window resize, and a new array
+  // would make the chart rebuild and re-upload the colors of all points
+  const focusIds = useMemo(() => {
+    if (selectedPoints?.length) {
+      return selectedPoints.map((point) => point.id);
+    }
+    if (similarPoints && activePoint) {
+      return [activePoint.id, ...similarPoints.map((point) => point.id)];
+    }
+    if (result?.highlightIds?.length) {
+      return result.highlightIds;
+    }
+    return null;
+  }, [selectedPoints, similarPoints, activePoint, result]);
 
   // The clicked point gets a distinct marker, but not while a box selection
   // (which has no single "current" point) is the active emphasis
@@ -361,10 +387,15 @@ function Visualize() {
           {/*  )}*/}
           <Grid size={12}>
             <Box ref={panelsWrapper} sx={{ height: panelsHeight || 'auto', overflow: 'hidden' }}>
-              <PanelGroup direction={isVertical ? 'vertical' : 'horizontal'} style={{ height: '100%' }}>
+              <PanelGroup
+                ref={panelGroupRef}
+                direction={isVertical ? 'vertical' : 'horizontal'}
+                style={{ height: '100%' }}
+              >
                 <Panel id="visualize-chart" order={1} minSize={isVertical ? 20 : 10}>
                   <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <Paper
+                      ref={chartHeaderRef}
                       variant="heading"
                       sx={{
                         display: 'flex',
@@ -398,6 +429,8 @@ function Visualize() {
                         selectedId={selectedId}
                         selectionCount={selectedPoints?.length ?? 0}
                         onSelectionClear={clearSelection}
+                        layoutKey={isVertical ? 'vertical' : 'horizontal'}
+                        minPictureHeight={minPictureHeight}
                       />
                     </Box>
                   </Box>

@@ -17,6 +17,8 @@ const VisualizeChart = ({
   selectedId, // id of the single clicked point, marked distinctly, or null
   selectionCount, // number of points in the active selection, if any
   onSelectionClear, // callback: the selection chip was closed
+  layoutKey, // changes when the page layout switches (phone <-> desktop), refits the view
+  minPictureHeight, // the picture doesn't shrink below this height (CSS px), default if not set
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -204,6 +206,23 @@ const VisualizeChart = ({
   useEffect(() => {
     scatterRef.current?.setSelectMode(selectMode);
   }, [selectMode]);
+
+  useEffect(() => {
+    scatterRef.current?.setMinFrameSize(null, minPictureHeight ?? null);
+  }, [minPictureHeight]);
+
+  // A layout switch changes the chart's shape completely, the old zoom level
+  // would only show a corner of the picture - start over with all points.
+  // The new panel sizes settle within the frame, so fit on the next one
+  const isFirstLayout = useRef(true);
+  useEffect(() => {
+    if (isFirstLayout.current) {
+      isFirstLayout.current = false;
+      return undefined;
+    }
+    const frame = requestAnimationFrame(() => scatterRef.current?.resetView());
+    return () => cancelAnimationFrame(frame);
+  }, [layoutKey]);
 
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
@@ -394,6 +413,8 @@ VisualizeChart.propTypes = {
   selectedId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectionCount: PropTypes.number,
   onSelectionClear: PropTypes.func,
+  layoutKey: PropTypes.string,
+  minPictureHeight: PropTypes.number,
 };
 
 export default VisualizeChart;
