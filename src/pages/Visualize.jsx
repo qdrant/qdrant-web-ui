@@ -259,18 +259,24 @@ function Visualize() {
       clearSelection();
       return;
     }
+    // A new selection starts a new context: a point clicked before it
+    // would otherwise stay marked and bright outside of the selection
+    setActivePoint(null);
+    setSimilarPoints(null);
     setSelectedPoints(points);
     setTabValue(2);
     revealSheet();
   };
 
-  // Points to emphasize in the chart, by precedence: the active selection,
-  // then the neighbors of the clicked point, then the 'highlight' filter
+  // Points to emphasize in the chart, by precedence: the active selection
+  // (plus the clicked point, which may lie outside of it), then the clicked
+  // point with its neighbors, then the 'highlight' filter
   // Memoized: the page re-renders on every window resize, and a new array
   // would make the chart rebuild and re-upload the colors of all points
   const focusIds = useMemo(() => {
     if (selectedPoints?.length) {
-      return selectedPoints.map((point) => point.id);
+      const ids = selectedPoints.map((point) => point.id);
+      return activePoint ? [...ids, activePoint.id] : ids;
     }
     if (similarPoints && activePoint) {
       return [activePoint.id, ...similarPoints.map((point) => point.id)];
@@ -281,9 +287,8 @@ function Visualize() {
     return null;
   }, [selectedPoints, similarPoints, activePoint, result]);
 
-  // The clicked point gets a distinct marker, but not while a box selection
-  // (which has no single "current" point) is the active emphasis
-  const selectedId = !selectedPoints?.length && activePoint ? activePoint.id : null;
+  // The clicked point gets a distinct marker, with or without a selection
+  const selectedId = activePoint ? activePoint.id : null;
 
   const filterRequestSchema = (vectorNames) => ({
     description: 'Filter request',
