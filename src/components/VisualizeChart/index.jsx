@@ -1,7 +1,8 @@
 import { useSnackbar } from 'notistack';
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { CenterFocusStrong, HighlightAlt } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import ScatterGL from './ScatterGL';
 import { generateColorBy, generateGroupsAndColors } from './renderBy';
@@ -11,7 +12,7 @@ const VisualizeChart = ({
   visualizationParams, // Parameters, as specified by the user in the input editor
   fetching, // true while the distance-matrix request is in flight (before layout)
   onPointSelect, // callback: point clicked (null for a click on empty space)
-  onBoxSelect, // callback: array of points selected with shift+drag
+  onBoxSelect, // callback: array of points selected with shift+drag or in select mode
   focusIds, // ids of points to emphasize (all others get dimmed), or null
   selectedId, // id of the single clicked point, marked distinctly, or null
   selectionCount, // number of points in the active selection, if any
@@ -32,6 +33,8 @@ const VisualizeChart = ({
   const [legendGroups, setLegendGroups] = useState(null);
   const [hiddenGroups, setHiddenGroups] = useState(() => new Set());
   const [boxRect, setBoxRect] = useState(null);
+  // Touch screens have no shift key, so box selection is also a toggleable mode
+  const [selectMode, setSelectMode] = useState(false);
   const [progress, setProgress] = useState(null); // { step, total } while the layout runs
   const workerRef = useRef(null);
 
@@ -62,6 +65,8 @@ const VisualizeChart = ({
         onBoxSelect: (indices) => {
           const points = indices.map((index) => pointsRef.current[index]).filter(Boolean);
           callbacksRef.current.onBoxSelect?.(points);
+          // One selection per activation, so the next drag pans again
+          setSelectMode(false);
         },
         onBoxRect: (rect) => setBoxRect(rect),
       });
@@ -196,6 +201,10 @@ const VisualizeChart = ({
     scatter.setSelected(index >= 0 ? index : null, theme.palette.text.primary);
   }, [selectedId, requestResult, theme.palette.text.primary]);
 
+  useEffect(() => {
+    scatterRef.current?.setSelectMode(selectMode);
+  }, [selectMode]);
+
   const toggleGroup = (label) => {
     setHiddenGroups((prev) => {
       const next = new Set(prev);
@@ -219,12 +228,18 @@ const VisualizeChart = ({
             right: 0,
             zIndex: 2,
             display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
+            // On phones a wrapped legend would cover much of the chart,
+            // so it becomes a single horizontally scrollable row
+            flexWrap: { xs: 'nowrap', sm: 'wrap' },
+            justifyContent: { xs: 'flex-start', sm: 'center' },
+            overflowX: { xs: 'auto', sm: 'visible' },
+            scrollbarWidth: 'none',
             gap: 1.5,
-            px: 2,
+            pl: 2,
+            // Room for the chart toolbar on the right
+            pr: 7,
             py: 0.5,
-            pointerEvents: 'none',
+            pointerEvents: { xs: 'auto', sm: 'none' },
           }}
         >
           {legendGroups.map((group) => (
@@ -234,6 +249,7 @@ const VisualizeChart = ({
               sx={{
                 display: 'flex',
                 alignItems: 'center',
+                flexShrink: 0,
                 gap: 0.5,
                 cursor: 'pointer',
                 pointerEvents: 'auto',
@@ -251,6 +267,43 @@ const VisualizeChart = ({
             </Box>
           ))}
         </Box>
+      )}
+      <Paper
+        elevation={2}
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: 2,
+        }}
+      >
+        <Tooltip title={selectMode ? 'Cancel area selection' : 'Select area (or shift+drag)'} placement="left">
+          <IconButton
+            aria-label="Select area"
+            aria-pressed={selectMode}
+            color={selectMode ? 'primary' : 'default'}
+            onClick={() => setSelectMode((prev) => !prev)}
+          >
+            <HighlightAlt />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Fit all points" placement="left">
+          <IconButton aria-label="Fit all points" onClick={() => scatterRef.current?.resetView()}>
+            <CenterFocusStrong />
+          </IconButton>
+        </Tooltip>
+      </Paper>
+      {selectMode && (
+        <Chip
+          size="small"
+          color="primary"
+          label="Drag to select an area"
+          onDelete={() => setSelectMode(false)}
+          sx={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}
+        />
       )}
       {selectionCount > 0 && (
         <Chip
@@ -289,7 +342,10 @@ const VisualizeChart = ({
           </Tooltip>
         )
       )}
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      <canvas
+        ref={canvasRef}
+        style={{ width: '100%', height: '100%', display: 'block', cursor: selectMode ? 'crosshair' : undefined }}
+      />
       {boxRect && (
         <Box
           sx={{

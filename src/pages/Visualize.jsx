@@ -12,8 +12,9 @@ import {
   List,
   ListItemButton,
   alpha,
+  useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ArrowBack, ExpandLess, ExpandMore, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
@@ -32,6 +33,14 @@ import { useSnackbar } from 'notistack';
 const SelectionPanel = React.lazy(() => import('../components/VisualizeChart/SelectionPanel'));
 
 const SIMILAR_POINTS_LIMIT = 12;
+
+// Stacked (phone) layout: the chart is on top and the tabs live in a
+// bottom sheet below it, like a map with a details sheet
+const SHEET_DEFAULT_SIZE = 45; // % of the page height
+const SHEET_MIN_SIZE = 25;
+// When collapsed, the sheet still shows its tab bar
+const SHEET_TABS_HEIGHT = 48; // px
+const SHEET_HANDLE_HEIGHT = 20; // px
 
 const query = `
 
@@ -86,11 +95,11 @@ const query = `
 // Chart interactions:
 //
 // - click a point to see its payload and its nearest neighbors
-// - shift+drag to select points: the selection is emphasized and
+// - shift+drag (or the "Select area" button) to select points: the selection is emphasized and
 //   the Selection tab opens, where selected points can be inspected
 //   and copied (ids, JSON or a ready-to-use filter);
 //   close the selection tag to reset it
-// - drag to pan, mouse wheel to zoom
+// - drag to pan, mouse wheel or pinch to zoom
 
 
 `;
@@ -108,11 +117,13 @@ function Visualize() {
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
   const navigate = useNavigate();
   const params = useParams();
-  const [visualizeChartHeight, setVisualizeChartHeight] = useState(0);
   const [panelsHeight, setPanelsHeight] = useState(0);
-  const VisualizeChartWrapper = useRef(null);
   const panelsWrapper = useRef(null);
-  const { height } = useWindowResize();
+  const { width, height } = useWindowResize();
+  // Below md two side-by-side panes get too narrow, so they are stacked
+  const isVertical = useMediaQuery(theme.breakpoints.down('md'));
+  const sheetRef = useRef(null);
+  const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [activePoint, setActivePoint] = useState(null);
   const [similarPoints, setSimilarPoints] = useState(null);
   const [selectedPoints, setSelectedPoints] = useState(null);
@@ -132,24 +143,47 @@ function Visualize() {
     setTabValue((prev) => (prev === 2 ? 0 : prev));
   };
 
+  // Bring the bottom sheet up when there is something new to look at in it
+  const revealSheet = () => {
+    if (isVertical && sheetRef.current?.isCollapsed()) {
+      sheetRef.current.resize(SHEET_DEFAULT_SIZE);
+    }
+  };
+
+  const toggleSheet = () => {
+    if (sheetRef.current?.isCollapsed()) {
+      sheetRef.current.resize(SHEET_DEFAULT_SIZE);
+    } else {
+      sheetRef.current?.collapse();
+    }
+  };
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    revealSheet();
   };
 
   useEffect(() => {
-    setVisualizeChartHeight(height - VisualizeChartWrapper.current?.offsetTop);
     // Bound the whole split-pane area to the viewport, so an overly long
     // Data Panel scrolls inside its own pane instead of the whole page
     if (panelsWrapper.current) {
       setPanelsHeight(height - panelsWrapper.current.getBoundingClientRect().top);
     }
-  }, [height, VisualizeChartWrapper, panelsWrapper]);
+  }, [width, height, isVertical]);
 
   useEffect(() => {
-    if (activePoint != null && tabValue !== 1) {
-      setTabValue(1);
+    if (activePoint != null) {
+      if (tabValue !== 1) {
+        setTabValue(1);
+      }
+      revealSheet();
     }
   }, [activePoint]);
+
+  // Collapsed sheet keeps its tab bar visible, in % of the panel group
+  const sheetCollapsedSize = panelsHeight
+    ? Math.min(SHEET_MIN_SIZE - 1, (SHEET_TABS_HEIGHT / Math.max(1, panelsHeight - SHEET_HANDLE_HEIGHT)) * 100)
+    : 10;
 
   const onEditorCodeRun = async (data, collectionName) => {
     setVisualizationParams(data);
@@ -157,12 +191,17 @@ function Visualize() {
     setSimilarPoints(null);
     clearSelection();
     setFetching(true);
+    // On a phone the editor covers much of the chart, get it out of the way
+    if (isVertical) {
+      sheetRef.current?.collapse();
+    }
 
     try {
       const result = await requestData(qdrantClient, collectionName, data);
       setResult(result);
     } catch (e) {
       enqueueSnackbar(`Request error: ${getErrorMessage(e)}`, { variant: 'error' });
+      revealSheet();
     } finally {
       setFetching(false);
     }
@@ -202,6 +241,7 @@ function Visualize() {
     }
     setSelectedPoints(points);
     setTabValue(2);
+    revealSheet();
   };
 
   // Points to emphasize in the chart, by precedence: the active selection,
@@ -321,33 +361,33 @@ function Visualize() {
           {/*  )}*/}
           <Grid size={12}>
             <Box ref={panelsWrapper} sx={{ height: panelsHeight || 'auto', overflow: 'hidden' }}>
-              <PanelGroup direction="horizontal" style={{ height: '100%' }}>
-                <Panel style={{ display: 'flex' }}>
-                  <Box width={'100%'}>
-                    <Box>
-                      <Paper
-                        variant="heading"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          p: 1,
-                          borderRadius: 0,
-                          borderBottom: `1px solid ${theme.palette.divider}`,
-                        }}
-                      >
-                        <Tooltip title={'Back to collection'}>
-                          <IconButton
-                            sx={{ mr: 3 }}
-                            size="small"
-                            onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
-                          >
-                            <ArrowBack />
-                          </IconButton>
-                        </Tooltip>
-                        <Typography variant="h6">{params.collectionName}</Typography>
-                      </Paper>
-                    </Box>
-                    <Box ref={VisualizeChartWrapper} height={visualizeChartHeight} width={'100%'}>
+              <PanelGroup direction={isVertical ? 'vertical' : 'horizontal'} style={{ height: '100%' }}>
+                <Panel id="visualize-chart" order={1} minSize={isVertical ? 20 : 10}>
+                  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Paper
+                      variant="heading"
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        p: 1,
+                        borderRadius: 0,
+                        borderBottom: `1px solid ${theme.palette.divider}`,
+                      }}
+                    >
+                      <Tooltip title={'Back to collection'}>
+                        <IconButton
+                          sx={{ mr: { xs: 1, sm: 3 } }}
+                          size="small"
+                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
+                        >
+                          <ArrowBack />
+                        </IconButton>
+                      </Tooltip>
+                      <Typography variant="h6" noWrap>
+                        {params.collectionName}
+                      </Typography>
+                    </Paper>
+                    <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
                       <VisualizeChart
                         requestResult={result}
                         visualizationParams={visualizationParams}
@@ -362,35 +402,77 @@ function Visualize() {
                     </Box>
                   </Box>
                 </Panel>
-                <PanelResizeHandle
-                  style={{
-                    width: '10px',
-                    background: theme.palette.background.paperElevation2,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%',
+                {isVertical ? (
+                  // Grab bar of the bottom sheet, tall enough to drag with a finger
+                  <PanelResizeHandle
+                    style={{
+                      height: SHEET_HANDLE_HEIGHT,
+                      background: theme.palette.background.paper,
+                      borderTop: `1px solid ${theme.palette.divider}`,
+                      touchAction: 'none',
                     }}
                   >
-                    &#8942;
-                  </Box>
-                </PanelResizeHandle>
-                <Panel>
-                  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                      <Box sx={{ width: 36, height: 4, borderRadius: 2, backgroundColor: 'text.disabled' }} />
+                    </Box>
+                  </PanelResizeHandle>
+                ) : (
+                  <PanelResizeHandle
+                    style={{
+                      width: '10px',
+                      background: theme.palette.background.paperElevation2,
+                    }}
+                  >
                     <Box
                       sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                      }}
+                    >
+                      &#8942;
+                    </Box>
+                  </PanelResizeHandle>
+                )}
+                <Panel
+                  id="visualize-side"
+                  order={2}
+                  ref={sheetRef}
+                  defaultSize={isVertical ? SHEET_DEFAULT_SIZE : undefined}
+                  minSize={isVertical ? SHEET_MIN_SIZE : 10}
+                  collapsible={isVertical}
+                  collapsedSize={isVertical ? sheetCollapsedSize : 0}
+                  onCollapse={() => setSheetCollapsed(true)}
+                  onExpand={() => setSheetCollapsed(false)}
+                  // The sheet toggle reaches up over the grab bar, so the panel
+                  // must not clip it - the content below clips itself instead.
+                  // minHeight: 0 keeps the content from stretching the panel,
+                  // which overflow: hidden otherwise takes care of
+                  style={isVertical ? { overflow: 'visible', position: 'relative', minHeight: 0 } : undefined}
+                >
+                  <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        // Room for the sheet toggle
+                        pr: isVertical ? 6 : 0,
                         borderBottom: 1,
                         borderColor: 'divider',
                         backgroundColor: theme.palette.background.paper,
                       }}
                     >
-                      <Tabs value={tabValue} onChange={handleTabChange} aria-label="visualization tabs">
+                      <Tabs
+                        value={tabValue}
+                        onChange={handleTabChange}
+                        variant="scrollable"
+                        scrollButtons={false}
+                        aria-label="visualization tabs"
+                        sx={{ flex: 1, minWidth: 0 }}
+                      >
                         <Tab label="Code" value={0} />
-                        <Tab label="Data Panel" value={1} />
+                        <Tab label={isVertical ? 'Point' : 'Data Panel'} value={1} />
                         {selectedPoints?.length > 0 && <Tab label={`Selection (${selectedPoints.length})`} value={2} />}
                       </Tabs>
                     </Box>
@@ -473,6 +555,31 @@ function Visualize() {
                       </TabPanel>
                     )}
                   </Box>
+                  {isVertical && (
+                    // Centered on the grab bar + tab bar together, as one sheet header.
+                    // Being stacked above the grab bar, pressing it doesn't start a resize
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: -SHEET_HANDLE_HEIGHT,
+                        right: 0,
+                        height: SHEET_HANDLE_HEIGHT + SHEET_TABS_HEIGHT,
+                        display: 'flex',
+                        alignItems: 'center',
+                        zIndex: 1,
+                      }}
+                    >
+                      <Tooltip title={sheetCollapsed ? 'Expand panel' : 'Collapse panel'}>
+                        <IconButton
+                          onClick={toggleSheet}
+                          aria-label={sheetCollapsed ? 'Expand panel' : 'Collapse panel'}
+                          sx={{ mx: 0.5 }}
+                        >
+                          {sheetCollapsed ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  )}
                 </Panel>
               </PanelGroup>
             </Box>

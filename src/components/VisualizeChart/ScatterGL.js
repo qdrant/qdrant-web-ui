@@ -6,8 +6,10 @@ import chroma from 'chroma-js';
 // positions, so updating an animation frame is one buffer upload. Scales to
 // hundreds of thousands of points, which Chart.js (2D canvas) cannot.
 //
-// Interactions: wheel zoom (cursor-centered), drag pan, exact hover/click
-// hit-testing via an offscreen picking framebuffer with color-encoded ids.
+// Interactions: wheel / pinch zoom (centered on the cursor or the fingers),
+// drag pan, box selection (shift+drag, or any drag in select mode), and
+// hover/click hit-testing via an offscreen picking framebuffer with
+// color-encoded ids. Taps get a tolerance radius, fingers are imprecise.
 
 const POINT_VERTEX_SHADER = `#version 300 es
 precision highp float;
@@ -64,6 +66,10 @@ void main() {
 }`;
 
 const CLICK_TOLERANCE_PX = 4;
+// Fingers move more during a tap than a mouse during a click
+const TAP_TOLERANCE_PX = 10;
+// A tap picks the nearest point within this radius (CSS px)
+const TAP_PICK_RADIUS_PX = 16;
 // Positions arriving from the layout worker are tweened over this duration,
 // so the animation reads as continuous motion instead of discrete jumps
 const POSITION_TWEEN_MS = 260;
@@ -99,6 +105,12 @@ export default class ScatterGL {
     // so the host can render a selection rectangle overlay
     this.onBoxRect = onBoxRect;
     this.basePointSize = pointSize;
+    // When on, a plain drag draws a selection box instead of panning -
+    // touch screens have no shift key
+    this.selectMode = false;
+
+    // Let the canvas own touch gestures instead of the page scrolling/zooming
+    canvas.style.touchAction = 'none';
 
     const gl = canvas.getContext('webgl2', { antialias: true, alpha: true });
     if (!gl) {
@@ -331,6 +343,14 @@ export default class ScatterGL {
     this.viewOffset = [(-(minX + maxX) / 2 / (spanX * padding)) * 2, (-(minY + maxY) / 2 / (spanY * padding)) * 2];
   }
 
+  // Drop any pan/zoom and fit all points into the view again
+  resetView() {
+    this.userAdjustedView = false;
+    this.fitView();
+    this.pickingDirty = true;
+    this.requestRender();
+  }
+
   // ---- rendering ----
 
   resize() {
@@ -459,7 +479,9 @@ export default class ScatterGL {
     this.pickingDirty = false;
   }
 
-  pick(clientX, clientY) {
+  // Index of the point under the given client position, or, with a radius,
+  // the point nearest to it within that many CSS pixels
+  pick(clientX, clientY, radiusPx = 0) {
     const gl = this.gl;
     if (!this.positions || this.n === 0) return null;
     if (this.pickingDirty) {
@@ -467,14 +489,65 @@ export default class ScatterGL {
     }
     const rect = this.canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    const x = Math.floor((clientX - rect.left) * dpr);
-    const y = Math.floor((rect.bottom - clientY) * dpr);
-    const pixel = new Uint8Array(4);
+    const cx = Math.floor((clientX - rect.left) * dpr);
+    const cy = Math.floor((rect.bottom - clientY) * dpr);
+    const r = Math.round(radiusPx * dpr);
+    const x0 = Math.max(0, cx - r);
+    const y0 = Math.max(0, cy - r);
+    const x1 = Math.min(this.canvas.width - 1, cx + r);
+    const y1 = Math.min(this.canvas.height - 1, cy + r);
+    if (x1 < x0 || y1 < y0) return null;
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    const pixels = new Uint8Array(w * h * 4);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.pickingFramebuffer);
-    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+    gl.readPixels(x0, y0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    const id = pixel[0] | (pixel[1] << 8) | (pixel[2] << 16);
-    return id === 0 ? null : id - 1;
+    let best = null;
+    let bestDist = Infinity;
+    for (let j = 0; j < h; j++) {
+      for (let i = 0; i < w; i++) {
+        const o = (j * w + i) * 4;
+        const id = pixels[o] | (pixels[o + 1] << 8) | (pixels[o + 2] << 16);
+        if (id === 0) continue;
+        const dx = x0 + i - cx;
+        const dy = y0 + j - cy;
+        const dist = dx * dx + dy * dy;
+        if (dist < bestDist && dist <= r * r) {
+          bestDist = dist;
+          best = id - 1;
+        }
+      }
+    }
+    return best;
+  }
+
+  setSelectMode(enabled) {
+    this.selectMode = Boolean(enabled);
+  }
+
+  // Zoom by a factor around a client-space point
+  zoomAt(clientX, clientY, factor) {
+    const rect = this.canvas.getBoundingClientRect();
+    const cx = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const cy = -(((clientY - rect.top) / rect.height) * 2 - 1);
+    for (const axis of [0, 1]) {
+      const c = axis === 0 ? cx : cy;
+      this.viewScale[axis] *= factor;
+      this.viewOffset[axis] = c - (c - this.viewOffset[axis]) * factor;
+    }
+    this.userAdjustedView = true;
+    this.pickingDirty = true;
+    this.requestRender();
+  }
+
+  panBy(dx, dy) {
+    const rect = this.canvas.getBoundingClientRect();
+    this.viewOffset[0] += (dx / rect.width) * 2;
+    this.viewOffset[1] -= (dy / rect.height) * 2;
+    this.userAdjustedView = true;
+    this.pickingDirty = true;
+    this.requestRender();
   }
 
   // ---- interactions ----
@@ -511,18 +584,65 @@ export default class ScatterGL {
     const canvas = this.canvas;
     this.dragState = null;
     this.boxState = null;
+    // Active pointers by id, to recognize a two-finger pinch
+    this.pointers = new Map();
+    this.pinchState = null;
+
+    const pinchGeometry = () => {
+      const [a, b] = [...this.pointers.values()];
+      return {
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+        dist: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)),
+      };
+    };
+
+    const cancelBox = () => {
+      if (this.boxState) {
+        this.boxState = null;
+        if (this.onBoxRect) this.onBoxRect(null);
+      }
+    };
 
     this.handlePointerDown = (e) => {
-      if (e.shiftKey && this.onBoxSelect) {
-        this.boxState = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
-        canvas.setPointerCapture(e.pointerId);
+      canvas.setPointerCapture(e.pointerId);
+      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+      // A second finger turns whatever the first one started into a pinch
+      if (this.pointers.size === 2) {
+        cancelBox();
+        this.dragState = null;
+        this.pinchState = pinchGeometry();
         return;
       }
-      this.dragState = { x: e.clientX, y: e.clientY, moved: 0 };
-      canvas.setPointerCapture(e.pointerId);
+      if (this.pointers.size > 2) return;
+
+      if ((e.shiftKey || this.selectMode) && this.onBoxSelect) {
+        this.boxState = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
+        return;
+      }
+      this.dragState = {
+        x: e.clientX,
+        y: e.clientY,
+        moved: 0,
+        tolerance: e.pointerType === 'mouse' ? CLICK_TOLERANCE_PX : TAP_TOLERANCE_PX,
+      };
     };
 
     this.handlePointerMove = (e) => {
+      if (this.pointers.has(e.pointerId)) {
+        this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+
+      if (this.pinchState) {
+        if (this.pointers.size < 2) return;
+        const next = pinchGeometry();
+        this.panBy(next.x - this.pinchState.x, next.y - this.pinchState.y);
+        this.zoomAt(next.x, next.y, next.dist / this.pinchState.dist);
+        this.pinchState = next;
+        return;
+      }
+
       if (this.boxState) {
         this.boxState.x1 = e.clientX;
         this.boxState.y1 = e.clientY;
@@ -544,16 +664,13 @@ export default class ScatterGL {
         this.dragState.x = e.clientX;
         this.dragState.y = e.clientY;
         this.dragState.moved += Math.abs(dx) + Math.abs(dy);
-        if (this.dragState.moved > CLICK_TOLERANCE_PX) {
-          const rect = canvas.getBoundingClientRect();
-          this.viewOffset[0] += (dx / rect.width) * 2;
-          this.viewOffset[1] -= (dy / rect.height) * 2;
-          this.userAdjustedView = true;
-          this.pickingDirty = true;
-          this.requestRender();
+        if (this.dragState.moved > this.dragState.tolerance) {
+          this.panBy(dx, dy);
         }
         return;
       }
+      // Hover only makes sense for a mouse, a touch has no "over" state
+      if (e.pointerType !== 'mouse') return;
       const index = this.pick(e.clientX, e.clientY);
       if (index !== this.hoveredIndex) {
         this.hoveredIndex = index;
@@ -565,23 +682,41 @@ export default class ScatterGL {
     };
 
     this.handlePointerUp = (e) => {
+      this.pointers.delete(e.pointerId);
+
+      if (this.pinchState) {
+        // The gesture ends once all fingers are lifted, so the remaining
+        // finger doesn't suddenly start panning or register a tap
+        if (this.pointers.size === 0) this.pinchState = null;
+        return;
+      }
+
       if (this.boxState) {
         const selected = this.selectInBox(this.boxState);
-        this.boxState = null;
-        if (this.onBoxRect) this.onBoxRect(null);
+        cancelBox();
         if (this.onBoxSelect) this.onBoxSelect(selected);
         return;
       }
-      const wasClick = this.dragState && this.dragState.moved <= CLICK_TOLERANCE_PX;
+      const wasClick = this.dragState && this.dragState.moved <= this.dragState.tolerance;
       this.dragState = null;
       if (wasClick && this.onClick) {
+        const radius = e.pointerType === 'mouse' ? 0 : TAP_PICK_RADIUS_PX;
         // null = click on empty space (used to clear selection)
-        this.onClick(this.pick(e.clientX, e.clientY));
+        this.onClick(this.pick(e.clientX, e.clientY, radius));
       }
     };
 
-    this.handlePointerLeave = () => {
-      if (this.hoveredIndex !== null) {
+    this.handlePointerCancel = (e) => {
+      this.pointers.delete(e.pointerId);
+      if (this.pointers.size === 0) {
+        this.pinchState = null;
+        this.dragState = null;
+        cancelBox();
+      }
+    };
+
+    this.handlePointerLeave = (e) => {
+      if (e.pointerType === 'mouse' && this.hoveredIndex !== null) {
         this.hoveredIndex = null;
         if (this.onHover) this.onHover(null, 0, 0);
       }
@@ -589,24 +724,13 @@ export default class ScatterGL {
 
     this.handleWheel = (e) => {
       e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      // Cursor position in clip space
-      const cx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const cy = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      const factor = Math.exp(-e.deltaY * 0.002);
-      for (const axis of [0, 1]) {
-        const c = axis === 0 ? cx : cy;
-        this.viewScale[axis] *= factor;
-        this.viewOffset[axis] = c - (c - this.viewOffset[axis]) * factor;
-      }
-      this.userAdjustedView = true;
-      this.pickingDirty = true;
-      this.requestRender();
+      this.zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * 0.002));
     };
 
     canvas.addEventListener('pointerdown', this.handlePointerDown);
     canvas.addEventListener('pointermove', this.handlePointerMove);
     canvas.addEventListener('pointerup', this.handlePointerUp);
+    canvas.addEventListener('pointercancel', this.handlePointerCancel);
     canvas.addEventListener('pointerleave', this.handlePointerLeave);
     canvas.addEventListener('wheel', this.handleWheel, { passive: false });
   }
@@ -618,6 +742,7 @@ export default class ScatterGL {
     canvas.removeEventListener('pointerdown', this.handlePointerDown);
     canvas.removeEventListener('pointermove', this.handlePointerMove);
     canvas.removeEventListener('pointerup', this.handlePointerUp);
+    canvas.removeEventListener('pointercancel', this.handlePointerCancel);
     canvas.removeEventListener('pointerleave', this.handlePointerLeave);
     canvas.removeEventListener('wheel', this.handleWheel);
     const gl = this.gl;
