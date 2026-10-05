@@ -320,7 +320,8 @@ const VisualizeChart = ({
           color="primary"
           label="Drag to select an area"
           onDelete={() => setSelectMode(false)}
-          sx={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}
+          // Stacked above the selection chip when there is one
+          sx={{ position: 'absolute', bottom: selectionCount > 0 ? 40 : 8, right: 8, zIndex: 2 }}
         />
       )}
       {selectionCount > 0 && (
