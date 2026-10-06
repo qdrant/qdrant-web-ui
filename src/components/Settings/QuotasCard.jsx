@@ -16,7 +16,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import { MemoryStick, HardDrive, TriangleAlert } from 'lucide-react';
 import { axiosInstance as axios } from '../../common/axios';
-import { QuotaRow, PercentQuotaControl } from './QuotaControls';
+import { QuotaRow, PercentQuotaControl, QUOTAS_CONTAINER } from './QuotaControls';
 import { configToForm, formToConfig, summarizeUsage, usageStatus } from './quotaHelpers';
 
 // Fallback release margin when the API doesn't report one; used for the
@@ -121,7 +121,7 @@ function QuotasCard() {
     <Card elevation={0}>
       <CardHeader
         title={
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
             Quotas
             {exceededMessage && (
               <Tooltip title={`${exceededMessage} Click to locate.`} arrow>
@@ -174,7 +174,7 @@ function QuotasCard() {
           </Box>
         }
       />
-      <CardContent sx={{ p: 3 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
         {loading ? (
           <Box
             sx={{
@@ -210,7 +210,7 @@ function QuotasCard() {
             </Button>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} role="form">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, ...QUOTAS_CONTAINER }} role="form">
             {error && (
               <Alert severity="error" onClose={() => setError(null)}>
                 {error}
@@ -267,7 +267,7 @@ function QuotasCard() {
 
             <Divider />
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
               <Typography
                 variant="body2"
                 color="text.secondary"
@@ -275,12 +275,14 @@ function QuotasCard() {
               >
                 You have unsaved changes.
               </Typography>
-              <Button variant="text" color="inherit" onClick={discard} disabled={!hasUnsavedChanges || saving}>
-                Discard
-              </Button>
-              <Button variant="contained" onClick={save} disabled={!hasUnsavedChanges || saving}>
-                {saving ? 'Saving…' : 'Save changes'}
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1.5, ml: 'auto' }}>
+                <Button variant="text" color="inherit" onClick={discard} disabled={!hasUnsavedChanges || saving}>
+                  Discard
+                </Button>
+                <Button variant="contained" onClick={save} disabled={!hasUnsavedChanges || saving}>
+                  {saving ? 'Saving…' : 'Save changes'}
+                </Button>
+              </Box>
             </Box>
           </Box>
         )}

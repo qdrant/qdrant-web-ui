@@ -12,6 +12,12 @@ const labelSx = {
   lineHeight: 1.3,
 };
 
+// Container queries against the quotas form (see QuotasCard), so the layout
+// follows the card's actual width rather than the viewport's.
+export const QUOTAS_CONTAINER = { containerType: 'inline-size', containerName: 'quotas' };
+const WIDE_QUERY = '@container quotas (min-width: 720px)';
+const NARROW_QUERY = '@container quotas (max-width: 439px)';
+
 const dimSx = (dimmed) => ({ opacity: dimmed ? 0.55 : 1, transition: 'opacity 0.2s ease' });
 
 // Attention flicker played on a quota row when the user clicks the "Quota
@@ -23,9 +29,9 @@ const flicker = keyframes`
 `;
 
 // A single quota setting laid out as a row: an icon, a label with a short
-// description, its own enable/disable switch, and a control. On desktop the
-// switch sits at the far right; on small screens it moves up beside the label
-// and the control drops to its own line. When the row is off, its content dims
+// description, its own enable/disable switch, and a control. In a wide card the
+// control sits to the right of the label; in a narrower one it drops to its own
+// line below the label. When the row is off, its content dims
 // but the switch stays fully interactive.
 export function QuotaRow({ icon, label, description, htmlFor, enabled, onToggle, dimmed, flash, children }) {
   const [animate, setAnimate] = useState(false);
@@ -44,13 +50,14 @@ export function QuotaRow({ icon, label, description, htmlFor, enabled, onToggle,
       onAnimationEnd={() => setAnimate(false)}
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', sm: 'row' },
-        alignItems: { xs: 'stretch', sm: 'flex-start' },
-        gap: { xs: 1.5, sm: 3 },
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: 1.5,
+        [WIDE_QUERY]: { flexDirection: 'row', alignItems: 'flex-start', gap: 3 },
         animation: animate ? `${flicker} 0.9s ease-in-out` : undefined,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: { sm: 1 }, minWidth: 0 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0, [WIDE_QUERY]: { flex: 1 } }}>
         <Switch
           size="small"
           checked={enabled}
@@ -87,10 +94,10 @@ export function QuotaRow({ icon, label, description, htmlFor, enabled, onToggle,
       </Box>
       <Box
         sx={{
-          width: { xs: '100%' },
-          flex: { sm: '1.4 1 0%' },
           minWidth: 0,
-          pl: { xs: 6.5, sm: 0 },
+          pl: 6.5,
+          [WIDE_QUERY]: { flex: '1.4 1 0%', pl: 0 },
+          [NARROW_QUERY]: { pl: 0 },
           ...dimSx(dimmed),
         }}
       >
@@ -197,8 +204,17 @@ export function PercentQuotaControl({ id, label, value, onChange, disabled, usag
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: { xs: 2, sm: 3 } }}>
-        <Box sx={{ flex: 1, minWidth: 0, px: 0.5 }}>
+      {/* Slider beside the values; in a narrow card the slider takes its own
+          line above them. */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 3,
+          [NARROW_QUERY]: { flexWrap: 'wrap', columnGap: 2, rowGap: 0 },
+        }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0, px: 0.5, [NARROW_QUERY]: { flexBasis: '100%' } }}>
           {/* Empty caption keeps the same top offset as the Current/New columns,
               so the slider track lands level with those values. */}
           <Typography
@@ -244,7 +260,7 @@ export function PercentQuotaControl({ id, label, value, onChange, disabled, usag
         </Box>
 
         {/* Current usage vs. new limit, aligned like a two-column table */}
-        <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3 }, flexShrink: 0 }}>
+        <Box sx={{ display: 'flex', gap: 3, flexShrink: 0, [NARROW_QUERY]: { gap: 2 } }}>
           <Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2, mb: 0.5 }}>
               Usage
