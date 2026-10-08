@@ -337,6 +337,9 @@ export default class ScatterGL {
     gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.DYNAMIC_DRAW);
     if (!this.userAdjustedView) {
       this.fitView();
+      // The fit drops the pan that kept the selected point out of the
+      // clipped part of the frame, so redo it
+      this.keepSelectedInView();
     }
     this.pickingDirty = true;
     this.requestRender();
@@ -508,7 +511,12 @@ export default class ScatterGL {
     if (next[0] === this.minFrame[0] && next[1] === this.minFrame[1]) return;
     this.minFrame = next;
     if (!this.frame || !this.viewSize || !this.positions || this.n === 0) return;
+    const wasSelectedInView = this.isSelectedInView(this.viewSize);
     this.applyFrame(this.frameFor(this.viewSize));
+    // As on resize: the rescaled frame may carry the selected point out of sight
+    if (wasSelectedInView) {
+      this.keepSelectedInView();
+    }
     this.pickingDirty = true;
     this.requestRender();
   }
@@ -760,6 +768,9 @@ export default class ScatterGL {
     };
 
     this.handlePointerDown = (e) => {
+      // Extra fingers are ignored, so lifting one of the pinch pair doesn't
+      // swap a new finger into the gesture and make the view jump
+      if (this.pointers.size >= 2) return;
       canvas.setPointerCapture(e.pointerId);
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -770,7 +781,6 @@ export default class ScatterGL {
         this.pinchState = pinchGeometry();
         return;
       }
-      if (this.pointers.size > 2) return;
 
       if ((e.shiftKey || this.selectMode) && this.onBoxSelect) {
         this.boxState = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY };
