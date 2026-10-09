@@ -4,7 +4,18 @@
 // Don't use these mocks for testing! They're a developer workflow aid.
 import { http, HttpResponse } from 'msw';
 import { BASE_URL, ok, acknowledged } from '../lib';
-import { COLLECTION, POINTS, makeTelemetry, makeCollectionInfo, singleNodeClusterInfo } from '../data';
+import {
+  COLLECTION,
+  HYBRID_COLLECTION,
+  POINTS,
+  makeTelemetry,
+  makeCollectionInfo,
+  makeHybridCollectionInfo,
+  singleNodeClusterInfo,
+} from '../data';
+
+// The hybrid collection is empty, so point reads return nothing for it.
+const pointsOf = (collection) => (collection === HYBRID_COLLECTION ? [] : POINTS);
 
 // Quotas shown on the Settings page. Mutable so that saving in the UI sticks
 // for the session. Single node, so usage is reported via `usage` (no `peers`).
@@ -51,13 +62,15 @@ export const baseHandlers = [
   http.get(`${BASE_URL}/cluster`, () => ok({ status: 'disabled' })),
 
   // --- collections ---
-  http.get(`${BASE_URL}/collections`, () => ok({ collections: [{ name: COLLECTION }] })),
+  http.get(`${BASE_URL}/collections`, () => ok({ collections: [{ name: COLLECTION }, { name: HYBRID_COLLECTION }] })),
   http.get(`${BASE_URL}/aliases`, () => ok({ aliases: [] })),
-  http.get(`${BASE_URL}/collections/:collection`, () => ok(makeCollectionInfo())),
-  // Only the single mock collection exists; report everything else as absent
+  http.get(`${BASE_URL}/collections/:collection`, ({ params }) =>
+    ok(params.collection === HYBRID_COLLECTION ? makeHybridCollectionInfo() : makeCollectionInfo())
+  ),
+  // Only the mock collections exist; report everything else as absent
   // so the create form doesn't wrongly think new names already exist.
   http.get(`${BASE_URL}/collections/:collection/exists`, ({ params }) =>
-    ok({ exists: params.collection === COLLECTION })
+    ok({ exists: [COLLECTION, HYBRID_COLLECTION].includes(params.collection) })
   ),
   http.get(`${BASE_URL}/collections/:collection/aliases`, () => ok({ aliases: [] })),
   http.get(`${BASE_URL}/collections/:collection/cluster`, () => ok(singleNodeClusterInfo)),
@@ -79,24 +92,28 @@ export const baseHandlers = [
   http.delete(`${BASE_URL}/collections/:collection/index/:field`, () => acknowledged()),
 
   // --- points ---
-  http.post(`${BASE_URL}/collections/:collection/points/scroll`, () => ok({ points: POINTS, next_page_offset: null })),
+  http.post(`${BASE_URL}/collections/:collection/points/scroll`, ({ params }) =>
+    ok({ points: pointsOf(params.collection), next_page_offset: null })
+  ),
 
-  http.post(`${BASE_URL}/collections/:collection/points/query`, async ({ request }) => {
+  http.post(`${BASE_URL}/collections/:collection/points/query`, async ({ request, params }) => {
     const body = await request.json().catch(() => ({}));
     const limit = body.limit ?? POINTS.length;
-    const points = POINTS.slice(0, limit).map((point, index) => ({
-      ...point,
-      version: 0,
-      score: Math.round((1 - index * 0.05) * 1000) / 1000,
-    }));
+    const points = pointsOf(params.collection)
+      .slice(0, limit)
+      .map((point, index) => ({
+        ...point,
+        version: 0,
+        score: Math.round((1 - index * 0.05) * 1000) / 1000,
+      }));
     return ok({ points });
   }),
 
   // Retrieve points by id (used by the graph view).
-  http.post(`${BASE_URL}/collections/:collection/points`, async ({ request }) => {
+  http.post(`${BASE_URL}/collections/:collection/points`, async ({ request, params }) => {
     const body = await request.json().catch(() => ({}));
     const ids = body.ids || [];
-    return ok(POINTS.filter((point) => ids.includes(point.id)));
+    return ok(pointsOf(params.collection).filter((point) => ids.includes(point.id)));
   }),
 
   http.post(`${BASE_URL}/collections/:collection/facet`, async ({ request }) => {

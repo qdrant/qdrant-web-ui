@@ -22,7 +22,7 @@ export const POINTS = [
 // "distributed mode disabled" banner and the live monitor.
 export const makeTelemetry = ({ hasApiKey = false, clusterEnabled = false, reshardingEnabled = false } = {}) => ({
   app: { name: 'qdrant', version: '1.15.1', jwt_rbac: hasApiKey, hide_jwt_dashboard: false },
-  collections: { number_of_collections: 1, max_collections: null },
+  collections: { number_of_collections: 2, max_collections: null },
   cluster: { enabled: clusterEnabled, resharding_enabled: reshardingEnabled },
 });
 
@@ -51,6 +51,46 @@ export const makeCollectionInfo = ({ shardNumber = 1, replicationFactor = 1 } = 
     city: { data_type: 'keyword', points: POINTS.length },
     price: { data_type: 'integer', points: POINTS.length },
   },
+});
+
+// A second, empty collection with a rich vectors config: several named dense
+// vectors (one multivector with its own datatype, one on disk) plus sparse
+// vectors. Shapes follow VectorParams / SparseVectorParams in openapi.json.
+export const HYBRID_COLLECTION = 'hybrid_search';
+
+export const makeHybridCollectionInfo = ({ shardNumber = 1, replicationFactor = 1 } = {}) => ({
+  status: 'green',
+  optimizer_status: { ok: true, error: null },
+  indexed_vectors_count: 0,
+  points_count: 0,
+  segments_count: 2,
+  config: {
+    params: {
+      vectors: {
+        text_dense: { size: 768, distance: 'Cosine' },
+        image: { size: 512, distance: 'Dot', on_disk: true },
+        colbert: {
+          size: 128,
+          distance: 'Cosine',
+          datatype: 'float16',
+          multivector_config: { comparator: 'max_sim' },
+          hnsw_config: { m: 0 },
+        },
+      },
+      sparse_vectors: {
+        bm25: { modifier: 'idf' },
+        splade: { index: { on_disk: true } },
+      },
+      shard_number: shardNumber,
+      replication_factor: replicationFactor,
+      write_consistency_factor: 1,
+      on_disk_payload: true,
+    },
+    hnsw_config: { m: 16, ef_construct: 100, full_scan_threshold: 10000 },
+    optimizer_config: { default_segment_number: 0 },
+    quantization_config: null,
+  },
+  payload_schema: {},
 });
 
 // GET /collections/{name}/cluster for a single-node (non-distributed) instance.

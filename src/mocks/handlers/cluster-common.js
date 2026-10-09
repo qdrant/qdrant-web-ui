@@ -3,7 +3,7 @@
 // overrides via makeClusterHandlers.
 import { http } from 'msw';
 import { BASE_URL, ok } from '../lib';
-import { makeTelemetry, makeCollectionInfo } from '../data';
+import { HYBRID_COLLECTION, makeTelemetry, makeCollectionInfo, makeHybridCollectionInfo } from '../data';
 
 // The cluster-related endpoint overrides for a distributed deployment. Layered
 // on top of baseHandlers, these shadow the single-node cluster/telemetry/
@@ -26,7 +26,10 @@ export function makeClusterHandlers({
       )
     ),
     http.get(`${BASE_URL}/cluster`, () => ok(clusterInfo)),
-    http.get(`${BASE_URL}/collections/:collection`, () => ok(makeCollectionInfo({ shardNumber, replicationFactor }))),
+    http.get(`${BASE_URL}/collections/:collection`, ({ params }) => {
+      const makeInfo = params.collection === HYBRID_COLLECTION ? makeHybridCollectionInfo : makeCollectionInfo;
+      return ok(makeInfo({ shardNumber, replicationFactor }));
+    }),
     http.get(`${BASE_URL}/collections/:collection/cluster`, () => ok(collectionClusterInfo)),
   ];
 }
