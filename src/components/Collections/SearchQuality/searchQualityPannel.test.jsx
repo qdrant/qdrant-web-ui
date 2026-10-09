@@ -71,9 +71,10 @@ describe('SearchQualityPannel', () => {
   });
 
   it('should call onCheckIndexQuality when "Check index quality" button is clicked', async () => {
+    const loggingFoo = vi.fn();
     render(
       <MemoryRouter>
-        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} loggingFoo={loggingFoo} />
       </MemoryRouter>
     );
     const button = screen.getAllByTestId('index-quality-check-button')[0];
@@ -81,6 +82,7 @@ describe('SearchQualityPannel', () => {
     await waitFor(() => {
       expect(useClient().client.scroll).toHaveBeenCalled();
       expect(useClient().client.api).toHaveBeenCalled();
+      expect(loggingFoo).toHaveBeenCalledWith(expect.stringMatching(/^Mean recall@10 for collection: /));
     });
   });
 

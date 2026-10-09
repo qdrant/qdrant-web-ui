@@ -238,7 +238,7 @@ const SearchQualityPanel = ({ collectionName, vectors, loggingFoo, clearLogsFoo,
       // n-1 denominator: Bessel's correction for estimating population std dev from a sample
       const stdDev = round(Math.sqrt(recalls.reduce((x, val) => x + (val - avgRecall) ** 2, 0) / (recalls.length - 1)));
 
-      loggingFoo('Mean recall@' + limit + ' for collection: ' + avgRecall + ' ± ' + stdDev);
+      loggingFoo && loggingFoo('Mean recall@' + limit + ' for collection: ' + avgRecall + ' ± ' + stdDev);
 
       setRecall((prev) => {
         return {

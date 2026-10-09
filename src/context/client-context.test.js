@@ -1,3 +1,5 @@
+// The client takes its URL from the page; use https so the API key isn't sent over plain http.
+// @vitest-environment-options {"url":"https://localhost"}
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useState } from 'react';

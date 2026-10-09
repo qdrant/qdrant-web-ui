@@ -11,7 +11,7 @@ describe('QdrantClientExtended', () => {
       const controller = new AbortController();
 
       const apiKey = 'test-api-key';
-      const url = 'http://localhost';
+      const url = 'https://localhost';
       const port = 3000;
 
       const collectionName = 'demo';
@@ -45,13 +45,13 @@ describe('QdrantClientExtended', () => {
     // method returns url
     it('should return url', () => {
       const client = new QdrantClientExtended({
-        url: 'http://localhost',
+        url: 'https://localhost',
         apiKey: 'test',
         port: 3000,
       });
 
       expect(client.getSnapshotUploadUrl('test').href).toBe(
-        new URL('collections/test/snapshots/upload', 'http://localhost').href
+        new URL('collections/test/snapshots/upload', 'https://localhost').href
       );
     });
   });
@@ -61,7 +61,7 @@ describe('QdrantClientExtended', () => {
     // method returns apiKey
     it('should return apiKey', () => {
       const client = new QdrantClientExtended({
-        url: 'http://localhost',
+        url: 'https://localhost',
         apiKey: 'test',
         port: 3000,
       });
