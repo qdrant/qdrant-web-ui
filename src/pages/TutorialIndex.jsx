@@ -3,6 +3,7 @@ import { Alert, Box, Grid, Typography } from '@mui/material';
 import { useClient } from '../context/client-context';
 import InfoCard from '../components/Common/InfoCard/InfoCard';
 import TutorialLinks from '../components/InteractiveTutorial/TutorialLinks';
+import ExternalTutorialLinks from '../components/IntegratedTutorials/ExternalTutorialLinks';
 import { Zap, FileCode } from 'lucide-react';
 import { PAGE_CONTENT_WIDTH, PAGE_PADDING_X } from '../theme/constants';
 
@@ -81,6 +82,7 @@ export const TutorialIndex = () => {
         </Grid>
       </Box>
 
+      <ExternalTutorialLinks />
       <TutorialLinks sections={['filtering', 'vectorSearch', 'multitenancy']} />
     </Box>
   );
