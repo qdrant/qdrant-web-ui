@@ -50,7 +50,7 @@
     "react-archer": "^5.1.0",
     "react-diff-viewer-continued": "^4.0.0",
     "react-dom": "^19.0.0",
-    "react-resizable-panels": "^2.0.0",
+    "react-resizable-panels": "^3.0.6",
     "react-router": "^8.3.0",
     "react-simple-code-editor": "^0.13.1",
     "unist-util-visit": "^5.0.0",
