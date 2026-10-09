@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterAll } from 'vitest';
 import { getCodeBlocks } from '../config/Rules';
 
 // Rules.js fetches openapi.json on import; stub it so the relative URL doesn't fail in Node.
@@ -7,6 +7,10 @@ vi.hoisted(() => {
     'fetch',
     vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ paths: {} }) }))
   );
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('get-code-blocks', () => {
