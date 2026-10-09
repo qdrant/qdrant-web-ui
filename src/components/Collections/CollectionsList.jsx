@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import { Box, Checkbox, MenuItem, TableCell, TableRow, Tooltip, Typography, Table } from '@mui/material';
@@ -14,7 +14,7 @@ import {
 import DeleteDialog from './DeleteDialog';
 import ActionsMenu from '../Common/ActionsMenu';
 import CollectionStatus from './CollectionStatus';
-import VectorsConfigChips from '../Common/VectorsConfigChips';
+import VectorsConfigChips, { getVectorsSizing } from '../Common/VectorsConfigChips';
 import { CopyableGroupedNumber } from '../Common/CopyableGroupedNumber';
 import { bigIntJSON } from '../../common/bigIntJSON';
 import { COLLECTION_METADATA_CARD_ID } from './collectionSectionIds';
@@ -119,6 +119,7 @@ const CollectionTableRow = ({
   isRefreshing,
   isSelected,
   onToggleSelect,
+  vectorsSizing,
 }) => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const theme = useTheme();
@@ -189,8 +190,12 @@ const CollectionTableRow = ({
           shardKeysCount={collection.shard_keys_count}
         />
       </TableCell>
-      <TableCell align="center">
-        <VectorsConfigChips collectionConfigParams={collection.config.params} collectionName={collection.name} />
+      <TableCell>
+        <VectorsConfigChips
+          collectionConfigParams={collection.config.params}
+          collectionName={collection.name}
+          sizing={vectorsSizing}
+        />
       </TableCell>
       <TableCell align="right">
         <ActionsMenu>
@@ -228,6 +233,7 @@ CollectionTableRow.propTypes = {
   isRefreshing: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool.isRequired,
   onToggleSelect: PropTypes.func.isRequired,
+  vectorsSizing: PropTypes.object,
 };
 
 const CollectionsList = ({
@@ -239,6 +245,11 @@ const CollectionsList = ({
   handleToggleSelect,
   handleSelectAll,
 }) => {
+  // Shared by all rows, so vector specs line up across the whole table.
+  const vectorsSizing = useMemo(
+    () => getVectorsSizing(collections.filter((c) => !c.error && c.config).map((c) => c.config.params)),
+    [collections]
+  );
   const allSelected = collections.length > 0 && collections.every((c) => selectedCollections.has(c.name));
   const someSelected = collections.some((c) => selectedCollections.has(c.name));
 
@@ -261,7 +272,8 @@ const CollectionsList = ({
             <StyledHeaderCell align="center">Points (Approx)</StyledHeaderCell>
             <StyledHeaderCell align="center">Segments</StyledHeaderCell>
             <StyledHeaderCell align="center">Shards</StyledHeaderCell>
-            <StyledHeaderCell width="20%" align="center">
+            {/* Shrinks to fit the vectors config, spare space goes to the other columns. */}
+            <StyledHeaderCell width="1%" align="center">
               Vectors Config
             </StyledHeaderCell>
             <StyledHeaderCell width="7%" align="right">
@@ -280,6 +292,7 @@ const CollectionsList = ({
                 isRefreshing={isRefreshing}
                 isSelected={selectedCollections.has(collection.name)}
                 onToggleSelect={handleToggleSelect}
+                vectorsSizing={vectorsSizing}
               />
             ))}
         </StyledTableBody>
