@@ -1,6 +1,18 @@
 import { getCodeBlocks, selectBlock } from '../EditorCommon/config/Rules';
 import { codeParse } from './config/RequesFromCode';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterAll } from 'vitest';
+// Rules.js fetches openapi.json on import; stub it so the relative URL doesn't fail in Node.
+vi.hoisted(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() => Promise.resolve({ json: () => Promise.resolve({ paths: {} }) }))
+  );
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+
 const testCode = `GET collections
 
 PUT collections/demo1

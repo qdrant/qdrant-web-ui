@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import SearchQualityPanel from './SearchQualityPanel';
 import { useClient } from '../../../context/client-context';
@@ -70,17 +71,27 @@ describe('SearchQualityPannel', () => {
     expect(screen.getAllByText('Cosine')).toHaveLength(2);
   });
 
-  it('should call onCheckIndexQuality when "Check index quality" button is clicked', async () => {
+  it('should show the measured recall when no logger is passed', async () => {
     render(
       <MemoryRouter>
         <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} />
       </MemoryRouter>
     );
-    const button = screen.getAllByTestId('index-quality-check-button')[0];
-    fireEvent.click(button);
+    userEvent.click(screen.getAllByTestId('index-quality-check-button')[0]);
+    // Both exact and ANN searches return the same points, so recall is 100%.
+    expect(await screen.findByText('100.00%')).toBeInTheDocument();
+  });
+
+  it('should log the mean recall when the check finishes', async () => {
+    const loggingFoo = vi.fn();
+    render(
+      <MemoryRouter>
+        <SearchQualityPanel collectionName={COLLECTION_NAME} vectors={VECTORS} loggingFoo={loggingFoo} />
+      </MemoryRouter>
+    );
+    userEvent.click(screen.getAllByTestId('index-quality-check-button')[0]);
     await waitFor(() => {
-      expect(useClient().client.scroll).toHaveBeenCalled();
-      expect(useClient().client.api).toHaveBeenCalled();
+      expect(loggingFoo).toHaveBeenCalledWith('Mean recall@10 for collection: 1 ± 0');
     });
   });
 
