@@ -10,6 +10,7 @@ import Tutorial from './pages/Tutorial';
 import Datasets from './pages/Datasets';
 import Jwt from './pages/Jwt';
 import Settings from './pages/Settings';
+import Metrics from './pages/Metrics';
 import Graph from './pages/Graph';
 import Welcome from './pages/Welcome';
 import Homepage from './pages/Homepage';
@@ -37,6 +38,7 @@ const routes = () => [
       { path: '/tutorial', element: <TutorialIndex /> },
       { path: '/tutorial/:pageSlug', element: <Tutorial /> },
       { path: '/jwt', element: <Jwt /> },
+      { path: '/metrics', element: <Metrics /> },
       { path: '/settings', element: <Settings /> },
     ],
   },
