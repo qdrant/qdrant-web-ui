@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
-import { alpha, Paper, Box, Tooltip, Typography, Grid, IconButton, Tabs, Tab, useMediaQuery } from '@mui/material';
-import { ArrowBack, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { useLocation, useParams } from 'react-router';
+import { alpha, Paper, Box, Tooltip, Grid, IconButton, Tabs, Tab, useMediaQuery } from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import GraphVisualisation from '../components/GraphVisualisation/GraphVisualisation';
 import { useWindowResize } from '../hooks/windowHooks';
 import PointPreview from '../components/Common/PointPreview';
 import TabPanel from '../components/Common/TabPanel';
+import BackToCollectionLink from '../components/Common/BackToCollectionLink';
 import CodeEditorWindow from '../components/FilterEditorWindow';
 import { useClient } from '../context/client-context';
 import { getFirstPoint, getSamplePoints } from '../lib/graph-visualization-helpers';
@@ -51,7 +52,6 @@ const defaultQuery = defaultJson + explanation;
 
 function Graph() {
   const theme = useTheme();
-  const navigate = useNavigate();
   const params = useParams();
   const location = useLocation();
   const { newInitNode, vectorName } = location.state || {};
@@ -269,18 +269,7 @@ function Graph() {
                         borderRadius: 0,
                       }}
                     >
-                      <Tooltip title={'Back to collection'}>
-                        <IconButton
-                          sx={{ mr: { xs: 1, sm: 3 } }}
-                          size="small"
-                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
-                        >
-                          <ArrowBack />
-                        </IconButton>
-                      </Tooltip>
-                      <Typography variant="h6" noWrap>
-                        {params.collectionName}
-                      </Typography>
+                      <BackToCollectionLink collectionName={params.collectionName} />
                     </Paper>
                     <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
                       <GraphVisualisation
