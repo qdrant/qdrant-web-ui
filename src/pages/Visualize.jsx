@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import {
   Paper,
   Box,
@@ -14,7 +14,7 @@ import {
   alpha,
   useMediaQuery,
 } from '@mui/material';
-import { ArrowBack, ExpandLess, ExpandMore, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import FilterEditorWindow from '../components/FilterEditorWindow';
@@ -22,6 +22,7 @@ import VisualizeChart from '../components/VisualizeChart';
 import { useWindowResize } from '../hooks/windowHooks';
 import PointPreview from '../components/Common/PointPreview';
 import TabPanel from '../components/Common/TabPanel';
+import BackToCollectionLink from '../components/Common/BackToCollectionLink';
 import { useClient } from '../context/client-context';
 import { requestData } from '../components/VisualizeChart/requestData';
 import { getSimilarPoints } from '../lib/graph-visualization-helpers';
@@ -114,7 +115,6 @@ function Visualize() {
   const [visualizationParams, setVisualizationParams] = useState({});
   const { enqueueSnackbar } = useSnackbar();
   // const [errorMessage, setErrorMessage] = useState(null); // todo: use or remove
-  const navigate = useNavigate();
   const params = useParams();
   const [panelsHeight, setPanelsHeight] = useState(0);
   const panelsWrapper = useRef(null);
@@ -405,18 +405,7 @@ function Visualize() {
                         borderBottom: `1px solid ${theme.palette.divider}`,
                       }}
                     >
-                      <Tooltip title={'Back to collection'}>
-                        <IconButton
-                          sx={{ mr: { xs: 1, sm: 3 } }}
-                          size="small"
-                          onClick={() => navigate(`/collections/${encodeURIComponent(params.collectionName)}`)}
-                        >
-                          <ArrowBack />
-                        </IconButton>
-                      </Tooltip>
-                      <Typography variant="h6" noWrap>
-                        {params.collectionName}
-                      </Typography>
+                      <BackToCollectionLink collectionName={params.collectionName} />
                     </Paper>
                     <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
                       <VisualizeChart
