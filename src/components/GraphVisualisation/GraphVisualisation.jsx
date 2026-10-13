@@ -130,7 +130,14 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, onNodeSelect, sa
     // A node that was already out of sight stays so
     const wasNodeInView = prev && isNodeInView(prev);
     if (graph.width() !== elem.clientWidth || graph.height() !== elem.clientHeight) {
+      // Resizing clears the canvas, and force-graph would only redraw it on
+      // its next animation frame, so a blank canvas gets painted in between:
+      // the graph flickers while a panel is dragged. resumeAnimation() on a
+      // paused graph draws a frame synchronously (then continues its loop as
+      // usual), so the pause/resume pair is a "redraw now" right after resizing
+      graph.pauseAnimation();
       graph.width(elem.clientWidth).height(elem.clientHeight);
+      graph.resumeAnimation();
     }
     viewSizeRef.current = size;
     if (wasNodeInView) {
