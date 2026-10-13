@@ -166,7 +166,10 @@ const getSparseDetails = (config = {}) =>
   ].filter(Boolean);
 
 // A single unnamed vector is configured directly, named vectors are keyed by name.
-const getVisibleVectors = ({ vectors = {}, sparse_vectors: sparseVectors = {} }) => {
+// Both fields are nullable in the API, and a `null` bypasses destructuring defaults.
+const getVisibleVectors = ({ vectors: rawVectors, sparse_vectors: rawSparseVectors }) => {
+  const vectors = rawVectors ?? {};
+  const sparseVectors = rawSparseVectors ?? {};
   const denseVectors = vectors.size ? [['Default', vectors]] : Object.entries(vectors);
   const allVectors = [
     ...denseVectors.map(([name, config]) => ({ name, config, sparse: false })),

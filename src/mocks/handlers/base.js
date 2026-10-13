@@ -116,10 +116,10 @@ export const baseHandlers = [
     return ok(pointsOf(params.collection).filter((point) => ids.includes(point.id)));
   }),
 
-  http.post(`${BASE_URL}/collections/:collection/facet`, async ({ request }) => {
+  http.post(`${BASE_URL}/collections/:collection/facet`, async ({ request, params }) => {
     const body = await request.json().catch(() => ({}));
     const counts = new Map();
-    POINTS.forEach((point) => {
+    pointsOf(params.collection).forEach((point) => {
       const value = point.payload[body.key];
       if (value !== undefined) counts.set(value, (counts.get(value) || 0) + 1);
     });
@@ -133,12 +133,13 @@ export const baseHandlers = [
 
   // Distance matrix samples for the Visualize / Graph tabs: link each point
   // to the next one so the views have something to draw.
-  http.post(`${BASE_URL}/collections/:collection/points/search/matrix/offsets`, () => {
-    const ids = POINTS.map((point) => point.id);
+  http.post(`${BASE_URL}/collections/:collection/points/search/matrix/offsets`, ({ params }) => {
+    const points = pointsOf(params.collection);
+    const ids = points.map((point) => point.id);
     const offsetsRow = [];
     const offsetsCol = [];
     const scores = [];
-    for (let i = 0; i < POINTS.length - 1; i++) {
+    for (let i = 0; i < points.length - 1; i++) {
       offsetsRow.push(i);
       offsetsCol.push(i + 1);
       scores.push(0.9 - i * 0.05);
@@ -146,10 +147,11 @@ export const baseHandlers = [
     return ok({ offsets_row: offsetsRow, offsets_col: offsetsCol, scores, ids });
   }),
 
-  http.post(`${BASE_URL}/collections/:collection/points/search/matrix/pairs`, () => {
+  http.post(`${BASE_URL}/collections/:collection/points/search/matrix/pairs`, ({ params }) => {
+    const points = pointsOf(params.collection);
     const pairs = [];
-    for (let i = 0; i < POINTS.length - 1; i++) {
-      pairs.push({ a: POINTS[i].id, b: POINTS[i + 1].id, score: 0.9 - i * 0.05 });
+    for (let i = 0; i < points.length - 1; i++) {
+      pairs.push({ a: points[i].id, b: points[i + 1].id, score: 0.9 - i * 0.05 });
     }
     return ok({ pairs });
   }),
