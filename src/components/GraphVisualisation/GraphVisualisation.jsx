@@ -130,7 +130,12 @@ const GraphVisualisation = ({ initNode, options, onDataDisplay, onNodeSelect, sa
     // A node that was already out of sight stays so
     const wasNodeInView = prev && isNodeInView(prev);
     if (graph.width() !== elem.clientWidth || graph.height() !== elem.clientHeight) {
+      // Resizing clears the canvas, and the graph redraws on its next
+      // animation frame, leaving a blank frame on screen (flicker while a
+      // panel is dragged). Resuming a paused graph draws a frame right away
+      graph.pauseAnimation();
       graph.width(elem.clientWidth).height(elem.clientHeight);
+      graph.resumeAnimation();
     }
     viewSizeRef.current = size;
     if (wasNodeInView) {
