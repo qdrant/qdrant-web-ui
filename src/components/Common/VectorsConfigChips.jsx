@@ -227,7 +227,7 @@ const VectorRow = ({ name, config, sparse, row }) => {
         {name}
       </VectorName>
       <Tooltip title={<DetailsTooltipContent details={details} />} placement="top" arrow>
-        <SpecBadge sparse={sparse} style={{ gridRow: row, gridColumn: 2 }}>
+        <SpecBadge sparse={sparse} tabIndex={0} style={{ gridRow: row, gridColumn: 2 }}>
           <SpecContent parts={getSpecParts({ config, sparse })} />
         </SpecBadge>
       </Tooltip>
