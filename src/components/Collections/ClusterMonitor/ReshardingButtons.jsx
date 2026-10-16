@@ -38,7 +38,12 @@ const ReshardingButtons = ({
         href="https://qdrant.tech/documentation/cloud/cluster-scaling/#resharding"
         target="_blank"
         rel="noopener noreferrer"
-        sx={{ color: 'inherit', textDecoration: 'underline' }}
+        sx={{
+          color: 'inherit',
+          textDecoration: 'underline',
+          textDecorationThickness: '1px',
+          textUnderlineOffset: '2px',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         Learn more
