@@ -125,59 +125,24 @@ const ClusterMonitor = ({ collectionName }) => {
   const [replicationLoading, setReplicationLoading] = React.useState(false);
   const [sortByPeer, setSortByPeer] = useState(null);
   const archerContainerRef = useRef(null);
-  const summaryScrollRef = useRef(null);
-  const contentScrollRef = useRef(null);
-  const contentInnerRef = useRef(null);
-  const syncingRef = useRef(false);
-  const [contentInnerWidth, setContentInnerWidth] = useState(null);
+  const scrollContainerRef = useRef(null);
   const shardsCellRef = useRef(null);
   const [isLongCluster, setIsLongCluster] = useState(false);
 
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return undefined;
 
-    const contentEl = contentInnerRef.current;
     const shardsEl = shardsCellRef.current;
-    let contentObserver;
-    let shardsObserver;
+    if (!shardsEl) return undefined;
 
-    if (contentEl) {
-      contentObserver = new ResizeObserver((entries) => {
-        const w = entries[0]?.borderBoxSize?.[0]?.inlineSize ?? entries[0]?.contentRect?.width;
-        if (w > 0) setContentInnerWidth(w);
-      });
-      contentObserver.observe(contentEl);
-    }
-
-    if (shardsEl) {
-      shardsObserver = new ResizeObserver((entries) => {
-        const h = entries[0]?.contentRect?.height ?? 0;
-        setIsLongCluster(h > window.innerHeight * 0.8);
-      });
-      shardsObserver.observe(shardsEl);
-    }
-
-    if (!contentObserver && !shardsObserver) return undefined;
-
-    return () => {
-      contentObserver?.disconnect();
-      shardsObserver?.disconnect();
-    };
-  }, [cluster]);
-
-  const syncScroll = (toRef) => (e) => {
-    if (syncingRef.current) return;
-    const target = toRef.current;
-    if (!target) return;
-    syncingRef.current = true;
-    target.scrollLeft = e.currentTarget.scrollLeft;
-    requestAnimationFrame(() => {
-      syncingRef.current = false;
+    const shardsObserver = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect?.height ?? 0;
+      setIsLongCluster(h > window.innerHeight * 0.8);
     });
-  };
+    shardsObserver.observe(shardsEl);
 
-  const onSummaryScroll = syncScroll(contentScrollRef);
-  const onContentScroll = syncScroll(summaryScrollRef);
+    return () => shardsObserver.disconnect();
+  }, [cluster]);
 
   const handleSlotGrab = (e, peerId, slotId, shard) => {
     if (!shard || shard.state !== 'Active') return; // Can only grab non-empty and active slots
@@ -196,7 +161,7 @@ const ClusterMonitor = ({ collectionName }) => {
     }
 
     // scroll long monitor if the user reaches the edge
-    const clusterMonitor = document.querySelector('[data-cluster-monitor]');
+    const clusterMonitor = scrollContainerRef.current;
     if (clusterMonitor) {
       const rect = clusterMonitor.getBoundingClientRect();
       const scrollLeft = clusterMonitor.scrollLeft;
@@ -213,10 +178,6 @@ const ClusterMonitor = ({ collectionName }) => {
       // Check if we need to scroll left (mouse near left edge and can scroll left)
       if (mouseX < 50 && scrollLeft > 0) {
         clusterMonitor.scrollLeft = scrollLeft - scrollStep;
-      }
-
-      if (summaryScrollRef.current) {
-        summaryScrollRef.current.scrollLeft = clusterMonitor.scrollLeft;
       }
     }
   };
@@ -665,81 +626,67 @@ const ClusterMonitor = ({ collectionName }) => {
           </Box>
         )}
         <Box
-          ref={summaryScrollRef}
-          onScroll={onSummaryScroll}
-          sx={{
-            borderBottom: (t) => `1px solid ${t.palette.divider}`,
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': { display: 'none' },
-            px: '0.5rem',
-            py: '0.5rem',
-          }}
-        >
-          <Box
-            sx={{
-              minWidth: '100%',
-              width: contentInnerWidth ?? 'max-content',
-              display: 'grid',
-              gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
-              gap: 2,
-              alignItems: 'stretch',
-            }}
-          >
-            {peers.map((peerId) => (
-              <Box key={`summary-${peerId}`} sx={{ minWidth: 0 }}>
-                <ClusterNodeSummary
-                  peerId={peerId}
-                  cluster={cluster}
-                  sortDirection={sortByPeer?.peerId === peerId ? sortByPeer.direction : null}
-                  onSetSort={handleSetSort}
-                />
-              </Box>
-            ))}
-          </Box>
-        </Box>
-        <Box
-          data-cluster-monitor
-          ref={contentScrollRef}
-          onScroll={onContentScroll}
+          ref={scrollContainerRef}
           sx={{
             overflowX: 'auto',
-            padding: '0.5rem 0.5rem 1.5rem 0.5rem',
             '& svg': {
               zIndex: 10,
             },
           }}
         >
-          <Box ref={contentInnerRef} sx={{ minWidth: '100%', width: 'max-content' }}>
-            <ArcherContainer
-              ref={archerContainerRef}
-              strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
-              lineStyle={'angle'}
+          <Box sx={{ minWidth: '100%', width: 'max-content' }}>
+            <Box
+              sx={{
+                borderBottom: (t) => `1px solid ${t.palette.divider}`,
+                display: 'grid',
+                gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
+                gap: 2,
+                alignItems: 'stretch',
+                p: '0.5rem',
+              }}
             >
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
-                  gap: 2,
-                  alignItems: 'flex-start',
-                  mt: 1,
-                }}
+              {peers.map((peerId) => (
+                <Box key={`summary-${peerId}`} sx={{ minWidth: 0 }}>
+                  <ClusterNodeSummary
+                    peerId={peerId}
+                    cluster={cluster}
+                    sortDirection={sortByPeer?.peerId === peerId ? sortByPeer.direction : null}
+                    onSetSort={handleSetSort}
+                  />
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ padding: '0.5rem 0.5rem 1.5rem 0.5rem' }}>
+              <ArcherContainer
+                ref={archerContainerRef}
+                strokeColor={theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main}
+                lineStyle={'angle'}
               >
-                {peers.map((peerId) => (
-                  <Box key={peerId} sx={{ minWidth: 0 }}>
-                    <ClusterNode
-                      peerId={peerId}
-                      cluster={cluster}
-                      slotIndices={slotIndices}
-                      dragState={dragState}
-                      onSlotGrab={handleSlotGrab}
-                      onSlotDrop={handleSlotDrop}
-                      onDragCancel={handleDragCancel}
-                    />
-                  </Box>
-                ))}
-              </Box>
-            </ArcherContainer>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${peers.length}, minmax(0, 1fr))`,
+                    gap: 2,
+                    alignItems: 'flex-start',
+                    mt: 1,
+                  }}
+                >
+                  {peers.map((peerId) => (
+                    <Box key={peerId} sx={{ minWidth: 0 }}>
+                      <ClusterNode
+                        peerId={peerId}
+                        cluster={cluster}
+                        slotIndices={slotIndices}
+                        dragState={dragState}
+                        onSlotGrab={handleSlotGrab}
+                        onSlotDrop={handleSlotDrop}
+                        onDragCancel={handleDragCancel}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </ArcherContainer>
+            </Box>
           </Box>
         </Box>
       </Box>
