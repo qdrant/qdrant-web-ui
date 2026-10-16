@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Box, CardContent, IconButton, Tooltip } from '@mui/material';
+import { Box, CardContent, IconButton } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useClient } from '../../context/client-context';
 import { CopyButton } from '../Common/CopyButton';
@@ -23,6 +23,8 @@ import {
   buildPathMap,
 } from './CollectionInfoKeyRenderer';
 import { useJsonViewerTheme } from '../../theme/json-viewer-theme';
+import { useAutoRefresh } from '../../hooks/useAutoRefresh';
+import AutoRefreshControl from './AutoRefreshControl';
 
 export const CollectionInfo = ({ collectionName }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -32,8 +34,9 @@ export const CollectionInfo = ({ collectionName }) => {
   const [createAliasOpen, setCreateAliasOpen] = useState(false);
   const [addMetadataOpen, setAddMetadataOpen] = useState(false);
   const [createIndexOpen, setCreateIndexOpen] = useState(false);
+  const [refreshIntervalMs, setRefreshIntervalMs] = useState(0);
 
-  const fetchClusterInfo = () => {
+  const fetchClusterInfo = (silent = false) => {
     if (isRestricted) {
       return;
     }
@@ -47,7 +50,9 @@ export const CollectionInfo = ({ collectionName }) => {
         });
       })
       .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        if (!silent) {
+          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        }
       });
   };
 
@@ -56,7 +61,7 @@ export const CollectionInfo = ({ collectionName }) => {
     typeof collection.config.metadata === 'object' &&
     Object.keys(collection.config.metadata).length > 0;
 
-  const fetchCollection = () => {
+  const fetchCollection = (silent = false) => {
     qdrantClient
       .getCollection(collectionName)
       .then((res) => {
@@ -65,18 +70,26 @@ export const CollectionInfo = ({ collectionName }) => {
         });
       })
       .catch((err) => {
-        enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        if (!silent) {
+          enqueueSnackbar(err.message, getSnackbarOptions('error', closeSnackbar));
+        }
       });
   };
 
-  const refreshAll = () => {
-    fetchCollection();
-    fetchClusterInfo();
+  const refreshAll = (silent = false) => {
+    fetchCollection(silent);
+    fetchClusterInfo(silent);
   };
 
   useEffect(() => {
     refreshAll();
   }, [collectionName]);
+
+  useAutoRefresh({
+    enabled: refreshIntervalMs > 0,
+    intervalMs: refreshIntervalMs,
+    onTick: () => refreshAll(true),
+  });
 
   const triggerOptimizers = () => {
     qdrantClient
@@ -116,6 +129,17 @@ export const CollectionInfo = ({ collectionName }) => {
 
   const metadata = collection.config?.metadata;
 
+  const refreshButton = (
+    <IconButton
+      size="small"
+      aria-label="Refresh collection info"
+      sx={{ color: 'text.primary' }}
+      onClick={() => refreshAll()}
+    >
+      <RefreshIcon />
+    </IconButton>
+  );
+
   return (
     <Box display="flex" flexDirection="column" gap={5}>
       <CollectionAliases
@@ -136,11 +160,8 @@ export const CollectionInfo = ({ collectionName }) => {
               triggerOptimizersDisabled={triggerOptimizersDisabled}
             />
             <CopyButton text={bigIntJSON.stringify(collection)} />
-            <Tooltip title="Refresh collection info">
-              <IconButton size="small" sx={{ color: 'text.primary' }} onClick={refreshAll}>
-                <RefreshIcon />
-              </IconButton>
-            </Tooltip>
+            <AutoRefreshControl value={refreshIntervalMs} onChange={setRefreshIntervalMs} />
+            {refreshButton}
           </Box>
         }
       >
