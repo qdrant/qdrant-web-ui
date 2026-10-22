@@ -38,6 +38,58 @@ describe('QdrantClientExtended', () => {
       expect(actualRequest.headers.get('Content-Type')).toBe('application/gzip');
       expect(actualRequest.headers.get('api-key')).toBe(apiKey);
     });
+
+    it('fetch should keep the path of the url', async () => {
+      const fetch = vi.fn();
+      vi.stubGlobal('fetch', fetch);
+
+      const client = new QdrantClientExtended({
+        url: 'https://localhost/qdrant/',
+        apiKey: 'test-api-key',
+        port: 443,
+      });
+      await client.downloadSnapshot('demo', 'test-snapshot');
+
+      const [actualRequest] = fetch.mock.calls[0];
+      expect(actualRequest.url).toBe('https://localhost/qdrant/collections/demo/snapshots/test-snapshot');
+    });
+  });
+
+  describe('api requests', () => {
+    const collectionsResponse = () =>
+      new Response(JSON.stringify({ result: { collections: [] }, status: 'ok', time: 0 }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+    it('should be sent to the root of the url', async () => {
+      const fetch = vi.fn().mockImplementation(async () => collectionsResponse());
+      vi.stubGlobal('fetch', fetch);
+
+      const client = new QdrantClientExtended({ url: 'http://localhost:6333/', port: 6333 });
+      await client.getCollections();
+
+      expect(String(fetch.mock.calls[0][0])).toBe('http://localhost:6333/collections');
+    });
+
+    it('should be sent under the path of the url', async () => {
+      const fetch = vi.fn().mockImplementation(async () => collectionsResponse());
+      vi.stubGlobal('fetch', fetch);
+
+      const client = new QdrantClientExtended({ url: 'https://example.com/qdrant/', port: 443 });
+      await client.getCollections();
+
+      expect(String(fetch.mock.calls[0][0])).toBe('https://example.com:443/qdrant/collections');
+    });
+
+    it('should keep the port of the url', async () => {
+      const fetch = vi.fn().mockImplementation(async () => collectionsResponse());
+      vi.stubGlobal('fetch', fetch);
+
+      const client = new QdrantClientExtended({ url: 'http://example.com:8080/a/b/', port: 80 });
+      await client.getCollections();
+
+      expect(String(fetch.mock.calls[0][0])).toBe('http://example.com:8080/a/b/collections');
+    });
   });
 
   // test for getSnapshotUploadUrl
@@ -52,6 +104,18 @@ describe('QdrantClientExtended', () => {
 
       expect(client.getSnapshotUploadUrl('test').href).toBe(
         new URL('collections/test/snapshots/upload', 'https://localhost').href
+      );
+    });
+
+    it('should keep the path of the url', () => {
+      const client = new QdrantClientExtended({
+        url: 'https://localhost/qdrant/',
+        apiKey: 'test',
+        port: 443,
+      });
+
+      expect(client.getSnapshotUploadUrl('test').href).toBe(
+        'https://localhost/qdrant/collections/test/snapshots/upload'
       );
     });
   });

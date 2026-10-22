@@ -5,7 +5,11 @@ import { axiosInstance as axios } from '../common/axios';
 
 const CloudInfoContext = createContext();
 
-const DEFAULT_CLOUD_INFO_PATH = getFullPath('/cloud/data.json');
+const CLOUD_INFO_FILE = getFullPath('/cloud/data.json');
+// A relative path is resolved against the page, as axios would resolve it against the API base URL.
+const DEFAULT_CLOUD_INFO_PATH = CLOUD_INFO_FILE.startsWith('/')
+  ? CLOUD_INFO_FILE
+  : new URL(CLOUD_INFO_FILE, window.location.href).href;
 
 export function CloudInfoProvider({ children }) {
   const [cloudInfo, setCloudInfo] = useState(null);

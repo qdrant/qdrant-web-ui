@@ -3,6 +3,12 @@
 
 <head>
   <meta charset="utf-8" />
+  <script>
+    // Assets are referenced relative to the page, so `/dashboard` must be addressed as `/dashboard/`.
+    if (!/(\/|\.html)$/.test(location.pathname)) {
+      history.replaceState(null, '', './' + location.pathname.split('/').pop() + '/' + location.search + location.hash);
+    }
+  </script>
   <link rel="icon" href="/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
