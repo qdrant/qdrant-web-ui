@@ -58,6 +58,52 @@ const sanitizeSemver = (value) => {
   return parts.join('.');
 };
 
+const SEMVER_REGEX = /^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/i;
+
+/**
+ * Parse a version like "v1.20.0" or "1.20.0-rc1" into [major, minor, patch].
+ * Pre-release and build suffixes are ignored.
+ * @param {string} version
+ * @return {number[]|null} - null if the version is not a semver version.
+ */
+export const parseSemver = (version) => {
+  if (typeof version !== 'string') {
+    return null;
+  }
+  const match = version.trim().match(SEMVER_REGEX);
+  if (!match) {
+    return null;
+  }
+  return match.slice(1, 4).map(Number);
+};
+
+/**
+ * Check whether a server version satisfies optional min/max version constraints (both inclusive).
+ * A server version that is not semver (e.g. "dev") is treated as the newest possible version.
+ * @param {string} serverVersion
+ * @param {string} [minVersion]
+ * @param {string} [maxVersion]
+ * @return {boolean}
+ */
+export const isVersionInRange = (serverVersion, minVersion, maxVersion) => {
+  const server = parseSemver(serverVersion);
+  const compare = (a, b) => compareSemver(a.join('.'), b.join('.'));
+
+  if (minVersion) {
+    const min = parseSemver(minVersion);
+    if (server && min && compare(server, min) < 0) {
+      return false;
+    }
+  }
+  if (maxVersion) {
+    const max = parseSemver(maxVersion);
+    if (max && (!server || compare(server, max) > 0)) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export const isSemverGreater = (nextVersion, currentVersion) => {
   const normalizedNext = sanitizeSemver(nextVersion);
   const normalizedCurrent = sanitizeSemver(currentVersion);

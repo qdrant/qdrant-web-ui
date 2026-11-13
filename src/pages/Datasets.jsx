@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CenteredFrame } from '../components/Common/CenteredFrame';
 import { PAGE_CONTENT_WIDTH } from '../theme/constants';
 import { Grid, Table, Typography, Alert } from '@mui/material';
@@ -8,7 +8,7 @@ import { DatasetsTableRow } from '../components/Datasets/DatasetsTableRow';
 import { useClient } from '../context/client-context';
 import { useSnackbar } from 'notistack';
 import { getSnackbarOptions } from '../components/Common/utils/snackbarOptions';
-import { compareSemver } from '../lib/common-helpers';
+import { isVersionInRange } from '../lib/common-helpers';
 // import { useOutletContext } from 'react-router';
 import { useVersion } from '../context/telemetry-context';
 import { useRouteAccess } from '../hooks/useRouteAccess';
@@ -26,7 +26,7 @@ function Datasets() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('https://snapshots.qdrant.io/manifest-v1.16.0.json');
+        const response = await fetch('https://snapshots.qdrant.io/manifest-v1.20.0.json');
         if (!response.ok) {
           throw new Error(`Failed to fetch datasets manifest: ${response.status}`);
         }
@@ -35,27 +35,7 @@ function Datasets() {
           throw new Error('Datasets manifest has an unexpected format');
         }
         const datasets = responseJson
-          .filter((dataset) => {
-            if (typeof dataset !== 'object' || dataset === null || typeof dataset.name !== 'string') {
-              return false;
-            }
-            if (dataset.version === undefined) {
-              return true;
-            }
-            // There are a few exceptions:
-            // - dev version is always allowed, it includes `dev` as a substring
-            // - `???` means we can't display the version, so we only allow unversioned datasets
-            // - empty or underfined means the same as `???`
-
-            if (version === '???' || version === null) {
-              return false;
-            }
-
-            if (version.includes('dev')) {
-              return true;
-            }
-            return compareSemver(version, dataset.version) >= 0;
-          })
+          .filter((dataset) => typeof dataset === 'object' && dataset !== null && typeof dataset.name === 'string')
           .map((dataset) => {
             return {
               name: String(dataset.name),
@@ -64,6 +44,8 @@ function Datasets() {
               vectors: dataset.vectors,
               vectorCount: Number(dataset.vector_count) || 0,
               description: String(dataset.description ?? ''),
+              minVersion: dataset.min_version,
+              maxVersion: dataset.max_version,
             };
           });
         setDatasets(datasets);
@@ -104,7 +86,22 @@ function Datasets() {
     }
   };
 
-  const tableRows = datasets.map((dataset) => (
+  const availableDatasets = useMemo(
+    () =>
+      datasets.filter((dataset) => {
+        if (!dataset.minVersion && !dataset.maxVersion) {
+          return true;
+        }
+        // If the server version is unknown, only show datasets without version constraints
+        if (!version) {
+          return false;
+        }
+        return isVersionInRange(version, dataset.minVersion, dataset.maxVersion);
+      }),
+    [datasets, version]
+  );
+
+  const tableRows = availableDatasets.map((dataset) => (
     <DatasetsTableRow key={dataset.name} dataset={dataset} importDataset={importDataset} disabled={isAccessDenied} />
   ));
 
@@ -123,8 +120,8 @@ function Datasets() {
             </Grid>
           )}
           {isLoading && <div>Loading...</div>}
-          {!isLoading && datasets?.length === 0 && <div>No datasets found</div>}
-          {!isLoading && datasets?.length > 0 && (
+          {!isLoading && availableDatasets.length === 0 && <div>No datasets found</div>}
+          {!isLoading && availableDatasets.length > 0 && (
             <Grid size={12}>
               <StyledTableContainer>
                 <Table aria-label="Datasets table">
