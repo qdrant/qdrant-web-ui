@@ -25,6 +25,7 @@ function Collections() {
   const [collections, setCollections] = useState(null);
   const [filteredCollections, setFilteredCollections] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [appliedQuery, setAppliedQuery] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { client: qdrantClient, isRestricted } = useClient();
@@ -73,6 +74,8 @@ function Collections() {
     [qdrantClient, isRestricted]
   );
 
+  // Loads the collection list, applies the search query (if any) and fetches details for the requested page.
+  // Every reload (refresh, page change, search, after delete/upload) goes through here so the filter is kept.
   const getCollectionsCall = useCallback(
     async (page = 1) => {
       try {
@@ -81,7 +84,12 @@ function Collections() {
         const sortedCollections = allCollections.collections.sort((a, b) => a.name.localeCompare(b.name));
         setCollections(sortedCollections);
 
-        const nextPageCollections = sortedCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+        const matchingCollections = appliedQuery
+          ? sortedCollections.filter((collection) => collection.name.match(appliedQuery))
+          : sortedCollections;
+        setFilteredCollections(appliedQuery ? matchingCollections : null);
+
+        const nextPageCollections = matchingCollections.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
         const nextRawCollections = await Promise.all(
           nextPageCollections.map(async (collection) => {
@@ -115,62 +123,29 @@ function Collections() {
         setRawCollections(null);
       }
     },
-    [qdrantClient, getErrorMessageWithApiKey, getShardInfo]
-  );
-
-  const getFilteredCollectionsCall = useCallback(
-    async (query) => {
-      try {
-        if (!collections) return;
-        const filtered = collections.filter((collection) => collection.name.match(query));
-        setFilteredCollections(filtered);
-        const nextRawCollections = await Promise.all(
-          filtered.map(async (collection) => {
-            try {
-              const collectionData = await qdrantClient.getCollection(collection.name);
-              const shardInfo = await getShardInfo(collection.name, collectionData);
-              return {
-                name: collection.name,
-                ...collectionData,
-                ...shardInfo,
-              };
-            } catch (error) {
-              return {
-                name: collection.name,
-                error: getErrorMessageWithApiKey(error) || 'Failed to load collection info',
-              };
-            }
-          })
-        );
-
-        setRawCollections(nextRawCollections.sort((a, b) => a.name.localeCompare(b.name)));
-        setErrorMessage(null);
-      } catch (error) {
-        const message = getErrorMessageWithApiKey(error);
-        message && setErrorMessage(message);
-        setRawCollections(null);
-      }
-    },
-    [collections, qdrantClient, getErrorMessageWithApiKey, getShardInfo]
+    [qdrantClient, appliedQuery, getErrorMessageWithApiKey, getShardInfo]
   );
 
   useEffect(() => {
     getCollectionsCall(currentPage);
   }, [currentPage, getCollectionsCall]);
 
-  useEffect(() => {
-    setSelectedCollections(new Set());
-    if (!searchQuery) {
-      getCollectionsCall(currentPage);
-    } else {
-      debouncedGetFilteredCollectionsCall(searchQuery);
-    }
-  }, [searchQuery, currentPage, getCollectionsCall]);
-
-  const debouncedGetFilteredCollectionsCall = useMemo(
-    () => debounce(getFilteredCollectionsCall, 100),
-    [getFilteredCollectionsCall]
+  // Apply the typed query after a short pause and go back to the first page of results.
+  const debouncedApplyQuery = useMemo(
+    () =>
+      debounce((query) => {
+        setAppliedQuery(query);
+        setCurrentPage(1);
+        setSelectedCollections(new Set());
+      }, 100),
+    []
   );
+
+  useEffect(() => {
+    debouncedApplyQuery(searchQuery);
+  }, [searchQuery, debouncedApplyQuery]);
+
+  useEffect(() => () => debouncedApplyQuery.cancel(), [debouncedApplyQuery]);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -240,7 +215,7 @@ function Collections() {
     }
   }, [selectedCollections, qdrantClient, getCollectionsCall, currentPage, getErrorMessageWithApiKey]);
 
-  const displayCollections = searchQuery ? filteredCollections : collections;
+  const displayCollections = appliedQuery ? filteredCollections : collections;
 
   return (
     <>
