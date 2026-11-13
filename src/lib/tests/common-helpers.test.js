@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { compareSemver, formatGroupedDigits, getFullPath } from '../common-helpers';
+import { compareSemver, formatGroupedDigits, getFullPath, isVersionInRange, parseSemver } from '../common-helpers';
 
 describe('compareSemver', () => {
   it('should return 0 if the versions are equal', () => {
@@ -21,6 +21,54 @@ describe('compareSemver', () => {
     const version2 = '1.0.1';
     const result = compareSemver(version1, version2);
     expect(result).toEqual(-1);
+  });
+});
+
+describe('parseSemver', () => {
+  it('should parse versions with and without a v prefix', () => {
+    expect(parseSemver('v1.20.0')).toEqual([1, 20, 0]);
+    expect(parseSemver('1.20.3')).toEqual([1, 20, 3]);
+  });
+
+  it('should ignore pre-release and build suffixes', () => {
+    expect(parseSemver('v1.20.0-rc1')).toEqual([1, 20, 0]);
+    expect(parseSemver('1.20.0+build.5')).toEqual([1, 20, 0]);
+  });
+
+  it('should return null for non-semver versions', () => {
+    expect(parseSemver('dev')).toBeNull();
+    expect(parseSemver('1.20')).toBeNull();
+    expect(parseSemver(null)).toBeNull();
+  });
+});
+
+describe('isVersionInRange', () => {
+  it('should allow any version when there are no constraints', () => {
+    expect(isVersionInRange('1.0.0')).toBe(true);
+    expect(isVersionInRange('dev')).toBe(true);
+  });
+
+  it('should respect min_version inclusively', () => {
+    expect(isVersionInRange('1.20.0', 'v1.20.0')).toBe(true);
+    expect(isVersionInRange('1.21.1', 'v1.20.0')).toBe(true);
+    expect(isVersionInRange('1.19.9', 'v1.20.0')).toBe(false);
+  });
+
+  it('should respect max_version inclusively', () => {
+    expect(isVersionInRange('1.20.0', undefined, 'v1.20.0')).toBe(true);
+    expect(isVersionInRange('1.20.1', undefined, 'v1.20.0')).toBe(false);
+    expect(isVersionInRange('1.16.0', 'v1.15.0', 'v1.20.0')).toBe(true);
+  });
+
+  it('should ignore suffixes on the server version', () => {
+    expect(isVersionInRange('v1.20.0-rc1', 'v1.20.0')).toBe(true);
+    expect(isVersionInRange('1.20.0-rc1', undefined, 'v1.20.0')).toBe(true);
+  });
+
+  it('should treat non-semver server versions as the newest version', () => {
+    expect(isVersionInRange('dev', 'v1.20.0')).toBe(true);
+    expect(isVersionInRange('dev', undefined, 'v1.20.0')).toBe(false);
+    expect(isVersionInRange('dev', 'v1.15.0', 'v1.20.0')).toBe(false);
   });
 });
 
