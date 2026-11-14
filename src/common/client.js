@@ -9,7 +9,16 @@ import { getBaseURL } from './utils';
 export class QdrantClientExtended extends QdrantClient {
   #downloadController;
   constructor({ url, apiKey, port }) {
-    super({ url, apiKey, port, checkCompatibility: false, headers: { 'x-inference-proxy': 'true' } });
+    // QdrantClient ignores the path of `url`, so it is passed as `prefix` instead.
+    const { origin, pathname } = new URL(url);
+    super({
+      url: origin,
+      prefix: pathname.replace(/\/$/, ''),
+      apiKey,
+      port,
+      checkCompatibility: false,
+      headers: { 'x-inference-proxy': 'true' },
+    });
 
     this.downloadSnapshot = this.downloadSnapshot.bind(this);
     this.getSnapshotUploadUrl = this.getSnapshotUploadUrl.bind(this);
@@ -44,7 +53,7 @@ export class QdrantClientExtended extends QdrantClient {
     }
 
     const snapshotUrl = new URL(
-      `/collections/${encodeURIComponent(collectionName)}/snapshots/${encodeURIComponent(snapshotName)}`,
+      `collections/${encodeURIComponent(collectionName)}/snapshots/${encodeURIComponent(snapshotName)}`,
       this.url
     ).href;
 
