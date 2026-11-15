@@ -136,19 +136,21 @@ const PointsTabs = ({ collectionName, client }) => {
       try {
         if (similarIds.length > 0) {
           // Similarity search with optional filters
+          const limit = pageSize + (offset || 0);
           const newPoints = await qdrantClient.query(collectionName, {
             query: {
               recommend: {
                 positive: similarIds,
               },
             },
-            limit: pageSize + (offset || 0),
+            limit,
             with_payload: true,
             with_vector: true,
             using: usingVector,
             filter: filterConditions.length > 0 ? { must: filterConditions } : undefined,
           });
-          setNextPageOffset(newPoints.points.length);
+          // Fewer results than requested means there is nothing left to load
+          setNextPageOffset(newPoints.points.length < limit ? null : newPoints.points.length);
           setPoints(newPoints);
           setErrorMessage(null);
         } else if (filterConditions.length > 0) {
