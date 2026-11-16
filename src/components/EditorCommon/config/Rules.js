@@ -1,7 +1,7 @@
 import { OpenapiDocs } from 'autocomplete-openapi/src/request-docs';
+import { getDocsUrl } from './docs-url';
 
 const Method = ['POST', 'GET', 'PUT', 'DELETE', 'PATCH', 'HEAD'];
-const DOCS_BASE_URL = 'https://api.qdrant.tech/api-reference/';
 
 let apiDocs = null;
 fetch(import.meta.env.BASE_URL + './openapi.json')
@@ -108,9 +108,7 @@ export function btnconfig(commandId, beutifyCommandId, docsCommandId) {
 
         const terminal = apiDocs?.getRequestDocs(codeBlocks[i].blockText.split('\n')[0]);
         if (terminal) {
-          const operationId = terminal.operationId.replaceAll('_', '-').toLowerCase();
-          const tag = terminal.tags[0].toLowerCase();
-          const docsURL = DOCS_BASE_URL + tag + '/' + operationId;
+          const docsURL = getDocsUrl(terminal);
           lenses.push({
             range,
             id: 'DOCS',
