@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@mui/system';
+import { Box } from '@mui/material';
 
 export const Circle = ({ color, size, sx }) => (
   <Box
