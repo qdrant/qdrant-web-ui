@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useClient } from '../../context/client-context';
 import { useSnackbar } from 'notistack';
@@ -20,6 +20,11 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
   const [showDiff, setShowDiff] = useState(false);
   const theme = useTheme();
   const { collectionName } = useParams();
+
+  useEffect(() => {
+    setPayload(bigIntJSON.stringify(point.payload, null, 2));
+    setShowDiff(false);
+  }, [open, point.id, point.payload]);
 
   const savePayload = async (collectionName, options) => {
     if (Object.keys(point.payload).length !== 0) {
@@ -105,7 +110,7 @@ export const PayloadEditor = memo(({ point, open, onClose, onSave, setLoading })
           <EditorCommon
             height="360px"
             language="json"
-            value={bigIntJSON.stringify(point.payload, null, 2)}
+            value={payload}
             onChange={handleChange}
             options={{
               scrollBeyondLastLine: false,
